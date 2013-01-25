@@ -1,0 +1,46 @@
+User -> ReservationController: POST /reservation/
+
+activate ReservationController
+ReservationController -> ReservationController: r = new Reservation()
+note left of ReservationController: Set reservation fields
+ReservationController -> ReservationService: add(r)
+deactivate ReservationController
+
+activate ReservationService
+ReservationService -> ReservationDAO: add(r)
+deactivate ReservationService
+
+
+activate ReservationDAO
+ReservationDAO -> EntityManager: persist(r)
+note over ReservationController,ReservationService
+    On any DB error:
+    Rollback and 
+    return 500: Internal Server Error
+    end note
+deactivate ReservationDAO
+
+
+activate EntityManager
+EntityManager --> ReservationDAO: 
+deactivate EntityManager
+
+activate ReservationDAO
+ReservationDAO --> ReservationService:
+deactivate ReservationDAO
+
+activate ReservationService
+ReservationService --> ReservationController:
+deactivate ReservationService
+
+activate ReservationController
+ReservationController -> ReservationMailer: mail(r)
+deactivate ReservationController
+
+activate ReservationMailer
+ReservationMailer --> ReservationController:
+deactivate ReservationMailer
+
+activate ReservationController
+ReservationController --> User: 303: /reservation/<r.id>
+deactivate ReservationController

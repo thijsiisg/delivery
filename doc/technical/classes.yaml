@@ -1,0 +1,68 @@
+
+- package: Deliverance
+  items:
+    - package: record
+      items:
+        - class: RecordDAO
+          methods:
+            - "+ add(Record)"
+            - "+ remove(Record)"
+            - "+ getById(int) : Record"
+            - "+ getByPid(string) : Record"
+        - class: RecordDAOImpl
+        - class: ContactDAO
+          methods:
+            - "+ add(Contact)"
+            - "+ remove(Contact)"
+            - "+ getById(int) : Contact"
+        - class: ContactDAOImpl
+        - class: LocationDAO
+          methods:
+            - "+ add(Location)"
+            - "+ remove(Location)"
+            - "+ getById(int) : Location"
+        - class: LocationDAOImpl
+        - class: RecordService
+        - class: RecordServiceImpl
+        - class: RecordController
+        - class: Record
+          attributes:
+            - "id : int"
+            - "pid : string"
+            - "name : string"
+            - "restriction_status : enum"
+            - "restriction : string"
+            - "comments : string"
+            - "status : enum"
+            - "embargo : date"
+            - "parent : Record"
+            - "contact : Contact"
+            - "usage_restriction: Location"
+          methods:
+            - "getters en setters :("
+        - class: Contact
+        - class: Location
+    - package: reservation
+      items:
+        - class: ReservationDAO
+        - class: ReservationDAOImpl
+        - class: ReservationService
+        - class: ReservationServiceImpl
+        - class: ReservationController
+        - class: Reservation
+    - package: permission
+      items: 
+        - class: PermissionDAO
+        - class: PermissionDAOImpl
+        - class: PermissionService
+        - class: PermissionServiceImpl
+        - class: PermissionController
+        - class: Permission
+    - package: user
+      items: 
+        - class: UserDAO
+        - class: UserDAOImpl
+        - class: UserService
+        - class: UserServiceImpl
+        - class: UserController
+        - class: User

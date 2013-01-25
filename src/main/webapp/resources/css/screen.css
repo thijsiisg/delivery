@@ -1,0 +1,717 @@
+/*
+ * Copyright 2011 International Institute of Social History
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+/* Make HTML 5 elements display block-level for consistent styling */
+header, nav, article, footer, address {
+    display: block;
+}
+
+th {
+    font-weight: normal;
+}
+
+ul.form {
+    list-style:  none;
+    padding: 0;
+    margin:  0;
+}
+
+html,body {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: "Arial Unicode MS",Arial,sans-serif;
+    font-size: 80%;
+}
+
+body > section {
+    margin: 0 10%;
+    margin-bottom: 100px;
+}
+
+fieldset {
+    padding:  1em;
+    margin-bottom:  10px;
+}
+
+
+
+textarea {
+    font-family: Tahoma,Verdana,Arial,Helvetica,sans-serif;
+    font-size: 100%;
+    width: 30em;
+    height: 8em;
+}
+
+input[type="text"], select {
+    box-sizing:content-box;
+    -ms-box-sizing:content-box;
+    -moz-box-sizing:content-box;
+    -webkit-box-sizing:content-box;
+    width: 30em;
+}
+
+
+
+label.field {
+    padding-top: 5px;
+    clear: left;
+    float: left;
+    display: block;
+    width: 15em;
+}
+
+form {
+    margin: 0;
+    padding: 0;
+    display: block;
+}
+
+section {
+    clear: left;
+    display: block;
+}
+
+input, textarea, select, button {
+    background: none repeat scroll 0 0 #FFFFFF;
+    border: 1px solid #CCCCCC;
+    color: #000000;
+}
+
+input[type="radio"], input[type="checkbox"] {
+    border: 0;
+}
+
+input[type="submit"], button {
+    margin-left:  2px;
+}
+
+input.field, textarea.field, select.field {
+    margin-top: 5px;
+    float: left;
+    clear: right;
+}
+
+input[type="text"], select, textarea {
+    padding: 3px;
+    margin-right: 3px;
+}
+
+input[type="submit"], button {
+    text-align: center;
+    padding: 2px 3px;
+    background: #f6f6f6;
+}
+
+ul.options {
+    float: left;
+    display: block;
+    clear: right;
+    list-style: none;
+    padding: 0;
+}
+
+.options li {
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.options label, .options form {
+    font-weight: normal;
+    float: none;
+    clear: none;
+}
+
+.holdings input[type="text"] {
+    width: 8em;
+}
+
+.holdings form {
+    display: inline;
+}
+
+ul.buttons {
+    list-style: none;
+    display: block;
+    clear: both;
+    width: 23em;
+    margin: 0;
+    padding: 1em 0.5em;
+}
+
+ul.buttons li {
+    display: inline;
+}
+
+ul.buttons input {
+    display: inline;
+}
+
+.btlist {
+    float: left;
+}
+
+.btlist .buttons {
+    width: 10em;
+    margin-left: 0;
+    padding-left: 0;
+    margin-right: 2em;
+}
+
+.btlist .buttons li {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.btlist input {
+    padding: 5px;
+    font-size: 110%;
+}
+
+fieldset.holdings {
+    clear: both;
+}
+
+table.holdings, table.holdings tr, table.holdings td {
+    border: 1px solid #888;
+    border-collapse: collapse;
+}
+
+table.holdings thead {
+    border-bottom: 1px solid #888;
+    font-weight: bold;
+}
+
+table.holdings tfoot {
+    border-top: 1px solid #888;
+}
+
+table.holdings td {
+    padding: 2px;
+}
+
+table.holdings input[type="text"] {
+    display: block;
+    width: 6em;
+    margin:  auto;
+}
+
+table.overview {
+    width: 100%;
+    margin: 2em 0;
+}
+
+table.overview thead {
+    background: #eee;
+}
+
+table.overview td {
+    text-align: center;
+}
+
+table.overview ul {
+    text-align: left;
+    padding: 0;
+    margin: 0 0 0 2em;
+}
+
+table.overview li {
+    margin: 0;
+    padding: 0;
+}
+
+table.overview, table.overview tr, table.overview td {
+    border: 1px solid #888;
+    border-collapse: collapse;
+}
+
+table.searchRecord {
+    width: 100%;
+    margin: 2em 0;
+}
+
+table.searchRecord thead {
+    background: #eee;
+}
+
+table.searchRecord td {
+    text-align: left;
+    padding:  5px;
+}
+
+table.searchRecord ul {
+    text-align: left;
+    padding: 0;
+    margin: 0 0 0 2em;
+}
+
+table.searchRecord li {
+    margin: 0;
+    padding: 0;
+}
+
+table.searchRecord, table.searchRecord tr, table.searchRecord td {
+    border: 1px solid #888;
+    border-collapse: collapse;
+}
+
+table.records {
+    width: 100%;
+    margin: 2em 0;
+}
+
+table.records caption {
+    text-align: left;
+    font-weight: bold;
+    padding-bottom: 3px;
+}
+
+table.records thead {
+    background: #eee;
+}
+
+table.records td {
+    text-align: center;
+}
+table.records, table.records tr, table.records td {
+    border: 1px solid #888;
+    border-collapse: collapse;
+}
+
+.edit_item form {
+    margin-top: 0.5em;
+}
+
+.edit_item input {
+    width: 5em;
+}
+
+nav {
+    background: #E7E7E7;
+    font-size: 95%;
+    color: #003399;
+    border: 1px solid #CCCCCC;
+    padding: 4px;
+}
+
+nav.search {
+    background: none;
+    border: none;
+    display: block;
+    float: none;
+    margin-bottom: 2em;
+}
+
+section.search {
+    clear: both;
+    padding-top: 2em;
+}
+
+section {
+    margin-top: 2em;
+}
+
+nav h1 {
+    color: #73A1C7;
+    font-size: 105%;
+    padding: 0;
+    margin: 0;
+}
+
+header.main {
+    background: white;
+    display: block;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 0.5em 10%;
+    font-size: 120%;
+    color: #73A1C7;
+    height: 60px;
+}
+
+header.main h1 {
+    padding: 0;
+    margin-left: 150px;
+    margin-top: 5px;
+}
+
+nav.main {
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    border-left: none;
+    border-right: none;
+}
+
+nav.main ul {
+    list-style: none;
+    margin: 0 10%;
+    padding: 0;
+    clear: both;
+}
+
+nav.main div {
+    clear: both;
+}
+
+nav.main li {
+    float: left;
+    min-width: 16%;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+}
+
+
+
+nav.main a {
+    /*font-weight: bold;*/
+    display: block;
+    padding: 4px;
+}
+
+.related_records {
+    float: right;
+    width: 25%;
+    margin-left: 1em;
+}
+ul.parent_tree {
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+.related_records ul {
+    padding: 0;
+    margin: 0 0 0 2em;
+}
+
+.related_records li {
+    padding: 2px;
+}
+
+li.edit_item {
+    padding: 0;
+    margin: 0 0 0 -2em;
+    list-style: none;
+}
+
+.related_records label {
+    margin-right: 2em;
+}
+
+.related_records label, .related_records input {
+    display: inline;
+}
+
+.actions ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.actions li {
+    padding: 2px;
+}
+
+.actions ul.horizontal li{
+    float: left;
+}
+
+.actions label {
+    float: left;
+    width: 14em;
+}
+
+.pageLinks {
+    text-align: center;
+    margin: 1em 0;
+    font-weight: bold;
+}
+
+.note {
+    font-size: 80%;
+    display: block;
+    color: #444;
+    font-style: italic;
+}
+
+.bignote {
+    font-size: 120%;
+    display: block;
+    color: #444;
+    text-align: center;
+    font-weight: bold;
+}
+
+fieldset {
+    border: 1px solid #888;
+}
+
+a,a:link,a:visited,a:active {
+    color: #003399;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #73A0C9;
+}
+
+ul.errors {
+    color: #c42737;
+    list-style: none;
+    margin-left: 12em;
+    margin-top: 4px;
+    display: block;
+    clear: both;
+}
+
+ul.messages {
+    color: #339900;
+    list-style: none;
+    margin-left: 12em;
+    margin-top: 4px;
+    display: block;
+    clear: both;
+}
+
+ul.holdingDetails {
+    list-style: none;
+    margin: 0;
+    margin-bottom: 1em;
+    margin-left: 5em;
+    padding: 0;
+}
+
+ul.holdingDetails span {
+   font-weight: bold;
+   width: 12em;
+   display: block;
+   float: left;
+}
+ul.holdingDetails li {
+    margin-top: 5px;
+}
+
+ul.reservationDetails {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.reservationDetails span {
+   font-weight: bold;
+   width: 13em;
+   display: block;
+   float: left;
+}
+
+ul.permissionDetails {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.permissionDetails span {
+   font-weight: bold;
+   width: 13em;
+   display: block;
+   float: left;
+}
+
+fieldset.recordPermissionDetails {
+    margin-bottom: 10px;
+}
+
+fieldset.recordPermissionDetails ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+fieldset.recordPermissionDetails ul span {
+   font-weight: bold;
+   width: 13em;
+   display: block;
+   float: left;
+}
+
+fieldset.recordPermissionDetails select {
+    width: 8em;
+    margin-bottom: 5px;
+}
+
+.user_list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: block;
+    border-bottom: 1px solid #888888;
+}
+
+.user_list span {
+    float: left;
+    width: 20em;
+}
+
+.user_list li {
+    margin: 0;
+    border: 1px solid #888888;
+    border-bottom: 0;
+    padding: 4px;
+    display: block;
+}
+
+.user_list form {
+    padding-left: 8px;
+}
+
+.user_list input {
+    margin-top: 4px;
+    display: block;
+    margin-left: 22em;
+}
+
+div.languageSelect {
+    margin:  0;
+    padding:  0.5em;
+    right: 10px;
+    top: 0;
+    position: absolute;
+}
+
+div.languageSelect span {
+    font-weight: bold;
+}
+
+div.languageSelect ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+}
+
+div.languageSelect ul li {
+    float: left;
+    display: block;
+    padding-right: 0.5em;
+}
+
+label {
+   font-weight: bold;
+}
+
+
+li.motivation label {
+    vertical-align: top;
+    width: 13em;
+    display: block;
+    float: left;
+}
+
+.current {
+    font-style: italic;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+    visibility: hidden;
+}
+
+.parentInfo {
+    max-width: 30em;
+    clear: right;
+    float: left;
+    margin-top:5px;
+    font-style: italic;
+    color: gray;
+}
+a.parentInfoLink {
+    max-width: 30em;
+    clear: right;
+    float: left;
+    margin-top:5px;
+}
+
+a.parentInfoLink:hover {
+    cursor: pointer;
+}
+
+table.holdings {
+    width: 70%;
+}
+
+table.holdings tr td select {
+    width: 6em;
+    margin: auto;
+}
+
+table.holdings td {
+    text-align: center;
+}
+
+#newHoldingButton {
+    margin:  5px;
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}
+
+.orange {
+    color: orange;
+}
+
+ul.holdingReservationDetails {
+    list-style: none;
+    margin: 0;
+    margin-bottom: 1em;
+    margin-left: 15em;
+    padding: 0;
+    padding-top: 10px;
+    clear: both;
+}
+
+ul.holdingReservationDetails span {
+   font-style: italic;
+   padding-left: 5px;
+}
+ul.holdingReservationDetails li {
+    margin-top: 5px;
+}
+
+ul.holdingReservationDetails li ul {
+    list-style: none;
+}
+
+
+ul.holdingReservationDetails li ul li input[type="text"] {
+    width: 8em;
+}
+
+img.ui-datepicker-trigger {
+    float: left;
+}

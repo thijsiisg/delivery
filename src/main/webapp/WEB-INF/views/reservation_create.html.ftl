@@ -1,0 +1,85 @@
+<#include "base.ftl"/>
+<#include "form.ftl"/>
+
+<#-- Build the title -->
+<#assign title>
+<@_ "reservation.create" "Create Reservation"/>
+</#assign>
+
+<#-- Build the page -->
+<@preamble title>
+<script type="text/javascript">
+$(document).ready(function(){
+    $(".reservation_form .date").datepicker({
+        "dateFormat": "yy-mm-dd",
+        showOn: "both",
+        buttonImageOnly: true,
+        buttonImage: "${rc.contextPath}/resources/css/images/calendar.png",
+        buttonText: '',
+        <#if permission??>
+        "minDate": "${permission.dateFrom?string("yy-MM-dd")}",
+        "maxDate": "${permission.dateTo?string("yy-MM-dd")}",
+        <#else>
+        "minDate": "0",
+        "maxDate": "+${prop_reservationMaxDaysInAdvance}",
+        </#if>
+        "beforeShowDay": $.datepicker.noWeekends
+    });
+});
+</script>
+</@preamble>
+<@userHeading />
+<@body>
+<h1>${title}</h1>
+<section>
+  <heading>
+    <hgroup>
+        <fieldset>
+            <legend><@_ "reservation.records" ""/></legend>
+            <@form "" "reservation" "create">
+    <#assign idx = 0>
+    <#list reservation.holdingReservations as hr>
+    <#assign h = hr.holding>
+    <#assign info = h.record.externalInfo>
+    <input name="holdingReservations[${idx}].holding" type="hidden" value="${h.id}" />
+    <h3>${info.title?html}</h3>
+
+
+    <ul class="holdingDetails">
+        <li><span><@_ "record.externalInfo.materialType" "Material Type"/></span>
+        <@_ "record.externalInfo.materialType.${info.materialType}" ""/></li>
+        <li><span><@_ "holding.signature" "Signature"/></span> ${h.signature?html}</li>
+        <#if info.author??><li><span><@_ "record.externalInfo.author" "Author"/></span> ${info.author?html}</li></#if>
+        <#if info.displayYear??><li><span><@_ "record.externalInfo.displayYear" "Year"/></span> ${info.displayYear?html}</li></#if>
+        <#if info.materialType == "SERIAL">
+        <li><span>
+        <@_ "holdingReservations.comment" "" />
+        </span>
+        <@input_nolabel "reservation.holdingReservations[${idx}].comment" />
+            <#if h.externalInfo.serialNumbers??> ( <strong><@_ "reservationCreate.serialAvailable" ""/>:</strong> ${h.externalInfo.serialNumbers} )
+            </#if></li>
+        </#if>
+
+    </ul>
+    <#assign idx = idx + 1>
+    </#list>
+            </fieldset>
+    </hgroup>
+  </heading>
+
+  <div class="reservation_form">
+          <fieldset>
+
+
+  <@input "reservation.visitorName" ""/>
+  <@input "reservation.visitorEmail" ""/>
+  <@date "reservation.date" ""/>
+  </fieldset>
+  <@buttons>
+    <@submit "reservation" />
+  </@buttons>
+  </@form>
+
+  </div>
+</section>
+</@body>

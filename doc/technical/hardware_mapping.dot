@@ -1,0 +1,42 @@
+digraph G {
+    compound = true
+
+	node [shape=component]
+
+    edge [
+        labeldistance = 4
+        arrowhead = normal
+        arrowtail = normal
+        fontsize = 10
+    ]
+
+	//subgraph cluster_Repo {
+	//	RepoAll [label = "SVN Repository"]
+	//	
+	//}
+
+	subgraph cluster_Production {
+		ProdDB [label="Ubuntu + PostgreSQL"]
+		ProdProg [label="Ubuntu + Tomcat"]
+        ProdPrinter [label="Netwerk Printer"]
+		label = "Productie"
+	}
+
+	subgraph cluster_Test {
+		TestAll [label="Ubuntu + PostgreSQL + Tomcat + PDF Printer"]
+		label = "Test"
+	}
+    
+	//subgraph cluster_Dev {
+	//	DevAll [label="OS naar keuze + PostgreSQL + Jetty"]
+    //    DevPrinter [label="Netwerk Printer"]
+	//	label = "Ontwikkelomgeving"
+	//}
+
+
+    TestAll -> ProdProg [label="     Sync m.b.v. SSH tunnel",ltail=cluster_Test,lhead=cluster_Production]
+    //TestAll -> RepoAll [label="Update",ltail=cluster_Test]
+    //DevAll -> RepoAll [label="Commit",ltail=cluster_Dev]
+
+}
+

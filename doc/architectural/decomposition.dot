@@ -1,0 +1,74 @@
+﻿digraph G {
+    K = 2
+
+    node [
+        fontname = "DejaVu Sans"
+        shape = record
+    ]
+
+    edge [
+        fontcolor = "red"
+        fontname = "DejaVu Sans"
+        style = solid
+    ]
+
+    // ---
+
+    subgraph cluster_Models {
+        label = "Models"
+        mMetadata [ label = "Metadata" ]
+        mReserveringen [ label = "Reserveringen" ]
+        mBestellingen [ label = "Bestellingen" ]
+        mGebruikers [ label = "Gebruikers" ]
+    }
+
+    subgraph cluster_Controllers {
+        label = "Controllers"
+
+        cMetadata [ label = "Metadata" ]
+        cReserveringen [ label = "Reserveringen" ]
+        cBestellingen [ label = "Bestellingen" ]
+        cGebruikers [ label = "Gebruikers" ]
+    }
+
+    subgraph cluster_UI {
+        label = "UI"
+
+        uMetadata [ label = "Metadata" ]
+        uReserveringen [ label = "Reserveringen" ]
+        uBestellingen [ label = "Bestellingen" ]
+        uGebruikers [ label = "Gebruikers" ]
+    }
+
+    cluster_Models -> cluster_Controllers [ color = "darkgreen"]
+    cluster_Controllers -> cluster_Models [ color = "darkgreen"]
+
+    cluster_Controllers -> cluster_UI [ color = "darkgreen"]
+    cluster_UI -> cluster_Controllers [ color = "red" style = dashed]
+
+    API [ label = "Binnenkomende API" ]
+    API -> cluster_Controllers [ color = "red" style = dashed]
+    cluster_Controllers -> API [ color = "darkgreen"]
+
+    cluster_UI -> API [ color = "blue" style = dotted]
+    API -> cluster_UI [ color = "darkgreen"]
+
+    subgraph cluster_ExternalAPI {
+        label = "Externe API Models"
+
+        OAI
+        SOR
+    }
+
+    cluster_ExternalAPI -> cluster_Controllers [ color = "darkgreen"]
+    cluster_Controllers -> cluster_ExternalAPI [ color = "blue" style = dotted]
+
+    Legend [
+        color = "orange"
+        style = bold
+        label = <
+<font color="red" point-size="16"><font point-size="20">---</font>  Control</font><br align="left"/>
+<font color="darkgreen" point-size="16"><font point-size="20">―</font>  Data</font><br align="left"/>
+<font color="blue" point-size="16"><font point-size="20">· ·</font>  Calls</font><br align="left"/>>
+    ]
+}

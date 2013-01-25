@@ -1,0 +1,13 @@
+User -> RecordController: GET /record/pid1,pid2,...
+
+loop for each pid in url
+note left of RecordController: Executing 'Record Ophalen' returns r
+    activate RecordController
+    RecordController -> RecordController: records.add(r)
+end
+
+alt records.isEmpty()
+    RecordController --> User: 404: page not found
+else otherwise
+    RecordController --> User: 200: list of records found
+end

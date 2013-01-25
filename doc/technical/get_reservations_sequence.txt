@@ -1,0 +1,49 @@
+User -> ReservationController: GET /reservation/ 
+
+activate ReservationController
+ReservationController -> ReservationService: getCriteriaBuilder()
+deactivate ReservationController
+
+activate ReservationService
+ReservationService -> ReservationDAO: getCriteriaBuilder()
+deactivate ReservationService
+
+activate ReservationDAO
+ReservationDAO -> EntityManager: getCriteriaBuilder()
+deactivate ReservationDAO
+
+activate EntityManager
+EntityManager --> ReservationDAO: b : CriteriaBuilder
+deactivate EntityManager
+
+activate ReservationDAO
+ReservationDAO --> ReservationService: b : CriteriaBuilder
+deactivate ReservationDAO
+
+activate ReservationService
+ReservationService --> ReservationController: b : CriteriaBuilder
+deactivate ReservationService
+
+activate ReservationController
+ReservationController -> ReservationController: c = b.createQuery(Reservation.class)
+ReservationController -> ReservationController: c.where(b.like(...get(Reservation_.name), name)
+note left of ReservationController: Add additional filters...
+ReservationController -> ReservationService: list(c)
+deactivate ReservationController
+
+activate ReservationService
+ReservationService -> ReservationDAO: list(c)
+deactivate ReservationService
+
+activate ReservationDAO
+ReservationDAO -> ReservationDAO: reservations = c.getResultList()
+ReservationDAO --> ReservationService: reservations : List<Reservation> 
+deactivate ReservationDAO
+
+activate ReservationService
+ReservationService --> ReservationController: reservations : List<Reservation> 
+deactivate ReservationService
+
+activate ReservationController
+ReservationController --> User: 200: reservation list view/empty list
+deactivate ReservationController

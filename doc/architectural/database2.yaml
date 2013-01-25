@@ -1,0 +1,35 @@
+-
+  table: User
+  fields:
+    - PK: id
+    - username
+  links:
+    - to: Group
+      tail: 0..n
+      head: 1..m
+      
+-
+  table: Group
+  fields:
+    - PK: id
+    - name
+    - description
+  links:
+    - to: Authority
+      tail: 1..n
+      head: 0..m
+
+-
+  table: Authority
+  fields:
+    - PK: id
+    - name
+    - description
+
+-
+  table: Customer
+  fields:
+    - PK: id
+    - code
+    - name
+    - comments

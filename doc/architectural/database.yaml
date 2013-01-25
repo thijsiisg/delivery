@@ -1,0 +1,125 @@
+-
+  table: Record
+  fields:
+    - PK: id
+    - pid
+    - title
+    - restriction_status
+    - restriction
+    - comments
+    - embargo
+    - FK: parent_id
+    - FK: contact_id
+  links:
+    - to: Record
+      tail: 1..n
+      head: 0..1
+    - to: Contact
+      tail: 1..n
+      head: 0..1
+-
+  table: Contact
+  fields:
+    - PK: id
+    - firstname
+    - preposition
+    - lastname
+    - address
+    - zipcode
+    - location
+    - country
+    - email
+    - phone
+    - fax
+-
+  table: Holding
+  fields:
+    - PK: id
+    - signature
+    - status
+    - usage_restriction
+    - floor
+    - direction
+    - cabinet
+    - shelf
+    - FK: record_id
+  links:
+    - to: Record
+      tail: 1..n
+      head: 1
+-
+  table: Reservation
+  fields:
+    - PK: id
+    - name
+    - email
+    - date
+    - special
+    - status
+    - queueno
+    - printed
+    - comment
+    - FK: permission_id
+  links:
+    - to: PermissionRequest
+      tail: 0..n
+      head: 0..1
+    - to: Holding
+      tail: 0..n
+      head: 1..m
+-
+  table: PermissionRequest
+  fields:
+    - PK: id
+    - name
+    - code
+    - email
+    - status
+    - research_subject
+    - research_organization
+    - explanation
+    - address
+    - date_from
+    - date_to
+    - request_locale
+-
+  table: RecordPermission
+  fields:
+    - granted
+    - motivation
+    - PK-FK: record_id
+    - PK-FK: permission_request_id
+  links:
+    - to: Record
+      tail: 0..n
+      head: 1  
+    - to: PermissionRequest
+      tail: 1..n
+      head: 1
+-
+  table: Order
+  fields:
+    - PK: id
+    - name
+    - email
+    - type
+    - status
+    - FK: permission_id
+  links:
+    - to: Record
+      tail: 0..n
+      head: 1..m
+    - to: PermissionRequest
+      tail: 0..n
+      head: 0..1
+-
+  table: Quote
+  fields:
+    - PK: id
+    - name
+    - email
+    - price
+  links:
+    - to: Record
+      tail: 0..n
+      head: 1..m
