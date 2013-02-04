@@ -51,12 +51,12 @@
   <import resource="security.xml" />
 
   <mvc:interceptors>
-   <bean class="org.iisg.deliverance.RequestContextToViewInterceptor" />
-    <bean class="org.iisg.deliverance.user.controller.SecurityToViewInterceptor" />
+   <bean class="org.iisg.delivery.RequestContextToViewInterceptor" />
+    <bean class="org.iisg.delivery.user.controller.SecurityToViewInterceptor" />
     <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />
   </mvc:interceptors>
 
-  <bean id="myMockLookupService" class="org.iisg.deliverance.MockRecordLookupService">
+  <bean id="myMockLookupService" class="org.iisg.delivery.MockRecordLookupService">
   </bean>
 
 </beans>

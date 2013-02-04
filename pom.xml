@@ -20,10 +20,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.iisg</groupId>
-    <artifactId>deliverance</artifactId>
+    <artifactId>delivery</artifactId>
     <packaging>war</packaging>
     <version>M1 - Iteration 3</version>
-    <name>Deliverance</name>
+    <name>Delivery</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -292,7 +292,7 @@
     </repositories>
 
     <build>
-        <finalName>Deliverance</finalName>
+        <finalName>Delivery</finalName>
         <plugins>
 
             <!-- Facilitates downloading source and javadoc in Eclipse -->
@@ -317,7 +317,7 @@
                             src/test/resources/test-config.properties
                         </customProperties>
                         <javax.net.ssl.trustStore>
-                            src/main/resources/deliverance.keystore
+                            src/main/resources/delivery.keystore
                         </javax.net.ssl.trustStore>
                         <javax.net.ssl.trustStorePassword>deliverance</javax.net.ssl.trustStorePassword>
                     </systemPropertyVariables>
@@ -362,7 +362,7 @@
                         </systemProperty>
                         <systemProperty>
                             <name>javax.net.ssl.trustStore</name>
-                            <value>src/main/resources/deliverance.keystore</value>
+                            <value>src/main/resources/delivery.keystore</value>
                         </systemProperty>
                         <systemProperty>
                             <name>javax.net.ssl.trustStorePassword</name>

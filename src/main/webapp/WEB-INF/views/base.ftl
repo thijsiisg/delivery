@@ -29,7 +29,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>${title} - Deliverance</title>
+    <title>${title} - Delivery</title>
     <!--[if lt IE 9]>
     <script type="text/javascript" src="${rc.contextPath}/resources/js/html5.js"></script>
     <![endif]-->
@@ -45,9 +45,9 @@
     <link type="text/css" href="${rc.contextPath}/resources/css/jquery-ui-1.8.13.custom.css" rel="stylesheet" />
     <script type="text/javascript" src="${rc.contextPath}/resources/js/jquery-1.5.1.min.js"></script>
     <script type="text/javascript" src="${rc.contextPath}/resources/js/jquery-ui-1.8.13.custom.min.js"></script>
-    <script type="text/javascript" src="${rc.contextPath}/resources/js/deliverance.js"></script>
+    <script type="text/javascript" src="${rc.contextPath}/resources/js/delivery.js"></script>
     <#-- Locale dependent javascript -->
-    <script type="text/javascript" src="${rc.contextPath}/resources/js/deliverance.locale.${rc.locale}.js"></script>
+    <script type="text/javascript" src="${rc.contextPath}/resources/js/delivery.locale.${rc.locale}.js"></script>
     <#nested>
   </head>
   <body>

@@ -53,12 +53,12 @@
       <property name="order" value="1"/>
   </bean>
 
-    <bean id="customUrlPathHelper" class="org.iisg.deliverance.UrlDecodedUrlPathHelper">
+    <bean id="customUrlPathHelper" class="org.iisg.delivery.UrlDecodedUrlPathHelper">
         <property name="urlDecode" value="false"/>
     </bean>
-  <bean id="secIntercept" class="org.iisg.deliverance.user.controller.SecurityToViewInterceptor" />
+  <bean id="secIntercept" class="org.iisg.delivery.user.controller.SecurityToViewInterceptor" />
   <bean id="locIntercept" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"/>
-  <bean id="reqIntercept" class="org.iisg.deliverance.RequestContextToViewInterceptor" />
+  <bean id="reqIntercept" class="org.iisg.delivery.RequestContextToViewInterceptor" />
 
  <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
     <property name="webBindingInitializer">
