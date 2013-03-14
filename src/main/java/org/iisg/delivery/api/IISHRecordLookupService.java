@@ -145,8 +145,9 @@ public class IISHRecordLookupService implements RecordLookupService {
         search += "&sortKeys=";
         search += "&stylesheet=";
 
-        search += "&query=iisg.collectionName+=+\"iish.archieven\"";
-        search += "+or+iisg.collectionName+=+\"iish.evergreen.biblio\"";
+        search += "&query=iisg.collectionName+=+\"iish.evergreen.biblio\"";
+        search += "+or+iisg.collectionName+=+\"iish.archieven\"";
+        search += "+or+iisg.collectionName+=+\"iish.eci\"";
 
         if (!query.isEmpty()) {
             search += "+and+"+query;
