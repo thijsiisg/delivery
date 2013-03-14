@@ -17,7 +17,7 @@
 package org.iisg.delivery.reservation.controller;
 
 import org.codehaus.jackson.JsonNode;
-import org.iisg.delivery.DeliveranceTestCase;
+import org.iisg.delivery.DeliveryTestCase;
 import org.iisg.delivery.record.entity.Holding;
 import org.iisg.delivery.reservation.entity.HoldingReservation;
 import org.iisg.delivery.reservation.entity.Reservation;
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Integration unit test for Reservation API.
  */
-public class ReservationControllerTest extends DeliveranceTestCase {
+public class ReservationControllerTest extends DeliveryTestCase {
 
 
     /**

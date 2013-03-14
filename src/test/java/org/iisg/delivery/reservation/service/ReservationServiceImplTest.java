@@ -16,7 +16,7 @@
 
 package org.iisg.delivery.reservation.service;
 
-import org.iisg.delivery.DeliveranceTestCase;
+import org.iisg.delivery.DeliveryTestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNull;
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNull;
 /**
  * Test class for ReservationServiceImpl.
  */
-public class ReservationServiceImplTest extends DeliveranceTestCase {
+public class ReservationServiceImplTest extends DeliveryTestCase {
 
 
     /**

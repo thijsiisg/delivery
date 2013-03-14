@@ -94,6 +94,16 @@ public class RecordController extends ErrorHandlingController {
         List<Record> recs = new ArrayList<Record>();
         for (String pid : pids) {
             Record rec = records.resolveRecordByPid(pid);
+            if (rec == null) { // Issue #108
+                // Try creating the record.
+                try {
+                    rec = records.createRecordByPid(pid);
+                    records.addRecord(rec);
+                } catch (NoSuchPidException e) {
+                    // Pass, catch if no of the requested PIDs are available
+                    // below.
+                }
+            }
             if (rec != null) {
                 recs.add(rec);
             }
