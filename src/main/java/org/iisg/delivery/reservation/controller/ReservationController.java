@@ -132,7 +132,7 @@ public class ReservationController extends ErrorHandlingController {
      * @param model Passed view model.
      * @return The name of the view to use.
      */
-    @RequestMapping(value = {"", "/"},
+    @RequestMapping(value = "/",
                     method = RequestMethod.GET)
     @Secured("ROLE_RESERVATION_VIEW")
     public String get(HttpServletRequest req,

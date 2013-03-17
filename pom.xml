@@ -27,10 +27,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jetty.version>6.1.4</jetty.version>
+        <jetty.version>6.1.26</jetty.version>
         <spring.version>3.0.5.RELEASE</spring.version>
         <slf4j.version>1.5.10</slf4j.version>
-        <java.version>1.5</java.version>
+        <java.version>1.6</java.version>
         <junit.version>4.8.2</junit.version>
         <!--<servlet.version>2.4</servlet.version>-->
     </properties>
@@ -82,7 +82,6 @@
         </dependency>
 
         <!-- Bean Validation Dependencies -->
-
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
@@ -98,7 +97,6 @@
         </dependency>
 
         <!-- JPA Persistence Dependencies -->
-
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
@@ -134,7 +132,6 @@
         </dependency>
 
         <!-- Spring Dependencies -->
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -170,7 +167,6 @@
         </dependency>
 
         <!-- DB Dependencies -->
-
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
@@ -193,7 +189,6 @@
         </dependency>
 
         <!-- View Dependencies -->
-
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
@@ -362,7 +357,7 @@
                     <systemProperties>
                         <systemProperty>
                             <name>jetty.port</name>
-                            <value>8181</value>
+                            <value>8080</value>
                         </systemProperty>
                         <systemProperty>
                             <name>customProperties</name>

@@ -109,7 +109,7 @@ public class PermissionController extends ErrorHandlingController {
      * @param model Passed view model.
      * @return The name of the view to use.
      */
-    @RequestMapping(value = {"", "/"},
+    @RequestMapping(value = "/",
                     method = RequestMethod.GET)
     @Secured("ROLE_PERMISSION_VIEW")
     public String get(HttpServletRequest req,
@@ -486,7 +486,7 @@ public class PermissionController extends ErrorHandlingController {
      * @param json The json request body to use as parameters.
      * @return The view to resolve.
      */
-    @RequestMapping(value = {"/", ""},
+    @RequestMapping(value = "/",
                     method = RequestMethod.POST)
     public String apiCreate(@RequestBody String json) {
 

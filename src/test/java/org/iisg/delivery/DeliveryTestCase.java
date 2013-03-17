@@ -72,7 +72,7 @@ import static org.junit.Assert.assertNull;
 @MockWebApplication(name="testApp",
         webapp="src/main/webapp")
 @Transactional
-public abstract class DeliveranceTestCase {
+public abstract class DeliveryTestCase {
 
     /** The record service to use. */
     @Autowired

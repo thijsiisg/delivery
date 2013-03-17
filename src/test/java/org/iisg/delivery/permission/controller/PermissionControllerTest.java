@@ -18,7 +18,7 @@ package org.iisg.delivery.permission.controller;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.iisg.delivery.DeliveranceTestCase;
+import org.iisg.delivery.DeliveryTestCase;
 import org.iisg.delivery.permission.entity.RecordPermission;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
 /**
  * Integration unit test for Permission API.
  */
-public class PermissionControllerTest extends DeliveranceTestCase {
+public class PermissionControllerTest extends DeliveryTestCase {
 
     /**
      * Test GET /permission/[id].

@@ -52,7 +52,7 @@ public class UserController extends ErrorHandlingController {
      * @param request The HTTP request.
      * @return The view to resolve.
      */
-    @RequestMapping(value = {"/", ""}, method = RequestMethod.GET)
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     @Secured("ROLE_USER_MODIFY")
     public String list(Model model, HttpServletRequest request) {
         model.addAttribute("users", users.listUsers());
@@ -77,7 +77,7 @@ public class UserController extends ErrorHandlingController {
      * @param request The HTTP request.
      * @return The view to resolve.
      */
-    @RequestMapping(value = {"/", ""}, method = RequestMethod.POST,
+    @RequestMapping(value = "/", method = RequestMethod.POST,
                     params = "action=chgrp")
     @Secured("ROLE_USER_MODIFY")
     public String chgrp(
