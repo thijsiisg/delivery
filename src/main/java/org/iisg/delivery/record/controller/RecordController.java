@@ -289,7 +289,7 @@ public class RecordController extends ErrorHandlingController {
      * Homepage for choosing records to edit.
      * @return The view to resolve.
      */
-    @RequestMapping(value = {"", "/"},
+    @RequestMapping(value = "/",
                     method = RequestMethod.GET)
     @Secured("ROLE_RECORD_MODIFY")
     public String showHome() {
@@ -302,7 +302,7 @@ public class RecordController extends ErrorHandlingController {
      * @param pid The posted PID.
      * @return The view to resolve.
      */
-    @RequestMapping(value = {"", "/"},
+    @RequestMapping(value = "/",
                     method = RequestMethod.POST,
                     params="searchPid")
     @Secured("ROLE_RECORD_MODIFY")
@@ -328,7 +328,7 @@ public class RecordController extends ErrorHandlingController {
      * @param title The title to search for.
      * @return The view to resolve.
      */
-    @RequestMapping(value = {"", "/"},
+    @RequestMapping(value = "/",
                     method = RequestMethod.POST,
                     params="searchApi")
     @Secured("ROLE_RECORD_MODIFY")
@@ -345,7 +345,7 @@ public class RecordController extends ErrorHandlingController {
      * @param title The title to search for.
      * @return The view to resolve.
      */
-    @RequestMapping(value = {"", "/"},
+    @RequestMapping(value = "/",
                     method = RequestMethod.POST,
                     params="searchLocal")
     @Secured("ROLE_RECORD_MODIFY")

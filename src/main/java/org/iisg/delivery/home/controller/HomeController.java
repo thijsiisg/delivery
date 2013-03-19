@@ -39,7 +39,7 @@ public class HomeController {
      * @param request The HTTP request to use.
      * @return The view to resolve.
      */
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @RequestMapping(value = "", method = RequestMethod.GET)
     @Secured("IS_AUTHENTICATED_REMEMBERED")
     public String list(HttpServletRequest request) {
         return "home";

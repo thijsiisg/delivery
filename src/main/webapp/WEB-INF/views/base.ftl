@@ -34,6 +34,7 @@
     <script type="text/javascript" src="${rc.contextPath}/resources/js/html5.js"></script>
     <![endif]-->
     <link rel="stylesheet" media="all" href="${rc.contextPath}/resources/css/screen.css"/>
+    <link rel="shortcut icon" type="image/x-icon" href="${rc.contextPath}/resources/logo.ico" />
     <style>
         header.main {
             background-image: url("${rc.contextPath}/resources/css/images/iish_logo_${rc.locale}.jpg");
