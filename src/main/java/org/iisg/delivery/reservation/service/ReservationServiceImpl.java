@@ -44,7 +44,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  * Represents the service of the reservation package.
@@ -76,7 +77,7 @@ public class ReservationServiceImpl implements ReservationService {
     private MessageSource msgSource;
 
 
-    private Logger log = Logger.getLogger(ReservationServiceImpl.class.getName());
+    private Logger log = Logger.getLogger(getClass());
     
     /**
      * Add a Reservation to the database.
@@ -295,7 +296,8 @@ public class ReservationServiceImpl implements ReservationService {
             // wrong.
             job.print();
         } catch (PrinterException e) {
-            log.warning("Printing failed:" + e);
+            log.warn("Printing failed", e);
+            throw e;
         }
         res.setPrinted(true);
         saveReservation(res);
