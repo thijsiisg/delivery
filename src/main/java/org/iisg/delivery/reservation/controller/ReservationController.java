@@ -18,7 +18,6 @@ package org.iisg.delivery.reservation.controller;
 
 import org.codehaus.jackson.JsonNode;
 import org.iisg.delivery.api.NoSuchPidException;
-import org.iisg.delivery.api.RecordLookupService;
 import org.iisg.delivery.permission.entity.Permission;
 import org.iisg.delivery.permission.service.PermissionService;
 import org.iisg.delivery.record.entity.*;
@@ -53,6 +52,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Controller of the Reservation package, handles all /reservation/* requests.
@@ -75,10 +75,9 @@ public class ReservationController extends ErrorHandlingController {
     private RecordService records;
 
     @Autowired
-    private RecordLookupService lookup;
-
-    @Autowired
     private MessageSource msgSource;
+
+    private Logger log = Logger.getLogger(ReservationController.class.getName());
 
 
 
@@ -987,6 +986,7 @@ public class ReservationController extends ErrorHandlingController {
                 try {
                     reservations.printReservation(r);
                 } catch (PrinterException e) {
+                    log.warning(e.getMessage());
                     return "reservation_print_failure";
                 }
             }
