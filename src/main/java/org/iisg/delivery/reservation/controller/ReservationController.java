@@ -52,7 +52,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * Controller of the Reservation package, handles all /reservation/* requests.
@@ -77,7 +76,7 @@ public class ReservationController extends ErrorHandlingController {
     @Autowired
     private MessageSource msgSource;
 
-    private Logger log = Logger.getLogger(ReservationController.class.getName());
+
 
 
 
@@ -986,7 +985,6 @@ public class ReservationController extends ErrorHandlingController {
                 try {
                     reservations.printReservation(r);
                 } catch (PrinterException e) {
-                    log.warning(e.getMessage());
                     return "reservation_print_failure";
                 }
             }
