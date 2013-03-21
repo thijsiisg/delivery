@@ -49,7 +49,7 @@ $(document).ready(function(){
                value="<@_ "deleteHolding.submit"/>"/>
         <input type="hidden" id="holdingReservations[${i}].holding"
                name="holdingReservations[${i}].holding"
-               class="holding" value="${hr.holding.id}"/>
+               class="holding" value="${hr.holding.id?int}"/>
         <#if hr.holding.status != "AVAILABLE" || hr.holding.record.realRestrictionType == "CLOSED">
         <span class="red">
         <#else>
@@ -116,7 +116,7 @@ $(document).ready(function(){
         <#else>
         <li><input type="button" class="addButton" onclick="addNewHoldingReservation($(this)
         .parent());" value="<@_ "addHolding.submit"/>"/>
-            <input type="hidden" class="holding" value="${h.id}"/>
+            <input type="hidden" class="holding" value="${h.id?int}"/>
 
             <span class="green">${h.record.title?html} <#if info.author??>/
             ${info.author}</#if> - ${h.signature?html}</span>

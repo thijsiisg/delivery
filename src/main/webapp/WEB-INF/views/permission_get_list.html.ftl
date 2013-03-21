@@ -114,7 +114,7 @@
   <#list pageListHolder.pageList as permission>
   <tr>
     <td>
-      <a href="${rc.contextPath}/permission/${permission.id}">
+      <a href="${rc.contextPath}/permission/${permission.id?int}">
       <@_ "permissionList.edit" "Administrate"/>
       </a>
     </td>
