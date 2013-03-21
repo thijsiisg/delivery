@@ -373,6 +373,7 @@
                         </systemProperty>
                     </systemProperties>
                     <scanIntervalSeconds>9000</scanIntervalSeconds>
+                    <contextPath>/</contextPath> <!-- Run it in root context. -->
                 </configuration>
             </plugin>
 

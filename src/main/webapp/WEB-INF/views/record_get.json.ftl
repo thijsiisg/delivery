@@ -20,7 +20,7 @@ ${callback}([
         "direction" : "${h.direction?js_string}",
         </#if>
         <#if h.floor??>
-        "floor" : ${h.floor},
+        "floor" : ${h.floor?c},
         </#if>
         <#if h.cabinet??>
         "cabinet" : "${h.cabinet?js_string}",

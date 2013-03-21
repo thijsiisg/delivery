@@ -35,7 +35,7 @@
     <li><span><@_ "reservation.date" "Date"/></span> ${reservation.date?string(prop_dateFormat)}</li>
     <li><span><@_ "reservation.status" "Status"/></span> <@_ "reservation.statusType.${reservation.status?string}" reservation.status?string/></li>
     <#if reservation.queueNo??>
-    <li><span><@_ "reservation.queueNo" "Queue Number"/></span> ${reservation.queueNo?html}</li>
+    <li><span><@_ "reservation.queueNo" "Queue Number"/></span> ${reservation.queueNo?c}</li>
     </#if>
   </ul>
   <table class="records">
@@ -51,7 +51,7 @@
       <#list reservation.holdingReservations as hr>
       <#assign h = hr.holding>
       <tr>
-        <td>${h.id?html}</td>
+        <td>${h.id?c}</td>
         <td>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></td>
         <td><@_ "holding.statusType.${h.status?string}" h.status?string/></td>
       </tr>

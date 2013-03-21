@@ -3,7 +3,7 @@
 
 <#-- Build the title -->
 <#assign title>
-<@_ "reservationSingle.title" "Reservation"/> ${reservation.id?int}
+<@_ "reservationSingle.title" "Reservation"/> ${reservation.id?c}
 </#assign>
 
 
@@ -20,7 +20,7 @@
     </#if>
     <li><span><@_ "reservation.status" "Status"/></span> <@_ "reservation.statusType.${reservation.status}" reservation.status?string /></li>
     <#--<#if reservation.queueNo??>
-    <li><span><@_ "reservation.queueNo" "Queue No"/></span> ${reservation.queueNo?html}</li>
+    <li><span><@_ "reservation.queueNo" "Queue No"/></span> ${reservation.queueNo?c}</li>
     </#if>-->
 
 
@@ -37,7 +37,7 @@
     </#if>
     
     <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
-    <li><br/><a href="${rc.contextPath}/reservation/masscreateform?fromReservationId=${reservation.id?int}">
+    <li><br/><a href="${rc.contextPath}/reservation/masscreateform?fromReservationId=${reservation.id?c}">
     <@_ "reservationSingle.newReservation"/></a></li>
     </#if>
 
@@ -55,7 +55,7 @@
       <#list reservation.holdingReservations as hr>
       <#assign h = hr.holding>
       <tr>
-        <td>${h.id?html}</td>
+        <td>${h.id?c}</td>
         <td>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></td>
         <td><#if _sec.ifAllGranted("ROLE_RECORD_MODIFY")>
             <a target="_blank" href="${rc.contextPath}/record/editform/${h.record.pid?url}">${h.record.pid?html}</a>

@@ -179,10 +179,10 @@
   <tbody>
   <#list pageListHolder.pageList as reservation>
   <tr>
-    <td><input type="checkbox" name="checked" value="${reservation.id?int}"
+    <td><input type="checkbox" name="checked" value="${reservation.id?c}"
                class="checkItem" /></td>
     <td>
-      <a href="${rc.contextPath}/reservation/${reservation.id?int}">
+      <a href="${rc.contextPath}/reservation/${reservation.id?c}">
       <@_ "reservationList.edit" "Administrate"/>
       </a>
     </td>
