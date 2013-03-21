@@ -55,6 +55,7 @@ public class RecordServiceImpl implements RecordService {
     @Autowired
     private RecordLookupService lookup;
 
+
     /**
      * Add a Record to the database.
      * @param obj Record to add.

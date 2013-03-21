@@ -45,6 +45,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.apache.log4j.Logger;
+
 /**
  * Represents the service of the reservation package.
  */
@@ -73,6 +75,9 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Autowired
     private MessageSource msgSource;
+
+
+    private Logger log = Logger.getLogger(getClass());
     
     /**
      * Add a Reservation to the database.
@@ -276,20 +281,24 @@ public class ReservationServiceImpl implements ReservationService {
         if (res.isPrinted() && !alwaysPrint) {
             return;
         }
+        try {
+            PrinterJob job = PrinterJob.getPrinterJob();
 
-        PrinterJob job = PrinterJob.getPrinterJob();
+            // Autowiring does not seem to work in POJOs ?
+            // Create a reservation printable
+            ReservationPrintable rp = new ReservationPrintable(res,
+                    msgSource,
+                    (DateFormat)bf.getBean("dateFormat"), properties);
 
-        // Autowiring does not seem to work in POJOs ?
-        // Create a reservation printable
-        ReservationPrintable rp = new ReservationPrintable(res,
-                msgSource,
-                (DateFormat)bf.getBean("dateFormat"), properties);
+            job.setPrintable(rp, new IISHPageFormat());
 
-        job.setPrintable(rp, new IISHPageFormat());
-
-        // Print the print job, throws PrinterException when something was
-        // wrong.
-        job.print();
+            // Print the print job, throws PrinterException when something was
+            // wrong.
+            job.print();
+        } catch (PrinterException e) {
+            log.warn("Printing failed", e);
+            throw e;
+        }
         res.setPrinted(true);
         saveReservation(res);
 

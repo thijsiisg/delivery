@@ -3,7 +3,7 @@
 
 <#-- Build the title -->
 <#assign title>
-<@_ "reservationSingle.title" "Reservation"/> ${reservation.id}
+<@_ "reservationSingle.title" "Reservation"/> ${reservation.id?int}
 </#assign>
 
 
@@ -37,7 +37,7 @@
     </#if>
     
     <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
-    <li><br/><a href="${rc.contextPath}/reservation/masscreateform?fromReservationId=${reservation.id}">
+    <li><br/><a href="${rc.contextPath}/reservation/masscreateform?fromReservationId=${reservation.id?int}">
     <@_ "reservationSingle.newReservation"/></a></li>
     </#if>
 

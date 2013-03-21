@@ -18,7 +18,6 @@ package org.iisg.delivery.reservation.controller;
 
 import org.codehaus.jackson.JsonNode;
 import org.iisg.delivery.api.NoSuchPidException;
-import org.iisg.delivery.api.RecordLookupService;
 import org.iisg.delivery.permission.entity.Permission;
 import org.iisg.delivery.permission.service.PermissionService;
 import org.iisg.delivery.record.entity.*;
@@ -75,10 +74,9 @@ public class ReservationController extends ErrorHandlingController {
     private RecordService records;
 
     @Autowired
-    private RecordLookupService lookup;
-
-    @Autowired
     private MessageSource msgSource;
+
+
 
 
 

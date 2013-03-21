@@ -3,7 +3,7 @@
 
 <#-- Build the title -->
 <#assign title>
-<@_ "permissionSingle.title" "Permission Request"/> ${permission.id}
+<@_ "permissionSingle.title" "Permission Request"/> ${permission.id?int}
 </#assign>
 
 <#-- Build the page -->
@@ -25,7 +25,7 @@
 <h3><@_ "permission.recordPermissions" "Permissions per record"/></h3>
 
 <form action="process" method="POST">
-<input type="hidden" name="id" value="${permission.id}"/>
+<input type="hidden" name="id" value="${permission.id?int}"/>
 
 <#list permission.recordPermissions as rp>
 <fieldset class="recordPermissionDetails">
@@ -33,7 +33,7 @@
 <legend>${rp.record.title?html} <#if info.author??>/ ${info.author}</#if></legend>
 <ul>
   <li>
-    <select name="granted_${rp.id}"
+    <select name="granted_${rp.id?int}"
       <#if _sec.ifNotGranted("ROLE_PERMISSION_MODIFY")>disabled="disabled
       "</#if>>
       <option value="true"
@@ -44,11 +44,11 @@
       <@_ "recordPermission.granted.false" "Denied"/></option>
     </select>
   </li>
-  <li class="motivation"><label for="motivation_${rp.id}">
+  <li class="motivation"><label for="motivation_${rp.id?int}">
   <@_ "recordPermission.motivation" "Motivation"/><br />
   <span class="note">(<@_  "permissionSingle.motivationLanguage" "Please specify in"/> <@_ "language.${permission.requestLocale}" "English" />)</span>
   </label>
-      <textarea id="motivation_${rp.id}" name="motivation_${rp.id}"><#if rp.motivation??>${rp.motivation?html}</#if></textarea>
+      <textarea id="motivation_${rp.id?int}" name="motivation_${rp.id?int}"><#if rp.motivation??>${rp.motivation?html}</#if></textarea>
   </li>
   <#if rp.record.restriction??>
   <li><span><@_ "record.restriction" "Restriction Details"/></span> ${rp.record.restriction?html}</li>
