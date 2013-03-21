@@ -272,7 +272,9 @@
             <#break>
             </#if>
         </#list>
-        <td class="orange"><a target="_blank" href="${rc.contextPath}/reservation/${activeReservation.id}"><@_  "holding.statusType.${h.status}" h.status?string /></a></td>-->
+        <td class="orange"><a target="_blank" href="${rc
+        .contextPath}/reservation/${activeReservation.id?int}"><@_  "holding
+        .statusType.${h.status}" h.status?string /></a></td>-->
         <td class="orange"><@_  "holding.statusType.${h.status}" h.status?string /></td>
         </#if>
 

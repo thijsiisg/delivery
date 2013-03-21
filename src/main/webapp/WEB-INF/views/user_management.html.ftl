@@ -17,7 +17,7 @@
     </span>
     <form method="POST" action="">
       <input type="hidden" name="action" value="chgrp"/>
-      <input type='hidden' name="user" value="${user.id}"/>
+      <input type='hidden' name="user" value="${user.id?int}"/>
       <select multiple name="groups"
 
       <#if user.id == _sec.principal.id>
@@ -25,7 +25,7 @@
       </#if>
         >
       <#list groups as group>
-      <option value="${group.id}"
+      <option value="${group.id?int}"
         <#if user.groups?seq_contains(group)>
         selected
         </#if>
