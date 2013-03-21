@@ -42,7 +42,7 @@ $(document).ready(function(){
     <#assign h = hr.holding>
     <#assign info = h.record.externalInfo>
     <input name="holdingReservations[${idx}].holding" type="hidden"
-           value="${h.id?int}" />
+           value="${h.id?c}" />
     <h3>${info.title?html}</h3>
 
 
