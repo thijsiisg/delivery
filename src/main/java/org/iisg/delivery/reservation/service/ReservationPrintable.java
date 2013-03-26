@@ -67,6 +67,7 @@ public class ReservationPrintable implements Printable {
         private int offsetX;
         private int offsetY;
         private int width;
+        private int height;
         private int valueOffset;
         private Graphics2D g2d;
 
@@ -100,6 +101,14 @@ public class ReservationPrintable implements Printable {
 
         public void setWidth(int width) {
             this.width = width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public void setHeight(int h) {
+            this.height = h;
         }
 
         public int getValueOffset() {
@@ -164,6 +173,7 @@ public class ReservationPrintable implements Printable {
         g2d.draw(lin);
 
         DrawInfo drawInfo = new DrawInfo(g2d);
+        drawInfo.setHeight(pageHeight);
         drawInfo.setValueOffset(80);
         int rightMargin = 20;
         // Draw all info to the g2d.
@@ -175,6 +185,7 @@ public class ReservationPrintable implements Printable {
             drawReservationInfo(drawInfo);
             drawInfo.setOffsetY(drawInfo.getOffsetY()+20);
             drawHoldingInfo(drawInfo, holdingReservations[page]);
+            drawReturnNotice(drawInfo);
         }
         // Tell the caller that this page is part of the printed document.
         return PAGE_EXISTS;
@@ -284,17 +295,35 @@ public class ReservationPrintable implements Printable {
                 "Comment");
         drawKeyValue(drawInfo, commentLabel, value);
     }
-
-     /**
-     * Draw the shelf of the location.
+    /**
+     * Draw the return notice.
      * @param drawInfo Draw offsets.
      */
-    private void drawRestrictedNotice(DrawInfo drawInfo) {
-        String key = getMessage("record.restriction", "Restriction Details");
-        String value = getMessage("print.accessGranted", "This item is not publicly available, but this visitor has been granted access.");
+    private void drawReturnNotice(DrawInfo drawInfo) {
+        String returnKeep = getMessage("print.return", "Return or Keep?");
+        String returnForm = getMessage("print.returnForm",
+                "Please return form along with item.");
 
-        drawKeyValue(drawInfo,key, value);
+        Graphics2D g2d = drawInfo.getG2d();
+        g2d.setFont(boldFont);
+        FontMetrics fm = g2d.getFontMetrics();
+        int x = drawInfo.getOffsetX();
+        int y = drawInfo.getHeight() - 50;
+        g2d.drawString(returnKeep , x, y);
+        y += 25;
+        g2d.drawString(returnForm , x, y);
     }
+
+     /**
+         * Draw the shelf of the location.
+         * @param drawInfo Draw offsets.
+         */
+        private void drawRestrictedNotice(DrawInfo drawInfo) {
+            String key = getMessage("record.restriction", "Restriction Details");
+            String value = getMessage("print.accessGranted", "This item is not publicly available, but this visitor has been granted access.");
+
+            drawKeyValue(drawInfo,key, value);
+        }
 
      /**
      * Draw the shelf of the location.
