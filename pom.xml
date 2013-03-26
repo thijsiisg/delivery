@@ -357,7 +357,7 @@
                     <systemProperties>
                         <systemProperty>
                             <name>jetty.port</name>
-                            <value>8080</value>
+                            <value>8181</value>
                         </systemProperty>
                         <systemProperty>
                             <name>customProperties</name>
