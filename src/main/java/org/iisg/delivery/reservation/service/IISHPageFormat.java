@@ -15,7 +15,7 @@ public class IISHPageFormat extends PageFormat {
         p.setSize(612, 612);
         p.setImageableArea(0, 10, 612, 612);
         setPaper(p);
-        setOrientation(PORTRAIT);
+        setOrientation(LANDSCAPE);
 
     }
 }
