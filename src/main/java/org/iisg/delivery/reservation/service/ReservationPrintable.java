@@ -169,9 +169,8 @@ public class ReservationPrintable implements Printable {
         // Draw all info to the g2d.
         for (int i = 1; i <= 2; i++) {
 
-            drawInfo.setWidth(halfWidth * i - rightMargin);
-            drawInfo.setOffsetX(drawInfo.getWidth() + rightMargin - halfWidth
-                    + 10);
+            drawInfo.setWidth(halfWidth - rightMargin);
+            drawInfo.setOffsetX(halfWidth * (i-1) + 10);
             drawBarcode(drawInfo, holdingReservations[page].getHolding().getId());
             drawReservationInfo(drawInfo);
             drawInfo.setOffsetY(drawInfo.getOffsetY()+20);
@@ -497,7 +496,7 @@ public class ReservationPrintable implements Printable {
         // Align to the right of the page.
         BarcodeDimension dim = barcode.calcDimensions(msg);
         barcode.doQuietZone(true);
-        barcode.setQuietZone(drawInfo.getWidth() - dim.getWidth() - 10);
+        barcode.setQuietZone(drawInfo.getWidth() + drawInfo.getOffsetX() - dim.getWidth() - 10);
         barcode.setVerticalQuietZone(0);
 
 
