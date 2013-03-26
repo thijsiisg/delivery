@@ -126,12 +126,12 @@ public class ReservationPrintable implements Printable {
         holdingReservations = new HoldingReservation[hrs.size()];
         holdingReservations = hrs.toArray(holdingReservations);
 
-        l = new Locale("nl");
+        l = new Locale("en");
         msgSource = mSource;
         df = format;
 
         // Set the normal and bold font.
-        normalFont = new Font("Arial", Font.PLAIN, 12);
+        normalFont = new Font("Arial", Font.PLAIN, 10);
         boldFont = normalFont.deriveFont(Font.BOLD);
     }
 
@@ -164,11 +164,14 @@ public class ReservationPrintable implements Printable {
         g2d.draw(lin);
 
         DrawInfo drawInfo = new DrawInfo(g2d);
-        drawInfo.setValueOffset(140);
+        drawInfo.setValueOffset(80);
+        int rightMargin = 20;
         // Draw all info to the g2d.
         for (int i = 1; i <= 2; i++) {
-            drawInfo.setWidth(halfWidth * i);
-            drawInfo.setOffsetX(drawInfo.getWidth() - halfWidth + 10);
+
+            drawInfo.setWidth(halfWidth * i - rightMargin);
+            drawInfo.setOffsetX(drawInfo.getWidth() + rightMargin - halfWidth
+                    + 10);
             drawBarcode(drawInfo, holdingReservations[page].getHolding().getId());
             drawReservationInfo(drawInfo);
             drawInfo.setOffsetY(drawInfo.getOffsetY()+20);
@@ -254,7 +257,7 @@ public class ReservationPrintable implements Printable {
         // Draw title + pid.
         drawTitle(drawInfo, r.getTitle());
         drawAuthor(drawInfo, r.getExternalInfo().getAuthor());
-        drawPid(drawInfo, r.getPid());
+        //drawPid(drawInfo, r.getPid());
 
         // Draw location info.
         drawMaterialType(drawInfo, r.getExternalInfo().getMaterialType());
@@ -501,7 +504,7 @@ public class ReservationPrintable implements Printable {
         Java2DCanvasProvider canvas = new Java2DCanvasProvider(drawInfo.getG2d(), 0);
         // Generate the barcode.
         barcode.generateBarcode(canvas, msg);
-        drawInfo.setOffsetY((int)dim.getHeight());
+        drawInfo.setOffsetY((int)dim.getHeight() + 30);
     }
 
     /**
