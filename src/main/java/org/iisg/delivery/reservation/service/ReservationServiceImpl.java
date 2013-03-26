@@ -283,7 +283,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
         try {
             PrinterJob job = PrinterJob.getPrinterJob();
-
+            job.setJobName("delivery");
             // Autowiring does not seem to work in POJOs ?
             // Create a reservation printable
             ReservationPrintable rp = new ReservationPrintable(res,
