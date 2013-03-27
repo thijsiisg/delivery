@@ -83,16 +83,6 @@
     </header>
     <nav class="main">
       <ul>
-        <li>
-          <a href="${rc.contextPath}/reservation/createform/11051175_MARC">
-          Visitor Interface Example (Test)
-          </a>
-        </li>
-      <#--  <li>
-          <a href="${rc.contextPath}/resources/Java_Printing.pdf">
-          Printer Output (Test)
-          </a>
-        </li>-->
         <#if  _sec.ifAllGranted("ROLE_RECORD_MODIFY")>
         <li>
           <a href="${rc.contextPath}/record/">
