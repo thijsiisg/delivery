@@ -479,7 +479,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/editform/{encPids:.*}",
                     method = RequestMethod.POST,
                     params = "action=delete")
-    @Secured("ROLE_RECORD_MODIFY")
+    @Secured("ROLE_RECORD_DELETE")
     public String formDelete(@PathVariable String encPids) {
         remove(getPidsFromURL(encPids));
         return "redirect:/record/";
