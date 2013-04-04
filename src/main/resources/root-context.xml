@@ -41,7 +41,7 @@
   <!-- Spring Security configuration -->
   <import resource="security.xml" />
 
-  <bean id="myLookupService" class="org.iisg.delivery.api.IISHRecordLookupService">
+  <bean id="myLookupService" class="org.socialhistoryservices.delivery.api.IISHRecordLookupService">
     <property name="properties" ref="myCustomProperties"/>
   </bean>
 

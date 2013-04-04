@@ -57,19 +57,19 @@
     </beans:bean>
 
     <beans:bean id="userAddingServiceTicketValidator"
-                class="org.iisg.delivery.user.controller.UserAddingServiceTicketValidator">
+                class="org.socialhistoryservices.delivery.user.controller.UserAddingServiceTicketValidator">
         <beans:constructor-arg index="0" value="${prop_casUrl}" />
         <beans:property name="userService" ref="userDetailsService"/>
     </beans:bean>
 
     <beans:bean id="userDetailsService"
-      class="org.iisg.delivery.user.service.UserServiceImpl">
+      class="org.socialhistoryservices.delivery.user.service.UserServiceImpl">
       <beans:property name="userDAO" ref="userDAOBean"/>
       <beans:property name="groupDAO" ref="groupDAOBean"/>
   </beans:bean>
 
-  <beans:bean id="groupDAOBean" class="org.iisg.delivery.user.dao.GroupDAOImpl" />
-  <beans:bean id="userDAOBean" class="org.iisg.delivery.user.dao.UserDAOImpl" />
+  <beans:bean id="groupDAOBean" class="org.socialhistoryservices.delivery.user.dao.GroupDAOImpl" />
+  <beans:bean id="userDAOBean" class="org.socialhistoryservices.delivery.user.dao.UserDAOImpl" />
 
   <beans:bean id="serviceProperties"
         class="org.springframework.security.cas.ServiceProperties">

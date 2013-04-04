@@ -122,7 +122,7 @@
 
   <!--<filter>
     <filter-name>pidFilter</filter-name>
-    <filter-class>org.iisg.deliverydFilter</filter-class>
+    <filter-class>org.socialhistoryservices.deliverydFilter</filter-class>
   </filter>
 
   <filter-mapping>

@@ -54,6 +54,7 @@
           <value>prop_apiDomain</value>
           <value>prop_apiBase</value>
           <value>prop_apiPort</value>
+          <value>prop_loadInitialData</value>
         </list>
       </constructor-arg>
     </bean>

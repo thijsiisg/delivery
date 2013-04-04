@@ -32,7 +32,7 @@
   <!-- Imports user-defined @Controller beans that process client requests -->
   <tx:annotation-driven />
   <task:annotation-driven />
-  <context:component-scan base-package="org.iisg" />
+  <context:component-scan base-package="org.socialhistoryservices" />
   <context:annotation-config />
 
   
@@ -53,12 +53,12 @@
       <property name="order" value="1"/>
   </bean>
 
-    <bean id="customUrlPathHelper" class="org.iisg.delivery.UrlDecodedUrlPathHelper">
+    <bean id="customUrlPathHelper" class="org.socialhistoryservices.delivery.UrlDecodedUrlPathHelper">
         <property name="urlDecode" value="false"/>
     </bean>
-  <bean id="secIntercept" class="org.iisg.delivery.user.controller.SecurityToViewInterceptor" />
+  <bean id="secIntercept" class="org.socialhistoryservices.delivery.user.controller.SecurityToViewInterceptor" />
   <bean id="locIntercept" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"/>
-  <bean id="reqIntercept" class="org.iisg.delivery.RequestContextToViewInterceptor" />
+  <bean id="reqIntercept" class="org.socialhistoryservices.delivery.RequestContextToViewInterceptor" />
 
  <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
     <property name="webBindingInitializer">
