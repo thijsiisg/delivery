@@ -25,6 +25,7 @@
   </section>
 
   <p><@_ "reservation.successMsg" "The requested items will be available for your visit to the reading room."/></p>
+  <p><a href="${prop_urlSearch}"><@_ "reservation.backToSearch" "Back to Search" /></a></p>
 
   <#--<#if reservation.queueNo??>
     <@_ "reservation.queueNoMsg" "Your queue number is: "/> <span class="queueNo">${reservation.queueNo?c}</span>
