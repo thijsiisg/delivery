@@ -12,10 +12,10 @@ public class IISHPageFormat extends PageFormat {
         Paper p = new Paper();
 
         // 612 = 25.19 cm in 1/72 inches.
-        p.setSize(612, 612);
+        p.setSize(612,612);
         p.setImageableArea(0, 10, 612, 612);
         setPaper(p);
-        setOrientation(LANDSCAPE);
+        setOrientation(PORTRAIT);
 
     }
 }

@@ -38,6 +38,7 @@ import org.springframework.validation.Validator;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.awt.print.Book;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.text.DateFormat;
@@ -290,8 +291,12 @@ public class ReservationServiceImpl implements ReservationService {
                     msgSource,
                     (DateFormat)bf.getBean("dateFormat"), properties);
 
-            job.setPrintable(rp, new IISHPageFormat());
+            //job.setPrintable(rp, new IISHPageFormat());
 
+            Book pBook = new Book();
+
+            pBook.append(rp, new IISHPageFormat());
+            job.setPageable(pBook);
             // Print the print job, throws PrinterException when something was
             // wrong.
             job.print();
