@@ -11,11 +11,14 @@ public class IISHPageFormat extends PageFormat {
     public IISHPageFormat() {
         Paper p = new Paper();
 
-        // 612 = 25.19 cm in 1/72 inches.
-        p.setSize(612,612);
-        p.setImageableArea(0, 10, 612, 612);
+        // A4 width = 210mm = 8.26771654 inches = 595.28 size (72 times inches).
+        p.setSize(595,595);
+
+        // 10 margin on top for barcode to correctly appear.
+        // smaller area in width to make surethe characters don't fall off due to left margin of printer.
+        p.setImageableArea(10, 0, 595, 585);
         setPaper(p);
-        setOrientation(PORTRAIT);
+        setOrientation(LANDSCAPE);
 
     }
 }

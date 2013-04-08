@@ -49,18 +49,18 @@ import java.util.Properties;
  */
 public class ReservationPrintable implements Printable {
 
-    private Reservation reservation;
-    private HoldingReservation[] holdingReservations;
     private Locale l;
 
     private Font normalFont;
     private Font boldFont;
+    private Font italicFont;
 
     /** The source to get localized messages of. */
     private MessageSource msgSource;
     private Properties properties;
 
     private DateFormat df;
+    private final HoldingReservation holdingReservation;
 
     private class DrawInfo {
 
@@ -122,18 +122,15 @@ public class ReservationPrintable implements Printable {
 
     /**
      * Construct the printable.
-     * @param res The reservation to construct from.
+     * @param hr The holding reservation to construct from.
      * @param mSource The message source to fetch localized messages.
      * @param format The date format to use.
      */
-    public ReservationPrintable(Reservation res, MessageSource mSource,
+    public ReservationPrintable(HoldingReservation hr, MessageSource mSource,
                                 DateFormat format, Properties prop) {
-        reservation = res;
         properties = prop;
         // Add holdings from reservation to array for easy traversing.
-        List<HoldingReservation> hrs = reservation.getHoldingReservations();
-        holdingReservations = new HoldingReservation[hrs.size()];
-        holdingReservations = hrs.toArray(holdingReservations);
+        holdingReservation = hr;
 
         l = new Locale("en");
         msgSource = mSource;
@@ -142,6 +139,7 @@ public class ReservationPrintable implements Printable {
         // Set the normal and bold font.
         normalFont = new Font("Arial", Font.PLAIN, 10);
         boldFont = normalFont.deriveFont(Font.BOLD);
+        italicFont = normalFont.deriveFont(Font.ITALIC);
     }
 
     /**
@@ -155,7 +153,7 @@ public class ReservationPrintable implements Printable {
     public int print(Graphics g, PageFormat pf, int page) throws
                                                         PrinterException {
 
-        if (page >= holdingReservations.length) {
+        if (page > 1) {
             return NO_SUCH_PAGE;
         }
 
@@ -181,11 +179,13 @@ public class ReservationPrintable implements Printable {
 
             drawInfo.setWidth(halfWidth - rightMargin);
             drawInfo.setOffsetX(halfWidth * (i-1) + 10);
-            drawBarcode(drawInfo, holdingReservations[page].getHolding().getId());
+            drawBarcode(drawInfo, holdingReservation.getHolding().getId());
             drawReservationInfo(drawInfo);
             drawInfo.setOffsetY(drawInfo.getOffsetY()+20);
-            drawHoldingInfo(drawInfo, holdingReservations[page]);
+            drawHoldingInfo(drawInfo);
+            drawInfo.setOffsetY(drawInfo.getHeight() - 100);
             drawReturnNotice(drawInfo);
+            drawVisitorName(drawInfo);
         }
         // Tell the caller that this page is part of the printed document.
         return PAGE_EXISTS;
@@ -197,13 +197,13 @@ public class ReservationPrintable implements Printable {
      */
     private void drawReservationInfo(DrawInfo drawInfo) {
 
+        drawVisitorName(drawInfo);
         drawDate(drawInfo);
         drawCreationDate(drawInfo);
         // Disable this for now:
         // offsetY = drawQueueNo(g2d, pw, offsetX,
         // offsetY,
         // valueOffset);
-        drawVisitorName(drawInfo);
     }
 
     /**
@@ -211,7 +211,7 @@ public class ReservationPrintable implements Printable {
      * @param drawInfo Draw offsets.
      */
     private void drawQueueNo(DrawInfo drawInfo) {
-        if (reservation.getQueueNo() == null) {
+        if (holdingReservation.getReservation().getQueueNo() == null) {
             return;
         }
         String queueLabel = getMessage("reservation.queueNo",
@@ -219,7 +219,7 @@ public class ReservationPrintable implements Printable {
 
         drawKeyValue(drawInfo,
                 queueLabel,
-                String.valueOf(reservation.getQueueNo()));
+                String.valueOf(holdingReservation.getReservation().getQueueNo()));
     }
 
     /**
@@ -230,7 +230,7 @@ public class ReservationPrintable implements Printable {
         String visitorNameLabel = getMessage("reservation.visitorName",
                 "Visitor Name");
         drawKeyValue(drawInfo, visitorNameLabel,
-                               reservation.getVisitorName());
+                               holdingReservation.getReservation().getVisitorName(), italicFont, true);
     }
 
     /**
@@ -242,7 +242,7 @@ public class ReservationPrintable implements Printable {
         SimpleDateFormat spdf = new SimpleDateFormat( properties.getProperty("prop_dateFormat") +
                                                       " " + properties.getProperty("prop_timeFormat", "HH:mm:ss"));
 
-        drawKeyValue(drawInfo, dateLabel, spdf.format(reservation.getCreationDate()));
+        drawKeyValue(drawInfo, dateLabel, spdf.format(holdingReservation.getReservation().getCreationDate()));
     }
 
     /**
@@ -251,17 +251,15 @@ public class ReservationPrintable implements Printable {
      */
     private void drawDate(DrawInfo drawInfo) {
         String dateLabel = getMessage("reservation.date", "Date");
-        drawKeyValue(drawInfo, dateLabel, df.format(reservation.getDate()));
+        drawKeyValue(drawInfo, dateLabel, df.format(holdingReservation.getReservation().getDate()));
     }
 
     /**
      * Draw all holding info.
      * @param drawInfo Draw Offsets.
-     * @param hr The holdingReservation to use for getting values from.
      */
-    private void drawHoldingInfo(DrawInfo drawInfo,
-                                HoldingReservation hr) {
-        Holding h = hr.getHolding();
+    private void drawHoldingInfo(DrawInfo drawInfo) {
+        Holding h = holdingReservation.getHolding();
         Record r = h.getRecord();
 
         // Draw title + pid.
@@ -272,7 +270,7 @@ public class ReservationPrintable implements Printable {
         // Draw location info.
         drawMaterialType(drawInfo, r.getExternalInfo().getMaterialType());
         drawInventory(drawInfo, r);
-        drawComment(drawInfo, hr.getComment());
+        drawComment(drawInfo, holdingReservation.getComment());
         drawType(drawInfo, h.getSignature());
         drawFloor(drawInfo, h.getFloor());
         drawDirection(drawInfo, h.getDirection());
@@ -308,10 +306,12 @@ public class ReservationPrintable implements Printable {
         g2d.setFont(boldFont);
         FontMetrics fm = g2d.getFontMetrics();
         int x = drawInfo.getOffsetX();
-        int y = drawInfo.getHeight() - 50;
+        int y = drawInfo.getOffsetY();
         g2d.drawString(returnKeep , x, y);
         y += 25;
         g2d.drawString(returnForm , x, y);
+        y += 25;
+        drawInfo.setOffsetY(y);
     }
 
      /**
@@ -425,7 +425,7 @@ public class ReservationPrintable implements Printable {
      */
     private void drawType(DrawInfo drawInfo, String value) {
         String typeLabel = getMessage("holding.signature", "Signature");
-        drawKeyValue(drawInfo, typeLabel, value);
+        drawKeyValue(drawInfo, typeLabel, value, italicFont, true);
     }
 
     /**
@@ -449,13 +449,16 @@ public class ReservationPrintable implements Printable {
 
 
 
+    private void drawKeyValue(DrawInfo drawInfo, String key, String value) {
+        drawKeyValue(drawInfo, key, value, normalFont, false);
+    }
     /**
      * Draw a key value pair on the provided graphics object.
      * @param drawInfo Draw offsets.
      * @param key The key to use.
      * @param value The value to use.
      */
-    private void drawKeyValue(DrawInfo drawInfo, String key, String value) {
+    private void drawKeyValue(DrawInfo drawInfo, String key, String value, Font font, boolean underline) {
 
         // Do not print key-value pairs with missing value.
         if (value == null || value.isEmpty()) {
@@ -477,7 +480,8 @@ public class ReservationPrintable implements Printable {
         FontRenderContext frc = g2d.getFontRenderContext();
 
         AttributedString styledText = new AttributedString(value);
-        styledText.addAttribute(TextAttribute.FONT, normalFont);
+        styledText.addAttribute(TextAttribute.FONT, font);
+        styledText.addAttribute(TextAttribute.UNDERLINE, underline ? 1 : -1);
 
         AttributedCharacterIterator styledTextIterator = styledText.getIterator();
         LineBreakMeasurer measurer = new LineBreakMeasurer(styledTextIterator, frc);

@@ -18,10 +18,13 @@ package org.socialhistoryservices.delivery.api;
 
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
+import org.socialhistoryservices.delivery.record.entity.Record;
+import org.socialhistoryservices.delivery.record.entity.Record_;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
+import javax.validation.constraints.Size;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.*;
 import java.io.BufferedReader;
@@ -243,7 +246,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
         String author = evaluateAuthor(node);
         if (author != null && !author.isEmpty()) {
-            externalInfo.setAuthor(stripToSize(author, 255));
+            externalInfo.setAuthor(stripToSize(author, 125));
         }
         String title = evaluateTitle(node);
         if (title != null && !title.isEmpty()) {
@@ -264,9 +267,9 @@ public class IISHRecordLookupService implements RecordLookupService {
             // Some titles from the API SRW exceed 255 characters. Strip them to
             // 251 characters (up to 252 , exclusive) to save up for the dash
             // and \0 termination.
+            // EDIT: Trim this to ~125 characters for readability (this is the current max size of the field).
+            title = stripToSize(title, 125 - itemNr.length());
 
-            title = stripToSize(title, 252 - itemNr.length());
-            
             if (itemNr.length() > 0)
                 title += " - " + itemNr;
 
@@ -279,7 +282,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
         String year = evaluateYear(node);
         if (year != null && !year.isEmpty()) {
-            externalInfo.setDisplayYear(stripToSize(year, 255));
+            externalInfo.setDisplayYear(stripToSize(year, 30));
         }
 
         externalInfo.setMaterialType(evaluateMaterialType(node));
