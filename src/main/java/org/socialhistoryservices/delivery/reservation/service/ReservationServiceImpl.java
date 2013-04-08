@@ -287,15 +287,18 @@ public class ReservationServiceImpl implements ReservationService {
             job.setJobName("delivery");
             // Autowiring does not seem to work in POJOs ?
             // Create a reservation printable
-            ReservationPrintable rp = new ReservationPrintable(res,
-                    msgSource,
-                    (DateFormat)bf.getBean("dateFormat"), properties);
 
-            //job.setPrintable(rp, new IISHPageFormat());
 
+            // Note: Use Book to make sure margins are correct.
             Book pBook = new Book();
+            for (HoldingReservation hr : res.getHoldingReservations()) {
+                ReservationPrintable rp = new ReservationPrintable(hr,
+                        msgSource,
+                        (DateFormat)bf.getBean("dateFormat"), properties);
+                pBook.append(rp, new IISHPageFormat());
+            }
 
-            pBook.append(rp, new IISHPageFormat());
+
             job.setPageable(pBook);
             // Print the print job, throws PrinterException when something was
             // wrong.
