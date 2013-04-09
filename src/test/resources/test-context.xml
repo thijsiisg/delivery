@@ -58,7 +58,7 @@
     <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />
   </mvc:interceptors>
 
-  <bean id="myMockLookupService" class="org.socialhistoryservices.delivery.MockRecordLookupService">
+  <bean id="myMockLookupService" class="org.socialhistoryservices.delivery.api.MockRecordLookupService">
   </bean>
 
 </beans>
