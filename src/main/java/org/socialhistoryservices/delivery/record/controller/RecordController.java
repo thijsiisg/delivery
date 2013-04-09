@@ -1,17 +1,17 @@
-/*
- * Copyright 2011 International Institute of Social History
+/**
+ * Copyright (C) 2013 International Institute of Social History
  *
- *    Licensed under the Apache License, Version 2.0 (the "License");
- *    you may not use this file except in compliance with the License.
- *    You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *    Unless required by applicable law or agreed to in writing, software
- *    distributed under the License is distributed on an "AS IS" BASIS,
- *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *    See the License for the specific language governing permissions and
- *    limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.socialhistoryservices.delivery.record.controller;
@@ -303,7 +303,7 @@ public class RecordController extends ErrorHandlingController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/",
-                    method = RequestMethod.POST,
+                    method = RequestMethod.GET,
                     params="searchPid")
     @Secured("ROLE_RECORD_MODIFY")
     public String processHomeSearchPid(Model model,
@@ -329,13 +329,15 @@ public class RecordController extends ErrorHandlingController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/",
-                    method = RequestMethod.POST,
+                    method = RequestMethod.GET,
                     params="searchApi")
     @Secured("ROLE_RECORD_MODIFY")
     public String processHomeSearchApi(Model model,
-            @RequestParam String title) {
-        Map<String, String> results = lookup.getRecordsByTitle(title);
-        model.addAttribute("results", results);
+            @RequestParam String title, @RequestParam(defaultValue = "1", required = false) int resultStart) {
+        title = urlDecode(title);
+        RecordLookupService.PageChunk pc = lookup.getRecordsByTitle(title, Integer.parseInt(properties.getProperty("prop_recordPageLen", "20")), resultStart);
+        model.addAttribute("pageChunk", pc);
+        model.addAttribute("recordTitle", title);
         return "record_home";
     }
 
@@ -349,13 +351,14 @@ public class RecordController extends ErrorHandlingController {
                     method = RequestMethod.POST,
                     params="searchLocal")
     @Secured("ROLE_RECORD_MODIFY")
+    @Deprecated
     public String processHomeSearchLocal(Model model,
             @RequestParam String title) {
         Map<String, String> results = searchLocalHelper(title);
         model.addAttribute("results", results);
         return "record_home";
     }
-
+    @Deprecated
     private Map<String, String> searchLocalHelper(String title) {
         Map<String, String> results = new HashMap<String, String>();
         if (title == null) return results;

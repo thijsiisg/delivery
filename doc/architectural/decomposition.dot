@@ -1,4 +1,5 @@
 ﻿digraph G {
+
     K = 2
 
     node [

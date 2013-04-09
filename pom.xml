@@ -412,6 +412,35 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Ensures license informatin is correct -->
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>1.8.0</version>
+                <configuration>
+                    <strictCheck>true</strictCheck>
+                    <basedir>${basedir}/src</basedir>
+                    <header>license-header.txt</header>
+                    <excludes>
+                        <exclude>**/*_.java</exclude>
+                        <exclude>**/jquery-ui-1.8.13.custom.css</exclude>
+                        <exclude>**/html5.js</exclude>
+                        <exclude>**/*.keystore</exclude>
+                        <exclude>**/jquery-*.js</exclude>
+                        <exclude>**/MockWebApplication.java</exclude> <!-- Ted Young -->
+                        <exclude>**/MockWebApplicationContextLoader.java</exclude> <!-- Ted Young -->
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
