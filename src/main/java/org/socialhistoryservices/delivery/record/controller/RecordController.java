@@ -334,6 +334,8 @@ public class RecordController extends ErrorHandlingController {
     @Secured("ROLE_RECORD_MODIFY")
     public String processHomeSearchApi(Model model,
             @RequestParam String title, @RequestParam(defaultValue = "1", required = false) int resultStart) {
+        if (title == null)
+            return "record_home";
         title = urlDecode(title);
         RecordLookupService.PageChunk pc = lookup.getRecordsByTitle(title, Integer.parseInt(properties.getProperty("prop_recordPageLen", "20")), resultStart);
         model.addAttribute("pageChunk", pc);
