@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.delivery;
+package org.socialhistoryservices.delivery.api;
 
 import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.api.RecordLookupService;
@@ -35,11 +35,19 @@ public class MockRecordLookupService implements RecordLookupService {
         return "Open Archive";
     }
 
-    public Map<String, String> getRecordsByTitle(String title) {
+    @Override
+    public PageChunk getRecordsByTitle(String title, int nrResultsPerCall, int resultStart) {
+        return getRecordsByTitle(title);  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public PageChunk getRecordsByTitle(String title) {
         // Note: Do not depend on the exact return value when using.
         Map<String, String> result = new HashMap<String, String>();
         result.put("12345", "Open Archive");
-        return result;
+        PageChunk pc = new PageChunk(1, 1);
+        pc.setResults(result);
+        pc.setTotalResultCount(1);
+        return pc;
     }
     /**
      * Maps a PID to metadata of a record.

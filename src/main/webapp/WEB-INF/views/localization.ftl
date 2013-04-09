@@ -1,3 +1,4 @@
+<#ftl strip_whitespace=true>
 <#--
 
     Copyright (C) 2013 International Institute of Social History
@@ -16,5 +17,4 @@
 
 -->
 
-<#ftl strip_whitespace=true>
 <#macro _ ident msg=""><@spring.messageText ident msg/></#macro>

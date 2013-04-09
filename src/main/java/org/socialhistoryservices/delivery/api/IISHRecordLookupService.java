@@ -42,11 +42,12 @@ import java.util.Properties;
  */
 public class IISHRecordLookupService implements RecordLookupService {
 
-    private XPathExpression xpSearch;
+    private XPathExpression xpSearch, xpAll;
     private XPathExpression xpSearchTitle, xpSearchSubTitle;
     private XPathExpression xpSearchIdent;
     private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpTitle;
     private XPathExpression xpSubTitle, xpYear, xpSerialNumbers, xpSignatures, xpLeader;
+    private XPathExpression xpNumberOfRecords;
 
     private Properties properties;
 
@@ -93,8 +94,7 @@ public class IISHRecordLookupService implements RecordLookupService {
         xpath.setNamespaceContext(new MARCNamespaceContext());
 
         try {
-
-
+            xpAll = xpath.compile("/srw:searchRetrieveResponse");
             xpSearch = xpath.compile("//srw:record");
             xpSearchTitle = xpath.compile("ns1:recordData/marc:record/" +
                     "marc:datafield[@tag=245]" +
@@ -122,6 +122,7 @@ public class IISHRecordLookupService implements RecordLookupService {
             xpSerialNumbers = xpath.compile("marc:datafield[@tag=866]" +
                     "/marc:subfield[@code=\"a\"]");
             xpLeader = xpath.compile("marc:leader");
+            xpNumberOfRecords = xpath.compile("//ns1:numberOfRecords");
 
         }
         catch (XPathExpressionException ex) {
@@ -131,18 +132,19 @@ public class IISHRecordLookupService implements RecordLookupService {
 
     /**
      * Actually execute the search.
-     * @param xp The XPath expression to use to evaluate the result.
+     *
      * @param query The query to add to the search.
-     * @param results The number of results to retrieve.
+     * @param nrResultsPerPage The number of results to get per page.
+     * @param resultStart The result number to start the page with (1 <= resultStart <= result count).
      * @return A list of nodes returned by the API service.
      */
-    private NodeList doSearch(XPathExpression xp, String query, int results) {
+    private Node doSearch(String query, int nrResultsPerPage, int resultStart) {
         String search;
         search = "version=1.1";
         search += "&operation=searchRetrieve";
         search += "&recordSchema=info:srw/schema/1/marcxml-v1.1";
-        search += "&maximumRecords="+results;
-        search += "&startRecord=1";
+        search += "&maximumRecords="+nrResultsPerPage;
+        search += "&startRecord="+resultStart;
         search += "&resultSetTTL=300";
         search += "&recordPacking=xml";
         search += "&sortKeys=";
@@ -168,32 +170,24 @@ public class IISHRecordLookupService implements RecordLookupService {
 
             BufferedReader rdr = new BufferedReader(new InputStreamReader(
                 conn.getInputStream()));
-            InputSource input = new InputSource(rdr);
-
-            NodeList res = (NodeList)xp.evaluate(input, XPathConstants.NODESET);
-
-            if (res.getLength() == 0) {
-                return null;
-            }
-            return res;
+            return (Node)xpAll.evaluate(new InputSource(rdr), XPathConstants.NODE);
         } catch (IOException ex) {
             return null;
         } catch (URISyntaxException ex) {
             return null;
-        } catch (XPathExpressionException ex) {
+        } catch (XPathExpressionException e) {
             return null;
         }
     }
-
 
     /**
      * Search for records with the specified title.
      * @param title The title to search for.
      * @return A map of {pid,title} key-value pairs.
      */
-    public Map<String, String> getRecordsByTitle(String title) {
-        Map<String, String> results = new HashMap<String, String>();
-        if (title == null) return results;
+    public PageChunk getRecordsByTitle(String title, int resultCountPerChunk, int resultStart) {
+        PageChunk pc = new PageChunk(resultCountPerChunk, resultStart);
+        if (title == null) return pc;
         try {
             title = URLEncoder.encode(title, "utf-8");
         } catch (UnsupportedEncodingException e) {
@@ -201,35 +195,45 @@ public class IISHRecordLookupService implements RecordLookupService {
         }
         String query = "marc.245+all+\""+title+"\"";
 
-        NodeList search = doSearch(xpSearch, query, 15);
+        Node out = doSearch(query, pc.getResultCountPerChunk(), pc.getResultStart());
 
-        if (search != null) {
-            int resCount = search.getLength();
-            for (int i = 0; i < resCount; ++i) {
-                Node node = search.item(i);
+        NodeList search = null;
+        try {
+            search = (NodeList)xpSearch.evaluate(out, XPathConstants.NODESET);
+            pc.setTotalResultCount(((Double) xpNumberOfRecords.evaluate(out, XPathConstants.NUMBER)).intValue());
+        } catch (XPathExpressionException e) {
+            return pc;
+        }
 
-                String recPid, recTitle;
-                try {
-                    recPid = xpSearchIdent.evaluate(node);
-                    recTitle = xpSearchTitle.evaluate(node);
-                } catch (XPathExpressionException ex) {
-                    continue;
-                }
-                String recSubTitle = "";
-                try {
-                     recSubTitle = " " + xpSearchSubTitle.evaluate(node).trim().replaceAll("[/:]$", "");
-                } catch (XPathExpressionException ignored) {
-                }
+        if (search.getLength() == 0) {
+            return pc;
+        }
 
-                if (recTitle != null && recPid != null) {
-                    // Strip trailing slashes.
-                    recTitle = recTitle.trim().replaceAll("[/:]$", "");
-                    if (!recTitle.isEmpty())
-                        results.put(recPid, recTitle + recSubTitle);
-                }
+        int resCount = search.getLength();
+        for (int i = 0; i < resCount; ++i) {
+            Node node = search.item(i);
+
+            String recPid, recTitle;
+            try {
+                recPid = xpSearchIdent.evaluate(node);
+                recTitle = xpSearchTitle.evaluate(node);
+            } catch (XPathExpressionException ex) {
+                continue;
+            }
+            String recSubTitle = "";
+            try {
+                 recSubTitle = " " + xpSearchSubTitle.evaluate(node).trim().replaceAll("[/:]$", "");
+            } catch (XPathExpressionException ignored) {
+            }
+
+            if (recTitle != null && recPid != null) {
+                // Strip trailing slashes.
+                recTitle = recTitle.trim().replaceAll("[/:]$", "");
+                if (!recTitle.isEmpty())
+                    pc.getResults().put(recPid, recTitle + recSubTitle);
             }
         }
-        return results;
+        return pc;
     }
 
      /**
@@ -355,7 +359,14 @@ public class IISHRecordLookupService implements RecordLookupService {
         }
         String query = "dc.identifier+=+\""+encodedPid+"\"";
 
-        NodeList search = doSearch(xpSearchMeta, query, 1);
+        Node all = doSearch(query, 1, 1);
+        NodeList search = null;
+        try {
+            search = (NodeList)xpSearchMeta.evaluate(all, XPathConstants.NODESET);
+        } catch (XPathExpressionException e) {
+            throw new NoSuchPidException();
+            // Handle this in case the IISH API is down.
+        }
 
         if (search == null) {
             throw new NoSuchPidException();

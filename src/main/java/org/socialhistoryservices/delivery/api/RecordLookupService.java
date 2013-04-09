@@ -19,6 +19,7 @@ package org.socialhistoryservices.delivery.api;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -27,12 +28,54 @@ import java.util.Map;
  */
 public interface RecordLookupService {
 
+
+    public class PageChunk {
+
+        public PageChunk(int resultCountPerChunk, int resultStart) {
+            results = new HashMap<String, String>();
+            this.resultCountPerChunk = resultCountPerChunk;
+            this.resultStart = resultStart;
+        }
+        public int getTotalResultCount() {
+            return resultCount;
+        }
+
+        protected void setTotalResultCount(int resultCount) {
+            this.resultCount = resultCount;
+        }
+
+        public int getResultStart() {
+            return resultStart;
+        }
+
+
+        public int getResultCountPerChunk() {
+            return resultCountPerChunk;
+        }
+
+
+        public Map<String, String> getResults() {
+            return results;
+        }
+
+        public void setResults(Map<String, String> results) {
+            this.results = results;
+        }
+
+        private int resultCount;
+        private int resultStart;
+        private int resultCountPerChunk;
+        private Map <String, String> results;
+    }
+
+
     /**
      * Search for records with the specified title.
      * @param title The title to search for.
-     * @return A map of {pid,title} key-value pairs.
+     * @return A map of {pid,title} key-value pairs. (Maximum size defined by implementing service).
      */
-    public Map<String, String> getRecordsByTitle(String title);
+    public PageChunk getRecordsByTitle(String title, int resultCountPerChunk, int resultStart);
+
 
     /**
      * Maps a PID to metadata of a record.

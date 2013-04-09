@@ -1,3 +1,4 @@
+<#ftl strip_text=true strip_whitespace=true/>
 <#--
 
     Copyright (C) 2013 International Institute of Social History
@@ -16,8 +17,6 @@
 
 -->
 
-<#ftl strip_text=true strip_whitespace=true/>
-
 <#macro paramUrl params={} u="">
   <#assign requestParams = {}>
   <#if rc.queryString??>
@@ -30,13 +29,16 @@
     </#list>
   </#if>
 
-  <#local params = requestParams + params/>
+  <#list params?keys as k>
+  <#assign requestParams = requestParams + {k : params[k]?url} />
+  </#list>
+
   <#if u != "">
     <#local uri = rc.getContextUrl(u)/>
   <#else>
     <#local uri = rc.getRequestUri()/>
   </#if>
-${uri}?<#list params?keys as k><#if params[k] !="">${k?url}=${params[k]?url}<#if k_has_next>&amp;</#if></#if></#list>
+${uri}?<#list requestParams?keys as k><#if requestParams[k] !="">${k}=${requestParams[k]}<#if k_has_next>&amp;</#if></#if></#list>
 </#macro>
 
 <#macro sortLink column attributes="">
@@ -72,6 +74,45 @@ ${pageListHolder.lastLinkedPage+1}
 </div>
 </#macro>
 
+<#macro pageApiLinks pageChunk>
+<#assign totalPages = (pageChunk.totalResultCount/pageChunk.resultCountPerChunk)?ceiling />
+<#assign prev = max(pageChunk.resultStart-pageChunk.resultCountPerChunk, 1) />
+<#assign last = (totalPages-1)*pageChunk.resultCountPerChunk+1 />
+<#assign next = min(pageChunk.resultStart+pageChunk.resultCountPerChunk, last) />
+
+<div class="pageLinks">
+    <#if pageChunk.resultStart &gt; 1>
+        <a href="<@paramUrl {"resultStart": "1"} />"
+           class="pageLinks">&lt;&lt;</a>
+        <a href="<@paramUrl {"resultStart": prev?c} />"
+           class="pageLinks">&lt;</a>
+    </#if>
+    <@_ "pageListHolder.page" "Page"/> ${((pageChunk.resultStart/pageChunk.totalResultCount)*totalPages)?ceiling} /
+${totalPages}
+    <#if pageChunk.resultStart &lt; last>
+        <a href="<@paramUrl {"resultStart": next?c} />"
+           class="pageLinks">&gt;</a>
+        <a href="<@paramUrl {"resultStart": last?c} />"
+           class="pageLinks">&gt;&gt;</a>
+    </#if>
+</div>
+</#macro>
+
+<#function min nr1 nr2>
+    <#if nr1 &gt; nr2>
+        <#return nr2>
+    <#else>
+        <#return nr1>
+    </#if>
+</#function>
+
+<#function max nr1 nr2>
+    <#if nr1 &gt; nr2>
+        <#return nr1>
+    <#else>
+        <#return nr2>
+    </#if>
+</#function>
 <#macro generatePidToHoldingsJson rs>
     <#assign pidToHoldings = {}>
     <#list rs.holdingReservations as hr>
