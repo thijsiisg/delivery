@@ -52,7 +52,7 @@ public class ReservationMailer  extends Mailer {
         msg.setReplyTo(getMessage("iisg.email", ""));
 
         msg.setSubject(getMessage("reservationMail.confirmationSubject",
-                                  "Deliverance: "));
+                                  "Delivery: "));
         msg.setText(templateToString("reservation_confirmation.mail.ftl",
                 model));
 

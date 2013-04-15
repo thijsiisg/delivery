@@ -322,7 +322,7 @@
                         <javax.net.ssl.trustStore>
                             src/main/resources/delivery.keystore
                         </javax.net.ssl.trustStore>
-                        <javax.net.ssl.trustStorePassword>deliverance</javax.net.ssl.trustStorePassword>
+                        <javax.net.ssl.trustStorePassword>delivery</javax.net.ssl.trustStorePassword>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -369,7 +369,7 @@
                         </systemProperty>
                         <systemProperty>
                             <name>javax.net.ssl.trustStorePassword</name>
-                            <value>deliverance</value>
+                            <value>delivery</value>
                         </systemProperty>
                     </systemProperties>
                     <scanIntervalSeconds>9000</scanIntervalSeconds>
