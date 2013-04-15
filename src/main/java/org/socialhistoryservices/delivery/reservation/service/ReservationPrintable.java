@@ -165,8 +165,8 @@ public class ReservationPrintable implements Printable {
         int halfWidth = pageWidth/2;
 
         // Draw line through middle.
-        Line2D lin = new Line2D.Float(halfWidth, 0, halfWidth, pageHeight);
-        g2d.draw(lin);
+        //Line2D lin = new Line2D.Float(halfWidth, 0, halfWidth, pageHeight);
+        //g2d.draw(lin);
 
         DrawInfo drawInfo = new DrawInfo(g2d);
         drawInfo.setHeight(pageHeight);
