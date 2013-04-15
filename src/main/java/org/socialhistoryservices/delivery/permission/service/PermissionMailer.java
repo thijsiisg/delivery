@@ -69,14 +69,14 @@ public class PermissionMailer extends Mailer {
         // Set content and title based on which template to send.
         if (isCodeEligible(pm)) {
             msg.setSubject(getMessage("permissionMail.approvedSubject",
-                                 "Deliverance: Permission Request Approved",
+                                 "Delivery: Permission Request Approved",
                                  rl));
             msg.setText(templateToString("permission_approved.mail.ftl",
                         model, rl));
 
         } else {
             msg.setSubject(getMessage("permissionMail.refusedSubject",
-                    "Deliverance: Permission Request Refused", rl));
+                    "Delivery: Permission Request Refused", rl));
             msg.setText(templateToString("permission_refused.mail.ftl",
                         model, rl));
         }
@@ -123,7 +123,7 @@ public class PermissionMailer extends Mailer {
         msg.setReplyTo(getMessage("iisg.email", ""));
 
         msg.setSubject(getMessage("permissionMail.confirmationSubject",
-                             "Deliverance: Permission Request Confirmation"));
+                             "Delivery: Permission Request Confirmation"));
         msg.setText(templateToString("permission_confirmation.mail.ftl",
                     model));
 
