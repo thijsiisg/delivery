@@ -46,6 +46,19 @@
   <@input "permission.researchOrganization" "create"/>
   <@textarea "permission.researchSubject" "create"/>
   <@textarea "permission.explanation" "create"/>
+
+      <label for="recaptcha_response_field" class="field">Recaptcha
+      </label>
+
+
+  ${reCaptchaHTML}
+      <#if reCaptchaError?? >
+          <ul class="errors">
+              <li>
+                  <b>${reCaptchaError?html}</b>
+              </li>
+          </ul>
+      </#if>
   <@buttons>
     <@submit "permission" />
   </@buttons>

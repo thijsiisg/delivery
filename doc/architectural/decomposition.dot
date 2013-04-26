@@ -1,5 +1,4 @@
-﻿digraph G {
-
+digraph G {
     K = 2
 
     node [
@@ -13,32 +12,34 @@
         style = solid
     ]
 
-    // ---
 
     subgraph cluster_Models {
         label = "Models"
         mMetadata [ label = "Metadata" ]
-        mReserveringen [ label = "Reserveringen" ]
-        mBestellingen [ label = "Bestellingen" ]
-        mGebruikers [ label = "Gebruikers" ]
+        mReservations [ label = "Reservations" ]
+        mDigitalOrders [ label = "Digital Orders" ]
+        mUserManagement [ label = "User Management" ]
+        mPermissionRequests [ label = "Permission Requests" ]
     }
 
     subgraph cluster_Controllers {
         label = "Controllers"
 
         cMetadata [ label = "Metadata" ]
-        cReserveringen [ label = "Reserveringen" ]
-        cBestellingen [ label = "Bestellingen" ]
-        cGebruikers [ label = "Gebruikers" ]
+        cReservations [ label = "Reservations" ]
+        cDigitalOrders [ label = "Digital Orders" ]
+        cUserManagement [ label = "User Management" ]
+        cPermissionRequests [ label = "Permission Requests" ]
     }
 
     subgraph cluster_UI {
         label = "UI"
 
         uMetadata [ label = "Metadata" ]
-        uReserveringen [ label = "Reserveringen" ]
-        uBestellingen [ label = "Bestellingen" ]
-        uGebruikers [ label = "Gebruikers" ]
+        uReservations [ label = "Reservations" ]
+        uDigitalOrders [ label = "Digital Orders" ]
+        uUserManagement [ label = "User Management" ]
+        uPermissionRequests [ label = "Permission Requests" ]
     }
 
     cluster_Models -> cluster_Controllers [ color = "darkgreen"]
@@ -47,7 +48,7 @@
     cluster_Controllers -> cluster_UI [ color = "darkgreen"]
     cluster_UI -> cluster_Controllers [ color = "red" style = dashed]
 
-    API [ label = "Binnenkomende API" ]
+    API [ label = "Delivery API" ]
     API -> cluster_Controllers [ color = "red" style = dashed]
     cluster_Controllers -> API [ color = "darkgreen"]
 
@@ -55,10 +56,11 @@
     API -> cluster_UI [ color = "darkgreen"]
 
     subgraph cluster_ExternalAPI {
-        label = "Externe API Models"
+        label = "External Systems"
 
-        OAI
-        SOR
+        CAS [label = "Central Authentication Service"]
+        SOR [label = "Shared Object Repository"]
+        IISHAPI [label = "IISH API"]
     }
 
     cluster_ExternalAPI -> cluster_Controllers [ color = "darkgreen"]

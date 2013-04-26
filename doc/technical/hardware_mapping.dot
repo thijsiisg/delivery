@@ -10,31 +10,27 @@ digraph G {
         fontsize = 10
     ]
 
-	//subgraph cluster_Repo {
-	//	RepoAll [label = "SVN Repository"]
-	//	
-	//}
 
 	subgraph cluster_Production {
 		ProdDB [label="Ubuntu + PostgreSQL"]
 		ProdProg [label="Ubuntu + Tomcat"]
-        ProdPrinter [label="Netwerk Printer"]
-		label = "Productie"
+        ProdPrinter [label="Network Printer"]
+		label = "Production"
 	}
 
 	subgraph cluster_Test {
-		TestAll [label="Ubuntu + PostgreSQL + Tomcat + PDF Printer"]
+		TestAll [label="Ubuntu + PostgreSQL + Tomcat + Test Printer"]
 		label = "Test"
 	}
+	subgraph cluster_Dev {
+		DevAll [label="Developer OS + HSQLDB + Jetty + PDF Printer"]
+		label = "Dev"
+	}
     
-	//subgraph cluster_Dev {
-	//	DevAll [label="OS naar keuze + PostgreSQL + Jetty"]
-    //    DevPrinter [label="Netwerk Printer"]
-	//	label = "Ontwikkelomgeving"
-	//}
 
 
-    TestAll -> ProdProg [label="     Sync m.b.v. SSH tunnel",ltail=cluster_Test,lhead=cluster_Production]
+    DevAll -> TestAll [label="     Sync through Pull Request + Bamboo",ltail=cluster_Dev,lhead=cluster_Test]
+    TestAll -> ProdProg [label="     Sync through Pull Request + Bamboo",ltail=cluster_Test,lhead=cluster_Production]
     //TestAll -> RepoAll [label="Update",ltail=cluster_Test]
     //DevAll -> RepoAll [label="Commit",ltail=cluster_Dev]
 
