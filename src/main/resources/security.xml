@@ -96,4 +96,10 @@
                value="/user/logout"/>
   </beans:bean>
 
+    <beans:bean id="reCaptcha" class="net.tanesha.recaptcha.ReCaptchaImpl">
+        <beans:property name="privateKey" value="${prop_reCaptchaPrivateKey}" />
+        <beans:property name="publicKey" value="${prop_reCaptchaPublicKey}" />
+        <beans:property name="includeNoscript" value="false" />
+    </beans:bean>
+
 </beans:beans>

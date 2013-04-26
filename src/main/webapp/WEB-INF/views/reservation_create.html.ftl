@@ -50,11 +50,11 @@ $(document).ready(function(){
 <@body>
 <h1>${title}</h1>
 <section>
+    <@form "" "reservation" "create">
   <heading>
     <hgroup>
         <fieldset>
             <legend><@_ "reservation.records" ""/></legend>
-            <@form "" "reservation" "create">
     <#assign idx = 0>
     <#list reservation.holdingReservations as hr>
     <#assign h = hr.holding>
@@ -93,12 +93,24 @@ $(document).ready(function(){
   <@input "reservation.visitorName" ""/>
   <@input "reservation.visitorEmail" ""/>
   <@date "reservation.date" ""/>
+              <label for="recaptcha_response_field" class="field">Recaptcha
+              </label>
+
+
+  ${reCaptchaHTML}
+              <#if reCaptchaError?? >
+                  <ul class="errors">
+                      <li>
+                          <b>${reCaptchaError?html}</b>
+                      </li>
+                  </ul>
+              </#if>
   </fieldset>
   <@buttons>
     <@submit "reservation" />
   </@buttons>
-  </@form>
 
   </div>
+    </@form>
 </section>
 </@body>

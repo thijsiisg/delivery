@@ -266,6 +266,40 @@
             <artifactId>spring-security-cas-client</artifactId>
             <version>${spring.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.7</version>
+        </dependency>
+
+        <!-- Needed for if statements in ant run -->
+        <dependency>
+            <groupId>ant-contrib</groupId>
+            <artifactId>ant-contrib</artifactId>
+            <version>1.0b3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ant</groupId>
+                    <artifactId>ant</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-nodeps</artifactId>
+            <version>1.6.5</version>
+        </dependency>
+
+        <!-- Recaptcha -->
+        <dependency>
+            <groupId>com.google.code.maven-play-plugin.net.tanesha.recaptcha4j</groupId>
+            <artifactId>recaptcha4j</artifactId>
+            <version>0.0.8</version>
+        </dependency>
+
+
+
     </dependencies>
 
     <repositories>
@@ -361,7 +395,7 @@
                         </systemProperty>
                         <systemProperty>
                             <name>customProperties</name>
-                            <value>src/main/resources/config.properties</value>
+                            <value>data/config.properties</value>
                         </systemProperty>
                         <systemProperty>
                             <name>javax.net.ssl.trustStore</name>
@@ -389,6 +423,8 @@
                 </configuration>
             </plugin>
 
+
+
             <!-- Preprocessor for static metamodels -->
             <plugin>
                 <groupId>org.bsc.maven</groupId>
@@ -413,7 +449,7 @@
                 </executions>
             </plugin>
 
-            <!-- Ensures license informatin is correct -->
+            <!-- Ensures license information is correct -->
             <plugin>
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
@@ -438,6 +474,30 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>initialize</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.dependency.classpath"/>
+                                <if>
+                                    <not><available file="data/config.properties"/></not>
+                                    <then>
+                                        <mkdir dir="data" />
+                                        <copy file="src/main/resources/config-template.properties" tofile="data/config.properties" />
+                                    </then>
+                                </if>
+                            </tasks>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

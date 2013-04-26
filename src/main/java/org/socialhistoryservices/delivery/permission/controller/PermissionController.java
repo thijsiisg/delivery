@@ -828,13 +828,14 @@ public class PermissionController extends ErrorHandlingController {
     // {{{ Create Form
     /**
      * Handle permission request form.
+     * @param req The HTTP request.
      * @param pids The records to request.
      * @param model The page's model.
      * @param form (Optional) form that was filled in.
      * @param result (Optional) result of form validation.
      * @return View name to render.
      */
-    public String create(String[] pids, Model model, PermissionForm form, BindingResult result) {
+    public String create(HttpServletRequest req, String[] pids, Model model, PermissionForm form, BindingResult result) {
         // Retrieve the records to edit
         boolean restricted = true;
 
@@ -854,21 +855,25 @@ public class PermissionController extends ErrorHandlingController {
         if (form == null) {
             form = new PermissionForm();
         }
-        else if (result != null && !result.hasErrors()) {
-            // Create the permission
-            Permission obj = new Permission();
-            form.fillInto(obj, df);
+        else if (result != null) {
+            checkCaptcha(req, result, model);
 
-            // Add records
-            addRecordsToPermission(obj, recs);
+            if (!result.hasErrors()) {
+                // Create the permission
+                Permission obj = new Permission();
+                form.fillInto(obj, df);
 
-            // Generate a unique token
-            guaranteeUniqueCode(obj);
-            permissions.addPermission(obj);
+                // Add records
+                addRecordsToPermission(obj, recs);
 
-            pmMailer.mailConfirmation(obj);
+                // Generate a unique token
+                guaranteeUniqueCode(obj);
+                permissions.addPermission(obj);
 
-            return "permission_success";
+                pmMailer.mailConfirmation(obj);
+
+                return "permission_success";
+            }
         }
 
         // Add to model
@@ -876,6 +881,7 @@ public class PermissionController extends ErrorHandlingController {
             model.addAttribute("permission", form);
         }
 
+        model.addAttribute("reCaptchaHTML", reCaptcha.createRecaptchaHtml(null, properties.getProperty("prop_reCaptchaTheme", "clean"), null));
         return "permission_create";
     }
 
@@ -928,9 +934,9 @@ public class PermissionController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/createform/{pids:.*}",
                     method = RequestMethod.GET)
-    public String createForm(@PathVariable String pids,
+    public String createForm(HttpServletRequest req, @PathVariable String pids,
                              Model model) {
-        return create(getPidsFromURL(pids), model, null, null);
+        return create(req, getPidsFromURL(pids), model, null, null);
     }
 
     /**
@@ -943,11 +949,11 @@ public class PermissionController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/createform/{pids:.*}",
                     method = RequestMethod.POST)
-    public String createForm(@PathVariable String pids,
+    public String createForm(HttpServletRequest req, @PathVariable String pids,
              @ModelAttribute("permission") @Valid PermissionForm permission,
              BindingResult result,
              Model model) {
-        return create(getPidsFromURL(pids), model, permission, result);
+        return create(req, getPidsFromURL(pids), model, permission, result);
     }
     // }}}
     // {{{ Delete API
