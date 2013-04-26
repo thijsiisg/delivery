@@ -1,6 +1,6 @@
 #!/bin/bash
 
-service apache2 stop
+#service apache2 stop
 service tomcat6 stop
 
 echo
@@ -17,7 +17,8 @@ echo
 
 
 echo
-wget --no-check-certificate -O Delivery.war https://bamboo.socialhistoryservices.org/browse/DELIVERY-CORETEST/latestSuccessful/artifact/JOB1/1.0/Delivery.war
+curl -u fakeuser:fakepass --cookie-jar cookies.txt --insecure 'https://bamboo.socialhistoryservices.org/userlogin!default.action?os_authType=basic' --head
+curl --cookie cookies.txt --insecure https://bamboo.socialhistoryservices.org/browse/DELIVERY-CORETEST/latestSuccessful/artifact/JOB1/1.0/Delivery.war > Delivery.war
 echo
 
 
@@ -26,7 +27,9 @@ echo "Removing old deployment files"
 rm -rf /var/lib/tomcat6/webapps/ROOT
 rm /var/log/tomcat6/*
 echo
+mv Delivery.war /var/lib/tomcat6/webapps/ROOT.war
 ls -al /var/lib/tomcat6/webapps
+
 echo
 
 service tomcat6 start
@@ -41,4 +44,4 @@ fi
 cp -r delivery_shop /var/lib/tomcat6/webapps/ROOT/resources/
 
 
-echo "Now start the apache service with: service apache2 start"
+echo "Now restart the apache service with: service apache2 stop, service apache2 start"
