@@ -16,6 +16,8 @@
 
 package org.socialhistoryservices.delivery.response;
 
+import net.tanesha.recaptcha.ReCaptcha;
+import net.tanesha.recaptcha.ReCaptchaResponse;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -23,11 +25,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -51,6 +59,12 @@ public class ErrorHandlingController {
     @Autowired
     @Qualifier("myCustomProperties")
     protected Properties properties;
+
+    @Autowired
+    protected MessageSource msgSource;
+
+    @Autowired
+    protected ReCaptcha reCaptcha;
 
 
     /**
@@ -114,4 +128,16 @@ public class ErrorHandlingController {
         }
     }
 
+    protected void checkCaptcha(HttpServletRequest req, BindingResult result, Model model) {
+        ReCaptchaResponse rcr = reCaptcha.checkAnswer(req.getRemoteAddr(), req.getParameter("recaptcha_challenge_field"), req.getParameter("recaptcha_response_field"));
+        if (!rcr.isValid()) {
+            String msg =  msgSource.getMessage("reCaptcha.error", null,
+                    "", LocaleContextHolder.getLocale());
+            // This prevents the createOrEdit from submitting to the database. Sadly, because the captcha is nto part of the model,
+            // no corresponding error will be displayed in the form. We have to do this manually.
+            // The error param supplied in the createRecaptchaHtml does not work apparently.
+            result.addError(new FieldError(result.getObjectName(), "recaptcha_response_field", "", false,null,null,msg));
+            model.addAttribute("reCaptchaError", msg);
+        }
+    }
 }

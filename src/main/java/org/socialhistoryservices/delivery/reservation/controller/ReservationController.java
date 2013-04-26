@@ -16,6 +16,8 @@
 
 package org.socialhistoryservices.delivery.reservation.controller;
 
+import net.tanesha.recaptcha.ReCaptcha;
+import net.tanesha.recaptcha.ReCaptchaResponse;
 import org.codehaus.jackson.JsonNode;
 import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
@@ -40,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
@@ -72,9 +75,6 @@ public class ReservationController extends ErrorHandlingController {
 
     @Autowired
     private RecordService records;
-
-    @Autowired
-    private MessageSource msgSource;
 
 
 
@@ -625,6 +625,7 @@ public class ReservationController extends ErrorHandlingController {
 
     /**
      * Show the create form of a reservation (visitors create form).
+     * @param req The HTTP request.
      * @param path The pid/signature string (URL encoded).
      * @param code The permission code to use for restricted records.
      * @param model The model to add response attributes to.
@@ -632,19 +633,20 @@ public class ReservationController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/createform/{path:.*}",
                     method = RequestMethod.GET)
-    public String showCreateForm(@PathVariable String path,
+    public String showCreateForm(HttpServletRequest req, @PathVariable String path,
                            @RequestParam(required=false) String code,
                            Model model) {
         Reservation newRes = new Reservation();
         newRes.setDate(reservations.getFirstValidReservationDate(new Date()));
 
         newRes.setHoldingReservations(uriPathToHoldingReservations(path));
-        return processVisitorReservationCreation(newRes, null, code,
+        return processVisitorReservationCreation(req, newRes, null, code,
                 model, false);
     }
 
     /**
      * Process the create form of a reservation (visitors create form).
+     * @param req The HTTP request.
      * @param newRes The submitted reservation.
      * @param result The binding result to put errors in.
      * @param code The permission code to use for restricted records.
@@ -653,16 +655,16 @@ public class ReservationController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/createform/{path:.*}",
                     method = RequestMethod.POST)
-    public String processCreateForm(@ModelAttribute("reservation")
+    public String processCreateForm(HttpServletRequest req, @ModelAttribute("reservation")
                                         Reservation newRes,
                                         BindingResult result,
                            @RequestParam(required=false) String code,
                            Model model) {
-       return processVisitorReservationCreation(newRes, result, code,
+       return processVisitorReservationCreation(req, newRes, result, code,
                 model, true);
     }
 
-    private String processVisitorReservationCreation(Reservation newRes,
+    private String processVisitorReservationCreation(HttpServletRequest req, Reservation newRes,
                                                      BindingResult result,
                                                      String permission,
                                                      Model model, boolean commit) {
@@ -691,6 +693,8 @@ public class ReservationController extends ErrorHandlingController {
 
         try {
             if (commit) {
+                // Make sure a Captcha was entered correctly.
+                checkCaptcha(req, result, model);
                 reservations.createOrEdit(newRes, null, result);
                 if (!result.hasErrors()) {
                     // Mail the confirmation to the visitor.
@@ -715,6 +719,7 @@ public class ReservationController extends ErrorHandlingController {
         }
         model.addAttribute("reservation", newRes);
 
+        model.addAttribute("reCaptchaHTML", reCaptcha.createRecaptchaHtml(null, properties.getProperty("prop_reCaptchaTheme", "clean"), null));
         return "reservation_create";
     }
 

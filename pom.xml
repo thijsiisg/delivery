@@ -291,6 +291,15 @@
             <version>1.6.5</version>
         </dependency>
 
+        <!-- Recaptcha -->
+        <dependency>
+            <groupId>com.google.code.maven-play-plugin.net.tanesha.recaptcha4j</groupId>
+            <artifactId>recaptcha4j</artifactId>
+            <version>0.0.8</version>
+        </dependency>
+
+
+
     </dependencies>
 
     <repositories>
