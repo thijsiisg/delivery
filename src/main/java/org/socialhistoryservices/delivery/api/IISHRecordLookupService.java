@@ -279,9 +279,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
             externalInfo.setTitle(title);
         } else {
-            //externalInfo.setTitle("Unknown Record");
-            // throwing exception to prevent bogus data to be imported into Delivery.
-            throw new NoSuchPidException();
+            externalInfo.setTitle("Unknown Record");
         }
 
 
@@ -361,15 +359,18 @@ public class IISHRecordLookupService implements RecordLookupService {
         String query = "dc.identifier+=+\""+encodedPid+"\"";
 
         Node all = doSearch(query, 1, 1);
+
         NodeList search = null;
+        int resultCount = 0;
         try {
+            resultCount = ((Double) xpNumberOfRecords.evaluate(all, XPathConstants.NUMBER)).intValue();
             search = (NodeList)xpSearchMeta.evaluate(all, XPathConstants.NODESET);
         } catch (XPathExpressionException e) {
             throw new NoSuchPidException();
             // Handle this in case the IISH API is down.
         }
 
-        if (search == null) {
+        if (resultCount == 0 || search == null) {
             throw new NoSuchPidException();
         }
 
