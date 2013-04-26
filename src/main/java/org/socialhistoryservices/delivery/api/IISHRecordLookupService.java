@@ -279,8 +279,9 @@ public class IISHRecordLookupService implements RecordLookupService {
 
             externalInfo.setTitle(title);
         } else {
-            // Consider throwing a NoSuchPid exception instead?
-            externalInfo.setTitle("Unknown Record");
+            //externalInfo.setTitle("Unknown Record");
+            // throwing exception to prevent bogus data to be imported into Delivery.
+            throw new NoSuchPidException();
         }
 
 
