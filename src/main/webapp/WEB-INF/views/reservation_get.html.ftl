@@ -1,9 +1,27 @@
+<#--
+
+    Copyright (C) 2013 International Institute of Social History
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
 <#include "base.ftl"/>
 <#include "form.ftl" />
 
 <#-- Build the title -->
 <#assign title>
-<@_ "reservationSingle.title" "Reservation"/> ${reservation.id}
+<@_ "reservationSingle.title" "Reservation"/> ${reservation.id?c}
 </#assign>
 
 
@@ -20,7 +38,7 @@
     </#if>
     <li><span><@_ "reservation.status" "Status"/></span> <@_ "reservation.statusType.${reservation.status}" reservation.status?string /></li>
     <#--<#if reservation.queueNo??>
-    <li><span><@_ "reservation.queueNo" "Queue No"/></span> ${reservation.queueNo?html}</li>
+    <li><span><@_ "reservation.queueNo" "Queue No"/></span> ${reservation.queueNo?c}</li>
     </#if>-->
 
 
@@ -37,7 +55,7 @@
     </#if>
     
     <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
-    <li><br/><a href="${rc.contextPath}/reservation/masscreateform?fromReservationId=${reservation.id}">
+    <li><br/><a href="${rc.contextPath}/reservation/masscreateform?fromReservationId=${reservation.id?c}">
     <@_ "reservationSingle.newReservation"/></a></li>
     </#if>
 
@@ -55,7 +73,7 @@
       <#list reservation.holdingReservations as hr>
       <#assign h = hr.holding>
       <tr>
-        <td>${h.id?html}</td>
+        <td>${h.id?c}</td>
         <td>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></td>
         <td><#if _sec.ifAllGranted("ROLE_RECORD_MODIFY")>
             <a target="_blank" href="${rc.contextPath}/record/editform/${h.record.pid?url}">${h.record.pid?html}</a>

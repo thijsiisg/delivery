@@ -1,9 +1,27 @@
+<#--
+
+    Copyright (C) 2013 International Institute of Social History
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
 <#include "base.ftl"/>
 <#include "form.ftl" />
 
 <#-- Build the title -->
 <#assign title>
-<@_ "permissionSingle.title" "Permission Request"/> ${permission.id}
+<@_ "permissionSingle.title" "Permission Request"/> ${permission.id?c}
 </#assign>
 
 <#-- Build the page -->
@@ -25,7 +43,7 @@
 <h3><@_ "permission.recordPermissions" "Permissions per record"/></h3>
 
 <form action="process" method="POST">
-<input type="hidden" name="id" value="${permission.id}"/>
+<input type="hidden" name="id" value="${permission.id?c}"/>
 
 <#list permission.recordPermissions as rp>
 <fieldset class="recordPermissionDetails">
@@ -33,7 +51,7 @@
 <legend>${rp.record.title?html} <#if info.author??>/ ${info.author}</#if></legend>
 <ul>
   <li>
-    <select name="granted_${rp.id}"
+    <select name="granted_${rp.id?c}"
       <#if _sec.ifNotGranted("ROLE_PERMISSION_MODIFY")>disabled="disabled
       "</#if>>
       <option value="true"
@@ -44,11 +62,11 @@
       <@_ "recordPermission.granted.false" "Denied"/></option>
     </select>
   </li>
-  <li class="motivation"><label for="motivation_${rp.id}">
+  <li class="motivation"><label for="motivation_${rp.id?c}">
   <@_ "recordPermission.motivation" "Motivation"/><br />
   <span class="note">(<@_  "permissionSingle.motivationLanguage" "Please specify in"/> <@_ "language.${permission.requestLocale}" "English" />)</span>
   </label>
-      <textarea id="motivation_${rp.id}" name="motivation_${rp.id}"><#if rp.motivation??>${rp.motivation?html}</#if></textarea>
+      <textarea id="motivation_${rp.id?c}" name="motivation_${rp.id?c}"><#if rp.motivation??>${rp.motivation?html}</#if></textarea>
   </li>
   <#if rp.record.restriction??>
   <li><span><@_ "record.restriction" "Restriction Details"/></span> ${rp.record.restriction?html}</li>

@@ -3,13 +3,13 @@
   fields:
     - PK: id
     - pid
-    - title
-    - restriction_status
+    - restrictionType
     - restriction
     - comments
     - embargo
     - FK: parent_id
     - FK: contact_id
+    - FK: external_id
   links:
     - to: Record
       tail: 1..n
@@ -17,6 +17,18 @@
     - to: Contact
       tail: 1..n
       head: 0..1
+    - to: ExternalRecordInfo
+      tail: 1
+      head: 1
+-
+  table: ExternalRecordInfo
+  fields:
+    - PK: id
+    - author
+    - title
+    - displayYear
+    - materialType
+
 -
   table: Contact
   fields:
@@ -32,38 +44,48 @@
     - phone
     - fax
 -
+  table: ExternalHoldingInfo
+  fields:
+    - PK: id
+    - serialNumbers
+
+    
+  
+-
   table: Holding
   fields:
     - PK: id
     - signature
     - status
-    - usage_restriction
+    - usageRestriction
     - floor
     - direction
     - cabinet
     - shelf
     - FK: record_id
+    - FK: external_id
   links:
     - to: Record
       tail: 1..n
       head: 1
+    - to: ExternalHoldingInfo
+      tail: 1
+      head: 1
+
 -
   table: Reservation
   fields:
     - PK: id
-    - name
-    - email
+    - visitorName
+    - visitorEmail
     - date
+    - returnDate
     - special
     - status
-    - queueno
+    - queueNo
     - printed
     - comment
-    - FK: permission_id
   links:
-    - to: PermissionRequest
-      tail: 0..n
-      head: 0..1
     - to: Holding
       tail: 0..n
       head: 1..m
@@ -82,6 +104,10 @@
     - date_from
     - date_to
     - request_locale
+  links:
+    - to: Reservation
+      tail: 0..n
+      head: 0..1
 -
   table: RecordPermission
   fields:

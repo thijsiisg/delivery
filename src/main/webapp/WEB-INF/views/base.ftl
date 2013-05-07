@@ -1,3 +1,21 @@
+<#--
+
+    Copyright (C) 2013 International Institute of Social History
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
 <#import "spring.ftl" as spring/>
 <#include "localization.ftl">
 <#include "utils.ftl">
@@ -34,6 +52,7 @@
     <script type="text/javascript" src="${rc.contextPath}/resources/js/html5.js"></script>
     <![endif]-->
     <link rel="stylesheet" media="all" href="${rc.contextPath}/resources/css/screen.css"/>
+    <link rel="shortcut icon" type="image/x-icon" href="${rc.contextPath}/resources/logo.ico" />
     <style>
         header.main {
             background-image: url("${rc.contextPath}/resources/css/images/iish_logo_${rc.locale}.jpg");
@@ -82,16 +101,6 @@
     </header>
     <nav class="main">
       <ul>
-        <li>
-          <a href="${rc.contextPath}/reservation/createform/11051175_MARC">
-          Visitor Interface Example (Test)
-          </a>
-        </li>
-      <#--  <li>
-          <a href="${rc.contextPath}/resources/Java_Printing.pdf">
-          Printer Output (Test)
-          </a>
-        </li>-->
         <#if  _sec.ifAllGranted("ROLE_RECORD_MODIFY")>
         <li>
           <a href="${rc.contextPath}/record/">

@@ -1,18 +1,20 @@
 <!--
-  ~ Copyright 2011 International Institute of Social History
-  ~
-  ~    Licensed under the Apache License, Version 2.0 (the "License");
-  ~    you may not use this file except in compliance with the License.
-  ~    You may obtain a copy of the License at
-  ~
-  ~        http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~    Unless required by applicable law or agreed to in writing, software
-  ~    distributed under the License is distributed on an "AS IS" BASIS,
-  ~    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~    See the License for the specific language governing permissions and
-  ~    limitations under the License.
-  -->
+
+    Copyright (C) 2013 International Institute of Social History
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
 
 <beans:beans xmlns="http://www.springframework.org/schema/security"
              xmlns:beans="http://www.springframework.org/schema/beans"
@@ -57,19 +59,19 @@
     </beans:bean>
 
     <beans:bean id="userAddingServiceTicketValidator"
-                class="org.iisg.delivery.user.controller.UserAddingServiceTicketValidator">
+                class="org.socialhistoryservices.delivery.user.controller.UserAddingServiceTicketValidator">
         <beans:constructor-arg index="0" value="${prop_casUrl}" />
         <beans:property name="userService" ref="userDetailsService"/>
     </beans:bean>
 
     <beans:bean id="userDetailsService"
-      class="org.iisg.delivery.user.service.UserServiceImpl">
+      class="org.socialhistoryservices.delivery.user.service.UserServiceImpl">
       <beans:property name="userDAO" ref="userDAOBean"/>
       <beans:property name="groupDAO" ref="groupDAOBean"/>
   </beans:bean>
 
-  <beans:bean id="groupDAOBean" class="org.iisg.delivery.user.dao.GroupDAOImpl" />
-  <beans:bean id="userDAOBean" class="org.iisg.delivery.user.dao.UserDAOImpl" />
+  <beans:bean id="groupDAOBean" class="org.socialhistoryservices.delivery.user.dao.GroupDAOImpl" />
+  <beans:bean id="userDAOBean" class="org.socialhistoryservices.delivery.user.dao.UserDAOImpl" />
 
   <beans:bean id="serviceProperties"
         class="org.springframework.security.cas.ServiceProperties">
@@ -93,5 +95,11 @@
     <beans:property name="filterProcessesUrl"
                value="/user/logout"/>
   </beans:bean>
+
+    <beans:bean id="reCaptcha" class="net.tanesha.recaptcha.ReCaptchaImpl">
+        <beans:property name="privateKey" value="${prop_reCaptchaPrivateKey}" />
+        <beans:property name="publicKey" value="${prop_reCaptchaPublicKey}" />
+        <beans:property name="includeNoscript" value="false" />
+    </beans:bean>
 
 </beans:beans>

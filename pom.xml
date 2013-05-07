@@ -19,7 +19,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.iisg</groupId>
+    <groupId>org.socialhistoryservices</groupId>
     <artifactId>delivery</artifactId>
     <packaging>war</packaging>
     <version>M1 - Iteration 3</version>
@@ -27,10 +27,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jetty.version>6.1.4</jetty.version>
+        <jetty.version>6.1.26</jetty.version>
         <spring.version>3.0.5.RELEASE</spring.version>
         <slf4j.version>1.5.10</slf4j.version>
-        <java.version>1.5</java.version>
+        <java.version>1.6</java.version>
         <junit.version>4.8.2</junit.version>
         <!--<servlet.version>2.4</servlet.version>-->
     </properties>
@@ -82,7 +82,6 @@
         </dependency>
 
         <!-- Bean Validation Dependencies -->
-
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
@@ -98,7 +97,6 @@
         </dependency>
 
         <!-- JPA Persistence Dependencies -->
-
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
@@ -134,7 +132,6 @@
         </dependency>
 
         <!-- Spring Dependencies -->
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -170,7 +167,6 @@
         </dependency>
 
         <!-- DB Dependencies -->
-
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
@@ -193,7 +189,6 @@
         </dependency>
 
         <!-- View Dependencies -->
-
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
@@ -241,7 +236,7 @@
                     <artifactId>jmxri</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>runtime</scope>
+            <!--<scope>runtime</scope>-->
         </dependency>
 
         <!-- Security -->
@@ -271,6 +266,40 @@
             <artifactId>spring-security-cas-client</artifactId>
             <version>${spring.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.7</version>
+        </dependency>
+
+        <!-- Needed for if statements in ant run -->
+        <dependency>
+            <groupId>ant-contrib</groupId>
+            <artifactId>ant-contrib</artifactId>
+            <version>1.0b3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ant</groupId>
+                    <artifactId>ant</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-nodeps</artifactId>
+            <version>1.6.5</version>
+        </dependency>
+
+        <!-- Recaptcha -->
+        <dependency>
+            <groupId>com.google.code.maven-play-plugin.net.tanesha.recaptcha4j</groupId>
+            <artifactId>recaptcha4j</artifactId>
+            <version>0.0.8</version>
+        </dependency>
+
+
+
     </dependencies>
 
     <repositories>
@@ -327,7 +356,7 @@
                         <javax.net.ssl.trustStore>
                             src/main/resources/delivery.keystore
                         </javax.net.ssl.trustStore>
-                        <javax.net.ssl.trustStorePassword>deliverance</javax.net.ssl.trustStorePassword>
+                        <javax.net.ssl.trustStorePassword>delivery</javax.net.ssl.trustStorePassword>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -366,7 +395,7 @@
                         </systemProperty>
                         <systemProperty>
                             <name>customProperties</name>
-                            <value>src/main/resources/config.properties</value>
+                            <value>data/config.properties</value>
                         </systemProperty>
                         <systemProperty>
                             <name>javax.net.ssl.trustStore</name>
@@ -374,10 +403,11 @@
                         </systemProperty>
                         <systemProperty>
                             <name>javax.net.ssl.trustStorePassword</name>
-                            <value>deliverance</value>
+                            <value>delivery</value>
                         </systemProperty>
                     </systemProperties>
                     <scanIntervalSeconds>9000</scanIntervalSeconds>
+                    <contextPath>/</contextPath> <!-- Run it in root context. -->
                 </configuration>
             </plugin>
 
@@ -392,6 +422,8 @@
                     <compilerArgument>-proc:none</compilerArgument>
                 </configuration>
             </plugin>
+
+
 
             <!-- Preprocessor for static metamodels -->
             <plugin>
@@ -412,6 +444,59 @@
                                     org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor
                                 </processor>
                             </processors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Ensures license information is correct -->
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>1.8.0</version>
+                <configuration>
+                    <strictCheck>true</strictCheck>
+                    <basedir>${basedir}/src</basedir>
+                    <header>license-header.txt</header>
+                    <excludes>
+                        <exclude>**/*_.java</exclude>
+                        <exclude>**/jquery-ui-1.8.13.custom.css</exclude>
+                        <exclude>**/html5.js</exclude>
+                        <exclude>**/*.keystore</exclude>
+                        <exclude>**/jquery-*.js</exclude>
+                        <exclude>**/MockWebApplication.java</exclude> <!-- Ted Young -->
+                        <exclude>**/MockWebApplicationContextLoader.java</exclude> <!-- Ted Young -->
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>initialize</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.dependency.classpath"/>
+                                <if>
+                                    <not><available file="data/config.properties"/></not>
+                                    <then>
+                                        <mkdir dir="data" />
+                                        <copy file="src/main/resources/config-template.properties" tofile="data/config.properties" />
+                                    </then>
+                                </if>
+                            </tasks>
                         </configuration>
                     </execution>
                 </executions>

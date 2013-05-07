@@ -1,3 +1,21 @@
+<#--
+
+    Copyright (C) 2013 International Institute of Social History
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+
 <#include "base.ftl"/>
 <#include "form.ftl"/>
 
@@ -32,16 +50,17 @@ $(document).ready(function(){
 <@body>
 <h1>${title}</h1>
 <section>
+    <@form "" "reservation" "create">
   <heading>
     <hgroup>
         <fieldset>
             <legend><@_ "reservation.records" ""/></legend>
-            <@form "" "reservation" "create">
     <#assign idx = 0>
     <#list reservation.holdingReservations as hr>
     <#assign h = hr.holding>
     <#assign info = h.record.externalInfo>
-    <input name="holdingReservations[${idx}].holding" type="hidden" value="${h.id}" />
+    <input name="holdingReservations[${idx}].holding" type="hidden"
+           value="${h.id?c}" />
     <h3>${info.title?html}</h3>
 
 
@@ -74,12 +93,25 @@ $(document).ready(function(){
   <@input "reservation.visitorName" ""/>
   <@input "reservation.visitorEmail" ""/>
   <@date "reservation.date" ""/>
+              <label for="recaptcha_response_field" class="field">
+                <@_ "reCaptcha.explanation" "Please type the two words displayed to prove you are human."/>
+              </label>
+
+
+  ${reCaptchaHTML}
+              <#if reCaptchaError?? >
+                  <ul class="errors">
+                      <li>
+                          <b>${reCaptchaError?html}</b>
+                      </li>
+                  </ul>
+              </#if>
   </fieldset>
   <@buttons>
     <@submit "reservation" />
   </@buttons>
-  </@form>
 
   </div>
+    </@form>
 </section>
 </@body>
