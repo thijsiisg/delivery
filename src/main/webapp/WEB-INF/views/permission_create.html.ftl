@@ -47,7 +47,8 @@
   <@textarea "permission.researchSubject" "create"/>
   <@textarea "permission.explanation" "create"/>
 
-      <label for="recaptcha_response_field" class="field">Recaptcha
+      <label for="recaptcha_response_field" class="field">
+        <@_ "reCaptcha.explanation" "Please type the two words displayed to prove you are human."/>
       </label>
 
 
