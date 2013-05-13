@@ -26,10 +26,3 @@
     - name
     - description
 
--
-  table: Customer
-  fields:
-    - PK: id
-    - code
-    - name
-    - comments
