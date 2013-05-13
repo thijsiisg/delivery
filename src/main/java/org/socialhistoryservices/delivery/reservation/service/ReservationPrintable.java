@@ -488,7 +488,7 @@ public class ReservationPrintable implements Printable {
         while (measurer.getPosition() < value.length()) {
             TextLayout textLayout = measurer.nextLayout(width - offset);
             textLayout.draw(g2d, x + offset, y );
-            y += Math.min(MIN_LINE_HEIGHT,fm.getHeight());
+            y += Math.max(MIN_LINE_HEIGHT,fm.getHeight());
         }
         drawInfo.setOffsetY(y);
     }
