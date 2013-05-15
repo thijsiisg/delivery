@@ -185,7 +185,7 @@
     <th></th>
     <th><@_ "reservation.records" "Records"/></th>
     <th>
-      <@sortLink "visitor_name"><@_ "reservation.visitorName" "Name"/></@sortLink>
+      <@sortLink "visitorName"><@_ "reservation.visitorName" "Name"/></@sortLink>
     </th>
     <th><@sortLink "date"><@_ "reservation.date" "Date"/></@sortLink></th>
     <#--<th><@sortLink "returnDate"><@_ "reservation.returnDate" "Return

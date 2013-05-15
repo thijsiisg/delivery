@@ -210,9 +210,9 @@ public class ReservationController extends ErrorHandlingController {
         Expression e = resRoot.get(Reservation_.date);
         if (containsSort) {
             String sort = p.get("sort")[0];
-            if (sort.equals("visitor_name")) {
+            if (sort.equals("visitorName")) {
                 e = resRoot.get(Reservation_.visitorName);
-            } else if (sort.equals("visitor_email")) {
+            } else if (sort.equals("visitorEmail")) {
                 e = resRoot.get(Reservation_.visitorEmail);
             } else if (sort.equals("status")) {
                 e = resRoot.get(Reservation_.status);
@@ -381,10 +381,10 @@ public class ReservationController extends ErrorHandlingController {
      * @return The (updated) where clause, or null if the filter did not exist.
      */
     private Expression<Boolean> addEmailFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Reservation> resRoot, Expression<Boolean> where) {
-        if (p.containsKey("visitor_email")) {
+        if (p.containsKey("visitorEmail")) {
             Expression<Boolean> exEmail = cb.like(
                      resRoot.<String>get(Reservation_.visitorEmail),
-                    "%" + p.get("visitor_email")[0].trim() + "%");
+                    "%" + p.get("visitorEmail")[0].trim() + "%");
             where = where != null ? cb.and(where, exEmail) : exEmail;
         }
         return where;
@@ -402,11 +402,11 @@ public class ReservationController extends ErrorHandlingController {
                                      CriteriaBuilder cb,
                                      Root<Reservation> resRoot,
                                      Expression<Boolean> where) {
-        if (p.containsKey("visitor_name")) {
+        if (p.containsKey("visitorName")) {
             Expression<Boolean> exName = cb.like(resRoot.<String>get
                     (Reservation_
                     .visitorName),
-                    "%" + p.get("visitor_name")[0].trim() + "%");
+                    "%" + p.get("visitorName")[0].trim() + "%");
             where = where != null ? cb.and(where, exName) : exName;
         }
         return where;
