@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.socialhistoryservices.delivery</groupId>
+        <artifactId>delivery</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <packaging>war</packaging>
+
+    <artifactId>delivery-example</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.socialhistoryservices.delivery</groupId>
+            <artifactId>delivery-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.socialhistoryservices.delivery</groupId>
+            <artifactId>delivery-core</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.barcode4j</groupId>
+            <artifactId>barcode4j</artifactId>
+            <version>2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.soebes.maven.plugins.dmg</groupId>
+            <artifactId>doxygen-maven-plugin</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+
+
+        <dependency>
+            <groupId>org.iish.util</groupId>
+            <artifactId>propertyloader</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+        <!-- Mail dependencies -->
+        <dependency>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4</version>
+        </dependency>
+
+        <!-- Bean Validation Dependencies -->
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>1.0.0.GA</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>4.2.0.Final</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- JPA Persistence Dependencies -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+            <version>3.6.0.Final</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!--<dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>1.8.0.10</version>
+        </dependency>-->
+
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.2.9</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.0-801.jdbc4</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.hibernate.javax.persistence</groupId>
+            <artifactId>hibernate-jpa-2.0-api</artifactId>
+            <version>1.0.0.Final</version>
+            <scope>compile</scope>
+        </dependency>
+
+
+        <!-- DB Dependencies -->
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>20030825.184428</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-pool</groupId>
+            <artifactId>commons-pool</artifactId>
+            <version>20030825.183949</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-jpamodelgen</artifactId>
+            <version>1.0.0.Final</version>
+        </dependency>
+
+
+        <!-- Spring Dependencies -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+            <version>${spring.version}</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+           <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+        </dependency>
+
+
+
+        <!-- Security -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>${spring.security.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>${spring.security.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>${spring.security.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-taglibs</artifactId>
+            <version>${spring.security.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>org.springframework.security.cas</artifactId>
+            <version>3.1.4.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.7</version>
+        </dependency>
+
+        <!-- Needed for if statements in ant run -->
+        <dependency>
+            <groupId>ant-contrib</groupId>
+            <artifactId>ant-contrib</artifactId>
+            <version>1.0b3</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ant</groupId>
+                    <artifactId>ant</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>ant</groupId>
+            <artifactId>ant-nodeps</artifactId>
+            <version>1.6.5</version>
+        </dependency>
+
+
+
+
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>com.springsource.repository.bundles.release</id>
+            <name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Releases</name>
+            <url>http://repository.springsource.com/maven/bundles/release</url>
+        </repository>
+
+        <repository>
+            <id>com.springsource.repository.bundles.external</id>
+            <name>SpringSource Enterprise Bundle Repository - External Bundle Releases</name>
+            <url>http://repository.springsource.com/maven/bundles/external</url>
+        </repository>
+
+        <!-- JBoss Repository used for Java EE 6 pieces -->
+        <repository>
+            <id>repository.jboss.org</id>
+            <name>JBoss Repository</name>
+            <url>
+                http://repository.jboss.org/nexus/content/groups/public-jboss/
+            </url>
+        </repository>
+
+        <repository>
+            <id>diwoto.iisg.nl</id>
+            <name>IISG Repository</name>
+            <url>https://diwoto.iisg.nl/maven</url>
+        </repository>
+    </repositories>
+
+    <build>
+        <finalName>Delivery</finalName>
+        <plugins>
+
+            <!-- Facilitates downloading source and javadoc in Eclipse -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-eclipse-plugin</artifactId>
+                <version>2.8</version>
+                <configuration>
+                    <wtpversion>2.0</wtpversion>
+                    <downloadSources>true</downloadSources>
+                    <downloadJavadocs>true</downloadJavadocs>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <customProperties>
+                            src/test/resources/test-config.properties
+                        </customProperties>
+                        <javax.net.ssl.trustStore>
+                            src/main/resources/delivery.keystore
+                        </javax.net.ssl.trustStore>
+                        <javax.net.ssl.trustStorePassword>delivery</javax.net.ssl.trustStorePassword>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.soebes.maven.plugins.dmg</groupId>
+                <artifactId>doxygen-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <configuration>
+                    <doxyfileEncoding>UTF-8</doxyfileEncoding>
+                    <projectName>${project.name}</projectName>
+                    <projectNumber>${project.version}</projectNumber>
+                    <outputLanguage>English</outputLanguage>
+                    <tabSize>4</tabSize>
+                    <optimizeOutputJava>true</optimizeOutputJava>
+                    <recursive>true</recursive>
+                    <generateHtml>true</generateHtml>
+                    <htmlOutput>html</htmlOutput>
+                    <generateLatex>true</generateLatex>
+                    <showDirectories>false</showDirectories>
+                    <fullPathNames>false</fullPathNames>
+                </configuration>
+            </plugin>
+
+
+            <!-- Plugin to run and test through maven -->
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>maven-jetty-plugin</artifactId>
+                <version>6.1.25</version>
+                <configuration>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>jetty.port</name>
+                            <value>8181</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>customProperties</name>
+                            <value>data/config.properties</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>javax.net.ssl.trustStore</name>
+                            <value>src/main/resources/delivery.keystore</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <name>javax.net.ssl.trustStorePassword</name>
+                            <value>delivery</value>
+                        </systemProperty>
+                    </systemProperties>
+                    <scanIntervalSeconds>9000</scanIntervalSeconds>
+                    <contextPath>/</contextPath> <!-- Run it in root context. -->
+                </configuration>
+            </plugin>
+
+            <!-- Ensures we are compiling at 1.6 level -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <compilerArgument>-proc:none</compilerArgument>
+                </configuration>
+            </plugin>
+
+
+
+            <!-- Preprocessor for static metamodels -->
+            <plugin>
+                <groupId>org.bsc.maven</groupId>
+                <artifactId>maven-processor-plugin</artifactId>
+                <version>2.0.2</version>
+                <executions>
+                    <execution>
+                        <id>process</id>
+                        <goals>
+                            <goal>process</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <outputDirectory>src/main/java/</outputDirectory>
+                            <processors>
+                                <processor>
+                                    org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor
+                                </processor>
+                            </processors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Ensures license information is correct -->
+            <!--<plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>1.8.0</version>
+                <configuration>
+                    <strictCheck>true</strictCheck>
+                    <basedir>${basedir}/src</basedir>
+                    <header>license-header.txt</header>
+                    <excludes>
+                        <exclude>**/*_.java</exclude>
+                        <exclude>**/jquery-ui-1.8.13.custom.css</exclude>
+                        <exclude>**/html5.js</exclude>
+                        <exclude>**/*.keystore</exclude>
+                        <exclude>**/jquery-*.js</exclude>
+                        <exclude>**/MockWebApplication.java</exclude>  Ted Young
+                        <exclude>**/MockWebApplicationContextLoader.java</exclude>  Ted Young
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>initialize</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.dependency.classpath"/>
+                                <if>
+                                    <not><available file="data/config.properties"/></not>
+                                    <then>
+                                        <mkdir dir="data" />
+                                        <copy file="src/main/resources/config-template.properties" tofile="data/config.properties" />
+                                    </then>
+                                </if>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            -->
+        </plugins>
+    </build>
+</project>
