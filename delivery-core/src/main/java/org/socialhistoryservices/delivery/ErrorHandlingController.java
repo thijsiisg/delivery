@@ -133,7 +133,7 @@ public class ErrorHandlingController {
         if (!rcr.isValid()) {
             String msg =  msgSource.getMessage("reCaptcha.error", null,
                     "", LocaleContextHolder.getLocale());
-            // This prevents the createOrEdit from submitting to the database. Sadly, because the captcha is nto part of the model,
+            // This prevents the createOrEdit from submitting to the database. Sadly, because the captcha is not part of the model,
             // no corresponding error will be displayed in the form. We have to do this manually.
             // The error param supplied in the createRecaptchaHtml does not work apparently.
             result.addError(new FieldError(result.getObjectName(), "recaptcha_response_field", "", false,null,null,msg));

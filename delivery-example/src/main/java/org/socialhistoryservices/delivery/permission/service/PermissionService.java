@@ -79,14 +79,14 @@ public interface PermissionService {
      * @param query The query to match by.
      * @return A list of matching Permissions.
      */
-    public List<Permission> listPermissions(CriteriaQuery query);
+    public List<Permission> listPermissions(CriteriaQuery<Permission> query);
 
     /**
      * Get a single Permission matching a built query.
      * @param query The query to match by.
      * @return The matching Permission.
      */
-    public Permission getPermission(CriteriaQuery query);
+    public Permission getPermission(CriteriaQuery<Permission> query);
 
     /**
      * Fetch a permission by its code.

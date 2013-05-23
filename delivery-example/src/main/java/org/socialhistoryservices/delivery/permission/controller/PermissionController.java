@@ -70,7 +70,7 @@ public class PermissionController extends ErrorHandlingController {
 
     @Autowired
     private RecordLookupService lookup;
-    
+
     @Autowired
     private PermissionMailer pmMailer;
 
@@ -1019,8 +1019,8 @@ public class PermissionController extends ErrorHandlingController {
      * @return The map {string status, enum status}.
      */
     @ModelAttribute("status_types")
-    public Map statusTypes() {
-        Map data = new HashMap();
+    public Map<String, Permission.Status> statusTypes() {
+        Map<String, Permission.Status> data = new HashMap<String, Permission.Status>();
         data.put("PENDING", Permission.Status.PENDING);
         data.put("HANDLED", Permission.Status.HANDLED);
         return data;
