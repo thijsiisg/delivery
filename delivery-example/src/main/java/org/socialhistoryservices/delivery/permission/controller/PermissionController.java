@@ -515,7 +515,6 @@ public class PermissionController extends ErrorHandlingController {
         // Add the correct record permissions.
         JsonNode recordPermissionNode = root.path("items");
         int recordPermissionNum = recordPermissionNode.size();
-        boolean restricted = true;
 
         String[] pids = new String[recordPermissionNum];
         for (int i = 0; i < recordPermissionNum; ++i) {
@@ -836,9 +835,6 @@ public class PermissionController extends ErrorHandlingController {
      * @return View name to render.
      */
     public String create(HttpServletRequest req, String[] pids, Model model, PermissionForm form, BindingResult result) {
-        // Retrieve the records to edit
-        boolean restricted = true;
-
         // Try to fetch restricted records.
         List<Record> recs = getRestrictedRecordsFromPids(pids);
 
