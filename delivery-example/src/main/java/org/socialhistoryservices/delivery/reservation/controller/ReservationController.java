@@ -664,6 +664,7 @@ public class ReservationController extends ErrorHandlingController {
                                                      BindingResult result,
                                                      String permission,
                                                      Model model, boolean commit) {
+        Properties reCaptchaProperties = new Properties();
 
         if (!checkHoldings(model, newRes)) return "reservation_error";
 
@@ -715,7 +716,18 @@ public class ReservationController extends ErrorHandlingController {
         }
         model.addAttribute("reservation", newRes);
 
-        model.addAttribute("reCaptchaHTML", reCaptcha.createRecaptchaHtml(null, properties.getProperty("prop_reCaptchaTheme", "clean"), null));
+        // XXX This fix doesn't work at the moment, since it is an upstream
+        // problem. I will leave this in place, so when upstream fixes their
+        // issue this code will work as expected.
+        //
+        // Set the reCAPTCHA options. It accepts a Properties object to generate
+        // the associated JavaScript. The null in createRecaptchaHtml is the
+        // errormessage
+        // NOTE:  reCAPTCHA only supports a few languages at the moment!
+        reCaptchaProperties.setProperty("lang", LocaleContextHolder.getLocale().getLanguage());
+        reCaptchaProperties.setProperty("theme", properties.getProperty("prop_reCaptchaTheme", "clean"));
+
+        model.addAttribute("reCaptchaHTML", reCaptcha.createRecaptchaHtml(null, reCaptchaProperties));
         return "reservation_create";
     }
 
@@ -876,7 +888,7 @@ public class ReservationController extends ErrorHandlingController {
         }
     }
     // }}}
-    
+
     // {{{ Barcode scanning
     /**
      * Get the barcode scan page.
@@ -1052,7 +1064,7 @@ public class ReservationController extends ErrorHandlingController {
         if (checked == null) {
             return "redirect:/reservation/" + qs;
         }
-        
+
         for (int id : checked) {
             Reservation r = reservations.getReservationById(id);
 
@@ -1204,7 +1216,7 @@ public class ReservationController extends ErrorHandlingController {
         List<Holding> holdingList = searchMassCreate(newRes, searchTitle, searchSignature);
 
         try {
-           
+
             reservations.createOrEdit(newRes, null, result);
             if (!result.hasErrors()) {
                 if (print != null) {
