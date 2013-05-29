@@ -32,42 +32,42 @@ import org.springframework.context.i18n.LocaleContextHolder;
  */
 public class CaptchaPropertiesProvider {
 
-  // Properties defined in the properties file
-  @Autowired
-  @Qualifier("myCustomProperties")
-  private Properties properties;
+    // Properties defined in the properties file
+    @Autowired
+    @Qualifier("myCustomProperties")
+    private Properties properties;
 
-  // Only CAPTCHA properties
-  private Properties reCaptchaProperties;
+    // Only CAPTCHA properties
+    private Properties reCaptchaProperties;
 
-  /**
-   * Default constructor, sets the language using the locale and sets properties
-   * as defined in the properties file.
-   */
-  public CaptchaPropertiesProvider() {
-    reCaptchaProperties = new Properties();
-    reCaptchaProperties.setProperty("lang", LocaleContextHolder.getLocale().getLanguage());
-    //TODO read the actual properties as defined in the file!
-    //reCaptchaProperties.setProperty("theme", properties.getProperty("prop_reCaptchaTheme", "clean"));
-    reCaptchaProperties.setProperty("theme", "clean");
-  }
+    /**
+     * Default constructor, sets the language using the locale and sets properties
+     * as defined in the properties file.
+     */
+    public CaptchaPropertiesProvider() {
+        reCaptchaProperties = new Properties();
+        reCaptchaProperties.setProperty("lang", LocaleContextHolder.getLocale().getLanguage());
+        //TODO read the actual properties as defined in the file!
+        //reCaptchaProperties.setProperty("theme", properties.getProperty("prop_reCaptchaTheme", "clean"));
+        reCaptchaProperties.setProperty("theme", "clean");
+    }
 
-  /**
-   * Set a custom property <br />
-   * Add or change a property using this method.
-   * @param key The key to use
-   * @param value The value to assign
-   */
-  public void setProperty(String key, String value) {
-    properties.setProperty(key, value);
-  }
+    /**
+     * Set a custom property <br />
+     * Add or change a property using this method.
+     * @param key The key to use
+     * @param value The value to assign
+     */
+    public void setProperty(String key, String value) {
+        properties.setProperty(key, value);
+    }
 
-  /**
-   * Return the CAPTCHA properties, you can use those properties when you want
-   * to show a reCAPTCHA on a webpage.
-   */
-  public Properties getProperties() {
-    return reCaptchaProperties;
-  }
+    /**
+     * Return the CAPTCHA properties, you can use those properties when you want
+     * to show a reCAPTCHA on a webpage.
+     */
+    public Properties getProperties() {
+        return reCaptchaProperties;
+    }
 }
 
