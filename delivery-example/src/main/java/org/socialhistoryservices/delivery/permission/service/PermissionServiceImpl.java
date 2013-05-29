@@ -85,7 +85,7 @@ public class PermissionServiceImpl implements PermissionService {
      * @param query The query to match by.
      * @return A list of matching Permissions.
      */
-    public List<Permission> listPermissions(CriteriaQuery query) {
+    public List<Permission> listPermissions(CriteriaQuery<Permission> query) {
         return permissionDAO.list(query);
     }
 
@@ -94,7 +94,7 @@ public class PermissionServiceImpl implements PermissionService {
      * @param query The query to match by.
      * @return The matching Permission.
      */
-    public Permission getPermission(CriteriaQuery query) {
+    public Permission getPermission(CriteriaQuery<Permission> query) {
         return permissionDAO.get(query);
     }
 

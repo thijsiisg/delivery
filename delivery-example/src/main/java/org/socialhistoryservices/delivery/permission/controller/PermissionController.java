@@ -70,7 +70,7 @@ public class PermissionController extends ErrorHandlingController {
 
     @Autowired
     private RecordLookupService lookup;
-    
+
     @Autowired
     private PermissionMailer pmMailer;
 
@@ -515,7 +515,6 @@ public class PermissionController extends ErrorHandlingController {
         // Add the correct record permissions.
         JsonNode recordPermissionNode = root.path("items");
         int recordPermissionNum = recordPermissionNode.size();
-        boolean restricted = true;
 
         String[] pids = new String[recordPermissionNum];
         for (int i = 0; i < recordPermissionNum; ++i) {
@@ -836,9 +835,6 @@ public class PermissionController extends ErrorHandlingController {
      * @return View name to render.
      */
     public String create(HttpServletRequest req, String[] pids, Model model, PermissionForm form, BindingResult result) {
-        // Retrieve the records to edit
-        boolean restricted = true;
-
         // Try to fetch restricted records.
         List<Record> recs = getRestrictedRecordsFromPids(pids);
 
@@ -1019,8 +1015,8 @@ public class PermissionController extends ErrorHandlingController {
      * @return The map {string status, enum status}.
      */
     @ModelAttribute("status_types")
-    public Map statusTypes() {
-        Map data = new HashMap();
+    public Map<String, Permission.Status> statusTypes() {
+        Map<String, Permission.Status> data = new HashMap<String, Permission.Status>();
         data.put("PENDING", Permission.Status.PENDING);
         data.put("HANDLED", Permission.Status.HANDLED);
         return data;

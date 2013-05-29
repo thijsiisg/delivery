@@ -55,14 +55,14 @@
 	</logger>
     
     <logger name="org.springframework.security">
-        <level value="all" />
+        <level value="info" />
     </logger>
 
 	
 
 	<!-- Root Logger -->
 	<root>
-		<priority value="info" />
+		<priority value="debug" />
 		<appender-ref ref="console" />
 	</root>
 	
