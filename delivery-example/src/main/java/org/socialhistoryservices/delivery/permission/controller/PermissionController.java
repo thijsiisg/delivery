@@ -29,6 +29,7 @@ import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo_;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.socialhistoryservices.delivery.record.entity.Record_;
 import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.CaptchaPropertiesProvider;
 import org.socialhistoryservices.delivery.ErrorHandlingController;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
@@ -877,7 +878,8 @@ public class PermissionController extends ErrorHandlingController {
             model.addAttribute("permission", form);
         }
 
-        model.addAttribute("reCaptchaHTML", reCaptcha.createRecaptchaHtml(null, properties.getProperty("prop_reCaptchaTheme", "clean"), null));
+        Properties reCaptchaProperties = new CaptchaPropertiesProvider().getProperties();
+        model.addAttribute("reCaptchaHTML", reCaptcha.createRecaptchaHtml(null, reCaptchaProperties));
         return "permission_create";
     }
 
