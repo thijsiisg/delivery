@@ -28,6 +28,7 @@ import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.socialhistoryservices.delivery.reservation.service.*;
 import org.socialhistoryservices.delivery.ErrorHandlingController;
+import org.socialhistoryservices.delivery.CaptchaPropertiesProvider;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -664,8 +665,6 @@ public class ReservationController extends ErrorHandlingController {
                                                      BindingResult result,
                                                      String permission,
                                                      Model model, boolean commit) {
-        Properties reCaptchaProperties = new Properties();
-
         if (!checkHoldings(model, newRes)) return "reservation_error";
 
 
@@ -724,9 +723,7 @@ public class ReservationController extends ErrorHandlingController {
         // the associated JavaScript. The null in createRecaptchaHtml is the
         // errormessage
         // NOTE:  reCAPTCHA only supports a few languages at the moment!
-        reCaptchaProperties.setProperty("lang", LocaleContextHolder.getLocale().getLanguage());
-        reCaptchaProperties.setProperty("theme", properties.getProperty("prop_reCaptchaTheme", "clean"));
-
+        Properties reCaptchaProperties = new CaptchaPropertiesProvider().getProperties();
         model.addAttribute("reCaptchaHTML", reCaptcha.createRecaptchaHtml(null, reCaptchaProperties));
         return "reservation_create";
     }
