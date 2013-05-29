@@ -91,8 +91,6 @@ public class RecordController extends ErrorHandlingController {
      * @param model The model to write the result to.
      * @return The view name to render the result in.
      */
-    // Issue #139: Make sure if A and B call this method for same PID, and A gets the lock, B will see the changes made by A even when not yet committed to the database (double insertion issue DELIVERANCE-139).
-    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     private String get(String[] pids, Model model) {
         List<Record> recs = new ArrayList<Record>();
         for (String pid : pids) {
