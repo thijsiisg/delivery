@@ -16,6 +16,9 @@
 
 package org.socialhistoryservices.delivery.api;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Record;
@@ -48,6 +51,7 @@ public class IISHRecordLookupService implements RecordLookupService {
     private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpTitle;
     private XPathExpression xpSubTitle, xpYear, xpSerialNumbers, xpSignatures, xpLeader;
     private XPathExpression xpNumberOfRecords;
+    private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
 
     private Properties properties;
 
@@ -126,6 +130,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
         }
         catch (XPathExpressionException ex) {
+            logger.error("Failed initializing XPath expressions");
             // Uh-oh
         }
     }
@@ -166,16 +171,20 @@ public class IISHRecordLookupService implements RecordLookupService {
 
             URI uri = new URI(apiProto, null, apiDomain, apiPort, apiBase, search, null);
             URL req = uri.toURL();
+            logger.debug(String.format("doSearch(): Querying SRW API: %s", req.toString()));
             URLConnection conn = req.openConnection();
 
             BufferedReader rdr = new BufferedReader(new InputStreamReader(
                 conn.getInputStream()));
             return (Node)xpAll.evaluate(new InputSource(rdr), XPathConstants.NODE);
         } catch (IOException ex) {
+            logger.debug("doSearch(): API Connect Failed", ex);
             return null;
         } catch (URISyntaxException ex) {
+            logger.debug("doSearch(): Invalid URI syntax", ex);
             return null;
         } catch (XPathExpressionException e) {
+            logger.debug("doSearch(): Invalid XPath", e);
             return null;
         }
     }
@@ -195,6 +204,7 @@ public class IISHRecordLookupService implements RecordLookupService {
         }
         String query = "marc.245+all+\""+title+"\"";
 
+        logger.debug(String.format("getRecordsByTitle(title: %s, resultcountPerChunk: %d, resultStart: %d)", title, resultCountPerChunk, resultStart));
         Node out = doSearch(query, pc.getResultCountPerChunk(), pc.getResultStart());
 
         NodeList search = null;
@@ -202,6 +212,7 @@ public class IISHRecordLookupService implements RecordLookupService {
             search = (NodeList)xpSearch.evaluate(out, XPathConstants.NODESET);
             pc.setTotalResultCount(((Double) xpNumberOfRecords.evaluate(out, XPathConstants.NUMBER)).intValue());
         } catch (XPathExpressionException e) {
+            logger.debug("getRecordsByTitle(): Invalid XPath", e);
             return pc;
         }
 
@@ -246,6 +257,7 @@ public class IISHRecordLookupService implements RecordLookupService {
             NoSuchPidException {
         ExternalRecordInfo externalInfo = new ExternalRecordInfo();
 
+        logger.debug(String.format("getRecordMetaDataByPid(%s)", pid));
         Node node = searchByPid(pid);
 
         String author = evaluateAuthor(node);
@@ -310,6 +322,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
         try {
             // TODO: 866 is not always available.
+            logger.debug(String.format("getHoldingMetaDataByPid(%s)", pid));
             Node node = searchByPid(pid);
             NodeList sigNodes = (NodeList) xpSignatures.evaluate(node,
                     XPathConstants.NODESET);
@@ -331,6 +344,7 @@ public class IISHRecordLookupService implements RecordLookupService {
                 retMap.put(sig.getTextContent(),eh);
             }
         } catch (XPathExpressionException ignored) {
+            logger.debug("getHoldingMetaDataByPid(): Invalid XPath", ignored);
         }
         return retMap;
     }
@@ -366,11 +380,13 @@ public class IISHRecordLookupService implements RecordLookupService {
             resultCount = ((Double) xpNumberOfRecords.evaluate(all, XPathConstants.NUMBER)).intValue();
             search = (NodeList)xpSearchMeta.evaluate(all, XPathConstants.NODESET);
         } catch (XPathExpressionException e) {
+            logger.debug("searchByPid(): Invalid XPath", e);
             throw new NoSuchPidException();
             // Handle this in case the IISH API is down.
         }
 
-        if (resultCount == 0 || search == null) {
+         if (resultCount == 0 || search == null) {
+            logger.debug("searchByPid(): Zero results");
             throw new NoSuchPidException();
         }
 
