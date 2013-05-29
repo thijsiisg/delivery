@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
@@ -60,6 +61,7 @@ public class RecordServiceImpl implements RecordService {
      * Add a Record to the database.
      * @param obj Record to add.
      */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void addRecord(Record obj) {
         recordDAO.add(obj);
     }
@@ -345,6 +347,7 @@ public class RecordServiceImpl implements RecordService {
     public Record createRecordByPid(String pid) throws NoSuchPidException {
         // 1). Assumed is provided pid is not yet in the system's local
         // database.
+
         Record r = new Record();
         r.setPid(pid);
         r.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
