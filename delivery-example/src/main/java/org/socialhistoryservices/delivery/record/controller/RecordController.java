@@ -28,6 +28,7 @@ import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -90,22 +91,26 @@ public class RecordController extends ErrorHandlingController {
      * @param model The model to write the result to.
      * @return The view name to render the result in.
      */
+    // Issue #139: Make sure if A and B call this method for same PID, and A gets the lock, B will see the changes made by A even when not yet committed to the database (double insertion issue DELIVERANCE-139).
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     private String get(String[] pids, Model model) {
         List<Record> recs = new ArrayList<Record>();
         for (String pid : pids) {
-            Record rec = records.resolveRecordByPid(pid);
-            if (rec == null) { // Issue #108
-                // Try creating the record.
-                try {
-                    rec = records.createRecordByPid(pid);
-                    records.addRecord(rec);
-                } catch (NoSuchPidException e) {
-                    // Pass, catch if no of the requested PIDs are available
-                    // below.
+            synchronized (this) { // Issue #139: Make sure that when A enters, B has to wait, and will detect the insert into the database by B when entering.
+                Record rec = records.resolveRecordByPid(pid);
+                if (rec == null) { // Issue #108
+                    // Try creating the record.
+                    try {
+                        rec = records.createRecordByPid(pid);
+                        records.addRecord(rec);
+                    } catch (NoSuchPidException e) {
+                        // Pass, catch if no of the requested PIDs are available
+                        // below.
+                    }
                 }
-            }
-            if (rec != null) {
-                recs.add(rec);
+                if (rec != null) {
+                    recs.add(rec);
+                }
             }
         }
 
