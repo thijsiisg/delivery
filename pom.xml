@@ -19,191 +19,65 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.socialhistoryservices</groupId>
+    <groupId>org.socialhistoryservices.delivery</groupId>
     <artifactId>delivery</artifactId>
-    <packaging>war</packaging>
-    <version>M1 - Iteration 3</version>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
     <name>Delivery</name>
+
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jetty.version>6.1.26</jetty.version>
-        <spring.version>3.0.5.RELEASE</spring.version>
+        <spring.version>3.2.2.RELEASE</spring.version>
+        <spring.security.version>3.1.4.RELEASE</spring.security.version>
         <slf4j.version>1.5.10</slf4j.version>
         <java.version>1.6</java.version>
         <junit.version>4.8.2</junit.version>
-        <!--<servlet.version>2.4</servlet.version>-->
+        <powermock.version>1.5</powermock.version>
+        <maven.jar.version>2.4</maven.jar.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-expression</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <modules>
+        <module>delivery-example</module>
+        <module>delivery-core</module>
+    </modules>
 
     <dependencies>
-
+        <!-- Test Dependencies -->
         <dependency>
-            <groupId>net.sf.barcode4j</groupId>
-            <artifactId>barcode4j</artifactId>
-            <version>2.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.soebes.maven.plugins.dmg</groupId>
-            <artifactId>doxygen-maven-plugin</artifactId>
-            <version>1.0.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-lgpl</artifactId>
-            <version>1.8.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-lgpl</artifactId>
-            <version>1.8.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.iish.util</groupId>
-            <artifactId>propertyloader</artifactId>
-            <version>1.1</version>
-        </dependency>
-
-        <!-- Mail dependencies -->
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>mail</artifactId>
-            <version>1.4</version>
-        </dependency>
-
-        <!-- Bean Validation Dependencies -->
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>1.0.0.GA</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>4.2.0.Final</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- JPA Persistence Dependencies -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <version>3.6.0.Final</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!--<dependency>
-            <groupId>hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>1.8.0.10</version>
-        </dependency>-->
-
-        <dependency>
-             <groupId>org.hsqldb</groupId>
-             <artifactId>hsqldb</artifactId>
-             <version>2.2.9</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.0-801.jdbc4</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.hibernate.javax.persistence</groupId>
-            <artifactId>hibernate-jpa-2.0-api</artifactId>
-            <version>1.0.0.Final</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <!-- Spring Dependencies -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>${spring.version}</version>
-            <exclusions>
-                <!-- Exclude Commons Logging in favor of SLF4j -->
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-orm</artifactId>
-            <version>${spring.version}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
-            <type>jar</type>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- DB Dependencies -->
         <dependency>
-            <groupId>commons-dbcp</groupId>
-            <artifactId>commons-dbcp</artifactId>
-            <version>20030825.184428</version>
-            <type>jar</type>
-            <scope>compile</scope>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>${powermock.version}</version>
+            <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>commons-pool</groupId>
-            <artifactId>commons-pool</artifactId>
-            <version>20030825.183949</version>
-            <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-jpamodelgen</artifactId>
-            <version>1.0.0.Final</version>
-        </dependency>
-
-        <!-- View Dependencies -->
-        <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.18</version>
-        </dependency>
-
-
-        <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-
+        <!--<dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.8.4</version>
+        </dependency>-->
         <!-- logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -225,7 +99,7 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>1.2.15</version>
+            <version>1.2.16</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.jdmk</groupId>
@@ -238,269 +112,7 @@
             </exclusions>
             <!--<scope>runtime</scope>-->
         </dependency>
-
-        <!-- Security -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-web</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-taglibs</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-cas-client</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <version>1.7</version>
-        </dependency>
-
-        <!-- Needed for if statements in ant run -->
-        <dependency>
-            <groupId>ant-contrib</groupId>
-            <artifactId>ant-contrib</artifactId>
-            <version>1.0b3</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>ant</groupId>
-                    <artifactId>ant</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>ant</groupId>
-            <artifactId>ant-nodeps</artifactId>
-            <version>1.6.5</version>
-        </dependency>
-
-        <!-- Recaptcha -->
-        <dependency>
-            <groupId>com.google.code.maven-play-plugin.net.tanesha.recaptcha4j</groupId>
-            <artifactId>recaptcha4j</artifactId>
-            <version>0.0.8</version>
-        </dependency>
-
-
-
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>org.springframework.maven.milestone</id>
-            <name>Spring Maven Milestone Repository</name>
-            <url>http://maven.springframework.org/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
 
-        <!-- JBoss Repository used for Java EE 6 pieces -->
-        <repository>
-            <id>repository.jboss.org</id>
-            <name>JBoss Repository</name>
-            <url>
-                http://repository.jboss.org/nexus/content/groups/public-jboss/
-            </url>
-        </repository>
-
-        <repository>
-            <id>diwoto.iisg.nl</id>
-            <name>IISG Repository</name>
-            <url>https://diwoto.iisg.nl/maven</url>
-        </repository>
-    </repositories>
-
-    <build>
-        <finalName>Delivery</finalName>
-        <plugins>
-
-            <!-- Facilitates downloading source and javadoc in Eclipse -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-eclipse-plugin</artifactId>
-                <version>2.8</version>
-                <configuration>
-                    <wtpversion>2.0</wtpversion>
-                    <downloadSources>true</downloadSources>
-                    <downloadJavadocs>true</downloadJavadocs>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.9</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <customProperties>
-                            src/test/resources/test-config.properties
-                        </customProperties>
-                        <javax.net.ssl.trustStore>
-                            src/main/resources/delivery.keystore
-                        </javax.net.ssl.trustStore>
-                        <javax.net.ssl.trustStorePassword>delivery</javax.net.ssl.trustStorePassword>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>com.soebes.maven.plugins.dmg</groupId>
-                <artifactId>doxygen-maven-plugin</artifactId>
-                <version>1.0.1</version>
-                <configuration>
-                    <doxyfileEncoding>UTF-8</doxyfileEncoding>
-                    <projectName>${project.name}</projectName>
-                    <projectNumber>${project.version}</projectNumber>
-                    <outputLanguage>English</outputLanguage>
-                    <tabSize>4</tabSize>
-                    <optimizeOutputJava>true</optimizeOutputJava>
-                    <recursive>true</recursive>
-                    <generateHtml>true</generateHtml>
-                    <htmlOutput>html</htmlOutput>
-                    <generateLatex>true</generateLatex>
-                    <showDirectories>false</showDirectories>
-                    <fullPathNames>false</fullPathNames>
-                </configuration>
-            </plugin>
-
-
-            <!-- Plugin to run and test through maven -->
-            <plugin>
-                <groupId>org.mortbay.jetty</groupId>
-                <artifactId>maven-jetty-plugin</artifactId>
-                <version>6.1.25</version>
-                <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>jetty.port</name>
-                            <value>8181</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>customProperties</name>
-                            <value>data/config.properties</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>javax.net.ssl.trustStore</name>
-                            <value>src/main/resources/delivery.keystore</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>javax.net.ssl.trustStorePassword</name>
-                            <value>delivery</value>
-                        </systemProperty>
-                    </systemProperties>
-                    <scanIntervalSeconds>9000</scanIntervalSeconds>
-                    <contextPath>/</contextPath> <!-- Run it in root context. -->
-                </configuration>
-            </plugin>
-
-            <!-- Ensures we are compiling at 1.6 level -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <compilerArgument>-proc:none</compilerArgument>
-                </configuration>
-            </plugin>
-
-
-
-            <!-- Preprocessor for static metamodels -->
-            <plugin>
-                <groupId>org.bsc.maven</groupId>
-                <artifactId>maven-processor-plugin</artifactId>
-                <version>2.0.2</version>
-                <executions>
-                    <execution>
-                        <id>process</id>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <outputDirectory>src/main/java/</outputDirectory>
-                            <processors>
-                                <processor>
-                                    org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor
-                                </processor>
-                            </processors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Ensures license information is correct -->
-            <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <version>1.8.0</version>
-                <configuration>
-                    <strictCheck>true</strictCheck>
-                    <basedir>${basedir}/src</basedir>
-                    <header>license-header.txt</header>
-                    <excludes>
-                        <exclude>**/*_.java</exclude>
-                        <exclude>**/jquery-ui-1.8.13.custom.css</exclude>
-                        <exclude>**/html5.js</exclude>
-                        <exclude>**/*.keystore</exclude>
-                        <exclude>**/jquery-*.js</exclude>
-                        <exclude>**/MockWebApplication.java</exclude> <!-- Ted Young -->
-                        <exclude>**/MockWebApplicationContextLoader.java</exclude> <!-- Ted Young -->
-                    </excludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>initialize</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <tasks>
-                                <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.dependency.classpath"/>
-                                <if>
-                                    <not><available file="data/config.properties"/></not>
-                                    <then>
-                                        <mkdir dir="data" />
-                                        <copy file="src/main/resources/config-template.properties" tofile="data/config.properties" />
-                                    </then>
-                                </if>
-                            </tasks>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>
