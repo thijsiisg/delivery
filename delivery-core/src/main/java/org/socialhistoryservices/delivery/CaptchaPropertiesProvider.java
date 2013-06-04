@@ -59,7 +59,7 @@ public class CaptchaPropertiesProvider {
      * @param value The value to assign
      */
     public void setProperty(String key, String value) {
-        properties.setProperty(key, value);
+        reCaptchaProperties.setProperty(key, value);
     }
 
     /**
