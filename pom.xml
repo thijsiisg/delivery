@@ -16,103 +16,121 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>org.socialhistoryservices.delivery</groupId>
-    <artifactId>delivery</artifactId>
-    <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
-    <name>Delivery</name>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.socialhistoryservices.delivery</groupId>
+  <artifactId>delivery</artifactId>
+  <packaging>pom</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>Delivery</name>
 
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jetty.version>6.1.26</jetty.version>
-        <spring.version>3.2.2.RELEASE</spring.version>
-        <spring.security.version>3.1.4.RELEASE</spring.security.version>
-        <slf4j.version>1.5.10</slf4j.version>
-        <java.version>1.6</java.version>
-        <junit.version>4.8.2</junit.version>
-        <powermock.version>1.5</powermock.version>
-        <maven.jar.version>2.4</maven.jar.version>
-    </properties>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jetty.version>6.1.26</jetty.version>
+    <spring.version>3.2.2.RELEASE</spring.version>
+    <spring.security.version>3.1.4.RELEASE</spring.security.version>
+    <slf4j.version>1.5.10</slf4j.version>
+    <java.version>1.6</java.version>
+    <junit.version>4.8.2</junit.version>
+    <powermock.version>1.5</powermock.version>
+    <maven.jar.version>2.4</maven.jar.version>
+  </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-expression</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <modules>
-        <module>delivery-example</module>
-        <module>delivery-core</module>
-    </modules>
-
+  <dependencyManagement>
     <dependencies>
-        <!-- Test Dependencies -->
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!--<dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-expression</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <modules>
+    <module>delivery-example</module>
+    <module>delivery-core</module>
+  </modules>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <!-- Ensures we are compiling at 1.6 level -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.2</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <compilerArgument>-proc:none</compilerArgument>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <dependencies>
+    <!-- Test Dependencies -->
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!--<dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <version>1.8.4</version>
         </dependency>-->
         <!-- logging -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+          <version>${slf4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>runtime</scope>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jcl-over-slf4j</artifactId>
+          <version>${slf4j.version}</version>
+          <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>runtime</scope>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+          <version>${slf4j.version}</version>
+          <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.jdmk</groupId>
-                    <artifactId>jmxtools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jmx</groupId>
-                    <artifactId>jmxri</artifactId>
-                </exclusion>
-            </exclusions>
-            <!--<scope>runtime</scope>-->
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+          <version>1.2.16</version>
+          <exclusions>
+            <exclusion>
+              <groupId>com.sun.jdmk</groupId>
+              <artifactId>jmxtools</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>com.sun.jmx</groupId>
+              <artifactId>jmxri</artifactId>
+            </exclusion>
+          </exclusions>
+          <!--<scope>runtime</scope>-->
         </dependency>
-    </dependencies>
+      </dependencies>
 
 
-</project>
+    </project>
