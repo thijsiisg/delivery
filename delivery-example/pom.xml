@@ -350,20 +350,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Ensures we are compiling at 1.6 level -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <compilerArgument>-proc:none</compilerArgument>
-                </configuration>
-            </plugin>
-
-
-
             <!-- Preprocessor for static metamodels -->
             <plugin>
                 <groupId>org.bsc.maven</groupId>
