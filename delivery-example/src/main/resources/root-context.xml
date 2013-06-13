@@ -30,7 +30,7 @@
 
   <!-- Template configuration -->
   <import resource="mail.xml" />
-    
+
   <!-- Database configuration -->
   <import resource="db.xml" />
 
