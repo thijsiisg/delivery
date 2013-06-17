@@ -79,7 +79,7 @@ public class ReservationServiceImpl implements ReservationService {
 
 
     private Logger log = Logger.getLogger(getClass());
-    
+
     /**
      * Add a Reservation to the database.
      * @param obj Reservation to add.
@@ -107,12 +107,12 @@ public class ReservationServiceImpl implements ReservationService {
                 Reservation result = getReservation(query);
 
                 if (result == null
-                      || result.getDate().getDate() != obj.getDate().getDate()
-                      || result.getDate().getYear() != obj.getDate().getYear()
-                      || result.getDate().getMonth() != obj.getDate().getMonth()
-                ) {
+                        || result.getDate().getDate() != obj.getDate().getDate()
+                        || result.getDate().getYear() != obj.getDate().getYear()
+                        || result.getDate().getMonth() != obj.getDate().getMonth()
+                   ) {
                     obj.setQueueNo(1);
-                }
+                   }
                 else {
                     obj.setQueueNo(result.getQueueNo()+1);
                 }
@@ -147,7 +147,7 @@ public class ReservationServiceImpl implements ReservationService {
      * @param res Reservation to change status for.
      * @param status Status to change holdings to.
      */
-     public void changeHoldingStatus(Reservation res, Holding.Status status) {
+    public void changeHoldingStatus(Reservation res, Holding.Status status) {
         for (HoldingReservation hr : res.getHoldingReservations()) {
             hr.getHolding().setStatus(status);
         }
@@ -209,17 +209,17 @@ public class ReservationServiceImpl implements ReservationService {
         if (res == null)
             return null;
 
-       // Change holding status
-       switch (h.getStatus()) {
+        // Change holding status
+        switch (h.getStatus()) {
             case RESERVED:
                 h.setStatus(Holding.Status.IN_USE);
-            break;
+                break;
             case IN_USE:
                 h.setStatus(Holding.Status.RETURNED);
-            break;
+                break;
             case RETURNED:
                 h.setStatus(Holding.Status.AVAILABLE);
-            break;
+                break;
         }
 
         // Change reservation status
@@ -277,32 +277,31 @@ public class ReservationServiceImpl implements ReservationService {
      * (or ran out of paper for example).
      */
     public void printReservation(Reservation res, boolean alwaysPrint) throws PrinterException {
-
         // Check if the reservation should be printed or not.
         if (res.isPrinted() && !alwaysPrint) {
             return;
         }
         try {
-            PrinterJob job = PrinterJob.getPrinterJob();
-            job.setJobName("delivery");
-            // Autowiring does not seem to work in POJOs ?
-            // Create a reservation printable
-
-
-            // Note: Use Book to make sure margins are correct.
-            Book pBook = new Book();
+            //TODO This is a hack, because it create multiple jobs printing one
+            //page each instead of a job printing multiple pages.
             for (HoldingReservation hr : res.getHoldingReservations()) {
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setJobName("delivery");
+                // Autowiring does not seem to work in POJOs ?
+                // Create a reservation printable
+
+                // Note: Use Book to make sure margins are correct.
+                Book pBook = new Book();
                 ReservationPrintable rp = new ReservationPrintable(hr,
                         msgSource,
                         (DateFormat)bf.getBean("dateFormat"), properties);
                 pBook.append(rp, new IISHPageFormat());
+
+                job.setPageable(pBook);
+                // Print the print job, throws PrinterException when something was
+                // wrong.
+                job.print();
             }
-
-
-            job.setPageable(pBook);
-            // Print the print job, throws PrinterException when something was
-            // wrong.
-            job.print();
         } catch (PrinterException e) {
             log.warn("Printing failed", e);
             throw e;
@@ -335,57 +334,57 @@ public class ReservationServiceImpl implements ReservationService {
      * @throws NoHoldingsException Thrown when no holdings are provided.
      */
     public void createOrEdit(Reservation newRes, Reservation oldRes,
-                                      BindingResult result) throws
-            InUseException, ClosedException, NoHoldingsException {
+            BindingResult result) throws
+        InUseException, ClosedException, NoHoldingsException {
 
-        // Validate the reservation.
-        validateReservation(newRes, result);
+            // Validate the reservation.
+            validateReservation(newRes, result);
 
 
 
-        // Make sure a valid reservation date is provided (Only upon creation
-        // because time dependent!).
-        if (oldRes == null) {
-            Date resDate = newRes.getDate();
-            if (resDate != null && !resDate.equals(getFirstValidReservationDate
-                        (resDate))) {
-                String msg =  msgSource.getMessage("validator.reservationDate", null,
-                        "Invalid date", LocaleContextHolder.getLocale());
-                result.addError(new FieldError(result.getObjectName(), "date",
-                        newRes.getDate(), false,
-                        null, null, msg));
+            // Make sure a valid reservation date is provided (Only upon creation
+            // because time dependent!).
+            if (oldRes == null) {
+                Date resDate = newRes.getDate();
+                if (resDate != null && !resDate.equals(getFirstValidReservationDate
+                            (resDate))) {
+                    String msg =  msgSource.getMessage("validator.reservationDate", null,
+                            "Invalid date", LocaleContextHolder.getLocale());
+                    result.addError(new FieldError(result.getObjectName(), "date",
+                                newRes.getDate(), false,
+                                null, null, msg));
+                            }
             }
-        }
 
-        // If the return date is provided, it should be >= to the date of
-        // visit.
-        Date d = newRes.getDate();
-        Date rd = newRes.getReturnDate();
-        if (d != null && rd != null && rd.before(d)) {
-            String msg =  msgSource.getMessage("validator.reservationReturnDate", null,
+            // If the return date is provided, it should be >= to the date of
+            // visit.
+            Date d = newRes.getDate();
+            Date rd = newRes.getReturnDate();
+            if (d != null && rd != null && rd.before(d)) {
+                String msg =  msgSource.getMessage("validator.reservationReturnDate", null,
                         "Invalid date", LocaleContextHolder.getLocale());
                 result.addError(new FieldError(result.getObjectName(),
-                        "returnDate",
-                        newRes.getDate(), false,
-                        null, null, msg));
-        }
+                            "returnDate",
+                            newRes.getDate(), false,
+                            null, null, msg));
+            }
 
-        // Execute this method below the date check, or else the date will
-        // not be checked if this method throws an exception; not displaying
-        // the error immediately, but only when the holdings are valid instead.
-        validateHoldings(newRes, oldRes);
+            // Execute this method below the date check, or else the date will
+            // not be checked if this method throws an exception; not displaying
+            // the error immediately, but only when the holdings are valid instead.
+            validateHoldings(newRes, oldRes);
 
-        // Add or save the record when no errors are present.
-        if (!result.hasErrors()) {
-            if (oldRes == null) {
-                newRes.setCreationDate(new Date());
-                addReservation(newRes);
-            } else {
-                oldRes.mergeWith(newRes);
-                saveReservation(oldRes);
+            // Add or save the record when no errors are present.
+            if (!result.hasErrors()) {
+                if (oldRes == null) {
+                    newRes.setCreationDate(new Date());
+                    addReservation(newRes);
+                } else {
+                    oldRes.mergeWith(newRes);
+                    saveReservation(oldRes);
+                }
             }
         }
-    }
 
     /**
      * Validate provided holding part of reservation.
@@ -412,12 +411,12 @@ public class ReservationServiceImpl implements ReservationService {
             Holding h = hr.getHolding();
             if (oldRes != null) {
                 for (HoldingReservation hr2 : oldRes.getHoldingReservations()
-                        ) {
+                    ) {
                     Holding h2 = hr2.getHolding();
                     if (h2.getRecord().equals(h.getRecord()) && h2.getSignature().equals(h.getSignature())) {
                         has = true;
                     }
-                }
+                    }
             }
             if (!has && h.getStatus() != Holding.Status.AVAILABLE) {
                 throw new InUseException();
@@ -459,10 +458,10 @@ public class ReservationServiceImpl implements ReservationService {
                         null,
                         "Required", LocaleContextHolder.getLocale());
                 result.addError(new FieldError(result.getObjectName(),
-                        "holdingReservations[" + i + "].comment",
-                        "", false,
-                        null, null, msg));
-            }
+                            "holdingReservations[" + i + "].comment",
+                            "", false,
+                            null, null, msg));
+                    }
             i++;
         }
 
@@ -472,7 +471,7 @@ public class ReservationServiceImpl implements ReservationService {
     /**
      * Get the first valid reservation date after or equal to from.
      * @param from The date to start from.
-     * @return The first valid date, or null when maxDaysInAdvance was 
+     * @return The first valid date, or null when maxDaysInAdvance was
      * exceeded.
      */
     public Date getFirstValidReservationDate(Date from) {
@@ -496,20 +495,20 @@ public class ReservationServiceImpl implements ReservationService {
         // Cannot reserve after "closing" time.
         if (firstPossibleCal.get(Calendar.HOUR_OF_DAY) > t.get(Calendar.HOUR_OF_DAY) ||
                 (firstPossibleCal.get(Calendar.HOUR_OF_DAY) == t.get(Calendar
-                        .HOUR_OF_DAY)
-                        &&
-                firstPossibleCal.get(Calendar.MINUTE)
-                >= t.get(Calendar.MINUTE))) {
+                                                                     .HOUR_OF_DAY)
+                 &&
+                 firstPossibleCal.get(Calendar.MINUTE)
+                 >= t.get(Calendar.MINUTE))) {
             firstPossibleCal.add(Calendar.DAY_OF_YEAR, 1);
-        }
+                 }
         // Cannot reserve in past (or after closing time).
         if (fromCal.get(Calendar.YEAR) < firstPossibleCal.get(Calendar.YEAR)
                 || (
-                fromCal.get(Calendar.YEAR) == firstPossibleCal.get(Calendar
-                .YEAR) && fromCal.get(Calendar.DAY_OF_YEAR) < firstPossibleCal.get
-                        (Calendar.DAY_OF_YEAR))) {
+                    fromCal.get(Calendar.YEAR) == firstPossibleCal.get(Calendar
+                        .YEAR) && fromCal.get(Calendar.DAY_OF_YEAR) < firstPossibleCal.get
+                    (Calendar.DAY_OF_YEAR))) {
             fromCal = firstPossibleCal;
-        }
+                    }
 
         // Check for weekends
         if (fromCal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
@@ -524,11 +523,11 @@ public class ReservationServiceImpl implements ReservationService {
                 ("prop_reservationMaxDaysInAdvance"));
         maxCal.add(Calendar.DAY_OF_YEAR, maxDaysInAdvance);
         if (fromCal.get(Calendar.YEAR) > maxCal.get(Calendar.YEAR) || (fromCal
-                .get(Calendar.YEAR) == maxCal.get(Calendar.YEAR) && fromCal
-                .get(Calendar.DAY_OF_YEAR) > maxCal.get(Calendar.DAY_OF_YEAR)
-        )) {
+                    .get(Calendar.YEAR) == maxCal.get(Calendar.YEAR) && fromCal
+                    .get(Calendar.DAY_OF_YEAR) > maxCal.get(Calendar.DAY_OF_YEAR)
+                    )) {
             return null;
-        }
+                    }
 
         return fromCal.getTime();
     }
