@@ -337,7 +337,7 @@ public class IISHRecordLookupService implements RecordLookupService {
                 Node ser = serNodes.item(i);
 
                 if (sig == null) continue;
-                
+
                 ExternalHoldingInfo eh= new ExternalHoldingInfo();
                 if (ser != null)
                     eh.setSerialNumbers(ser.getTextContent().replace(",", ", "));
@@ -356,7 +356,7 @@ public class IISHRecordLookupService implements RecordLookupService {
      * @throws NoSuchPidException Thrown when the search returns nothing.
      */
     private Node searchByPid(String pid) throws NoSuchPidException {
-        String itemSeparator = properties.getProperty("prop_itemSeparator");
+        String itemSeparator = properties.getProperty("prop_holdingSeparator");
 
         if (pid.contains(itemSeparator)) {
             int idx = pid.lastIndexOf(itemSeparator);
@@ -438,7 +438,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
         if (format.equals("av") || format.equals("rm") || format.equals("gm") || format.equals("pv") || format.equals("km") || format.equals("kc"))
             return ExternalRecordInfo.MaterialType.VISUAL;
-        
+
         return ExternalRecordInfo.MaterialType.OTHER;
     }
 
