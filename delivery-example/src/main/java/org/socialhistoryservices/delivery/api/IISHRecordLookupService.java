@@ -48,7 +48,7 @@ public class IISHRecordLookupService implements RecordLookupService {
     private XPathExpression xpSearch, xpAll;
     private XPathExpression xpSearchTitle, xpSearchSubTitle;
     private XPathExpression xpSearchIdent;
-    private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpTitle;
+    private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpAlt2Author, xpAlt3Author, xpTitle;
     private XPathExpression xpSubTitle, xpYear, xpSerialNumbers, xpSignatures, xpLeader;
     private XPathExpression xpNumberOfRecords;
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
@@ -114,6 +114,10 @@ public class IISHRecordLookupService implements RecordLookupService {
             xpAuthor = xpath.compile("marc:datafield[@tag=100]" +
                     "/marc:subfield[@code=\"a\"]");
             xpAltAuthor = xpath.compile("marc:datafield[@tag=110]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xpAlt2Author = xpath.compile("marc:datafield[@tag=700]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xpAlt3Author = xpath.compile("marc:datafield[@tag=710]" +
                     "/marc:subfield[@code=\"a\"]");
             xpTitle = xpath.compile("marc:datafield[@tag=245]" +
                     "/marc:subfield[@code=\"a\"]");
@@ -474,6 +478,8 @@ public class IISHRecordLookupService implements RecordLookupService {
      * @return The author found, or null if not present.
      */
     private String evaluateAuthor(Node node) {
+        // O I love this try-catch mechanism -> The MARC standard forces us to.
+        // I blame the people who indexed the records, which don't just use 100$a.
         try {
             return xpAuthor.evaluate(node);
 
@@ -481,7 +487,15 @@ public class IISHRecordLookupService implements RecordLookupService {
             try {
                 return xpAltAuthor.evaluate(node);
             } catch (XPathExpressionException e) {
-                return null;
+                try {
+                    return xpAlt2Author.evaluate(node);
+                } catch (XPathExpressionException e2) {
+                    try {
+                        return xpAlt3Author.evaluate(node);
+                    } catch (XPathExpressionException e3) {
+                        return null;
+                    }
+                }
             }
         }
     }
