@@ -18,16 +18,12 @@ package org.socialhistoryservices.delivery.api;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
-import org.socialhistoryservices.delivery.record.entity.Record;
-import org.socialhistoryservices.delivery.record.entity.Record_;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import javax.validation.constraints.Size;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.*;
 import java.io.BufferedReader;
@@ -46,10 +42,13 @@ import java.util.Properties;
 public class IISHRecordLookupService implements RecordLookupService {
 
     private XPathExpression xpSearch, xpAll;
-    private XPathExpression xpSearchTitle, xpSearchSubTitle;
+
+    // TODO: Remove duplicate Search vs non-search xpath expressions.
+    private XPathExpression xpSearch245aTitle, xpSearch500aTitle, xpSearch600aTitle, xpSearch610aTitle, xpSearch650aTitle, xpSearch651aTitle, xpSearch245kTitle, xpSearch245bSubTitle;
     private XPathExpression xpSearchIdent;
-    private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpTitle;
-    private XPathExpression xpSubTitle, xpYear, xpSerialNumbers, xpSignatures, xpLeader;
+    private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpAlt2Author, xpAlt3Author;
+    private XPathExpression xp245aTitle, xp500aTitle, xp600aTitle, xp610aTitle, xp650aTitle, xp651aTitle, xp245kTitle;
+    private XPathExpression xp245bSubTitle, xpYear, xpSerialNumbers, xpSignatures, xpLeader;
     private XPathExpression xpNumberOfRecords;
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
 
@@ -100,12 +99,30 @@ public class IISHRecordLookupService implements RecordLookupService {
         try {
             xpAll = xpath.compile("/srw:searchRetrieveResponse");
             xpSearch = xpath.compile("//srw:record");
-            xpSearchTitle = xpath.compile("ns1:recordData/marc:record/" +
+            xpSearch245aTitle = xpath.compile("ns1:recordData/marc:record/" +
                     "marc:datafield[@tag=245]" +
                     "/marc:subfield[@code=\"a\"]");
-            xpSearchSubTitle = xpath.compile("ns1:recordData/marc:record/" +
+            xpSearch245bSubTitle = xpath.compile("ns1:recordData/marc:record/" +
                     "marc:datafield[@tag=245]" +
                     "/marc:subfield[@code=\"b\"]");
+            xpSearch500aTitle = xpath.compile("ns1:recordData/marc:record/" +
+                    "marc:datafield[@tag=500]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xpSearch600aTitle = xpath.compile("ns1:recordData/marc:record/" +
+                    "marc:datafield[@tag=600]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xpSearch610aTitle = xpath.compile("ns1:recordData/marc:record/" +
+                    "marc:datafield[@tag=610]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xpSearch650aTitle = xpath.compile("ns1:recordData/marc:record/" +
+                    "marc:datafield[@tag=650]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xpSearch651aTitle = xpath.compile("ns1:recordData/marc:record/" +
+                    "marc:datafield[@tag=651]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xpSearch245kTitle = xpath.compile("ns1:recordData/marc:record/" +
+                    "marc:datafield[@tag=245]" +
+                    "/marc:subfield[@code=\"k\"]");
 
             xpSearchIdent = xpath.compile("ns1:extraRecordData/" +
                     "extraData:extraData/iisg:identifier");
@@ -115,9 +132,25 @@ public class IISHRecordLookupService implements RecordLookupService {
                     "/marc:subfield[@code=\"a\"]");
             xpAltAuthor = xpath.compile("marc:datafield[@tag=110]" +
                     "/marc:subfield[@code=\"a\"]");
-            xpTitle = xpath.compile("marc:datafield[@tag=245]" +
+            xpAlt2Author = xpath.compile("marc:datafield[@tag=700]" +
                     "/marc:subfield[@code=\"a\"]");
-            xpSubTitle = xpath.compile("marc:datafield[@tag=245]" +
+            xpAlt3Author = xpath.compile("marc:datafield[@tag=710]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xp245aTitle = xpath.compile("marc:datafield[@tag=245]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xp500aTitle = xpath.compile("marc:datafield[@tag=500]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xp600aTitle = xpath.compile("marc:datafield[@tag=600]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xp610aTitle = xpath.compile("marc:datafield[@tag=610]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xp650aTitle = xpath.compile("marc:datafield[@tag=650]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xp651aTitle = xpath.compile("marc:datafield[@tag=651]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xp245kTitle = xpath.compile("marc:datafield[@tag=245]" +
+                    "/marc:subfield[@code=\"k\"]");
+            xp245bSubTitle = xpath.compile("marc:datafield[@tag=245]" +
                     "/marc:subfield[@code=\"b\"]");
             xpYear = xpath.compile("marc:datafield[@tag=260]" +
                     "/marc:subfield[@code=\"c\"]");
@@ -227,13 +260,14 @@ public class IISHRecordLookupService implements RecordLookupService {
             String recPid, recTitle;
             try {
                 recPid = xpSearchIdent.evaluate(node);
-                recTitle = xpSearchTitle.evaluate(node);
+
+                recTitle = evaluateSearchTitle(node);
             } catch (XPathExpressionException ex) {
                 continue;
             }
             String recSubTitle = "";
             try {
-                 recSubTitle = " " + xpSearchSubTitle.evaluate(node).trim().replaceAll("[/:]$", "");
+                 recSubTitle = " " + xpSearch245bSubTitle.evaluate(node).trim().replaceAll("[/:]$", "");
             } catch (XPathExpressionException ignored) {
             }
 
@@ -247,7 +281,25 @@ public class IISHRecordLookupService implements RecordLookupService {
         return pc;
     }
 
-     /**
+    private String evaluateSearchTitle(Node node) throws XPathExpressionException {
+        String recTitle;
+        recTitle = xpSearch245aTitle.evaluate(node);
+        if (recTitle.isEmpty())
+            recTitle = xpSearch500aTitle.evaluate(node);
+        if (recTitle.isEmpty())
+            recTitle = xpSearch600aTitle.evaluate(node);
+        if (recTitle.isEmpty())
+            recTitle = xpSearch610aTitle.evaluate(node);
+        if (recTitle.isEmpty())
+            recTitle = xpSearch650aTitle.evaluate(node);
+        if (recTitle.isEmpty())
+            recTitle = xpSearch651aTitle.evaluate(node);
+        if (recTitle.isEmpty())
+            recTitle = xpSearch245kTitle.evaluate(node);
+        return recTitle;
+    }
+
+    /**
      * Maps a PID to metadata of a record.
      * @param pid The PID to lookup.
      * @return The metadata of the record, if found.
@@ -454,7 +506,21 @@ public class IISHRecordLookupService implements RecordLookupService {
 
     private String evaluateTitle(Node node) {
         try {
-            return xpTitle.evaluate(node);
+            String title = xp245aTitle.evaluate(node);
+
+            if (title.isEmpty())
+                title = xp500aTitle.evaluate(node);
+            if (title.isEmpty())
+                title = xp600aTitle.evaluate(node);
+            if (title.isEmpty())
+                title = xp610aTitle.evaluate(node);
+            if (title.isEmpty())
+                title = xp650aTitle.evaluate(node);
+            if (title.isEmpty())
+                title = xp651aTitle.evaluate(node);
+            if (title.isEmpty())
+                title = xp245kTitle.evaluate(node);
+            return title;
         } catch (XPathExpressionException e) {
             return null;
         }
@@ -462,7 +528,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
     private String evaluateSubTitle(Node node) {
         try {
-            return xpSubTitle.evaluate(node);
+            return xp245bSubTitle.evaluate(node);
         } catch (XPathExpressionException e) {
             return null;
         }
@@ -474,15 +540,20 @@ public class IISHRecordLookupService implements RecordLookupService {
      * @return The author found, or null if not present.
      */
     private String evaluateAuthor(Node node) {
+
         try {
-            return xpAuthor.evaluate(node);
+            String author = xpAuthor.evaluate(node);
+
+            if (author.isEmpty())
+                author = xpAltAuthor.evaluate(node);
+            if (author.isEmpty())
+                author = xpAlt2Author.evaluate(node);
+            if (author.isEmpty())
+                author = xpAlt3Author.evaluate(node);
+            return author;
 
         } catch (XPathExpressionException ex) {
-            try {
-                return xpAltAuthor.evaluate(node);
-            } catch (XPathExpressionException e) {
-                return null;
-            }
+            return null;
         }
     }
 }
