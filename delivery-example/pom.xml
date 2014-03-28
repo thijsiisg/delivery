@@ -268,7 +268,7 @@
     </repositories>
 
     <build>
-        <finalName>Delivery</finalName>
+        <finalName>delivery-1.0</finalName>
         <plugins>
 
             <!-- Facilitates downloading source and javadoc in Eclipse -->
