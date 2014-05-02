@@ -76,13 +76,28 @@
             <artifactId>jackson-mapper-lgpl</artifactId>
             <version>1.8.1</version>
         </dependency>
-        <!-- Recaptcha -->
-        <dependency>
-            <groupId>com.google.code.maven-play-plugin.net.tanesha.recaptcha4j</groupId>
-            <artifactId>recaptcha4j</artifactId>
-            <version>0.0.8</version>
-        </dependency>
+
+	    <!-- Captcha dependencies -->
+	    <dependency>
+		    <groupId>com.octo.captcha</groupId>
+		    <artifactId>jcaptcha</artifactId>
+		    <version>1.0</version>
+	    </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>maven.jahia.org</id>
+            <name>Jahia Maven</name>
+            <url>http://maven.jahia.org/maven2</url>
+        </repository>
+
+        <repository>
+            <id>mirrors.ibiblio.org</id>
+            <name>IBiblio Repository</name>
+            <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
+        </repository>
+    </repositories>
 
     <build>
         <!-- Make a test jar so ErrorHandlingControllerTest can be reused in other modules. -->

@@ -93,19 +93,23 @@ $(document).ready(function(){
   <@input "reservation.visitorName" ""/>
   <@input "reservation.visitorEmail" ""/>
   <@date "reservation.date" ""/>
-              <label for="recaptcha_response_field" class="field">
-                <@_ "reCaptcha.explanation" "Type the two words to prevent spam." />
-              </label>
 
+      <label for="captcha_response_field" class="field">
+        <@_ "captcha.explanation" "Type the following word to prevent spam" />
+      </label>
 
-  ${reCaptchaHTML}
-              <#if reCaptchaError?? >
-                  <ul class="errors">
-                      <li>
-                          <b>${reCaptchaError?html}</b>
-                      </li>
-                  </ul>
-              </#if>
+	  <div id="captcha_widget_div">
+		  <img src="/captcha" id="captcha_image" />
+	      <input type="text" id="captcha_response_field" name="captcha_response_field" value="" class="field" />
+      </div>
+      <#if captchaError?? >
+          <ul class="errors">
+              <li>
+                  <b>${captchaError?html}</b>
+              </li>
+          </ul>
+      </#if>
+
   </fieldset>
   <@buttons>
     <@submit "reservation" />

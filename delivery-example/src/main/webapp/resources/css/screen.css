@@ -716,7 +716,7 @@ img.ui-datepicker-trigger {
     float: left;
 }
 
-#recaptcha_widget_div {
+#captcha_widget_div {
     float: left;
     margin-top: 5px;
 }

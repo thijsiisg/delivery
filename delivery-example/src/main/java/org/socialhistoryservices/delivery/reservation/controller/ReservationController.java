@@ -28,7 +28,6 @@ import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.socialhistoryservices.delivery.reservation.service.*;
 import org.socialhistoryservices.delivery.ErrorHandlingController;
-import org.socialhistoryservices.delivery.CaptchaPropertiesProvider;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -715,16 +714,6 @@ public class ReservationController extends ErrorHandlingController {
         }
         model.addAttribute("reservation", newRes);
 
-        // XXX This fix doesn't work at the moment, since it is an upstream
-        // problem. I will leave this in place, so when upstream fixes their
-        // issue this code will work as expected.
-        //
-        // Set the reCAPTCHA options. It accepts a Properties object to generate
-        // the associated JavaScript. The null in createRecaptchaHtml is the
-        // errormessage
-        // NOTE:  reCAPTCHA only supports a few languages at the moment!
-        Properties reCaptchaProperties = new CaptchaPropertiesProvider().getProperties();
-        model.addAttribute("reCaptchaHTML", reCaptcha.createRecaptchaHtml(null, reCaptchaProperties));
         return "reservation_create";
     }
 
