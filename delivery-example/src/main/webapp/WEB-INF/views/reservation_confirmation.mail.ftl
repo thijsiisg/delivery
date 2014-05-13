@@ -18,8 +18,11 @@
 
 <#include "mail.ftl">
 <@mail reservation.visitorName>
-<@_ "reservationMail.confirmationMessage" "With this mail we confirm your reservation has been successfully received. You can come to the reading room at the date given below."/>
-
+<#if reservation.date?date?string == .now?date?string>
+  <@_ "reservationMail.confirmationMessage" "With this email we confirm your reservation. Documents requested will be ready in the reading room within 20 minutes." />
+<#else>
+  <@_ "reservationMail.confirmationFutureMessage" "With this email we confirm your reservation. Documents requested will be ready on the day of your visit as of 9.30 am." />
+</#if>
 
 --- <@_ "reservation.date" "Date"/> ---
 ${reservation.date?string(prop_dateFormat)}
