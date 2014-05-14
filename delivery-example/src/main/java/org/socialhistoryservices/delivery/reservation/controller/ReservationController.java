@@ -292,7 +292,9 @@ public class ReservationController extends ErrorHandlingController {
                             "%" + search + "%"),
                     cb.like(cb.lower(resRoot.<String>get(Reservation_
                             .visitorEmail)),
-                            "%" + search + "%")
+                            "%" + search + "%"),
+		            cb.like(cb.lower(hRoot.<String>get(Holding_ .signature)),
+				            "%" + search + "%")
                     );
             where = where != null ? cb.and(where, exSearch) : exSearch;
         }
