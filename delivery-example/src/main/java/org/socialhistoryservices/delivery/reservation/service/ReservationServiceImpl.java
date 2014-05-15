@@ -20,6 +20,7 @@ import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.reservation.dao.HoldingReservationDAO;
 import org.socialhistoryservices.delivery.reservation.dao.ReservationDAO;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
@@ -57,6 +58,9 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Autowired
     private ReservationDAO reservationDAO;
+
+	@Autowired
+	private HoldingReservationDAO holdingReservationDAO;
 
     @Autowired
     private RecordService recordService;
@@ -179,6 +183,14 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationDAO.getCriteriaBuilder();
     }
 
+	/**
+	 * Get a criteria builder for querying HoldingReservations.
+	 * @return the CriteriaBuilder.
+	 */
+	public CriteriaBuilder getHoldingReservationCriteriaBuilder() {
+		return holdingReservationDAO.getCriteriaBuilder();
+	}
+
     /**
      * List all Reservations matching a built query.
      * @param q The criteria query to execute
@@ -187,6 +199,15 @@ public class ReservationServiceImpl implements ReservationService {
     public List<Reservation> listReservations(CriteriaQuery<Reservation> q) {
         return reservationDAO.list(q);
     }
+
+	/**
+	 * List all HoldingReservations matching a built query.
+	 * @param q The criteria query to execute
+	 * @return A list of matching HoldingReservations.
+	 */
+	public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q) {
+		return holdingReservationDAO.list(q);
+	}
 
     /**
      * Get a single Reservation matching a built query.

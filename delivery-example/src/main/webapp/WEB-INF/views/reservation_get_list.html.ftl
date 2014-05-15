@@ -191,11 +191,14 @@
     <#--<th><@sortLink "returnDate"><@_ "reservation.returnDate" "Return
     Date"/></@sortLink></th>-->
     <th><@sortLink "printed"><@_ "reservation.printed" "Printed"/></@sortLink></th>
-    <th><@sortLink "status"><@_ "reservation.status" "Status"/></@sortLink></th>
+    <th><@sortLink "status"><@_ "reservation.extended.status.status" "Reservation status"/></@sortLink></th>
+    <th><@_ "holding.extended.status" "Item status"/></th>
   </tr>
   </thead>
   <tbody>
-  <#list pageListHolder.pageList as reservation>
+  <#list pageListHolder.pageList as holdingReservation>
+	 <#assign holding = holdingReservation.holding>
+     <#assign reservation = holdingReservation.reservation>
   <tr>
     <td><input type="checkbox" name="checked" value="${reservation.id?c}"
                class="checkItem" /></td>
@@ -205,12 +208,8 @@
       </a>
     </td>
     <td>
-      <ul>
-        <#list reservation.holdingReservations as hr>
-            <#assign h = hr.holding>
-        <li>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></li>
-        </#list>
-      </ul>
+      ${holding.record.title?html} - ${holding.signature?html}
+	  <#if holdingReservation.comment??> - ${holdingReservation.comment}</#if>
     </td>
     <td>${reservation.visitorName?html}</td>
     <td>${reservation.date?string(prop_dateFormat)}</td>
@@ -224,6 +223,7 @@
     </#assign>
     <td>${reservation.printed?string(yes, no)}</td>
     <td><@_ "reservation.statusType.${reservation.status?string}" "${reservation.status?string}" /></td>
+    <td><@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" /></td>
   </tr>
   </#list>
   </tbody>
