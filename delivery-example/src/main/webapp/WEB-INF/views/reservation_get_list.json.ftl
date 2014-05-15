@@ -21,7 +21,8 @@
 ${callback}(
 </#if>
 [
-<#list pageListHolder.pageList as reservation>
+<#list pageListHolder.pageList as holdingReservation>
+  <#assign reservation = holdingReservation.reservation>
   {
     "visitorName" : "${reservation.visitorName?js_string}",
     "visitorEmail" : "${reservation.visitorEmail?js_string}",

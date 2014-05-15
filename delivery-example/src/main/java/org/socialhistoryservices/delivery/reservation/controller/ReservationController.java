@@ -165,7 +165,10 @@ public class ReservationController extends ErrorHandlingController {
         // Set sort order and sort column
         // But only if we do not use HSQLDB, as this kind of orderning is not supported by HSQLDB
 	    if (!dataSource.getDriverClassName().contains("hsqldb")) {
-		    cq.orderBy(parseSortFilter(p, cb, resRoot));
+		    Join<HoldingReservation,Holding> hRoot = hrRoot.join
+				    (HoldingReservation_.holding);
+
+		    cq.orderBy(parseSortFilter(p, cb, resRoot, hRoot));
 	    }
 
         // Fetch result set
@@ -206,7 +209,7 @@ public class ReservationController extends ErrorHandlingController {
      * @return The order the query should be in (asc/desc) sorted on provided
      * column. Defaults to asc on the PK column.
      */
-    private Order parseSortFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot) {
+    private Order parseSortFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Join<HoldingReservation,Holding> hRoot) {
         boolean containsSort = p.containsKey("sort");
         boolean containsSortDir = p.containsKey("sort_dir");
         Expression e = resRoot.get(Reservation_.date);
@@ -222,6 +225,10 @@ public class ReservationController extends ErrorHandlingController {
                 e = resRoot.get(Reservation_.printed);
             } else if (sort.equals("special")) {
                 e = resRoot.get(Reservation_.special);
+	        } else if (sort.equals("signature")) {
+		        e = hRoot.get(Holding_.signature);
+            } else if (sort.equals("holdingStatus")) {
+	            e = hRoot.get(Holding_.status);
             }
         }
         if (containsSortDir &&

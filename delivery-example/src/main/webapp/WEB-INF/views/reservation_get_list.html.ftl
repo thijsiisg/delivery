@@ -183,7 +183,8 @@
   <tr>
     <th></th>
     <th></th>
-    <th><@_ "reservation.records" "Records"/></th>
+    <th><@_ "holding.record" "Item"/></th>
+    <th><@sortLink "signature"><@_ "holding.signature" "Call nr."/></@sortLink></th>
     <th>
       <@sortLink "visitorName"><@_ "reservation.visitorName" "Name"/></@sortLink>
     </th>
@@ -192,7 +193,7 @@
     Date"/></@sortLink></th>-->
     <th><@sortLink "printed"><@_ "reservation.printed" "Printed"/></@sortLink></th>
     <th><@sortLink "status"><@_ "reservation.extended.status.status" "Reservation status"/></@sortLink></th>
-    <th><@_ "holding.extended.status" "Item status"/></th>
+    <th><@sortLink "holdingStatus"><@_ "holding.extended.status" "Item status"/></@sortLink></th>
   </tr>
   </thead>
   <tbody>
@@ -208,9 +209,10 @@
       </a>
     </td>
     <td>
-      ${holding.record.title?html} - ${holding.signature?html}
+      ${holding.record.title?html}
 	  <#if holdingReservation.comment??> - ${holdingReservation.comment}</#if>
     </td>
+	<td>${holding.signature?html}</td>
     <td>${reservation.visitorName?html}</td>
     <td>${reservation.date?string(prop_dateFormat)}</td>
     <#--<td><#if reservation.returnDate??>${reservation.returnDate?string
