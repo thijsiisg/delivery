@@ -81,6 +81,10 @@ public class Holding {
      */
     public void setSignature(String sig) {
         signature = sig;
+
+	    if (signature.trim().endsWith(".x") || signature.trim().startsWith("No circulation")) {
+			this.setUsageRestriction(UsageRestriction.CLOSED);
+	    }
     }
 
     /** The Holding's floor (nullable). */
