@@ -41,13 +41,6 @@
         </dependency>
 
 
-
-        <dependency>
-            <groupId>org.iish.util</groupId>
-            <artifactId>propertyloader</artifactId>
-            <version>1.1</version>
-        </dependency>
-
         <!-- Mail dependencies -->
         <dependency>
             <groupId>javax.mail</groupId>
@@ -260,11 +253,6 @@
             </url>
         </repository>
 
-        <repository>
-            <id>diwoto.iisg.nl</id>
-            <name>IISG Repository</name>
-            <url>https://diwoto.iisg.nl/maven</url>
-        </repository>
     </repositories>
 
     <build>

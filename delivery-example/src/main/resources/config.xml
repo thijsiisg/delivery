@@ -23,7 +23,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     
-    <bean id="myCustomProperties" class="org.iish.util.PropertiesLoader">
+    <bean id="myCustomProperties" class="org.socialhistoryservices.utils.PropertiesLoader">
       <constructor-arg index="0" value="customProperties" />
       <constructor-arg index="1">
         <list>
