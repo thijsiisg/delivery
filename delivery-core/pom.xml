@@ -78,18 +78,12 @@
         </dependency>
 
         <!-- Captcha dependencies -->
-
-        <dependency>
-            <groupId>com.octo.captcha</groupId>
-            <artifactId>jcaptcha</artifactId>
-            <version>1.0-OPENJDK</version>
-        </dependency>
         <dependency>
             <groupId>com.octo.captcha</groupId>
             <artifactId>jcaptcha</artifactId>
             <version>1.0</version>
-            <scope>provided</scope>
         </dependency>
+
     </dependencies>
 
     <repositories>
@@ -103,19 +97,6 @@
             <id>mirrors.ibiblio.org</id>
             <name>IBiblio Repository</name>
             <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
-        </repository>
-
-        <repository>
-            <id>project-repro</id>
-            <name>lib-maven-repository</name>
-            <url>file://${basedir}/repo</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-                <checksumPolicy>ignore</checksumPolicy>
-            </releases>
         </repository>
 
     </repositories>
