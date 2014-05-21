@@ -132,5 +132,20 @@
         </dependency>
       </dependencies>
 
+    <repositories>
+        <repository>
+            <id>project-repro</id>
+            <name>lib-maven-repository</name>
+            <url>file://${basedir}/repo</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
+            </releases>
+        </repository>
+    </repositories>
+
 
     </project>

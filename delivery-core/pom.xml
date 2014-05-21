@@ -77,11 +77,23 @@
             <version>1.8.1</version>
         </dependency>
 
-	    <!-- Captcha dependencies -->
+        <!-- Captcha dependencies -->
+
         <dependency>
             <groupId>com.octo.captcha</groupId>
-            <artifactId>jcaptcha-1.0-JDK3-compatibility</artifactId>
+            <artifactId>jcaptcha</artifactId>
+            <version>1.0-OPENJDK</version>
+        </dependency>
+        <dependency>
+            <groupId>com.octo.captcha</groupId>
+            <artifactId>jcaptcha</artifactId>
             <version>1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.jhlabs</groupId>
+                    <artifactId>imaging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
@@ -97,6 +109,7 @@
             <name>IBiblio Repository</name>
             <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
         </repository>
+
     </repositories>
 
     <build>
