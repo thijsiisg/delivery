@@ -50,7 +50,11 @@
     <@_ "reservationList.filterEverything" "Show All Reservations"/>
     </a>
   </li>
-
+  <li>
+    <a href="${rc.contextPath}/reservation/materials">
+	<@_ "reservationMaterials.noRequestsPerMaterial" "Number of requests per material type"/>
+    </a>
+  </li>
 </ul>
 
 

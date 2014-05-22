@@ -44,6 +44,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.apache.commons.dbcp.BasicDataSource;
 
+import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.print.PrinterException;
@@ -1333,4 +1334,54 @@ public class ReservationController extends ErrorHandlingController {
         return records.listHoldings(cq);
     }
     // }}}
+
+	/**
+	 * Get a list with the number of materials reserved per day.
+	 * @param req The HTTP request object.
+	 * @param model Passed view model.
+	 * @return The name of the view to use.
+	 */
+	@RequestMapping(value = "/materials", method = RequestMethod.GET)
+	@Secured("ROLE_RESERVATION_VIEW")
+	public String reservationMaterials(HttpServletRequest req, Model model) {
+		Map<String, String[]> p = req.getParameterMap();
+
+		Date d = new Date();
+		if (p.containsKey("date")) {
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			try {
+				d = df.parse(p.get("date")[0]);
+			} catch (ParseException ex) {
+				throw new InvalidRequestException("Invalid date: " + p.get("date")[0]);
+			}
+		}
+
+		CriteriaBuilder cb = reservations.getHoldingReservationCriteriaBuilder();
+		CriteriaQuery<Tuple> cq = cb.createTupleQuery();
+
+		Root<HoldingReservation> hrRoot = cq.from(HoldingReservation.class);
+		Join<HoldingReservation,Reservation> resRoot = hrRoot.join
+				(HoldingReservation_.reservation);
+		Join<HoldingReservation,Holding> hRoot = hrRoot.join
+				(HoldingReservation_.holding);
+		Join<Holding,Record> rRoot = hRoot.join
+				(Holding_.record);
+		Join<Record,ExternalRecordInfo> eriRoot = rRoot.join
+				(Record_.externalInfo);
+
+		Expression<Date> reservationDate = resRoot.<Date>get(Reservation_.date);
+		Expression<ExternalRecordInfo.MaterialType> materialType =
+				eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType);
+		Expression<Long> numberOfRequests = cb.count(materialType);
+
+		cq.multiselect(materialType.alias("material"), numberOfRequests.alias("noRequests"));
+		cq.where(cb.equal(reservationDate, d));
+		cq.groupBy(eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType));
+		cq.orderBy(cb.desc(numberOfRequests));
+
+		List<Tuple> tuples = reservations.listTuples(cq);
+		model.addAttribute("tuples", tuples);
+
+		return "reservation_materials";
+	}
 }
