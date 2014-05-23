@@ -161,16 +161,10 @@ public class ReservationController extends ErrorHandlingController {
             cq.where(where);
         }
 
-        cq.distinct(true);
+        Join<HoldingReservation,Holding> hRoot = hrRoot.join
+		        (HoldingReservation_.holding);
 
-        // Set sort order and sort column
-        // But only if we do not use HSQLDB, as this kind of orderning is not supported by HSQLDB
-	    if (!dataSource.getDriverClassName().contains("hsqldb")) {
-		    Join<HoldingReservation,Holding> hRoot = hrRoot.join
-				    (HoldingReservation_.holding);
-
-		    cq.orderBy(parseSortFilter(p, cb, resRoot, hRoot));
-	    }
+	    cq.orderBy(parseSortFilter(p, cb, resRoot, hRoot));
 
         // Fetch result set
         List<HoldingReservation> hList = reservations.listHoldingReservations(cq);
