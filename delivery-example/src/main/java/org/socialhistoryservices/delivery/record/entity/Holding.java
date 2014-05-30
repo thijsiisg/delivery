@@ -18,11 +18,12 @@ package org.socialhistoryservices.delivery.record.entity;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.NotBlank;
-
+import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 /**
  * Holding information associated with a Record.
@@ -258,6 +259,18 @@ public class Holding {
     public void setExternalInfo(ExternalHoldingInfo info) {
         this.externalInfo = info;
     }
+
+	@OneToMany(mappedBy="holding", cascade=CascadeType.ALL)
+	@Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+	private List<HoldingReservation> holdingReservations;
+
+	public void setHoldingReservations(List<HoldingReservation> hrs) {
+		holdingReservations = hrs;
+	}
+
+	public List<HoldingReservation> getHoldingReservations() {
+		return holdingReservations;
+	}
 
     /**
      * Merge other's fields with this holding. All fields except ID,
