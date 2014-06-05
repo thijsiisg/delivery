@@ -248,6 +248,9 @@ public class RecordServiceImpl implements RecordService {
        
         // Add holding/other API info if present, but only when the record is
         // newly created (saves time when editing).
+
+	    // TODO: Also synchronize Holdings with API when the record already exists.
+	    // TODO: Make sure that holdings that were added manually , but do not exist in the API will get a special message in the ExternalholdingInfo.serialNumbers field, and do not get deleted from the Record.
         if (oldRecord == null) {
             newRecord.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
             Map<String, ExternalHoldingInfo> ehMap =
