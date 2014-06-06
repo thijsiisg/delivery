@@ -292,8 +292,7 @@ public class Holding {
     public Holding() {
         setStatus(Status.AVAILABLE);
         setUsageRestriction(UsageRestriction.OPEN);
-	    // TODO: Test if adding an empty ExternalHoldingInfo object fixes the holding.externalinfo fix.
-	    setExternalInfo(new ExternalHoldingInfo());
+	    setExternalInfo(ExternalHoldingInfo.getEmptyExternalInfo());
     }
 
     public String toString() {

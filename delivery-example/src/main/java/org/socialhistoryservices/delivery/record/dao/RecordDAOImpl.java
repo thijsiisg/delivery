@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.record.dao;
 
+import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.springframework.stereotype.Repository;
 
@@ -58,6 +59,18 @@ public class RecordDAOImpl implements RecordDAO {
             entityManager.remove(obj);
         } catch (EntityNotFoundException ignored) {}
     }
+
+	/**
+	 * Remove the ExternalRecordInfo of a Record from the database.
+	 * @param obj Record of which to remove the ExternalRecordInfo.
+	 */
+	public void removeExternalInfo(Record obj) {
+		try {
+			ExternalRecordInfo eriObj = obj.getExternalInfo();
+			eriObj = entityManager.getReference(ExternalRecordInfo.class, eriObj.getId());
+			entityManager.remove(eriObj);
+		} catch (EntityNotFoundException ignored) {}
+	}
 
     /**
      * Save changes to a Record in the database.

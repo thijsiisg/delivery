@@ -54,6 +54,12 @@ public interface RecordDAO {
      */
     public void remove(Record obj);
 
+	/**
+	 * Remove the ExternalRecordInfo of a Record from the database.
+	 * @param obj Record of which to remove the ExternalRecordInfo.
+	 */
+	public void removeExternalInfo(Record obj);
+
     /**
      * Save changes to a Record in the database.
      * @param obj Record to save.

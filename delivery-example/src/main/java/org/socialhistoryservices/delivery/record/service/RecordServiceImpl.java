@@ -224,10 +224,8 @@ public class RecordServiceImpl implements RecordService {
      * item separator (default .), but the parent record was not found in the
      * database.
      */
-    public void createOrEdit(Record newRecord,
-                                      Record oldRecord, BindingResult result)
+    public void createOrEdit(Record newRecord, Record oldRecord, BindingResult result)
             throws NoSuchPidException, NoSuchParentException {
-
         String pid = newRecord.getPid();
 
         String itemSeparator = properties.getProperty("prop_itemSeparator", ".");
@@ -240,29 +238,19 @@ public class RecordServiceImpl implements RecordService {
             newRecord.setParent(parent);
         } else {
             // Make sure the restriction type cannot be inherit on parents.
-            if (newRecord.getRestrictionType() ==
-                Record.RestrictionType.INHERIT) {
+            if (newRecord.getRestrictionType() == Record.RestrictionType.INHERIT) {
                 newRecord.setRestrictionType(Record.RestrictionType.OPEN);
             }
         }
        
-        // Add holding/other API info if present, but only when the record is
-        // newly created (saves time when editing).
-
-	    // TODO: Also synchronize Holdings with API when the record already exists.
-	    // TODO: Make sure that holdings that were added manually , but do not exist in the API will get a special message in the ExternalholdingInfo.serialNumbers field, and do not get deleted from the Record.
-        if (oldRecord == null) {
-            newRecord.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
-            Map<String, ExternalHoldingInfo> ehMap =
-                    lookup.getHoldingMetadataByPid(pid);
-            for (Holding h : newRecord.getHoldings()) {
-                if (ehMap.containsKey(h.getSignature())) {
-                    h.setExternalInfo(ehMap.get(h.getSignature()));
-                }
-            }
-        } else {
-            newRecord.setExternalInfo(oldRecord.getExternalInfo());
-        }
+        // Add holding/other API info if present
+	    newRecord.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
+	    Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
+	    for (Holding h : newRecord.getHoldings()) {
+		    if (ehMap.containsKey(h.getSignature())) {
+			    h.setExternalInfo(ehMap.get(h.getSignature()));
+		    }
+	    }
 
         // Validate the record.
         validateRecord(newRecord, result);
@@ -272,6 +260,7 @@ public class RecordServiceImpl implements RecordService {
             if (oldRecord == null) {
                 addRecord(newRecord);
             } else {
+	            cleanupExternalInfo(oldRecord);
                 oldRecord.mergeWith(newRecord);
                 saveRecord(oldRecord);
             }
@@ -307,6 +296,17 @@ public class RecordServiceImpl implements RecordService {
             i++;
         }
     }
+
+	/**
+	 * Removes all associated external info from the given record.
+	 * @param record The record.
+	 */
+	private void cleanupExternalInfo(Record record) {
+		recordDAO.removeExternalInfo(record);
+		for (Holding holding : record.getHoldings()) {
+			holdingDAO.removeExternalInfo(holding);
+		}
+	}
 
     /**
      * Get the first available (not closed) holding for a record.

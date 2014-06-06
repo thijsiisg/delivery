@@ -271,7 +271,7 @@
         <input type="hidden" id="${spring.status.expression}"
         name="${spring.status.expression}" value="${(h.signature!'')?html}"/>
 
-        <td class="signature">${(h.signature!'')?html}
+        <td class="signature">${(h.signature!'')?html}</td>
         <#else>
         <td><@input_nolabel "record.holdings[${idx}].signature"/></td>
         </#if>

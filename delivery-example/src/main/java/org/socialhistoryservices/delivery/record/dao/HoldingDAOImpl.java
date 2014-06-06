@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.record.dao;
 
+import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.springframework.stereotype.Repository;
 
@@ -59,6 +60,18 @@ public class HoldingDAOImpl implements HoldingDAO {
             entityManager.remove(obj);
         } catch (EntityNotFoundException ignored) {}
     }
+
+	/**
+	 * Remove the ExternalHoldingInfo of a Holding from the database.
+	 * @param obj Holding of which to remove the ExternalHoldingInfo.
+	 */
+	public void removeExternalInfo(Holding obj) {
+		try {
+			ExternalHoldingInfo ehiObj = obj.getExternalInfo();
+			ehiObj = entityManager.getReference(ExternalHoldingInfo.class, ehiObj.getId());
+			entityManager.remove(ehiObj);
+		} catch (EntityNotFoundException ignored) {}
+	}
 
     /**
      * Save changes to a Holding in the database.
