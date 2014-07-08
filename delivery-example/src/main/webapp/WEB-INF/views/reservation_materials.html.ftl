@@ -72,7 +72,7 @@
   <tbody>
   <#list tuples as tuple>
   <tr>
-	<td>${tuple.get('material')?html}</td>
+    <td><@_ "record.externalInfo.materialType.${tuple.get('material')?upper_case}" "${tuple.get('material')?upper_case}" /></td>
     <td>${tuple.get('noRequests')?html}</td>
   </tr>
   </#list>
