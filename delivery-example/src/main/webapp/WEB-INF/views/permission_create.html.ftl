@@ -52,8 +52,8 @@
   </label>
 
   <div id="captcha_widget_div">
-	  <img src="/captcha" id="captcha_image" />
 	  <input type="text" id="captcha_response_field" name="captcha_response_field" value="" class="field" />
+      <img src="/captcha" id="captcha_image" />
   </div>
   <#if captchaError?? >
 	  <ul class="errors">

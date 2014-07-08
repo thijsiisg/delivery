@@ -718,5 +718,14 @@ img.ui-datepicker-trigger {
 
 #captcha_widget_div {
     float: left;
+    clear: right;
+}
+
+#captcha_response_field {
     margin-top: 5px;
+}
+
+#captcha_image {
+    margin: 35px 0 0 -410px;
+    border: 1px solid #CCCCCC;
 }
