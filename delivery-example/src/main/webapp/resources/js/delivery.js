@@ -39,6 +39,18 @@ $(document).ready(function(){
     });
 
     $("#scanid").focus();
+
+	$('.refreshCaptcha').click(function() {
+		var url = $('#captcha_image').attr('src');
+		var queryStartPosition = url.indexOf('?');
+
+		if (queryStartPosition > 0) {
+			url = url.substring(0, queryStartPosition);
+		}
+
+		url = url + '?r=' + Math.random().toString(36).substring(2);
+		$("#captcha_image").attr("src", url);
+	});
 });
 
 function toggleField(infoId, fieldId, link, hideTxt, showTxt) {

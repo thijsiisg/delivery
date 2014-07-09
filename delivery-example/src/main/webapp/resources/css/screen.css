@@ -729,3 +729,7 @@ img.ui-datepicker-trigger {
     margin: 35px 0 0 -410px;
     border: 1px solid #CCCCCC;
 }
+
+a.refreshCaptcha {
+	display: block;
+}

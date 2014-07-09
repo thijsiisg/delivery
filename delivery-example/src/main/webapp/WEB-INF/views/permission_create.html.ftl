@@ -54,6 +54,9 @@
   <div id="captcha_widget_div">
 	  <input type="text" id="captcha_response_field" name="captcha_response_field" value="" class="field" />
       <img src="/captcha" id="captcha_image" />
+	  <a href="#" class="refreshCaptcha">
+		  <@_ "captcha.refresh" "Refresh captcha" />
+	  </a>
   </div>
   <#if captchaError?? >
 	  <ul class="errors">
