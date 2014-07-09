@@ -326,20 +326,12 @@ public class IISHRecordLookupService implements RecordLookupService {
                 title += " " + subTitle.trim().replaceAll("[/:]$", "");
             }
 
-            String itemSep = properties.getProperty("prop_itemSeparator");
-            String itemNr = "";
-            if (pid.contains(itemSep)) {
-                int idx = pid.lastIndexOf(itemSep);
-                itemNr = (idx < pid.length()-1) ? pid.substring(idx+1) : "";
-            }
             // Some titles from the API SRW exceed 255 characters. Strip them to
             // 251 characters (up to 252 , exclusive) to save up for the dash
             // and \0 termination.
             // EDIT: Trim this to ~125 characters for readability (this is the current max size of the field).
-            title = stripToSize(title, 125 - itemNr.length());
-
-            if (itemNr.length() > 0)
-                title += " - " + itemNr;
+	        // EDIT 2: Back to 255 characters and removed signature from title
+            title = stripToSize(title, 255);
 
             externalInfo.setTitle(title);
         } else {
