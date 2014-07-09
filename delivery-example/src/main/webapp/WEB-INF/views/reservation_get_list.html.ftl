@@ -212,7 +212,7 @@
       <@_ "reservationList.edit" "Administrate"/>
       </a>
     </td>
-    <td>
+    <td class="leftAligned">
       ${holding.record.title?html}
 	  <#if holdingReservation.comment??> - ${holdingReservation.comment}</#if>
     </td>
