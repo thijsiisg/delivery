@@ -33,6 +33,7 @@ import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.mail.MailException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -695,7 +696,12 @@ public class ReservationController extends ErrorHandlingController {
                 reservations.createOrEdit(newRes, null, result);
                 if (!result.hasErrors()) {
                     // Mail the confirmation to the visitor.
-                    resMailer.mailConfirmation(newRes);
+                    try {
+	                    resMailer.mailConfirmation(newRes);
+                    }
+                    catch (MailException e) {
+	                    model.addAttribute("error", "mail");
+                    }
                     // Automatically print the reservation.
                     autoPrint(newRes);
                     model.addAttribute("reservation", newRes);

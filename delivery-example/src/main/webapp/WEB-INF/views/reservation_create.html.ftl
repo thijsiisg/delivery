@@ -99,7 +99,7 @@ $(document).ready(function(){
       </label>
 
 	  <div id="captcha_widget_div" class="field">
-	      <input type="text" id="captcha_response_field" name="captcha_response_field" value="" class="field" />
+	      <input type="text" id="captcha_response_field" name="captcha_response_field" value="" class="field" autocomplete="off" />
           <img src="/captcha" id="captcha_image" />
 		  <a href="#" class="refreshCaptcha">
 			  <@_ "captcha.refresh" "Refresh captcha" />

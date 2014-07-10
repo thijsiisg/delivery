@@ -48,6 +48,10 @@
     <p><@_ "reservation.successFutureMsg" "Documents requested will be ready on the day of your visit as of 9.30 am." /></p>
   </#if>
 
+  <#if error?? >
+      <p><@_ "reservation.error."+error error /></p>
+  </#if>
+
   <p><@_ "reservation.backToSearch" "Close this tab and return to Search for new requests" /></p>
 
   <#--<#if reservation.queueNo??>
