@@ -42,7 +42,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.apache.commons.dbcp.BasicDataSource;
 
 import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
@@ -73,10 +72,6 @@ public class ReservationController extends ErrorHandlingController {
 
     @Autowired
     private RecordService records;
-
-	@Autowired
-	private BasicDataSource dataSource;
-
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -1340,15 +1335,27 @@ public class ReservationController extends ErrorHandlingController {
 	public String reservationMaterials(HttpServletRequest req, Model model) {
 		Map<String, String[]> p = req.getParameterMap();
 
-		Date d = new Date();
-		if (p.containsKey("date")) {
+		Date from = new Date();
+		if (p.containsKey("from_date")) {
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 			try {
-				d = df.parse(p.get("date")[0]);
-			} catch (ParseException ex) {
-				throw new InvalidRequestException("Invalid date: " + p.get("date")[0]);
+				from = df.parse(p.get("from_date")[0]);
+			}
+			catch (ParseException ex) {
+				throw new InvalidRequestException("Invalid date: " + p.get("from_date")[0]);
 			}
 		}
+
+        Date to = new Date();
+        if (p.containsKey("to_date")) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                to = df.parse(p.get("to_date")[0]);
+            }
+            catch (ParseException ex) {
+                throw new InvalidRequestException("Invalid date: " + p.get("to_date")[0]);
+            }
+        }
 
 		CriteriaBuilder cb = reservations.getHoldingReservationCriteriaBuilder();
 		CriteriaQuery<Tuple> cq = cb.createTupleQuery();
@@ -1368,8 +1375,11 @@ public class ReservationController extends ErrorHandlingController {
 				eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType);
 		Expression<Long> numberOfRequests = cb.count(materialType);
 
-		cq.multiselect(materialType.alias("material"), numberOfRequests.alias("noRequests"));
-		cq.where(cb.equal(reservationDate, d));
+	    Expression<Boolean> fromExpr = cb.greaterThanOrEqualTo(reservationDate, from);
+        Expression<Boolean> toExpor = cb.lessThanOrEqualTo(reservationDate, to);
+
+        cq.multiselect(materialType.alias("material"), numberOfRequests.alias("noRequests"));
+        cq.where(cb.and(fromExpr, toExpor));
 		cq.groupBy(eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType));
 		cq.orderBy(cb.desc(numberOfRequests));
 
