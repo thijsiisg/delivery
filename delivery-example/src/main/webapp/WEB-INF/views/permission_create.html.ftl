@@ -47,19 +47,25 @@
   <@textarea "permission.researchSubject" "create"/>
   <@textarea "permission.explanation" "create"/>
 
-      <label for="recaptcha_response_field" class="field">
-        <@_ "reCaptcha.explanation" "Type the two words to prevent spam." />
-      </label>
+  <label for="captcha_response_field" class="field">
+	  <@_ "captcha.explanation" "Type the following word to prevent spam" />
+  </label>
 
+  <div id="captcha_widget_div">
+	  <input type="text" id="captcha_response_field" name="captcha_response_field" value="" class="field" autocomplete="off" />
+      <img src="/captcha" id="captcha_image" />
+	  <a href="#" class="refreshCaptcha">
+		  <@_ "captcha.refresh" "Refresh captcha" />
+	  </a>
+  </div>
+  <#if captchaError?? >
+	  <ul class="errors">
+		  <li>
+			  <b>${captchaError?html}</b>
+		  </li>
+	  </ul>
+  </#if>
 
-  ${reCaptchaHTML}
-      <#if reCaptchaError?? >
-          <ul class="errors">
-              <li>
-                  <b>${reCaptchaError?html}</b>
-              </li>
-          </ul>
-      </#if>
   <@buttons>
     <@submit "permission" />
   </@buttons>

@@ -28,12 +28,12 @@ import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.socialhistoryservices.delivery.reservation.service.*;
 import org.socialhistoryservices.delivery.ErrorHandlingController;
-import org.socialhistoryservices.delivery.CaptchaPropertiesProvider;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.mail.MailException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +44,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.print.PrinterException;
@@ -72,10 +73,6 @@ public class ReservationController extends ErrorHandlingController {
 
     @Autowired
     private RecordService records;
-
-
-
-
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -135,11 +132,13 @@ public class ReservationController extends ErrorHandlingController {
                             Model model) {
         Map<String, String[]> p = req.getParameterMap();
 
+	    CriteriaBuilder cb = reservations.getHoldingReservationCriteriaBuilder();
+	    CriteriaQuery<HoldingReservation> cq = cb.createQuery(HoldingReservation.class);
+	    Root<HoldingReservation> hrRoot = cq.from(HoldingReservation.class);
+	    cq.select(hrRoot);
 
-        CriteriaBuilder cb = reservations.getReservationCriteriaBuilder();
-        CriteriaQuery<Reservation> cq = cb.createQuery(Reservation.class);
-        Root<Reservation> resRoot = cq.from(Reservation.class);
-        cq.select(resRoot);
+	    Join<HoldingReservation,Reservation> resRoot = hrRoot.join
+			    (HoldingReservation_.reservation);
 
         // Expression to be the where clause of the query
         Expression<Boolean> where = null;
@@ -151,22 +150,22 @@ public class ReservationController extends ErrorHandlingController {
         where = addStatusFilter(p, cb, resRoot, where);
         where = addSpecialFilter(p, cb, resRoot, where);
         where = addPrintedFilter(p, cb, resRoot, where);
-        where = addSearchFilter(p, cb, resRoot, where);
+        where = addSearchFilter(p, cb, hrRoot, resRoot, where);
 
         // Set the where clause
         if (where != null) {
             cq.where(where);
         }
 
-        cq.distinct(true);
+        Join<HoldingReservation,Holding> hRoot = hrRoot.join
+		        (HoldingReservation_.holding);
 
-        // Set sort order and sort column
-        cq.orderBy(parseSortFilter(p, cb, resRoot));
+	    cq.orderBy(parseSortFilter(p, cb, resRoot, hRoot));
 
         // Fetch result set
-        List<Reservation> rList = reservations.listReservations(cq);
-        PagedListHolder<Reservation> pagedListHolder = new
-                PagedListHolder<Reservation>(rList);
+        List<HoldingReservation> hList = reservations.listHoldingReservations(cq);
+        PagedListHolder<HoldingReservation> pagedListHolder = new
+                PagedListHolder<HoldingReservation>(hList);
 
         // Set the amount of reservations per page
         pagedListHolder.setPageSize(parsePageLenFilter(p));
@@ -201,7 +200,7 @@ public class ReservationController extends ErrorHandlingController {
      * @return The order the query should be in (asc/desc) sorted on provided
      * column. Defaults to asc on the PK column.
      */
-    private Order parseSortFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Reservation> resRoot) {
+    private Order parseSortFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Join<HoldingReservation,Holding> hRoot) {
         boolean containsSort = p.containsKey("sort");
         boolean containsSortDir = p.containsKey("sort_dir");
         Expression e = resRoot.get(Reservation_.date);
@@ -217,6 +216,10 @@ public class ReservationController extends ErrorHandlingController {
                 e = resRoot.get(Reservation_.printed);
             } else if (sort.equals("special")) {
                 e = resRoot.get(Reservation_.special);
+	        } else if (sort.equals("signature")) {
+		        e = hRoot.get(Holding_.signature);
+            } else if (sort.equals("holdingStatus")) {
+	            e = hRoot.get(Holding_.status);
             }
         }
         if (containsSortDir &&
@@ -275,14 +278,11 @@ public class ReservationController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression<Boolean> addSearchFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Reservation> resRoot, Expression<Boolean> where) {
+    private Expression<Boolean> addSearchFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<HoldingReservation> hrRoot, Join<HoldingReservation,Reservation> resRoot, Expression<Boolean> where) {
         if (p.containsKey("search") && !p.get("search")[0].trim().equals("")) {
             String search = p.get("search")[0].trim().toLowerCase();
 
-            Join<Reservation,HoldingReservation> hrRoot = resRoot.join(
-                    Reservation_.holdingReservations);
-            Join<HoldingReservation,Holding> hRoot = hrRoot.join
-                    (HoldingReservation_.holding);
+	        Join<HoldingReservation,Holding> hRoot = hrRoot.join(HoldingReservation_.holding);
             Join<Holding,Record> rRoot = hRoot.join(Holding_.record);
             Join<Record,ExternalRecordInfo> eRoot = rRoot.join(Record_.externalInfo);
             Expression<Boolean> exSearch = cb.or(
@@ -293,7 +293,9 @@ public class ReservationController extends ErrorHandlingController {
                             "%" + search + "%"),
                     cb.like(cb.lower(resRoot.<String>get(Reservation_
                             .visitorEmail)),
-                            "%" + search + "%")
+                            "%" + search + "%"),
+		            cb.like(cb.lower(hRoot.<String>get(Holding_ .signature)),
+				            "%" + search + "%")
                     );
             where = where != null ? cb.and(where, exSearch) : exSearch;
         }
@@ -308,7 +310,7 @@ public class ReservationController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression<Boolean> addSpecialFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Reservation> resRoot, Expression<Boolean> where) {
+    private Expression<Boolean> addSpecialFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Expression<Boolean> where) {
         if (p.containsKey("special")) {
             Expression<Boolean> exSpecial = cb.equal(
                     resRoot.<Boolean>get(Reservation_.special),
@@ -327,7 +329,7 @@ public class ReservationController extends ErrorHandlingController {
      * @return The (updated) where clause, or null if the filter did not exist.
      */
     private Expression<Boolean> addPrintedFilter(Map<String, String[]> p,
-                                  CriteriaBuilder cb, Root<Reservation> resRoot, Expression<Boolean> where) {
+                                  CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Expression<Boolean> where) {
         if (p.containsKey("printed")) {
             String printed = p.get("printed")[0].trim().toLowerCase();
             if (printed.isEmpty()) {
@@ -349,7 +351,7 @@ public class ReservationController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression<Boolean> addStatusFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Reservation> resRoot, Expression<Boolean> where) {
+    private Expression<Boolean> addStatusFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Expression<Boolean> where) {
         if (p.containsKey("status")) {
             String status = p.get("status")[0].trim().toUpperCase();
             // Tolerant to empty status to ensure the filter in
@@ -377,7 +379,7 @@ public class ReservationController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression<Boolean> addEmailFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Reservation> resRoot, Expression<Boolean> where) {
+    private Expression<Boolean> addEmailFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Expression<Boolean> where) {
         if (p.containsKey("visitorEmail")) {
             Expression<Boolean> exEmail = cb.like(
                      resRoot.<String>get(Reservation_.visitorEmail),
@@ -397,7 +399,7 @@ public class ReservationController extends ErrorHandlingController {
      */
     private Expression<Boolean> addNameFilter(Map<String, String[]> p,
                                      CriteriaBuilder cb,
-                                     Root<Reservation> resRoot,
+                                     Join<HoldingReservation,Reservation> resRoot,
                                      Expression<Boolean> where) {
         if (p.containsKey("visitorName")) {
             Expression<Boolean> exName = cb.like(resRoot.<String>get
@@ -419,7 +421,7 @@ public class ReservationController extends ErrorHandlingController {
      */
     private Expression<Boolean> addDateFilter(Map<String, String[]> p,
                                      CriteriaBuilder cb,
-                                     Root<Reservation> resRoot,
+                                     Join<HoldingReservation,Reservation> resRoot,
                                      Expression<Boolean> where) {
         DateFormat apiDf = new SimpleDateFormat("yyyy-MM-dd");
         if (p.containsKey("date")) {
@@ -694,7 +696,12 @@ public class ReservationController extends ErrorHandlingController {
                 reservations.createOrEdit(newRes, null, result);
                 if (!result.hasErrors()) {
                     // Mail the confirmation to the visitor.
-                    resMailer.mailConfirmation(newRes);
+                    try {
+	                    resMailer.mailConfirmation(newRes);
+                    }
+                    catch (MailException e) {
+	                    model.addAttribute("error", "mail");
+                    }
                     // Automatically print the reservation.
                     autoPrint(newRes);
                     model.addAttribute("reservation", newRes);
@@ -715,16 +722,6 @@ public class ReservationController extends ErrorHandlingController {
         }
         model.addAttribute("reservation", newRes);
 
-        // XXX This fix doesn't work at the moment, since it is an upstream
-        // problem. I will leave this in place, so when upstream fixes their
-        // issue this code will work as expected.
-        //
-        // Set the reCAPTCHA options. It accepts a Properties object to generate
-        // the associated JavaScript. The null in createRecaptchaHtml is the
-        // errormessage
-        // NOTE:  reCAPTCHA only supports a few languages at the moment!
-        Properties reCaptchaProperties = new CaptchaPropertiesProvider().getProperties();
-        model.addAttribute("reCaptchaHTML", reCaptcha.createRecaptchaHtml(null, reCaptchaProperties));
         return "reservation_create";
     }
 
@@ -954,11 +951,12 @@ public class ReservationController extends ErrorHandlingController {
                     params = "delete")
     @Secured("ROLE_RESERVATION_DELETE")
     public String batchProcessDelete(HttpServletRequest req,
-                                     @RequestParam(required=false) int[]
+                                     @RequestParam(required=false) Set<Integer>
                                              checked) {
 
         // Delete all the provided reservations
         if (checked != null) {
+
             for (int id : checked) {
                 delete(id);
             }
@@ -979,7 +977,7 @@ public class ReservationController extends ErrorHandlingController {
                     method = RequestMethod.POST,
                     params = "print")
     public String batchProcessPrint(HttpServletRequest req,
-                                    @RequestParam(required = false) int[]
+                                    @RequestParam(required = false) Set<Integer>
                                             checked) {
         String qs = req.getQueryString() != null ?
                     "?" + req.getQueryString() : "";
@@ -1014,7 +1012,7 @@ public class ReservationController extends ErrorHandlingController {
                     method = RequestMethod.POST,
                     params = "printForce")
     public String batchProcessPrintForce(HttpServletRequest req,
-                                         @RequestParam(required = false) int[]
+                                         @RequestParam(required = false) Set<Integer>
                                                  checked) {
         String qs = req.getQueryString() != null ?
                     "?" + req.getQueryString() : "";
@@ -1050,7 +1048,7 @@ public class ReservationController extends ErrorHandlingController {
                     params = "changeStatus")
     @Secured("ROLE_RESERVATION_MODIFY")
     public String batchProcessChangeStatus(HttpServletRequest req,
-                                     @RequestParam(required=false) int[]
+                                     @RequestParam(required=false) Set<Integer>
                                              checked,
                                      @RequestParam Reservation.Status
                                              newStatus) {
@@ -1133,6 +1131,20 @@ public class ReservationController extends ErrorHandlingController {
         data.put("COMPLETED", Reservation.Status.COMPLETED);
         return data;
     }
+
+	/**
+	 * Map representation of status types of reservations for use in views.
+	 * @return The map {string status, enum status}.
+	 */
+	@ModelAttribute("holding_status_types")
+	public Map<String, Holding.Status> holdingStatusTypes() {
+		Map<String, Holding.Status> data = new HashMap<String, Holding.Status>();
+		data.put("AVAILABLE", Holding.Status. AVAILABLE);
+		data.put("RESERVED", Holding.Status.RESERVED);
+		data.put("IN_USE", Holding.Status.IN_USE);
+		data.put("RETURNED", Holding.Status.RETURNED);
+		return data;
+	}
     // }}}
 
     // {{{ Mass Create
@@ -1317,4 +1329,69 @@ public class ReservationController extends ErrorHandlingController {
         return records.listHoldings(cq);
     }
     // }}}
+
+	/**
+	 * Get a list with the number of materials reserved per day.
+	 * @param req The HTTP request object.
+	 * @param model Passed view model.
+	 * @return The name of the view to use.
+	 */
+	@RequestMapping(value = "/materials", method = RequestMethod.GET)
+	@Secured("ROLE_RESERVATION_VIEW")
+	public String reservationMaterials(HttpServletRequest req, Model model) {
+		Map<String, String[]> p = req.getParameterMap();
+
+		Date from = new Date();
+		if (p.containsKey("from_date")) {
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			try {
+				from = df.parse(p.get("from_date")[0]);
+			}
+			catch (ParseException ex) {
+				throw new InvalidRequestException("Invalid date: " + p.get("from_date")[0]);
+			}
+		}
+
+        Date to = new Date();
+        if (p.containsKey("to_date")) {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                to = df.parse(p.get("to_date")[0]);
+            }
+            catch (ParseException ex) {
+                throw new InvalidRequestException("Invalid date: " + p.get("to_date")[0]);
+            }
+        }
+
+		CriteriaBuilder cb = reservations.getHoldingReservationCriteriaBuilder();
+		CriteriaQuery<Tuple> cq = cb.createTupleQuery();
+
+		Root<HoldingReservation> hrRoot = cq.from(HoldingReservation.class);
+		Join<HoldingReservation,Reservation> resRoot = hrRoot.join
+				(HoldingReservation_.reservation);
+		Join<HoldingReservation,Holding> hRoot = hrRoot.join
+				(HoldingReservation_.holding);
+		Join<Holding,Record> rRoot = hRoot.join
+				(Holding_.record);
+		Join<Record,ExternalRecordInfo> eriRoot = rRoot.join
+				(Record_.externalInfo);
+
+		Expression<Date> reservationDate = resRoot.<Date>get(Reservation_.date);
+		Expression<ExternalRecordInfo.MaterialType> materialType =
+				eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType);
+		Expression<Long> numberOfRequests = cb.count(materialType);
+
+	    Expression<Boolean> fromExpr = cb.greaterThanOrEqualTo(reservationDate, from);
+        Expression<Boolean> toExpor = cb.lessThanOrEqualTo(reservationDate, to);
+
+        cq.multiselect(materialType.alias("material"), numberOfRequests.alias("noRequests"));
+        cq.where(cb.and(fromExpr, toExpor));
+		cq.groupBy(eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType));
+		cq.orderBy(cb.desc(numberOfRequests));
+
+		List<Tuple> tuples = reservations.listTuples(cq);
+		model.addAttribute("tuples", tuples);
+
+		return "reservation_materials";
+	}
 }

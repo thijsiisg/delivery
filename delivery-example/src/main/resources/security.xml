@@ -96,10 +96,10 @@
                value="/user/logout"/>
   </beans:bean>
 
-    <beans:bean id="reCaptcha" class="net.tanesha.recaptcha.ReCaptchaImpl">
-        <beans:property name="privateKey" value="${prop_reCaptchaPrivateKey}" />
-        <beans:property name="publicKey" value="${prop_reCaptchaPublicKey}" />
-        <beans:property name="includeNoscript" value="false" />
-    </beans:bean>
+    <!-- Captcha beans -->
+    <beans:bean id="captchaEngine" class="org.socialhistoryservices.utils.CaptchaEngine" />
 
+    <beans:bean id="captchaService" class="com.octo.captcha.service.image.DefaultManageableImageCaptchaService">
+        <beans:property name="captchaEngine" ref="captchaEngine" />
+    </beans:bean>
 </beans:beans>

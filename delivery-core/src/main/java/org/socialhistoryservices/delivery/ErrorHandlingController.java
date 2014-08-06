@@ -16,8 +16,8 @@
 
 package org.socialhistoryservices.delivery;
 
-import net.tanesha.recaptcha.ReCaptcha;
-import net.tanesha.recaptcha.ReCaptchaResponse;
+import com.octo.captcha.service.CaptchaService;
+import com.octo.captcha.service.CaptchaServiceException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -63,9 +63,8 @@ public class ErrorHandlingController {
     @Autowired
     protected MessageSource msgSource;
 
-    @Autowired
-    protected ReCaptcha reCaptcha;
-
+	@Autowired
+	protected CaptchaService captchaService;
 
     /**
      * Split a set of pids given in a url to an array of pids.
@@ -129,15 +128,29 @@ public class ErrorHandlingController {
     }
 
     protected void checkCaptcha(HttpServletRequest req, BindingResult result, Model model) {
-        ReCaptchaResponse rcr = reCaptcha.checkAnswer(req.getRemoteAddr(), req.getParameter("recaptcha_challenge_field"), req.getParameter("recaptcha_response_field"));
-        if (!rcr.isValid()) {
-            String msg =  msgSource.getMessage("reCaptcha.error", null,
-                    "", LocaleContextHolder.getLocale());
-            // This prevents the createOrEdit from submitting to the database. Sadly, because the captcha is not part of the model,
-            // no corresponding error will be displayed in the form. We have to do this manually.
-            // The error param supplied in the createRecaptchaHtml does not work apparently.
-            result.addError(new FieldError(result.getObjectName(), "recaptcha_response_field", "", false,null,null,msg));
-            model.addAttribute("reCaptchaError", msg);
-        }
+	    boolean isCaptchaCorrect = false;
+	    String id = req.getSession().getId();
+	    String responseField = req.getParameter("captcha_response_field");
+
+	    try {
+		    if (responseField != null) {
+			    isCaptchaCorrect = captchaService.validateResponseForID(id, responseField);
+		    }
+	    }
+	    catch (CaptchaServiceException e) {
+		    // Should not happen, may be thrown if the id is not valid
+		    isCaptchaCorrect = false;
+	    }
+	    finally {
+		    if (!isCaptchaCorrect) {
+			    String msg = msgSource.getMessage("captcha.error", null, LocaleContextHolder.getLocale());
+
+			    // This prevents the createOrEdit from submitting to the database. Sadly, because the captcha is not part of the model,
+			    // no corresponding error will be displayed in the form. We have to do this manually.
+			    result.addError(
+					    new FieldError(result.getObjectName(), "captcha_response_field", "", false, null, null, msg));
+			    model.addAttribute("captchaError", msg);
+		    }
+	    }
     }
 }

@@ -18,6 +18,7 @@ package org.socialhistoryservices.delivery.reservation.service;
 
 import org.socialhistoryservices.delivery.Mailer;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ExtendedModelMap;
@@ -33,8 +34,10 @@ public class ReservationMailer  extends Mailer {
      * Mail a confirmation message to a visitor who has just created a
      * reservation.
      * @param res The reservation to extract mail details from.
+     * @throws org.springframework.mail.MailException Thrown when sending
+     * mail somehow failed.
      */
-    public void mailConfirmation(Reservation res) {
+    public void mailConfirmation(Reservation res) throws MailException {
         assert res.getStatus() == Reservation.Status.PENDING : "Can only mail" +
                 " confirmation when Reservation status is PENDING";
 

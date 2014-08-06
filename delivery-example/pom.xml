@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.socialhistoryservices.delivery</groupId>
         <artifactId>delivery</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
     <packaging>war</packaging>
@@ -40,13 +40,6 @@
             <version>1.0.1</version>
         </dependency>
 
-
-
-        <dependency>
-            <groupId>org.iish.util</groupId>
-            <artifactId>propertyloader</artifactId>
-            <version>1.1</version>
-        </dependency>
 
         <!-- Mail dependencies -->
         <dependency>
@@ -260,15 +253,10 @@
             </url>
         </repository>
 
-        <repository>
-            <id>diwoto.iisg.nl</id>
-            <name>IISG Repository</name>
-            <url>https://diwoto.iisg.nl/maven</url>
-        </repository>
     </repositories>
 
     <build>
-        <finalName>delivery-1.0</finalName>
+        <finalName>delivery-2.0</finalName>
         <plugins>
 
             <!-- Facilitates downloading source and javadoc in Eclipse -->

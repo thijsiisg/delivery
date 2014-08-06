@@ -225,15 +225,9 @@ table.overview td {
     text-align: center;
 }
 
-table.overview ul {
+table.overview td.leftAligned {
     text-align: left;
-    padding: 0;
-    margin: 0 0 0 2em;
-}
-
-table.overview li {
-    margin: 0;
-    padding: 0;
+    padding-left: 0.5em;
 }
 
 table.overview, table.overview tr, table.overview td {
@@ -716,7 +710,20 @@ img.ui-datepicker-trigger {
     float: left;
 }
 
-#recaptcha_widget_div {
+#captcha_widget_div {
     float: left;
+    clear: right;
+}
+
+#captcha_response_field {
     margin-top: 5px;
+}
+
+#captcha_image {
+    margin: 35px 0 0 -410px;
+    border: 1px solid #CCCCCC;
+}
+
+a.refreshCaptcha {
+	display: block;
 }

@@ -42,7 +42,16 @@
 
   </section>
 
-  <p><@_ "reservation.successMsg" "The requested items will be available for your visit to the reading room."/></p>
+  <#if reservation.date?date?string == .now?date?string>
+    <p><@_html "reservation.successMsg" "Requested documents will be in the reading room within <strong>30 minutes</strong>." /></p>
+  <#else>
+    <p><@_html "reservation.successFutureMsg" "Requested documents will be in the reading room on the day of your visit as of <strong>9.30 am</strong>." /></p>
+  </#if>
+
+  <#if error?? >
+      <p><@_ "reservation.error."+error error /></p>
+  </#if>
+
   <p><@_ "reservation.backToSearch" "Close this tab and return to Search for new requests" /></p>
 
   <#--<#if reservation.queueNo??>

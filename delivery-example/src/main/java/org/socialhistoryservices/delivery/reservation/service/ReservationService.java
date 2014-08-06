@@ -33,9 +33,11 @@
 package org.socialhistoryservices.delivery.reservation.service;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.validation.BindingResult;
 
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.awt.print.PrinterException;
@@ -77,12 +79,32 @@ public interface ReservationService {
      */
     public CriteriaBuilder getReservationCriteriaBuilder();
 
+	/**
+	 * Get a criteria builder for querying HoldingReservations.
+	 * @return the CriteriaBuilder.
+	 */
+	public CriteriaBuilder getHoldingReservationCriteriaBuilder();
+
     /**
      * List all Reservations matching a built query.
      * @param q The criteria query to execute
      * @return A list of matching Reservations.
      */
     public List<Reservation> listReservations(CriteriaQuery<Reservation> q);
+
+	/**
+	 * List all Tuples matching a built query.
+	 * @param q The criteria query to execute
+	 * @return A list of matching Tuples.
+	 */
+	public List<Tuple> listTuples(CriteriaQuery<Tuple> q);
+
+	/**
+	 * List all HoldingReservations matching a built query.
+	 * @param q The criteria query to execute
+	 * @return A list of matching HoldingReservations.
+	 */
+	public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q);
 
     /**
      * Get a single Reservation matching a built query.

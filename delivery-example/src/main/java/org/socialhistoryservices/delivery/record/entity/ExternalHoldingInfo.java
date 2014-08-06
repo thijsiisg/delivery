@@ -59,4 +59,14 @@ public class ExternalHoldingInfo {
     public void setSerialNumbers(String nrs) {
          serialNumbers = nrs;
     }
+
+	/**
+	 * Creates a new and empty ExternalHoldingInfo as a placeholder for non-existing holdings.
+	 * @return The new and empty getEmptyExternalInfo.
+	 */
+	public static ExternalHoldingInfo getEmptyExternalInfo() {
+		ExternalHoldingInfo externalHoldingInfo = new ExternalHoldingInfo();
+		externalHoldingInfo.setSerialNumbers("Non-existing holding");
+		return externalHoldingInfo;
+	}
 }

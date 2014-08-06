@@ -39,6 +39,18 @@ $(document).ready(function(){
     });
 
     $("#scanid").focus();
+
+	$('.refreshCaptcha').click(function() {
+		var url = $('#captcha_image').attr('src');
+		var queryStartPosition = url.indexOf('?');
+
+		if (queryStartPosition > 0) {
+			url = url.substring(0, queryStartPosition);
+		}
+
+		url = url + '?r=' + Math.random().toString(36).substring(2);
+		$("#captcha_image").attr("src", url);
+	});
 });
 
 function toggleField(infoId, fieldId, link, hideTxt, showTxt) {
@@ -105,18 +117,20 @@ function renumberHoldings() {
     rows.each(function(index) {
         var curIdx = $(this).attr('id').substr(7);
         var curPrefix = "holdings\\["+curIdx+"\\]\\.";
+	    var curPrefix2 = "holdings"+curIdx+"\\.";
         var newPrefix = "holdings["+newIdx+"].";
+	    var newPrefix2 = "holdings"+newIdx+".";
         $(this).attr('id', "holding"+newIdx);
 
         $("#"+curPrefix+"signature").attr('id', newPrefix+"signature")
                                     .attr('name', newPrefix+"signature");
-        $("#"+curPrefix+"direction").attr('id', newPrefix+"direction")
+        $("#"+curPrefix2+"direction").attr('id', newPrefix2+"direction")
                                     .attr('name', newPrefix+"direction");
-        $("#"+curPrefix+"floor").attr('id', newPrefix+"floor")
+        $("#"+curPrefix2+"floor").attr('id', newPrefix2+"floor")
                                 .attr('name', newPrefix+"floor");
-        $("#"+curPrefix+"cabinet").attr('id', newPrefix+"cabinet")
+        $("#"+curPrefix2+"cabinet").attr('id', newPrefix2+"cabinet")
                                   .attr('name', newPrefix+"cabinet");
-        $("#"+curPrefix+"shelf").attr('id', newPrefix+"shelf")
+        $("#"+curPrefix2+"shelf").attr('id', newPrefix2+"shelf")
                                 .attr('name', newPrefix+"shelf");
         $("#"+curPrefix+"usageRestriction").attr('id', newPrefix+"usageRestriction")
                                            .attr('name', newPrefix+"usageRestriction");

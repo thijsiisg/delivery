@@ -98,6 +98,15 @@ public class ReservationDAOImpl implements ReservationDAO {
         return entityManager.createQuery(q).getResultList();
     }
 
+	/**
+	 * List all Tuples matching a built query.
+	 * @param q The criteria query to execute
+	 * @return A list of matching Tuples.
+	 */
+	public List<Tuple> listForTuple(CriteriaQuery<Tuple> q) {
+		return entityManager.createQuery(q).getResultList();
+	}
+
     /**
      * Get a single Reservation matching a built query.
      * @param query The query to match by.

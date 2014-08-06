@@ -35,6 +35,7 @@ package org.socialhistoryservices.delivery.reservation.dao;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.util.List;
@@ -80,6 +81,13 @@ public interface ReservationDAO {
      * @return A list of matching Reservations.
      */
     public List<Reservation> list(CriteriaQuery<Reservation> q);
+
+	/**
+	 * List all Tuples matching a built query.
+	 * @param q The criteria query to execute
+	 * @return A list of matching Tuples.
+	 */
+	public List<Tuple> listForTuple(CriteriaQuery<Tuple> q);
 
     /**
      * Get a single Reservation matching a built query.

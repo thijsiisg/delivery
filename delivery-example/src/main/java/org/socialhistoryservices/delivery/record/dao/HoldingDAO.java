@@ -55,6 +55,12 @@ public interface HoldingDAO {
      */
     public void remove(Holding obj);
 
+	/**
+	 * Remove the ExternalHoldingInfo of a Holding from the database.
+	 * @param obj Holding of which to remove the ExternalHoldingInfo.
+	 */
+	public void removeExternalInfo(Holding obj);
+
     /**
      * Save changes to a Holding in the database.
      * @param obj Holding to save.

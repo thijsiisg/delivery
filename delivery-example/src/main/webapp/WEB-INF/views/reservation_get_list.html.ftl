@@ -50,7 +50,11 @@
     <@_ "reservationList.filterEverything" "Show All Reservations"/>
     </a>
   </li>
-
+  <li>
+    <a href="${rc.contextPath}/reservation/materials">
+	<@_ "reservationMaterials.noRequestsPerMaterial" "Number of requests per material type"/>
+    </a>
+  </li>
 </ul>
 
 
@@ -183,7 +187,8 @@
   <tr>
     <th></th>
     <th></th>
-    <th><@_ "reservation.records" "Records"/></th>
+    <th><@_ "holding.record" "Item"/></th>
+    <th><@sortLink "signature"><@_ "holding.signature" "Call nr."/></@sortLink></th>
     <th>
       <@sortLink "visitorName"><@_ "reservation.visitorName" "Name"/></@sortLink>
     </th>
@@ -191,11 +196,14 @@
     <#--<th><@sortLink "returnDate"><@_ "reservation.returnDate" "Return
     Date"/></@sortLink></th>-->
     <th><@sortLink "printed"><@_ "reservation.printed" "Printed"/></@sortLink></th>
-    <th><@sortLink "status"><@_ "reservation.status" "Status"/></@sortLink></th>
+    <th><@sortLink "status"><@_ "reservation.extended.status.status" "Reservation status"/></@sortLink></th>
+    <th><@sortLink "holdingStatus"><@_ "holding.extended.status" "Item status"/></@sortLink></th>
   </tr>
   </thead>
   <tbody>
-  <#list pageListHolder.pageList as reservation>
+  <#list pageListHolder.pageList as holdingReservation>
+	 <#assign holding = holdingReservation.holding>
+     <#assign reservation = holdingReservation.reservation>
   <tr>
     <td><input type="checkbox" name="checked" value="${reservation.id?c}"
                class="checkItem" /></td>
@@ -204,14 +212,11 @@
       <@_ "reservationList.edit" "Administrate"/>
       </a>
     </td>
-    <td>
-      <ul>
-        <#list reservation.holdingReservations as hr>
-            <#assign h = hr.holding>
-        <li>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></li>
-        </#list>
-      </ul>
+    <td class="leftAligned">
+      ${holding.record.title?html}
+	  <#if holdingReservation.comment??> - ${holdingReservation.comment}</#if>
     </td>
+	<td>${holding.signature?html}</td>
     <td>${reservation.visitorName?html}</td>
     <td>${reservation.date?string(prop_dateFormat)}</td>
     <#--<td><#if reservation.returnDate??>${reservation.returnDate?string
@@ -224,6 +229,7 @@
     </#assign>
     <td>${reservation.printed?string(yes, no)}</td>
     <td><@_ "reservation.statusType.${reservation.status?string}" "${reservation.status?string}" /></td>
+    <td><@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" /></td>
   </tr>
   </#list>
   </tbody>
