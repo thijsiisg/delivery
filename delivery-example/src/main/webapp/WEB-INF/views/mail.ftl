@@ -19,12 +19,6 @@
 
 <#macro _ ident msg>${msgResolver.getMessage(ident, msg)}</#macro>
 
-<#macro _html ident msg>
-    ${springMacroRequestContext.setDefaultHtmlEscape(false)}
-    ${msgResolver.getMessage(ident, msg)}
-    ${springMacroRequestContext.setDefaultHtmlEscape(true)}
-</#macro>
-
 <#macro mail to>
 <@_ "mail.dear" "Dear"/> ${to},
 
