@@ -43,9 +43,9 @@
   </section>
 
   <#if reservation.date?date?string == .now?date?string>
-    <p><@_ "reservation.successMsg" "Documents requested will be ready in the reading room within 20 minutes." /></p>
+    <p><@_html "reservation.successMsg" "Requested documents will be in the reading room within <strong>30 minutes</strong>." /></p>
   <#else>
-    <p><@_ "reservation.successFutureMsg" "Documents requested will be ready on the day of your visit as of 9.30 am." /></p>
+    <p><@_html "reservation.successFutureMsg" "Requested documents will be in the reading room on the day of your visit as of <strong>9.30 am</strong>." /></p>
   </#if>
 
   <#if error?? >

@@ -19,9 +19,9 @@
 <#include "mail.ftl">
 <@mail reservation.visitorName>
 <#if reservation.date?date?string == .now?date?string>
-  <@_ "reservationMail.confirmationMessage" "With this email we confirm your reservation. Documents requested will be ready in the reading room within 20 minutes." />
+  <@_html "reservationMail.confirmationMessage" "With this email we confirm your reservation. Requested documents will be in the reading room within <strong>30 minutes</strong>." />
 <#else>
-  <@_ "reservationMail.confirmationFutureMessage" "With this email we confirm your reservation. Documents requested will be ready on the day of your visit as of 9.30 am." />
+  <@_html "reservationMail.confirmationFutureMessage" "With this email we confirm your reservation. Requested documents will be in the reading room on the day of your visit as of <strong>9.30 am</strong>." />
 </#if>
 
 --- <@_ "reservation.date" "Date"/> ---
