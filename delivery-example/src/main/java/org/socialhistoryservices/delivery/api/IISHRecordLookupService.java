@@ -330,8 +330,7 @@ public class IISHRecordLookupService implements RecordLookupService {
             // 251 characters (up to 252 , exclusive) to save up for the dash
             // and \0 termination.
             // EDIT: Trim this to ~125 characters for readability (this is the current max size of the field).
-	        // EDIT 2: Back to 255 characters and removed signature from title
-            title = stripToSize(title, 255);
+            title = stripToSize(title, 125);
 
             externalInfo.setTitle(title);
         } else {

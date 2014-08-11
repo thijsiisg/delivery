@@ -59,7 +59,7 @@ public class ExternalRecordInfo {
     
      /** The Record's title. */
     @NotBlank
-    @Size(max=255)
+    @Size(max=125)
     @Column(name="title", nullable=false)
     private String title;
 
