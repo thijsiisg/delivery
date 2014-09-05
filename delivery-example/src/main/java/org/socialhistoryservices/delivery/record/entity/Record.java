@@ -383,13 +383,20 @@ public class Record {
     }
 
     /**
-     * Add a holding to a record.
-     * @param hs The holding to add.
+     * Add a set of holdings to this record.
+     * @param hs The set of holdings to add.
      */
     public void setHoldings(List<Holding> hs) {
         holdings = hs;
     }
 
+	/**
+	 * Add a holding to this record.
+	 * @param h The holding to add.
+	 */
+	public void addHolding(Holding h) {
+		holdings.add(h);
+	}
 
     /**
      * Merge other record's data with this record. ID, title,

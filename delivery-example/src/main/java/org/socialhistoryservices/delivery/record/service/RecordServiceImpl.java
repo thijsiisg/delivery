@@ -246,9 +246,20 @@ public class RecordServiceImpl implements RecordService {
         // Add holding/other API info if present
 	    newRecord.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
 	    Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
-	    for (Holding h : newRecord.getHoldings()) {
-		    if (ehMap.containsKey(h.getSignature())) {
-			    h.setExternalInfo(ehMap.get(h.getSignature()));
+	    for (String signature : ehMap.keySet()) {
+		    boolean found = false;
+
+		    for (Holding h : newRecord.getHoldings()) {
+			    if (signature.equals(h.getSignature())) {
+				    h.setExternalInfo(ehMap.get(signature));
+				    found = true;
+			    }
+		    }
+
+		    if (!found) {
+			    Holding holding = new Holding();
+			    holding.setSignature(signature);
+			    newRecord.addHolding(holding);
 		    }
 	    }
 
