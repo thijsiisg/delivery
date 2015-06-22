@@ -23,6 +23,7 @@ import org.socialhistoryservices.delivery.user.entity.User;
 import org.socialhistoryservices.delivery.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -45,6 +46,22 @@ public class UserController extends ErrorHandlingController {
     @Autowired
     @Qualifier("userDetailsService")
     private UserService users;
+
+    /**
+     * The login page.
+     * @param error An error message.
+     * @param model The model to add attributes to.
+     * @return The view to resolve.
+     */
+    @RequestMapping(value = "/login", method = RequestMethod.GET)
+    public String login(@RequestParam(value = "error", required = false) String error, Model model) {
+        if (error != null) {
+            String msg = msgSource.getMessage("security.error", null, "Invalid username and password!",
+                    LocaleContextHolder.getLocale());
+            model.addAttribute("error", msg);
+        }
+        return "user_login";
+    }
 
     /**
      * Get the list of users to manage.

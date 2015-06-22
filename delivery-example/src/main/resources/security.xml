@@ -24,82 +24,71 @@
            http://www.springframework.org/schema/security
            http://www.springframework.org/schema/security/spring-security-3.1.xsd" default-autowire="byName">
 
+  <http auto-config="true" use-expressions="true">
+    <form-login
+        login-page="/user/login"
+        authentication-failure-url="/user/login?error=true"
+        default-target-url="/"/>
 
-  <http entry-point-ref="casEntryPoint">
-    <custom-filter position="FORM_LOGIN_FILTER" ref="casFilter" />
-    <custom-filter ref="requestLogoutFilter" before="LOGOUT_FILTER"/>
-    <custom-filter ref="singleLogoutFilter" before="CAS_FILTER"/>
+    <logout
+        invalidate-session="true"
+        logout-success-url="/user/logout-success"
+        logout-url="/user/logout"/>
   </http>
 
-
-
-  <authentication-manager alias="authenticationManager">
-    <authentication-provider ref="casAuthenticationProvider"/>
+  <authentication-manager>
+    <authentication-provider ref='ldapAuthProvider'/>
   </authentication-manager>
 
-  <beans:bean id="casFilter"
-      class="org.springframework.security.cas.web.CasAuthenticationFilter">
-    <beans:property name="filterProcessesUrl" value="/user/validate" />
-    <beans:property name="authenticationManager" ref="authenticationManager"/>
+  <beans:bean id="contextSource" class="org.springframework.security.ldap.DefaultSpringSecurityContextSource">
+    <beans:constructor-arg value="${prop_ldapUrl}"/>
+    <beans:property name="userDn" value="${prop_ldapManagerDn}"/>
+    <beans:property name="password" value="${prop_ldapManagerPassword}"/>
   </beans:bean>
 
-  <beans:bean id="casEntryPoint"
-    class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
-    <beans:property name="loginUrl" value="${prop_casUrl}/login"/>
-    <beans:property name="serviceProperties" ref="serviceProperties"/>
+  <beans:bean id="userSearch" class="org.springframework.security.ldap.search.FilterBasedLdapUserSearch">
+    <beans:constructor-arg index="0" value="${prop_ldapUserSearchBase}"/>
+    <beans:constructor-arg index="1" value="${prop_ldapUserSearchFilter}"/>
+    <beans:constructor-arg index="2" ref="contextSource"/>
+    <beans:property name="searchSubtree" value="true"/>
   </beans:bean>
 
-    <beans:bean id="casAuthenticationProvider"
-                class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
-        <beans:property name="userDetailsService" ref="userDetailsService" />
-        <beans:property name="serviceProperties" ref="serviceProperties" />
-        <beans:property name="ticketValidator"
-                        ref="userAddingServiceTicketValidator" />
-        <beans:property name="key" value="unique-id-for-this-provider-cas" />
-    </beans:bean>
-
-    <beans:bean id="userAddingServiceTicketValidator"
-                class="org.socialhistoryservices.delivery.user.controller.UserAddingServiceTicketValidator">
-        <beans:constructor-arg index="0" value="${prop_casUrl}" />
-        <beans:property name="userService" ref="userDetailsService"/>
-    </beans:bean>
-
-    <beans:bean id="userDetailsService"
-      class="org.socialhistoryservices.delivery.user.service.UserServiceImpl">
-      <beans:property name="userDAO" ref="userDAOBean"/>
-      <beans:property name="groupDAO" ref="groupDAOBean"/>
-  </beans:bean>
-
-  <beans:bean id="groupDAOBean" class="org.socialhistoryservices.delivery.user.dao.GroupDAOImpl" />
-  <beans:bean id="userDAOBean" class="org.socialhistoryservices.delivery.user.dao.UserDAOImpl" />
-
-  <beans:bean id="serviceProperties"
-        class="org.springframework.security.cas.ServiceProperties">
-    <beans:property name="service"
-        value="${prop_urlSelf}/user/validate"/>
-    <beans:property name="sendRenew" value="false"/>
-  </beans:bean>
-
-   <!-- This filter handles a Single Logout Request from the CAS Server -->
-  <beans:bean id="singleLogoutFilter" class="org.jasig.cas.client.session.SingleSignOutFilter"/>
-
-
-
-  <!-- This filter logs out the user -->
-  <beans:bean id="requestLogoutFilter"
-        class="org.springframework.security.web.authentication.logout.LogoutFilter">
-    <beans:constructor-arg value="/user/logout-success"/>
+  <beans:bean id="ldapAuthProvider"
+              class="org.springframework.security.ldap.authentication.LdapAuthenticationProvider">
     <beans:constructor-arg>
-      <beans:bean class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler"/>
+      <beans:bean class="org.springframework.security.ldap.authentication.BindAuthenticator">
+        <beans:constructor-arg ref="contextSource"/>
+        <beans:property name="userDnPatterns">
+          <beans:list>
+            <beans:value>${prop_ldapUserSearchFilter}</beans:value>
+          </beans:list>
+        </beans:property>
+        <beans:property name="userSearch" ref="userSearch"/>
+      </beans:bean>
     </beans:constructor-arg>
-    <beans:property name="filterProcessesUrl"
-               value="/user/logout"/>
+
+    <beans:constructor-arg>
+      <beans:bean class="org.socialhistoryservices.delivery.user.service.AuthoritiesPopulator">
+        <beans:constructor-arg ref="contextSource"/>
+        <beans:constructor-arg value=""/>
+        <beans:constructor-arg ref="userDetailsService"/>
+        <beans:property name="groupRoleAttribute" value="cn"/>
+      </beans:bean>
+    </beans:constructor-arg>
   </beans:bean>
 
-    <!-- Captcha beans -->
-    <beans:bean id="captchaEngine" class="org.socialhistoryservices.utils.CaptchaEngine" />
+  <beans:bean id="userDetailsService" class="org.socialhistoryservices.delivery.user.service.UserServiceImpl">
+    <beans:property name="userDAO" ref="userDAOBean"/>
+    <beans:property name="groupDAO" ref="groupDAOBean"/>
+  </beans:bean>
 
-    <beans:bean id="captchaService" class="com.octo.captcha.service.image.DefaultManageableImageCaptchaService">
-        <beans:property name="captchaEngine" ref="captchaEngine" />
-    </beans:bean>
+  <beans:bean id="groupDAOBean" class="org.socialhistoryservices.delivery.user.dao.GroupDAOImpl"/>
+  <beans:bean id="userDAOBean" class="org.socialhistoryservices.delivery.user.dao.UserDAOImpl"/>
+
+  <!-- Captcha beans -->
+  <beans:bean id="captchaEngine" class="org.socialhistoryservices.utils.CaptchaEngine"/>
+
+  <beans:bean id="captchaService" class="com.octo.captcha.service.image.DefaultManageableImageCaptchaService">
+    <beans:property name="captchaEngine" ref="captchaEngine"/>
+  </beans:bean>
 </beans:beans>

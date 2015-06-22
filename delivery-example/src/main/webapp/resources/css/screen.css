@@ -58,7 +58,7 @@ textarea {
     height: 8em;
 }
 
-input[type="text"], select {
+input[type="text"], select, input[type="password"] {
     box-sizing:content-box;
     -ms-box-sizing:content-box;
     -moz-box-sizing:content-box;
@@ -107,7 +107,7 @@ input.field, textarea.field, select.field {
     clear: right;
 }
 
-input[type="text"], select, textarea {
+input[type="text"], select, textarea, input[type="password"] {
     padding: 3px;
     margin-right: 3px;
 }
