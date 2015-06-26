@@ -22,6 +22,8 @@ import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
+import org.socialhistoryservices.delivery.request.entity.Request;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import javax.persistence.*;
@@ -37,7 +39,7 @@ import java.util.*;
 @Table(name="reservations")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Configurable
-public class Reservation {
+public class Reservation extends Request {
 
     /** Status of the reservation. */
     public enum Status {
@@ -82,6 +84,16 @@ public class Reservation {
         this.visitorName = name;
     }
 
+    /**
+     * Returns the name of the person making the request.
+     *
+     * @return The name of the person.
+     */
+    @Override
+    public String getName() {
+        return getVisitorName();
+    }
+
     /** The Reservation's email. */
     @NotBlank
     @Size(max=255)
@@ -103,6 +115,16 @@ public class Reservation {
      */
     public void setVisitorEmail(String email) {
         this.visitorEmail = email;
+    }
+
+    /**
+     * Returns the email address of the person making the request.
+     *
+     * @return The email address of the person.
+     */
+    @Override
+    public String getEmail() {
+        return getVisitorEmail();
     }
 
     /** The Reservation's date. */
@@ -161,6 +183,7 @@ public class Reservation {
      * Get the Reservation's creation date.
      * @return the Reservation's creation date.
      */
+    @Override
     public Date getCreationDate() {
         return creationDate;
     }
@@ -169,6 +192,7 @@ public class Reservation {
      * Set the Reservation's date.
      * @param creationDate the Reservation's date.
      */
+    @Override
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
@@ -228,7 +252,34 @@ public class Reservation {
         return holdingReservations;
     }
 
-    /** The Reservation's permission. */
+    /**
+     * Returns all holdings assoicated with this request.
+     *
+     * @return A list of holdings.
+     */
+    @Override
+    public List<Holding> getHoldings() {
+            List<Holding> holdings = new ArrayList<Holding>();
+            if (holdingReservations != null) {
+                    for (HoldingReservation holdingReservation : holdingReservations) {
+                            holdings.add(holdingReservation.getHolding());
+                    }
+                    return holdings;
+            }
+            return null;
+    }
+
+    /**
+     * Returns all HoldingRequests assoicated with this request.
+     *
+     * @return A list of HoldingRequests.
+     */
+    @Override
+    public List<? extends HoldingRequest> getHoldingRequests() {
+        return holdingReservations;
+    }
+
+	/** The Reservation's permission. */
     @ManyToOne
     @JoinColumn(name="permission_id")
     private Permission permission;
@@ -276,6 +327,7 @@ public class Reservation {
      * @param b True to consider the reservation to be printed at least once,
      * false otherwise.
      */
+    @Override
     public void setPrinted(boolean b) {
         printed = b;
     }
@@ -285,6 +337,7 @@ public class Reservation {
      * @return True if the reservation was printed at least once,
      * false otherwise.
      */
+    @Override
     public boolean isPrinted() {
         return printed;
     }
@@ -314,88 +367,36 @@ public class Reservation {
      * Merge the other reservation's fields into this reservation.
      * @param other The other reservation.
      */
-    public void mergeWith(Reservation other) {
-        setDate(other.getDate());
-        setReturnDate(other.getReturnDate());
-        setPrinted(other.isPrinted());
-        setSpecial(other.getSpecial());
-        setVisitorName(other.getVisitorName());
-        setVisitorEmail(other.getVisitorEmail());
-        setComment(other.getComment());
-        //setPermission(other.getPermission());
-        //setQueueNo(other.getQueueNo());
+    @Override
+    public void mergeWith(Request o) {
+        if (o instanceof Reservation) {
+            Reservation other = (Reservation) o;
 
+            setDate(other.getDate());
+            setReturnDate(other.getReturnDate());
+            setPrinted(other.isPrinted());
+            setSpecial(other.getSpecial());
+            setVisitorName(other.getVisitorName());
+            setVisitorEmail(other.getVisitorEmail());
+            setComment(other.getComment());
+            //setPermission(other.getPermission());
+            //setQueueNo(other.getQueueNo());
 
-
-        if (other.getHoldingReservations() == null) {
-            for (HoldingReservation hr : getHoldingReservations()) {
-                hr.getHolding().setStatus(Holding.Status.AVAILABLE);
-            }
-            setHoldingReservations(new ArrayList<HoldingReservation>());
-        } else {
-            // Delete holdings that were not provided.
-            deleteHoldingsNotInProvidedReservation(other);
-
-            // Add/update provided.
-            addOrUpdateHoldingsProvidedByReservation(other);
-        }
-        updateStatusAndAssociatedHoldingStatus(other.getStatus());
-    }
-
-    /**
-     * Add/Update the holdings provided by the provided reservation.
-     * @param other The provided reservation.
-     */
-    private void addOrUpdateHoldingsProvidedByReservation(Reservation other) {
-        for (HoldingReservation hr : other.getHoldingReservations()) {
-            Holding h = hr.getHolding();
-            boolean has = false;
-            for (HoldingReservation hr2 : getHoldingReservations()) {
-                Holding h2 = hr2.getHolding();
-                
-                if (h.getSignature().equals(h2.getSignature())
-                        && h.getRecord().equals(h2.getRecord())) {
-                    has = true;
-
-                    // Update comment and such.
-                    hr2.mergeWith(hr);
+            if (other.getHoldingReservations() == null) {
+                for (HoldingReservation hr : getHoldingReservations()) {
+                    hr.getHolding().setStatus(Holding.Status.AVAILABLE);
                 }
-            }
+                setHoldingReservations(new ArrayList<HoldingReservation>());
+            } else {
+                // Delete holdings that were not provided.
+                deleteHoldingsNotInProvidedRequest(other);
 
-            if (!has) {
-
-                holdingReservations.add(hr);
+                // Add/update provided.
+                addOrUpdateHoldingsProvidedByRequest(other);
             }
+            updateStatusAndAssociatedHoldingStatus(other.getStatus());
         }
     }
-
-    /**
-     * Remove the holdings from this record, which are not in the other record.
-     * @param other The other record.
-     */
-    private void deleteHoldingsNotInProvidedReservation(Reservation other) {
-        Iterator<HoldingReservation> it = getHoldingReservations().iterator();
-        while (it.hasNext()) {
-            HoldingReservation hr = it.next();
-            Holding h = hr.getHolding();
-
-            boolean has = false;
-            for (HoldingReservation hr2 : other.getHoldingReservations()) {
-                Holding h2 = hr2.getHolding();
-                if (h.getSignature().equals(h2.getSignature())
-                        && h.getRecord().equals(h2.getRecord())) {
-                    has = true;
-                    break;
-                }
-            }
-
-            if (!has) {
-                h.setStatus(Holding.Status.AVAILABLE);
-                it.remove();
-            }
-        }
-    }
-
 
     /**
      * Set the reservation status and update the associated holdings status
@@ -424,6 +425,17 @@ public class Reservation {
         }
     }
 
+    /**
+     * Adds a HoldingRequest to the HoldingRequests assoicated with this request.
+     *
+     * @param holdingRequest The HoldingRequests to add.
+     */
+    @Override
+    protected void addToHoldingRequests(HoldingRequest holdingRequest) {
+        HoldingReservation holdingReservation = (HoldingReservation) holdingRequest;
+        holdingReservation.setReservation(this);
+        getHoldingReservations().add(holdingReservation);
+    }
 
     /**
      * Set default data for reservations.

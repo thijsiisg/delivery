@@ -150,10 +150,11 @@ public interface RecordService {
     /**
      * Get the first available (not closed) holding for a record.
      * @param r The record to get a holding of.
+     * @param mustBeAvailable
      * @return The first free holding found or null if all occupied/no
      * holdings.
      */
-    public Holding getAvailableHoldingForRecord(Record r);
+    public Holding getHoldingForRecord(Record r, boolean mustBeAvailable);
 
     /**
      * Create a record, using the metadata from the IISH API to populate its

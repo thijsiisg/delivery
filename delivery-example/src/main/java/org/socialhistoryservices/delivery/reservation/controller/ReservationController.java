@@ -17,17 +17,19 @@
 package org.socialhistoryservices.delivery.reservation.controller;
 
 import org.codehaus.jackson.JsonNode;
-import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.request.controller.RequestController;
+import org.socialhistoryservices.delivery.request.service.ClosedException;
+import org.socialhistoryservices.delivery.request.service.InUseException;
+import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation_;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.socialhistoryservices.delivery.reservation.service.*;
-import org.socialhistoryservices.delivery.ErrorHandlingController;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,14 +43,12 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.print.PrinterException;
-import java.beans.PropertyEditorSupport;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -60,7 +60,7 @@ import java.util.*;
 @Controller
 @Transactional
 @RequestMapping(value = "/reservation")
-public class ReservationController extends ErrorHandlingController {
+public class ReservationController extends RequestController {
 
     @Autowired
     private ReservationService reservations;
@@ -73,24 +73,6 @@ public class ReservationController extends ErrorHandlingController {
 
     @Autowired
     private RecordService records;
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        super.initBinder(binder);
-
-        // This is needed for the reservation_create page passing an holding
-        // ID.
-        binder.registerCustomEditor(Holding.class,
-            new PropertyEditorSupport() {
-                @Override
-                public void setAsText(String text) {
-                    Holding h = records.getHoldingById(Integer.parseInt
-                            (text));
-                    setValue(h);
-                }
-        });
-
-    }
 
     // {{{ Get API
 
@@ -166,27 +148,11 @@ public class ReservationController extends ErrorHandlingController {
         List<HoldingReservation> hList = reservations.listHoldingReservations(cq);
         PagedListHolder<HoldingReservation> pagedListHolder = new
                 PagedListHolder<HoldingReservation>(hList);
-
-        // Set the amount of reservations per page
-        pagedListHolder.setPageSize(parsePageLenFilter(p));
-
-        // Set the current page, internal starts at 0, external at 1
-        pagedListHolder.setPage(parsePageFilter(p));
-
-        // Add result to model
-        model.addAttribute("callback", callback);
-        model.addAttribute("pageListHolder", pagedListHolder);
+        initOverviewModel(p, model, pagedListHolder);
 
         Calendar cal = GregorianCalendar.getInstance();
-        model.addAttribute("today", cal.getTime());
-        cal.add(Calendar.MONTH, -3);
-        model.addAttribute("min3months", cal.getTime());
-        cal.add(Calendar.MONTH, 3);
-        cal.add(Calendar.DAY_OF_MONTH, 1);
-        model.addAttribute("tomorrow",cal.getTime());
-        cal.setTime(new Date());
         cal.add(Calendar.DAY_OF_MONTH, Integer.parseInt(properties.getProperty
-                ("prop_reservationMaxDaysInAdvance")));
+                ("prop_requestMaxDaysInAdvance")));
         model.addAttribute("maxReserveDate",cal.getTime());
 
         return "reservation_get_list";
@@ -227,47 +193,6 @@ public class ReservationController extends ErrorHandlingController {
             return cb.asc(e);
         }
         return cb.desc(e);
-    }
-
-    /**
-     * Parse the page filter into an integer.
-     * @param p The parameter map to search the given filter value in.
-     * @return The current page to show, default 0. (external = 1).
-     */
-    private int parsePageFilter(Map<String, String[]> p) {
-        int page = 0;
-        if (p.containsKey("page")) {
-            try {
-               page = Math.max(0, Integer.parseInt(p.get("page")[0]) - 1);
-            } catch (NumberFormatException ex) {
-                throw new InvalidRequestException("Invalid page number: " +
-                        p.get("page")[0]);
-            }
-        }
-        return page;
-    }
-
-    /**
-     * Parse the page length filter.
-     * @param p The parameter map to search the given filter value in.
-     * @return The length of the page (defaults to the length in the config,
-     * can not exceed the maximum length in the config).
-     */
-    private int parsePageLenFilter(Map<String, String[]> p) {
-        int pageLen = Integer.parseInt(properties.getProperty("prop_reservationPageLen"));
-        if (p.containsKey("page_len")) {
-            try {
-                pageLen = Math.max(0,
-                                   Math.min(Integer.parseInt(p.get("page_len")
-                                           [0]), Integer.parseInt(
-                                         properties.getProperty
-                                                 ("prop_reservationMaxPageLen"))));
-            } catch (NumberFormatException ex) {
-                throw new InvalidRequestException("Invalid page length: " +
-                        p.get("page_len")[0]);
-            }
-        }
-        return pageLen;
     }
 
     /**
@@ -423,49 +348,25 @@ public class ReservationController extends ErrorHandlingController {
                                      CriteriaBuilder cb,
                                      Join<HoldingReservation,Reservation> resRoot,
                                      Expression<Boolean> where) {
-        DateFormat apiDf = new SimpleDateFormat("yyyy-MM-dd");
-        if (p.containsKey("date")) {
-            try {
-                Date d = apiDf.parse(p.get("date")[0]);
-                Expression<Boolean> exDate = cb.equal(resRoot.<Date>get
-                        (Reservation_
-                        .date),
-                                             d);
-                where = where != null ? cb.and(where, exDate) : exDate;
-            } catch (ParseException ex) {
-                throw new InvalidRequestException("Invalid date: " +
-                        p.get("date")[0]);
-            }
+        Date date = getDateFilter(p);
+        if (date != null) {
+            Expression<Boolean> exDate = cb.equal(resRoot.<Date>get(Reservation_.date), date);
+            where = where != null ? cb.and(where, exDate) : exDate;
         } else {
-            boolean containsFrom = p.containsKey("from_date") &&
-                                   !p.get("from_date")[0].trim().equals("");
-            boolean containsTo = p.containsKey("to_date") &&
-                                 !p.get("to_date")[0].trim().equals("");
-            if (containsFrom) {
-                try {
-                    Date d = apiDf.parse(p.get("from_date")[0]);
-                    Expression<Boolean> exDate = cb.greaterThanOrEqualTo(
-                            resRoot.<Date>get(Reservation_.date), d);
-                    where = where != null ? cb.and(where, exDate) : exDate;
-                } catch (ParseException ex) {
-                    throw new InvalidRequestException("Invalid from_date: " +
-                        p.get("from_date")[0]);
-                }
+            Date fromDate = getFromDateFilter(p);
+            Date toDate = getToDateFilter(p);
+            if (fromDate != null) {
+                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(resRoot.<Date>get(Reservation_.date), date);
+                where = where != null ? cb.and(where, exDate) : exDate;
             }
-            if (containsTo) {
-                try {
-                    Date d = apiDf.parse(p.get("to_date")[0]);
-                    Expression<Boolean> exDate = cb.lessThanOrEqualTo(
-                            resRoot.<Date>get(Reservation_.date), d);
-                    where = where != null ? cb.and(where, exDate) : exDate;
-                } catch (ParseException ex) {
-                    throw new InvalidRequestException("Invalid to_date: " +
-                        p.get("to_date")[0]);
-                }
+            if (toDate != null) {
+                Expression<Boolean> exDate = cb.lessThanOrEqualTo(resRoot.<Date>get(Reservation_.date), date);
+                where = where != null ? cb.and(where, exDate) : exDate;
             }
         }
         return where;
     }
+
     //}}}
     // {{{ Create/Edit API
 
@@ -586,7 +487,7 @@ public class ReservationController extends ErrorHandlingController {
                         "invalid PID:" + pid);
             }
             if (n.path(pid).size() == 0) {
-                Holding ah = records.getAvailableHoldingForRecord(r);
+                Holding ah = records.getHoldingForRecord(r, true);
                 if (ah == null) {
                     throw new InvalidRequestException("Items list contains " +
                             "PID with empty list, but no arbitrary holding is" +
@@ -708,7 +609,7 @@ public class ReservationController extends ErrorHandlingController {
                     return "reservation_success";
                 }
             } else {
-                reservations.validateHoldings(newRes, null);
+                reservations.validateHoldings(newRes, null, true);
             }
 
         } catch (NoHoldingsException e) {
@@ -725,102 +626,19 @@ public class ReservationController extends ErrorHandlingController {
         return "reservation_create";
     }
 
-    private boolean checkHoldings(Model model, Reservation newRes) {
-        List<HoldingReservation> hrs = newRes.getHoldingReservations();
-        if (hrs == null) {
-            model.addAttribute("error", "availability");
-            return false;
-        }
+	private List<HoldingReservation> uriPathToHoldingReservations(String path) {
+		List<Holding> holdings = uriPathToHoldings(path, true);
+		if (holdings == null)
+			return null;
 
-        if (hrs.size() > Integer.parseInt(properties.getProperty("prop_reservationMaxItems"))) {
-            model.addAttribute("error", "limitItems");
-            return false;
-        }
-
-        for (HoldingReservation hr : hrs) {
-            Holding h = hr.getHolding();
-            if (h == null) {
-                throw new ResourceNotFoundException();
-            }
-            if (h.getUsageRestriction() == Holding.UsageRestriction.CLOSED) {
-                model.addAttribute("error", "restricted");
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Checks the permission if applicable (i.e. holdings selected are tied
-     * to one or more restricted records).
-     * @param model The model to add errors to.
-     * @param perm The permission, can be null if not applicable.
-     * @param newRes The Reservation with holdings to check.
-     * @return True iff the given permission (can be null) is allowed to
-     * reserve the provided holdings.
-     */
-    private boolean checkPermissions(Model model, Permission perm,
-                                     Reservation newRes) {
-        if (perm == null) {
-            perm = new Permission();
-        }
-
-        List<HoldingReservation> hrs = newRes.getHoldingReservations();
-        for (HoldingReservation hr : hrs) {
-            Record permRecord = hr.getHolding().getRecord();
-            if (permRecord.getRealRestrictionType() == Record
-                    .RestrictionType.RESTRICTED) {
-                if (!perm.hasGranted(permRecord)) {
-                    model.addAttribute("holdingReservations", hrs);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private List<HoldingReservation> uriPathToHoldingReservations(String path) {
-        List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
-        String[] tuples = getPidsFromURL(path);
-        for (String tuple : tuples) {
-            String[] elements = tuple.split(properties.getProperty("prop_holdingSeparator", ":"));
-            Record r = records.getRecordByPid(elements[0]);
-            if (r == null) {
-                // Try creating the record.
-                try {
-                    r = records.createRecordByPid(elements[0]);
-                    records.addRecord(r);
-                } catch (NoSuchPidException e) {
-                    return null;
-                }
-            }
-            if (elements.length == 1) {
-                Holding h = records.getAvailableHoldingForRecord(r);
-                if (h == null) {
-                    return null;
-                }
-                HoldingReservation hr = new HoldingReservation();
-                hr.setHolding(h);
-                hrs.add(hr);
-            } else {
-                for (int i = 1; i < elements.length; i++) {
-                    boolean has = false;
-                    for (Holding h : r.getHoldings()) {
-                        if (h.getSignature().equals(elements[i])) {
-                            HoldingReservation hr = new HoldingReservation();
-                            hr.setHolding(h);
-                            hrs.add(hr);
-                            has = true;
-                        }
-                    }
-                    if (!has) {
-                        return null;
-                    }
-                }
-            }
-        }
-        return hrs;
-    }
+		List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
+		for (Holding holding : holdings) {
+			HoldingReservation hr = new HoldingReservation();
+			hr.setHolding(holding);
+			hrs.add(hr);
+		}
+		return hrs;
+	}
 
     /**
      * Print a reservation if it has been reserved between the opening and
@@ -835,35 +653,7 @@ public class ReservationController extends ErrorHandlingController {
             return;
         }
 
-        // Print automatically if the creation date of the reservation was between
-        // today->open and today->close of the readingroom.
-        Date open, close;
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
-        format.setLenient(false);
-        try {
-            open = format.parse(properties.getProperty("prop_reservationAutoPrintStartTime"));
-            close = format.parse(properties.getProperty("prop_reservationLatestTime"));
-        } catch (ParseException e) {
-            throw new RuntimeException("Failed parsing necessary open and " +
-                    "closing dates for auto printing. Are they in the " +
-                    "correct HH:mm format in your properties file?");
-        }
-
-        Calendar cal = GregorianCalendar.getInstance();
-        cal.setTime(create);
-        int createH = cal.get(Calendar.HOUR_OF_DAY);
-        int createM = cal.get(Calendar.MINUTE);
-        cal.setTime(open);
-        int openH = cal.get(Calendar.HOUR_OF_DAY);
-        int openM = cal.get(Calendar.MINUTE);
-        cal.setTime(close);
-        int closeH = cal.get(Calendar.HOUR_OF_DAY);
-        int closeM = cal.get(Calendar.MINUTE);
-
-        boolean afterOpen = createH > openH || (createH == openH && createM >= openM);
-        boolean beforeClose = createH < closeH || (createH == closeH && createM < closeM);
-        if (afterOpen && beforeClose) {
-
+        if (isBetweenOpeningAndClosingTime(create)) {
             // Run this in a separate thread, we do nothing on failure so in
             // this case this is perfectly possible.
             // This speeds up the processing of the page for the end-user.
@@ -877,8 +667,6 @@ public class ReservationController extends ErrorHandlingController {
                     }
                 }
             }).start();
-
-
         }
     }
     // }}}
@@ -892,7 +680,7 @@ public class ReservationController extends ErrorHandlingController {
                     method = RequestMethod.GET)
     @Secured("ROLE_RESERVATION_MODIFY")
     public String scanBarcode() {
-        return "scan";
+        return "reservation_scan";
     }
 
     /**
@@ -919,21 +707,24 @@ public class ReservationController extends ErrorHandlingController {
 
         if(h == null) {
             model.addAttribute("error", "invalid");
-            return "scan";
+            return "reservation_scan";
         }
 
         Holding.Status oldStatus = h.getStatus();
-        Reservation res = reservations.markItem(h);
+        Reservation res = reservations.getActiveFor(h);
+        if (res != null) {
+            reservations.markItem(res, h);
+        }
 
         // Show the reservation corresponding to the scanned record.
         if (res != null) {
             model.addAttribute("oldStatus", oldStatus);
             model.addAttribute("holding", h);
             model.addAttribute("reservation", res);
-            return "scan";
+            return "reservation_scan";
         }
         model.addAttribute("error", "invalid");
-        return "scan";
+        return "reservation_scan";
 
 
     }
@@ -1131,20 +922,6 @@ public class ReservationController extends ErrorHandlingController {
         data.put("COMPLETED", Reservation.Status.COMPLETED);
         return data;
     }
-
-	/**
-	 * Map representation of status types of reservations for use in views.
-	 * @return The map {string status, enum status}.
-	 */
-	@ModelAttribute("holding_status_types")
-	public Map<String, Holding.Status> holdingStatusTypes() {
-		Map<String, Holding.Status> data = new HashMap<String, Holding.Status>();
-		data.put("AVAILABLE", Holding.Status. AVAILABLE);
-		data.put("RESERVED", Holding.Status.RESERVED);
-		data.put("IN_USE", Holding.Status.IN_USE);
-		data.put("RETURNED", Holding.Status.RETURNED);
-		return data;
-	}
     // }}}
 
     // {{{ Mass Create
@@ -1262,71 +1039,6 @@ public class ReservationController extends ErrorHandlingController {
         model.addAttribute("reservation", newRes);
         model.addAttribute("holdingList", holdingList);
         return "reservation_mass_create";
-    }
-
-
-
-    private List<Holding> searchMassCreate(Reservation newRes,
-                                           String searchTitle, String searchSignature) {
-
-        if (searchTitle == null && searchSignature == null)
-            return new ArrayList<Holding>();
-
-        CriteriaBuilder cb = records.getRecordCriteriaBuilder();
-        CriteriaQuery<Holding> cq = cb.createQuery(Holding.class);
-        Root<Holding> hRoot = cq.from(Holding.class);
-        cq.select(hRoot);
-        Join<Holding,Record> rRoot = hRoot.join(
-                    Holding_.record);
-        Join<Record,ExternalRecordInfo> eRoot = rRoot.join(Record_.externalInfo);
-
-
-        // Separate all keywords, also remove duplicates spaces so the empty
-        // string is not being searched for.
-        String[] lowSearchTitle = searchTitle != null ? searchTitle.toLowerCase()
-                .replaceAll("\\s+", " ").split(" ") : new String[0];
-        Expression<Boolean> titleWhere = null;
-        for (String s : lowSearchTitle) {
-            Expression<Boolean> titleSearch = cb.like(cb.lower(eRoot.<String>get(ExternalRecordInfo_.title)),"%" + s + "%");
-            titleWhere = titleWhere == null ? titleSearch : cb.and(titleWhere,
-                    titleSearch);
-        }
-
-        String[] lowSearchSignature = searchSignature != null ? searchSignature
-                .toLowerCase()
-                .replaceAll("\\s+", " ").split(" ") : new String[0];
-        Expression<Boolean> sigWhere = null;
-        for (String s : lowSearchSignature) {
-            Expression<Boolean> sigSearch = cb.like(cb.lower(hRoot.<String>get
-                    (Holding_.signature)),"%" + s + "%");
-            sigWhere = sigWhere == null ? sigSearch : cb.and(sigWhere,
-                    sigSearch);
-        }
-
-
-        Expression<Boolean> where = null;
-
-        if (sigWhere == null) {
-            where = titleWhere;
-        } else if (titleWhere == null) {
-            where = sigWhere;
-        } else {
-            where = cb.and(titleWhere, sigWhere);
-        }
-
-        // Exclude already included holdings
-        if (newRes != null && newRes.getHoldingReservations() != null) {
-            for (HoldingReservation hr : newRes.getHoldingReservations()) {
-                where = cb.and(where, cb.notEqual(hRoot.get(Holding_
-                        .id), hr.getHolding().getId()));
-            }
-        }
-        cq.where(where);
-       // cq.orderBy(cb.asc(eRoot.get(ExternalRecordInfo_.title)));
-        cq.distinct(true);
-
-
-        return records.listHoldings(cq);
     }
     // }}}
 

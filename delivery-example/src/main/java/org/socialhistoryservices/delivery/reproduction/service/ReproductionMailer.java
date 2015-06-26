@@ -1,0 +1,69 @@
+package org.socialhistoryservices.delivery.reproduction.service;
+
+import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
+import org.socialhistoryservices.delivery.request.service.RequestMailer;
+import org.springframework.mail.MailException;
+import org.springframework.stereotype.Service;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
+
+/**
+ * Mailer to send information/confirmation mails dealing with reproductions.
+ */
+@Service
+public class ReproductionMailer extends RequestMailer {
+
+    /**
+     * Mail a pending confirmation message to a customer who has just created a reproduction.
+     *
+     * @param reproduction The reproduction to extract mail details from.
+     * @throws MailException Thrown when sending mail somehow failed.
+     */
+    public void mailPending(Reproduction reproduction) throws MailException {
+        assert reproduction.getStatus() == Reproduction.Status.WAITING_FOR_ORDER :
+                "Can only mail pending when Reproduction status is WAITING_FOR_ORDER";
+
+        String subject = getMessage("reproductionMail.pendingSubject", "Confirmation of reproduction");
+        sendMail(reproduction, subject, "reproduction.pending.mail.ftl", getReproductionModel(reproduction));
+    }
+
+    /**
+     * Mail an order ready message for a reproduction to the customer.
+     *
+     * @param reproduction The reproduction to extract mail details from.
+     * @throws MailException Thrown when sending mail somehow failed.
+     */
+    public void mailOrderReady(Reproduction reproduction) throws MailException {
+        assert reproduction.getStatus() == Reproduction.Status.ORDER_READY :
+                "Can only mail pending when Reproduction status is ORDER_READY";
+
+        String subject = getMessage("reproductionMail.orderReadySubject", "Confirmation of reproduction (order ready)");
+        sendMail(reproduction, subject, "reproduction.order_ready.mail.ftl", getReproductionModel(reproduction));
+    }
+
+    /**
+     * Mail payment confirmation message for a reproduction to the customer.
+     *
+     * @param reproduction The reproduction to extract mail details from.
+     * @throws MailException Thrown when sending mail somehow failed.
+     */
+    public void mailPayed(Reproduction reproduction) throws MailException {
+        assert reproduction.getStatus() == Reproduction.Status.PAYED :
+                "Can only mail pending when Reproduction status is PAYED";
+
+        String subject = getMessage("reproductionMail.payedSubject", "Confirmation of payment");
+        sendMail(reproduction, subject, "reproduction.payed.mail.ftl", getReproductionModel(reproduction));
+    }
+
+    /**
+     * Returns a model with the reproduction.
+     *
+     * @param reproduction The reproduction.
+     * @return A model with the reproduction.
+     */
+    private Model getReproductionModel(Reproduction reproduction) {
+        Model model = new ExtendedModelMap();
+        model.addAttribute("reproduction", reproduction);
+        return model;
+    }
+}

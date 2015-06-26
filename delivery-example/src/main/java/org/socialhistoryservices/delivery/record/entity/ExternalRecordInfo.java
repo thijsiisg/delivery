@@ -41,6 +41,12 @@ public class ExternalRecordInfo {
         OTHER
     }
 
+	public enum PublicationStatus {
+		RESTRICTED,
+		MINIMAL,
+		CLOSED
+	}
+
     /** The id. */
     @Id
     @GeneratedValue
@@ -102,7 +108,30 @@ public class ExternalRecordInfo {
         materialType = type;
     }
 
-    @Size(max=125)
+	// TODO: Update previous publication statuses
+
+	@NotNull
+	@Enumerated(EnumType.STRING)
+	@Column(name="publication_status", nullable=false)
+	private PublicationStatus publicationStatus;
+
+	/**
+	 * Get the publication status.
+	 * @return the publication status.
+	 */
+	public PublicationStatus getPublicationStatus() {
+		return publicationStatus;
+	}
+
+	/**
+	 * Set the publication status.
+	 * @param publicationStatus the publication status.
+	 */
+	public void setPublicationStatus(PublicationStatus publicationStatus) {
+		this.publicationStatus = publicationStatus;
+	}
+
+	@Size(max=125)
     @Column(name="author", nullable=true)
     private String author;
 

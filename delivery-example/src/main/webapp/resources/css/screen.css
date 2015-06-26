@@ -163,6 +163,10 @@ ul.buttons input {
     display: inline;
 }
 
+ul.items.spacing li {
+    margin-bottom: 10px;
+}
+
 .btlist {
     float: left;
 }
@@ -359,7 +363,7 @@ nav.main ul {
     list-style: none;
     margin: 0 10%;
     padding: 0;
-    clear: both;
+    text-align: center;
 }
 
 nav.main div {
@@ -367,7 +371,7 @@ nav.main div {
 }
 
 nav.main li {
-    float: left;
+    display: inline-block;
     min-width: 16%;
     padding: 0;
     margin: 0;
@@ -429,9 +433,13 @@ li.edit_item {
     float: left;
 }
 
-.actions label {
+.actions label, .actions .label {
     float: left;
     width: 14em;
+}
+
+.actions label.group {
+    float: none;
 }
 
 .pageLinks {
@@ -469,8 +477,12 @@ a:hover {
     color: #73A0C9;
 }
 
-ul.errors {
+.errors {
     color: #c42737;
+    font-weight: bold;
+}
+
+ul.errors {
     list-style: none;
     margin-left: 12em;
     margin-top: 4px;
@@ -487,22 +499,43 @@ ul.messages {
     clear: both;
 }
 
-ul.holdingDetails {
+ul.holdingDetails, ul.reproductionDetails {
     list-style: none;
-    margin: 0;
-    margin-bottom: 1em;
-    margin-left: 5em;
     padding: 0;
+    margin: 0 0 1em 5em;
 }
 
-ul.holdingDetails span {
+ul.holdingDetails ul.reproductionDetails {
+    display: inline-block;
+    margin-left: 0;
+}
+
+ul.holdingDetails span, ul.reproductionDetails span {
    font-weight: bold;
    width: 12em;
    display: block;
    float: left;
 }
+
 ul.holdingDetails li {
     margin-top: 5px;
+}
+
+ul.reproductionDetails li {
+    margin-top: 0;
+}
+
+ul.reproductionDetails li.spacing {
+    margin-top: 10px;
+}
+
+ul.reproductionDetails textarea, ul.holdingReproductionDetails textarea {
+    height: 60px;
+    width: 300px;
+}
+
+ul.holdingDetails input[type=radio] {
+    vertical-align: top;
 }
 
 ul.reservationDetails {
@@ -679,7 +712,7 @@ table.holdings td {
     color: orange;
 }
 
-ul.holdingReservationDetails {
+ul.holdingReservationDetails, ul.holdingReproductionDetails {
     list-style: none;
     margin: 0;
     margin-bottom: 1em;
@@ -693,17 +726,34 @@ ul.holdingReservationDetails span {
    font-style: italic;
    padding-left: 5px;
 }
-ul.holdingReservationDetails li {
-    margin-top: 5px;
+
+ul.holdingReproductionDetails span {
+    font-style: italic;
 }
 
-ul.holdingReservationDetails li ul {
+ul.holdingReproductionDetails li {
+    padding-left: 5px;
+}
+
+ul.holdingReservationDetails li ul, ul.holdingReproductionDetails li ul {
     list-style: none;
 }
 
-
-ul.holdingReservationDetails li ul li input[type="text"] {
+ul.holdingReservationDetails li ul li input[type="text"], ul.holdingReproductionDetails li ul input[type="text"] {
     width: 8em;
+}
+
+ul.holdingReproductionDetails ul.inner {
+    display: inline-block;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1em 0;
+    vertical-align: top;
+}
+
+ul.holdingReproductionDetails ul.inner li {
+    margin: 0;
+    clear: both;
 }
 
 img.ui-datepicker-trigger {
@@ -726,4 +776,125 @@ img.ui-datepicker-trigger {
 
 a.refreshCaptcha {
 	display: block;
+}
+
+.progress {
+    padding: 0;
+    list-style-type: none;
+    clear: both;
+    line-height: 1em;
+    margin: 0 0 55px;
+    text-align: center;
+}
+
+.progress li {
+    float: left;
+    padding: 6px 15px 6px 20px;
+    background: #73A1C7;
+    color: #fff;
+    position: relative;
+    margin: 0 1px;
+    border-top: 1px solid #73A1C7;
+    border-bottom: 1px solid #73A1C7;
+}
+
+.progress li:before {
+    content: '';
+    border-left: 12px solid #fff;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.progress li:after {
+    content: '';
+    border-left: 12px solid #73A1C7;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    position: absolute;
+    top: 0;
+    left: 100%;
+    z-index: 20;
+}
+
+.progress li.active {
+    background: #fff;
+    color: #73A1C7;
+    font-weight: bold;
+}
+
+.progress li.active:after {
+    border-left-color: #fff;
+}
+
+.reproduction_confirm_form table {
+    width: 70%;
+    border-collapse: collapse;
+}
+
+.reproduction_confirm_form table tr td {
+    padding-bottom: 5px;
+}
+
+.reproduction_confirm_form table thead {
+    font-weight: bold;
+    border-bottom: 1px solid black;
+}
+
+.reproduction_confirm_form table tr.total {
+    font-weight: bold;
+    border-top: 1px solid black;
+}
+
+.reproduction_confirm_form table tr.total td.label {
+    text-align: right;
+    padding-right: 10px;
+}
+
+.reproduction_confirm_form .accept p {
+   font-style: italic;
+}
+
+.reproduction_confirm_form .accept input {
+    vertical-align: text-top;
+}
+
+.reproduction_confirm_form .accept .errors {
+    margin-left: 20px;
+}
+
+table.reproduction_standard_options, table.reproduction_standard_options tr, table.reproduction_standard_options td {
+    border-collapse: collapse;
+}
+
+table.reproduction_standard_options thead {
+    border-bottom: 1px solid #888;
+    font-weight: bold;
+}
+
+table.reproduction_standard_options tfoot {
+    border-top: 1px solid #888;
+}
+
+table.reproduction_standard_options td, table.reproduction_standard_options th {
+    padding: 5px;
+}
+
+table.reproduction_standard_options input[type="text"],
+table.reproduction_standard_options select,
+table.reproduction_standard_options textarea {
+    display: block;
+    margin: auto;
+    max-width: 20em;
+}
+
+table.reproduction_standard_options .small, table.reproduction_standard_options select {
+    width: 12em;
+}
+
+table.reproduction_standard_options textarea {
+    height: 60px;
+    width: 300px;
 }

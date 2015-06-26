@@ -48,7 +48,8 @@ public class IISHRecordLookupService implements RecordLookupService {
     private XPathExpression xpSearchIdent;
     private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpAlt2Author, xpAlt3Author;
     private XPathExpression xp245aTitle, xp500aTitle, xp600aTitle, xp610aTitle, xp650aTitle, xp651aTitle, xp245kTitle;
-    private XPathExpression xp245bSubTitle, xpYear, xpSerialNumbers, xpSignatures, xpLeader;
+    private XPathExpression xp245bSubTitle, xpYear, xpSerialNumbers, xpSignatures, xpBarcodes, xpLeader;
+	private XPathExpression xp542mAccess;
     private XPathExpression xpNumberOfRecords;
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
 
@@ -156,9 +157,15 @@ public class IISHRecordLookupService implements RecordLookupService {
                     "/marc:subfield[@code=\"c\"]");
             xpSignatures = xpath.compile("marc:datafield[@tag=852]" +
                     "/marc:subfield[@code=\"j\"]");
+            xpBarcodes = xpath.compile("marc:datafield[@tag=852]" +
+                    "/marc:subfield[@code=\"p\"]");
             xpSerialNumbers = xpath.compile("marc:datafield[@tag=866]" +
                     "/marc:subfield[@code=\"a\"]");
             xpLeader = xpath.compile("marc:leader");
+
+	        xp542mAccess = xpath.compile("marc:datafield[@tag=542]" +
+			        "/marc:subfield[@code=\"m\"]");
+
             xpNumberOfRecords = xpath.compile("//ns1:numberOfRecords");
 
         }
@@ -345,6 +352,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
         externalInfo.setMaterialType(evaluateMaterialType(node));
 
+	    externalInfo.setPublicationStatus(evaluatePublicationStatus(node));
 
         return externalInfo;
     }
@@ -371,17 +379,21 @@ public class IISHRecordLookupService implements RecordLookupService {
                     XPathConstants.NODESET);
             NodeList serNodes = (NodeList) xpSerialNumbers.evaluate(node,
                     XPathConstants.NODESET);
+            NodeList barcodes = (NodeList) xpBarcodes.evaluate(node,
+                    XPathConstants.NODESET);
 
-            if (sigNodes == null || serNodes == null)
+            if (sigNodes == null || serNodes == null || barcodes == null)
                 return retMap;
 
             for (int i = 0; i < sigNodes.getLength(); i++) {
                 Node sig = sigNodes.item(i);
                 Node ser = serNodes.item(i);
+                Node barcode = barcodes.item(i);
 
                 if (sig == null) continue;
                 
-                ExternalHoldingInfo eh= new ExternalHoldingInfo();
+                ExternalHoldingInfo eh = new ExternalHoldingInfo();
+                eh.setBarcode(barcode.getTextContent());
                 if (ser != null)
                     eh.setSerialNumbers(ser.getTextContent().replace(",", ", "));
                 retMap.put(sig.getTextContent(),eh);
@@ -547,4 +559,25 @@ public class IISHRecordLookupService implements RecordLookupService {
             return null;
         }
     }
+
+	/**
+	 * Fetches publication status from MARCXML.
+	 * @param node The XML node to execute the XPath on.
+	 * @return The publication status.
+	 */
+	private ExternalRecordInfo.PublicationStatus evaluatePublicationStatus(Node node) {
+		try {
+			String status = xp542mAccess.evaluate(node);
+
+			ExternalRecordInfo.PublicationStatus publicationStatus = ExternalRecordInfo.PublicationStatus.CLOSED;
+			if (status.trim().equalsIgnoreCase("restricted"))
+				publicationStatus = ExternalRecordInfo.PublicationStatus.RESTRICTED;
+			if (status.trim().equalsIgnoreCase("minimal"))
+				publicationStatus = ExternalRecordInfo.PublicationStatus.MINIMAL;
+
+			return publicationStatus;
+		} catch (XPathExpressionException ex) {
+			return null;
+		}
+	}
 }

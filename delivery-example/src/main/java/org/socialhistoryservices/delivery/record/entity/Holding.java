@@ -18,6 +18,7 @@ package org.socialhistoryservices.delivery.record.entity;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.NotBlank;
+import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
@@ -84,7 +85,7 @@ public class Holding {
         signature = sig;
 
 	    // Determine the usage restriction by checking the signature for patterns
-	    String checkSignature =  signature.trim().toLowerCase();
+	    String checkSignature = signature.trim().toLowerCase();
 	    if (    checkSignature.endsWith(".x") ||
 			    checkSignature.startsWith("no circulation") ||
 			    checkSignature.startsWith("niet ter inzage")) {
@@ -275,6 +276,18 @@ public class Holding {
 	public List<HoldingReservation> getHoldingReservations() {
 		return holdingReservations;
 	}
+
+    @OneToMany(mappedBy="holding", cascade=CascadeType.ALL)
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    private List<HoldingReproduction> holdingReproductions;
+
+    public List<HoldingReproduction> getHoldingReproductions() {
+        return holdingReproductions;
+    }
+
+    public void setHoldingReproductions(List<HoldingReproduction> holdingReproductions) {
+        this.holdingReproductions = holdingReproductions;
+    }
 
     /**
      * Merge other's fields with this holding. All fields except ID,

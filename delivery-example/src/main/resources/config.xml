@@ -30,13 +30,13 @@
           <value>prop_permissionPageLen</value>
           <value>prop_permissionMaxPageLen</value>
           <value>prop_permissionPageStepSize</value>
-          <value>prop_reservationPageLen</value>
-          <value>prop_reservationLatestTime</value>
-          <value>prop_reservationAutoPrintStartTime</value>
-          <value>prop_reservationMaxPageLen</value>
-          <value>prop_reservationMaxDaysInAdvance</value>
-          <value>prop_reservationPageStepSize</value>
-          <value>prop_reservationMaxItems</value>
+          <value>prop_requestPageLen</value>
+          <value>prop_requestLatestTime</value>
+          <value>prop_requestAutoPrintStartTime</value>
+          <value>prop_requestMaxPageLen</value>
+          <value>prop_requestMaxDaysInAdvance</value>
+          <value>prop_requestPageStepSize</value>
+          <value>prop_requestMaxItems</value>
           <value>prop_dateFormat</value>
           <value>prop_dbUsername</value>
           <value>prop_dbPassword</value>
@@ -57,6 +57,10 @@
           <value>prop_apiBase</value>
           <value>prop_apiPort</value>
           <value>prop_loadInitialData</value>
+          <value>prop_payWayAddress</value>
+          <value>prop_payWayPassPhraseIn</value>
+          <value>prop_payWayPassPhraseOut</value>
+          <value>prop_payWayProjectName</value>
           <value>prop_ldapManagerDn</value>
           <value>prop_ldapManagerPassword</value>
           <value>prop_ldapUserSearchFilter</value>

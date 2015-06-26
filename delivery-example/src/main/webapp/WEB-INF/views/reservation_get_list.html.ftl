@@ -156,13 +156,13 @@
       <@_ "pageListHolder.nrResultsPerPage" "Amount of Results per Page"/>
       </label>
       <select id="page_len_filter" name="page_len">
-        <#list 1..(prop_reservationMaxPageLen?number/prop_reservationPageStepSize?number)?floor as i>
-        <#assign pageSize = (i*prop_reservationPageStepSize?number)?floor/>
+        <#list 1..(prop_requestMaxPageLen?number/prop_requestPageStepSize?number)?floor as i>
+        <#assign pageSize = (i*prop_requestPageStepSize?number)?floor/>
         <option value="${pageSize}"
         <#if (RequestParameters["page_len"]?? &&
               RequestParameters["page_len"]?number == pageSize) ||
              (!RequestParameters["page_len"]?? &&
-              prop_reservationPageLen?number == pageSize)>
+              prop_requestPageLen?number == pageSize)>
         selected="selected"</#if>>${pageSize}</option>
         </#list>
       </select>

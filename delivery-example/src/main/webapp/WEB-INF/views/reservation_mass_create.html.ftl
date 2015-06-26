@@ -31,7 +31,7 @@ $(document).ready(function(){
     $(".reservation_form .date").datepicker({
         "dateFormat": "yy-mm-dd",
         "minDate": "0",
-        "maxDate": "+${prop_reservationMaxDaysInAdvance}",
+        "maxDate": "+${prop_requestMaxDaysInAdvance}",
         "beforeShowDay": $.datepicker.noWeekends
     });
 });

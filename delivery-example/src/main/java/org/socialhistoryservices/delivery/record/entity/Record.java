@@ -160,6 +160,22 @@ public class Record {
         return restriction;
     }
 
+    /**
+     * Get the publication status.
+     * @return the publication status.
+     */
+    public ExternalRecordInfo.PublicationStatus getPublicationStatus() {
+        return externalInfo.getPublicationStatus();
+    }
+
+    /**
+     * Set the publication status.
+     * @param publicationStatus the publication status.
+     */
+    public void setPublicationStatus(ExternalRecordInfo.PublicationStatus publicationStatus) {
+        externalInfo.setPublicationStatus(publicationStatus);
+    }
+
     /** The Record's comments. */
     @Column(name="comments", columnDefinition="TEXT")
     private String comments;

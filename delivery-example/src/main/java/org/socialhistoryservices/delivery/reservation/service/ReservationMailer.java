@@ -16,10 +16,9 @@
 
 package org.socialhistoryservices.delivery.reservation.service;
 
-import org.socialhistoryservices.delivery.Mailer;
+import org.socialhistoryservices.delivery.request.service.RequestMailer;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
@@ -28,7 +27,7 @@ import org.springframework.ui.Model;
  * Mailer to send confirmation mails when creating reservations.
  */
 @Service
-public class ReservationMailer  extends Mailer {
+public class ReservationMailer extends RequestMailer {
 
     /**
      * Mail a confirmation message to a visitor who has just created a
@@ -41,26 +40,10 @@ public class ReservationMailer  extends Mailer {
         assert res.getStatus() == Reservation.Status.PENDING : "Can only mail" +
                 " confirmation when Reservation status is PENDING";
 
-        // Do not mail when mail is disabled.
-        if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
-            return;
-        }
-
         Model model = new ExtendedModelMap();
         model.addAttribute("reservation", res);
 
-        SimpleMailMessage msg = new SimpleMailMessage();
-        msg.setFrom(properties.getProperty("prop_mailSystemAddress"));
-        msg.setTo(res.getVisitorEmail());
-        msg.setReplyTo(getMessage("iisg.email", ""));
-
-        msg.setSubject(getMessage("reservationMail.confirmationSubject",
-                                  "Delivery: "));
-        msg.setText(templateToString("reservation_confirmation.mail.ftl",
-                model));
-
-        mailSender.send(msg);
+        String subject = getMessage("reservationMail.confirmationSubject", "Delivery: ");
+        sendMail(res, subject, "reservation_confirmation.mail.ftl", model);
     }
-
-
 }

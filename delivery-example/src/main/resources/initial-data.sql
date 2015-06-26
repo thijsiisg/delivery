@@ -29,6 +29,10 @@ INSERT INTO authorities VALUES (8, 'Delete permissions.', 'ROLE_PERMISSION_DELET
 INSERT INTO authorities VALUES (9, 'Delete reservations.', 'ROLE_RESERVATION_DELETE');
 INSERT INTO authorities VALUES (10, 'Delete records.', 'ROLE_RECORD_DELETE');
 INSERT INTO authorities VALUES (11, 'Create reservations.', 'ROLE_RESERVATION_CREATE');
+INSERT INTO authorities VALUES (12, 'Create reproductions.', 'ROLE_REPRODUCTION_CREATE');
+INSERT INTO authorities VALUES (13, 'View reproductions.', 'ROLE_REPRODUCTION_VIEW');
+INSERT INTO authorities VALUES (14, 'Modify reproductions.', 'ROLE_REPRODUCTION_MODIFY');
+INSERT INTO authorities VALUES (15, 'Delete reproductions.', 'ROLE_REPRODUCTION_DELETE');
 
 --
 -- Data for Name: groups; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -54,6 +58,10 @@ INSERT INTO group_permissions VALUES (2, 8);
 INSERT INTO group_permissions VALUES (2, 9);
 INSERT INTO group_permissions VALUES (2, 10);
 INSERT INTO group_permissions VALUES (2, 11);
+INSERT INTO group_permissions VALUES (2, 12);
+INSERT INTO group_permissions VALUES (2, 13);
+INSERT INTO group_permissions VALUES (2, 14);
+INSERT INTO group_permissions VALUES (2, 15);
 INSERT INTO group_permissions VALUES (1, 4);
 INSERT INTO group_permissions VALUES (1, 5);
 INSERT INTO group_permissions VALUES (3, 7);
@@ -73,6 +81,7 @@ INSERT INTO group_permissions VALUES (4, 3);
 INSERT INTO users VALUES (1, 'swo@iisg.nl');
 INSERT INTO users VALUES (2, 'lwo@iisg.nl');
 INSERT INTO users VALUES (3, 'etu@iisg.nl');
+INSERT INTO users VALUES (4, 'kerim');
 
 --
 -- Data for Name: user_groups; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -81,3 +90,14 @@ INSERT INTO users VALUES (3, 'etu@iisg.nl');
 INSERT INTO user_groups VALUES (1, 2);
 INSERT INTO user_groups VALUES (2, 2);
 INSERT INTO user_groups VALUES (3, 2);
+INSERT INTO user_groups VALUES (4, 2);
+
+--
+-- Data for Name: reproduction_standard_options; Type: TABLE DATA; Schema: public; Owner postgres
+
+INSERT INTO reproduction_standard_options VALUES (1, 2, 'LEVEL1', 'SERIAL', 'More detailed description of this standard option.', 'Serial standard option', 2.34);
+INSERT INTO reproduction_standard_options VALUES (2, 3, 'LEVEL1', 'BOOK', 'More detailed description of this standard option.', 'Book standard option', 5.00);
+INSERT INTO reproduction_standard_options VALUES (3, 1, 'LEVEL1', 'SOUND', 'More detailed description of this standard option.', 'Sound standard option', 3.00);
+INSERT INTO reproduction_standard_options VALUES (4, 2, 'LEVEL1', 'DOCUMENTATION', 'More detailed description of this standard option.', 'Documentation standard option', 2.00);
+INSERT INTO reproduction_standard_options VALUES (5, 3, 'LEVEL1', 'ARCHIVE', 'More detailed description of this standard option.', 'Archive standard option', 3.10);
+INSERT INTO reproduction_standard_options VALUES (6, 3, 'LEVEL1', 'VISUAL', 'More detailed description of this standard option.', 'Visual standard option', 5.45);

@@ -16,7 +16,10 @@
 
 package org.socialhistoryservices.delivery.record.entity;
 
+import org.hibernate.validator.constraints.NotBlank;
+
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 /**
  * Extra info extracted from the external API.
@@ -39,7 +42,27 @@ public class ExternalHoldingInfo {
         return id;
     }
 
+    /** The Holding's barcode. */
+    @NotBlank
+    @Size(max=255)
+    @Column(name="barcode", nullable=false, unique=true)
+    private String barcode;
 
+    /**
+     * Get the Holding's barcode.
+     * @return the Holding's barcode.
+     */
+    public String getBarcode() {
+        return barcode;
+    }
+
+    /**
+     * Set the Holding's barcode.
+     * @param barcode the Holding's barcode.
+     */
+    public void setBarcode(String barcode) {
+        this.barcode = barcode;
+    }
 
     @Column(name="serialNumbers", columnDefinition = "TEXT", nullable=true)
     private String serialNumbers;

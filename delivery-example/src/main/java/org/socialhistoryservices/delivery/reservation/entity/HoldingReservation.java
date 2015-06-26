@@ -17,6 +17,8 @@
 package org.socialhistoryservices.delivery.reservation.entity;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
+import org.socialhistoryservices.delivery.request.entity.Request;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -27,7 +29,7 @@ import javax.validation.constraints.Size;
  */
 @Entity
 @Table(name="holding_reservations")
-public class HoldingReservation {
+public class HoldingReservation extends HoldingRequest {
 
 
     /** The Reservation's id. */
@@ -53,6 +55,7 @@ public class HoldingReservation {
      * Get the comment on a specific holding in a reservation.
      * @return The comment.
      */
+    @Override
     public String getComment() {
         return comment;
     }
@@ -61,6 +64,7 @@ public class HoldingReservation {
      * Set the comment on a specific holding in a reservation.
      * @param val The value to set the comment to.
      */
+    @Override
     public void setComment(String val) {
         comment = val;
     }
@@ -86,6 +90,26 @@ public class HoldingReservation {
         this.reservation = res;
     }
 
+    /**
+     * Get the HoldingRequest's request.
+     *
+     * @return the HoldingRequest's request.
+     */
+    @Override
+    public Request getRequest() {
+        return getReservation();
+    }
+
+    /**
+     * Set the HoldingRequest's request.
+     *
+     * @param request
+     */
+    @Override
+    public void setRequest(Request request) {
+        setReservation((Reservation) request);
+    }
+
     /** The HoldingReservation's holding. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="holding_id")
@@ -95,6 +119,7 @@ public class HoldingReservation {
      * Get the HoldingReservation's holding.
      * @return the HoldingReservation's holding.
      */
+    @Override
     public Holding getHolding() {
         return holding;
     }
@@ -103,11 +128,8 @@ public class HoldingReservation {
      * Set the HoldingReservation's holding.
      * @param h the HoldingReservation's holding.
      */
+    @Override
     public void setHolding(Holding h) {
         this.holding = h;
-    }
-
-    public void mergeWith(HoldingReservation other) {
-        setComment(other.getComment());
     }
 }

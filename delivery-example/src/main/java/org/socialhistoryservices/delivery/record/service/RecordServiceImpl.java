@@ -31,6 +31,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 
 import javax.persistence.criteria.*;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -322,10 +324,10 @@ public class RecordServiceImpl implements RecordService {
     /**
      * Get the first available (not closed) holding for a record.
      * @param r The record to get a holding of.
-     * @return The first free holding found or null if all occupied/no
-     * holdings.
+     * @param mustBeAvailable Whether the holding must be available.
+     * @return The first free holding found or null if all occupied/no holdings.
      */
-    public Holding getAvailableHoldingForRecord(Record r) {
+    public Holding getHoldingForRecord(Record r, boolean mustBeAvailable) {
         CriteriaBuilder cb = holdingDAO.getCriteriaBuilder();
         CriteriaQuery<Holding> cq = cb.createQuery(Holding.class);
         Root<Holding> hRoot = cq.from(Holding.class);
@@ -336,14 +338,14 @@ public class RecordServiceImpl implements RecordService {
         Expression<Boolean> where = cb.equal(rRoot.get(Record_.id),
                 r.getId());
 
-        // Only get available holdings.
-        where = cb.and(where, cb.equal(hRoot.<Holding.Status>get(Holding_.status),
-                                          Holding.Status.AVAILABLE));
+        // Only get available holdings?
+	    if (mustBeAvailable) {
+		    where = cb.and(where, cb.equal(hRoot.<Holding.Status>get(Holding_.status), Holding.Status.AVAILABLE));
+	    }
 
-        // Only get holdings which may be used without an employee's explicit
-        // permission.
+        // Only get holdings which may be used without an employee's explicit permission.
         where = cb.and(where, cb.equal(hRoot.<Holding.UsageRestriction>get(Holding_.usageRestriction),
-                                          Holding.UsageRestriction.OPEN));
+		        Holding.UsageRestriction.OPEN));
 
         cq.where(where);
 

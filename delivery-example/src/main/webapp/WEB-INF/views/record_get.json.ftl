@@ -29,7 +29,7 @@ ${callback}([
       "embargo" : "${record.embargo?string("yyyy-MM-dd")}",
     </#if>
     "restrictionType": "${record.realRestrictionType}",
-
+    "publicationStatus": "${record.publicationStatus}",
 
     "holdings" : [
       <#list record.holdings as h>

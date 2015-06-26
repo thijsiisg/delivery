@@ -16,10 +16,10 @@
 
 package org.socialhistoryservices.delivery.reservation.service;
 
-import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
-import org.socialhistoryservices.delivery.record.entity.Record;
-import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.request.service.*;
+import org.socialhistoryservices.delivery.request.service.ClosedException;
+import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.reservation.dao.HoldingReservationDAO;
 import org.socialhistoryservices.delivery.reservation.dao.ReservationDAO;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
@@ -28,21 +28,17 @@ import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.Validator;
 
 import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.awt.print.Book;
 import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,33 +51,19 @@ import org.apache.log4j.Logger;
  */
 @Service
 @Transactional
-public class ReservationServiceImpl implements ReservationService {
-
+public class ReservationServiceImpl extends RequestServiceImpl implements ReservationService {
     @Autowired
     private ReservationDAO reservationDAO;
 
-	@Autowired
-	private HoldingReservationDAO holdingReservationDAO;
-
     @Autowired
-    private RecordService recordService;
+    private HoldingReservationDAO holdingReservationDAO;
 
     @Autowired
     private BeanFactory bf;
 
     @Autowired
-    private SimpleDateFormat df;
-
-    @Autowired
     @Qualifier("myCustomProperties")
     private Properties properties;
-
-    @Autowired
-    private Validator validator;
-
-    @Autowired
-    private MessageSource msgSource;
-
 
     private Logger log = Logger.getLogger(getClass());
 
@@ -153,9 +135,7 @@ public class ReservationServiceImpl implements ReservationService {
      * @param status Status to change holdings to.
      */
     public void changeHoldingStatus(Reservation res, Holding.Status status) {
-        for (HoldingReservation hr : res.getHoldingReservations()) {
-            hr.getHolding().setStatus(status);
-        }
+        super.changeHoldingStatus(res, status);
         saveReservation(res);
     }
 
@@ -184,13 +164,13 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationDAO.getCriteriaBuilder();
     }
 
-	/**
-	 * Get a criteria builder for querying HoldingReservations.
-	 * @return the CriteriaBuilder.
-	 */
-	public CriteriaBuilder getHoldingReservationCriteriaBuilder() {
-		return holdingReservationDAO.getCriteriaBuilder();
-	}
+    /**
+     * Get a criteria builder for querying HoldingReservations.
+     * @return the CriteriaBuilder.
+     */
+    public CriteriaBuilder getHoldingReservationCriteriaBuilder() {
+            return holdingReservationDAO.getCriteriaBuilder();
+    }
 
     /**
      * List all Reservations matching a built query.
@@ -201,23 +181,23 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationDAO.list(q);
     }
 
-	/**
-	 * List all Tuples matching a built query.
-	 * @param q The criteria query to execute
-	 * @return A list of matching Tuples.
-	 */
-	public List<Tuple> listTuples(CriteriaQuery<Tuple> q) {
-		return reservationDAO.listForTuple(q);
-	}
+    /**
+     * List all Tuples matching a built query.
+     * @param q The criteria query to execute
+     * @return A list of matching Tuples.
+     */
+    public List<Tuple> listTuples(CriteriaQuery<Tuple> q) {
+            return reservationDAO.listForTuple(q);
+    }
 
-	/**
-	 * List all HoldingReservations matching a built query.
-	 * @param q The criteria query to execute
-	 * @return A list of matching HoldingReservations.
-	 */
-	public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q) {
-		return holdingReservationDAO.list(q);
-	}
+    /**
+     * List all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @return A list of matching HoldingReservations.
+     */
+    public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q) {
+            return holdingReservationDAO.list(q);
+    }
 
     /**
      * Get a single Reservation matching a built query.
@@ -231,14 +211,12 @@ public class ReservationServiceImpl implements ReservationService {
     /**
      * Mark a specific item in a reservation as seen, bumping it to the next status.
      * @param h Holding to bump.
-     * @return A reservation in which this item was bumped, or null on failure
+     * @param res Reservation to change status for.
      */
-    public Reservation markItem(Holding h) {
-        Reservation res = reservationDAO.getActiveFor(h);
-
+    public void markItem(Reservation res, Holding h) {
         // Ignore old reservations
         if (res == null)
-            return null;
+            return;
 
         // Change holding status
         switch (h.getStatus()) {
@@ -277,7 +255,6 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         saveReservation(res);
-        return res;
     }
 
     /**
@@ -308,38 +285,21 @@ public class ReservationServiceImpl implements ReservationService {
      * (or ran out of paper for example).
      */
     public void printReservation(Reservation res, boolean alwaysPrint) throws PrinterException {
-        // Check if the reservation should be printed or not.
-        if (res.isPrinted() && !alwaysPrint) {
-            return;
-        }
         try {
-            //TODO This is a hack, because it create multiple jobs printing one
-            //page each instead of a job printing multiple pages.
+            List<RequestPrintable> requestPrintables = new ArrayList<RequestPrintable>();
             for (HoldingReservation hr : res.getHoldingReservations()) {
-                PrinterJob job = PrinterJob.getPrinterJob();
-                job.setJobName("delivery");
-                // Autowiring does not seem to work in POJOs ?
-                // Create a reservation printable
-
-                // Note: Use Book to make sure margins are correct.
-                Book pBook = new Book();
-                ReservationPrintable rp = new ReservationPrintable(hr,
-                        msgSource,
-                        (DateFormat)bf.getBean("dateFormat"), properties);
-                pBook.append(rp, new IISHPageFormat());
-
-                job.setPageable(pBook);
-                // Print the print job, throws PrinterException when something was
-                // wrong.
-                job.print();
+                ReservationPrintable rp = new ReservationPrintable(
+                        hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
+                requestPrintables.add(rp);
             }
+
+            printRequest(res, requestPrintables, alwaysPrint);
         } catch (PrinterException e) {
-            log.warn("Printing failed", e);
+            log.warn("Printing reservation failed", e);
             throw e;
         }
-        res.setPrinted(true);
-        saveReservation(res);
 
+        saveReservation(res);
     }
 
     /**
@@ -358,18 +318,18 @@ public class ReservationServiceImpl implements ReservationService {
      * @param newRes The new reservation to put in the database.
      * @param oldRes The old reservation in the database (if present).
      * @param result The binding result object to put the validation errors in.
-     * @throws ClosedException Thrown when a holding is provided which
+     * @throws org.socialhistoryservices.delivery.request.service.ClosedException Thrown when a holding is provided which
      * references a record which is restrictionType=CLOSED.
      * @throws InUseException Thrown when a new holding provided to be added
      * to the reservation is already in use by another reservation.
-     * @throws NoHoldingsException Thrown when no holdings are provided.
+     * @throws org.socialhistoryservices.delivery.request.service.NoHoldingsException Thrown when no holdings are provided.
      */
     public void createOrEdit(Reservation newRes, Reservation oldRes,
             BindingResult result) throws
         InUseException, ClosedException, NoHoldingsException {
 
             // Validate the reservation.
-            validateReservation(newRes, result);
+            validateRequest(newRes, result);
 
 
 
@@ -403,7 +363,7 @@ public class ReservationServiceImpl implements ReservationService {
             // Execute this method below the date check, or else the date will
             // not be checked if this method throws an exception; not displaying
             // the error immediately, but only when the holdings are valid instead.
-            validateHoldings(newRes, oldRes);
+            validateHoldings(newRes, oldRes, true);
 
             // Add or save the record when no errors are present.
             if (!result.hasErrors()) {
@@ -416,88 +376,6 @@ public class ReservationServiceImpl implements ReservationService {
                 }
             }
         }
-
-    /**
-     * Validate provided holding part of reservation.
-     * @param newRes The new reservation containing holdings.
-     * @param oldRes The old reservation if applicable (or null).
-     * @throws ClosedException Thrown when a holding is provided which
-     * references a record which is restrictionType=CLOSED.
-     * @throws InUseException Thrown when a new holding provided to be added
-     * to the reservation is already in use by another reservation.
-     * @throws NoHoldingsException Thrown when no holdings are provided.
-     */
-    public void validateHoldings(Reservation newRes, Reservation oldRes) throws NoHoldingsException, InUseException, ClosedException {
-        if (newRes.getHoldingReservations() == null || newRes.getHoldingReservations().isEmpty()) {
-            throw new NoHoldingsException();
-        }
-
-        // Check for in use holdings by other reservations.
-        // Check for CLOSED.
-        // Do not check for usage restriction (This only needs to be checked
-        // in the visitor interface, not when employees create a reservation
-        // for example, same for RESTRICTED on record).
-        for (HoldingReservation hr : newRes.getHoldingReservations()) {
-            boolean has = false;
-            Holding h = hr.getHolding();
-            if (oldRes != null) {
-                for (HoldingReservation hr2 : oldRes.getHoldingReservations()
-                    ) {
-                    Holding h2 = hr2.getHolding();
-                    if (h2.getRecord().equals(h.getRecord()) && h2.getSignature().equals(h.getSignature())) {
-                        has = true;
-                    }
-                    }
-            }
-            if (!has && h.getStatus() != Holding.Status.AVAILABLE) {
-                throw new InUseException();
-            }
-            // Do not check already linked holdings for CLOSED.
-            if (!has && h.getRecord().getRealRestrictionType() == Record.RestrictionType.CLOSED) {
-                throw new ClosedException();
-            }
-            // Make sure the hr also knows the reservation.
-            hr.setReservation(newRes);
-
-        }
-    }
-
-    /**
-     * Validate a reservation using the provided binding result to store errors.
-     * @param res The reservation.
-     * @param result The binding result.
-     */
-    private void validateReservation(Reservation res, BindingResult result) {
-        // Validate the reservation.
-        validator.validate(res, result);
-
-
-        // Validate associated holdingReservations if present. They also
-        // should have a
-        // reservation reference set in order to pass this check.
-        int i = 0;
-        for(HoldingReservation hr : res.getHoldingReservations()) {
-            result.pushNestedPath("holdingsReservations["+i+"]");
-            validator.validate(hr, result);
-            result.popNestedPath();
-
-
-            if (hr.getHolding().getRecord().getExternalInfo().getMaterialType()
-                    == ExternalRecordInfo.MaterialType.SERIAL &&
-                    hr.getComment() == null) {
-                String msg =  msgSource.getMessage("validator.serialYear",
-                        null,
-                        "Required", LocaleContextHolder.getLocale());
-                result.addError(new FieldError(result.getObjectName(),
-                            "holdingReservations[" + i + "].comment",
-                            "", false,
-                            null, null, msg));
-                    }
-            i++;
-        }
-
-    }
-
 
     /**
      * Get the first valid reservation date after or equal to from.
@@ -514,7 +392,7 @@ public class ReservationServiceImpl implements ReservationService {
 
         Calendar t = GregorianCalendar.getInstance();
         try {
-            t.setTime(format.parse(properties.getProperty("prop_reservationLatestTime")));
+            t.setTime(format.parse(properties.getProperty("prop_requestLatestTime")));
         } catch (ParseException e) {
             throw new RuntimeException("Invalid reservationLatestTime " +
                     "provided in config. Should be of format HH:mm");
@@ -551,7 +429,7 @@ public class ReservationServiceImpl implements ReservationService {
 
         Calendar maxCal = GregorianCalendar.getInstance();
         int maxDaysInAdvance = Integer.parseInt(properties.getProperty
-                ("prop_reservationMaxDaysInAdvance"));
+                ("prop_requestMaxDaysInAdvance"));
         maxCal.add(Calendar.DAY_OF_YEAR, maxDaysInAdvance);
         if (fromCal.get(Calendar.YEAR) > maxCal.get(Calendar.YEAR) || (fromCal
                     .get(Calendar.YEAR) == maxCal.get(Calendar.YEAR) && fromCal
