@@ -11,12 +11,15 @@ import org.socialhistoryservices.delivery.reproduction.dao.ReproductionDAO;
 import org.socialhistoryservices.delivery.reproduction.dao.ReproductionStandardOptionDAO;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
+import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.*;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
@@ -27,6 +30,7 @@ import java.awt.print.PrinterException;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.concurrent.Future;
 
 /**
  * Represents the service of the reproduction package.
@@ -162,6 +166,11 @@ public class ReproductionServiceImpl extends RequestServiceImpl implements Repro
         // Initialize the holdings of this reproduction.
         initHoldingReproductions(newReproduction);
 
+        // Move status forward if all order details are known already
+        if (newReproduction.hasOrderDetails()) {
+            newReproduction.updateStatusAndAssociatedHoldingStatus(Reproduction.Status.HAS_ORDER_DETAILS);
+        }
+
         // Add or save the record when no errors are present.
         if (!result.hasErrors()) {
             if (oldReproduction == null) {
@@ -223,20 +232,44 @@ public class ReproductionServiceImpl extends RequestServiceImpl implements Repro
 
             // We received an message from PayWay, so the order is registered
             order = new Order();
-            order.mapFromPayWayMessage(orderMessage);
-            order.setReproduction(r);
+            order.setId(orderMessage.getLong("orderid"));
 
             r.setOrder(order);
-            r.updateStatusAndAssociatedHoldingStatus(Reproduction.Status.ORDER_READY);
-
-            orderDAO.save(order);
+            r.updateStatusAndAssociatedHoldingStatus(Reproduction.Status.ORDER_CREATED);
             reproductionDAO.save(r);
+
+            // Refresh the actual order details asynchronously
+            refreshOrder(order);
         } catch (InvalidPayWayMessageException ipwme) {
             log.error("Invalid or no PayWay message received when registering a new order.", ipwme);
             throw new OrderRegistrationFailureException(ipwme);
         }
 
         return order;
+    }
+
+    /**
+     * Will refresh the given order by retrieving the order details from PayWay.
+     * The API call is performed in a seperate thread and
+     * a Future object is returned to see when and whether the refresh was succesful.
+     *
+     * @param order The order to refresh. The id must be set.
+     * @return A Future object that will return the refreshed Order when succesful.
+     */
+    @Async
+    public Future<Order> refreshOrder(Order order) {
+        try {
+            PayWayMessage message = payWayService.getMessageForOrderId(order.getId());
+            PayWayMessage orderDetails = payWayService.send("orderDetails", message);
+
+            order.mapFromPayWayMessage(orderDetails);
+            orderDAO.save(order);
+
+            return new AsyncResult<Order>(order);
+        } catch (InvalidPayWayMessageException ivwme) {
+            log.debug(String.format("refreshOrder() : Failed to refresh the order with id %d", order.getId()));
+            return new AsyncResult<Order>(null);
+        }
     }
 
     /**
@@ -264,7 +297,7 @@ public class ReproductionServiceImpl extends RequestServiceImpl implements Repro
             if ((hr.getStandardOption() == null) && (hr.getCustomReproductionCustomer() == null)) {
                 result.addError(new FieldError(result.getObjectName(),
                         "holdingReproductions[" + i + "].customReproductionCustomer", "", false,
-                        new String[] {"validator.customReproductionCustomer"}, null, "Required"));
+                        new String[]{"validator.customReproductionCustomer"}, null, "Required"));
             }
             i++;
         }
@@ -284,12 +317,12 @@ public class ReproductionServiceImpl extends RequestServiceImpl implements Repro
             if ((hr.getStandardOption() == null) && (hr.getPrice() != null)
                     && (hr.getPrice().compareTo(BigDecimal.ZERO) < 0)) {
                 result.addError(new FieldError(result.getObjectName(), "holdingReproductions[" + i + "].price",
-                        hr.getPrice(), false, new String[] {"validator.price"}, null, "Required"));
+                        hr.getPrice(), false, new String[]{"validator.price"}, null, "Required"));
             }
 
             if ((hr.getStandardOption() == null) && (hr.getDeliveryTime() != null) && (hr.getDeliveryTime() <= 0)) {
                 result.addError(new FieldError(result.getObjectName(), "holdingReproductions[" + i + "].deliveryTime",
-                        hr.getDeliveryTime(), false, new String[] {"validator.deliveryTime"}, null, "Required"));
+                        hr.getDeliveryTime(), false, new String[]{"validator.deliveryTime"}, null, "Required"));
             }
 
             i++;
@@ -310,6 +343,59 @@ public class ReproductionServiceImpl extends RequestServiceImpl implements Repro
             if ((standardOption != null) && ((hr.getPrice() == null) || (hr.getDeliveryTime() == null))) {
                 hr.setPrice(standardOption.getPrice());
                 hr.setDeliveryTime(standardOption.getDeliveryTime());
+            }
+        }
+    }
+
+    /**
+     * Validates and saves the standard reproduction options.
+     *
+     * @param standardOptions The standard reproduction options.
+     * @param result          The binding result object to put the validation errors in.
+     */
+    public void editStandardOptions(ReproductionStandardOptions standardOptions, BindingResult result) {
+        validateStandardOptions(standardOptions, result);
+
+        // Add or save the records when no errors are present
+        if (!result.hasErrors()) {
+            addOrUpdateStandardOptions(standardOptions);
+        }
+    }
+
+    /**
+     * Validate reproduction standard options using the provided binding result to store errors.
+     *
+     * @param standardOptions The standard reproduction options.
+     * @param result          The binding result.
+     */
+    private void validateStandardOptions(ReproductionStandardOptions standardOptions, BindingResult result) {
+        int i = 0;
+        for (ReproductionStandardOption standardOption : standardOptions.getOptions()) {
+            result.pushNestedPath("options[" + i + "]");
+            validator.validate(standardOption, result);
+            result.popNestedPath();
+            i++;
+        }
+    }
+
+    /**
+     * Add/update the standard reproduction options.
+     *
+     * @param standardOptions The standard reproduction options.
+     */
+    private void addOrUpdateStandardOptions(ReproductionStandardOptions standardOptions) {
+        for (ReproductionStandardOption option1 : standardOptions.getOptions()) {
+            boolean has = false;
+            for (ReproductionStandardOption option2 : getAllReproductionStandardOptions()) {
+                if (option1.getId() == option2.getId()) {
+                    option2.mergeWith(option1);
+                    reproductionStandardOptionDAO.save(option2);
+                    has = true;
+                }
+            }
+
+            if (!has) {
+                reproductionStandardOptionDAO.add(option1);
             }
         }
     }

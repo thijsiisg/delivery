@@ -300,7 +300,8 @@ public class Holding {
         setFloor(other.getFloor());
         setShelf(other.getShelf());
         setUsageRestriction(other.getUsageRestriction());
-        setExternalInfo(other.getExternalInfo());
+
+        getExternalInfo().mergeWith(other.getExternalInfo());
     }
 
     /**
@@ -310,6 +311,14 @@ public class Holding {
         setStatus(Status.AVAILABLE);
         setUsageRestriction(UsageRestriction.OPEN);
 	    setExternalInfo(ExternalHoldingInfo.getEmptyExternalInfo());
+    }
+
+    /**
+     * Returns whether customers requesting a reproduction of this holding should choose a custom reproduction.
+     * @return Whether this holding only allows a custom reproduction.
+     */
+    public boolean allowOnlyCustomReproduction() {
+        return "KNAW".equals(externalInfo.getShelvingLocation());
     }
 
     public String toString() {

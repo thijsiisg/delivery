@@ -271,9 +271,8 @@ public class Order {
     /**
      * The Order's description
      */
-    @NotBlank
     @Size(max = 100)
-    @Column(name = "description", nullable = false)
+    @Column(name = "description")
     private String description;
 
     /**
@@ -294,9 +293,7 @@ public class Order {
         this.description = description;
     }
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-    @JoinColumn(name = "reproduction_id")
+    @OneToOne(mappedBy = "order")
     private Reproduction reproduction;
 
     public Reproduction getReproduction() {
@@ -334,6 +331,7 @@ public class Order {
         setPayed(ORDER_NOT_PAYED);
         setPaymentMethod(ORDER_OGONE_PAYMENT);
         setCreatedAt(new Date());
+        setUpdatedAt(new Date());
         setRefundedAt(new Date());
     }
 }

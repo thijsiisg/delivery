@@ -41,14 +41,25 @@ public class PayWayService {
     }
 
     /**
+     * Creates a simple PayWay message with the order id.
+     *
+     * @param orderId The order id.
+     * @return A PayWay message.
+     */
+    public PayWayMessage getMessageForOrderId(Long orderId) {
+        PayWayMessage message = new PayWayMessage();
+        message.put("orderid", orderId);
+        return message;
+    }
+
+    /**
      * Returns a link which directs the user to the payment page in PayWay.
      *
      * @param orderId The id of the order to be payed.
      * @return A link to the payment page in PayWay.
      */
     public String getPaymentPageRedirectLink(Long orderId) {
-        PayWayMessage message = new PayWayMessage();
-        message.put("orderId", orderId);
+        PayWayMessage message = getMessageForOrderId(orderId);
 
         // Before creating the redirect link, add the project and place the SHA-1 signature
         addProject(message);
@@ -131,7 +142,7 @@ public class PayWayService {
      */
     public boolean isValid(PayWayMessage message) {
         Boolean success = message.getBoolean("success");
-        if (success || (success == null)) { // Also allow is success is not present
+        if ((success == null) || success) { // Also allow if success is not present
             // Obtain the current signature
             String originalHash = message.remove("shasign").toString();
 

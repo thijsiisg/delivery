@@ -48,7 +48,7 @@ public class IISHRecordLookupService implements RecordLookupService {
     private XPathExpression xpSearchIdent;
     private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpAlt2Author, xpAlt3Author;
     private XPathExpression xp245aTitle, xp500aTitle, xp600aTitle, xp610aTitle, xp650aTitle, xp651aTitle, xp245kTitle;
-    private XPathExpression xp245bSubTitle, xpYear, xpSerialNumbers, xpSignatures, xpBarcodes, xpLeader;
+    private XPathExpression xp245bSubTitle, xpYear, xpShelvingLocations, xpSerialNumbers, xpSignatures, xpBarcodes, xpLeader;
 	private XPathExpression xp542mAccess;
     private XPathExpression xpNumberOfRecords;
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
@@ -154,6 +154,8 @@ public class IISHRecordLookupService implements RecordLookupService {
             xp245bSubTitle = xpath.compile("marc:datafield[@tag=245]" +
                     "/marc:subfield[@code=\"b\"]");
             xpYear = xpath.compile("marc:datafield[@tag=260]" +
+                    "/marc:subfield[@code=\"c\"]");
+            xpShelvingLocations = xpath.compile("marc:datafield[@tag=852]" +
                     "/marc:subfield[@code=\"c\"]");
             xpSignatures = xpath.compile("marc:datafield[@tag=852]" +
                     "/marc:subfield[@code=\"j\"]");
@@ -375,6 +377,8 @@ public class IISHRecordLookupService implements RecordLookupService {
             // TODO: 866 is not always available.
             logger.debug(String.format("getHoldingMetaDataByPid(%s)", pid));
             Node node = searchByPid(pid);
+            NodeList shelfNodes = (NodeList) xpShelvingLocations.evaluate(node,
+                    XPathConstants.NODESET);
             NodeList sigNodes = (NodeList) xpSignatures.evaluate(node,
                     XPathConstants.NODESET);
             NodeList serNodes = (NodeList) xpSerialNumbers.evaluate(node,
@@ -382,17 +386,19 @@ public class IISHRecordLookupService implements RecordLookupService {
             NodeList barcodes = (NodeList) xpBarcodes.evaluate(node,
                     XPathConstants.NODESET);
 
-            if (sigNodes == null || serNodes == null || barcodes == null)
+            if (shelfNodes == null || sigNodes == null || serNodes == null || barcodes == null)
                 return retMap;
 
             for (int i = 0; i < sigNodes.getLength(); i++) {
+                Node shelf = shelfNodes.item(i);
                 Node sig = sigNodes.item(i);
                 Node ser = serNodes.item(i);
                 Node barcode = barcodes.item(i);
 
                 if (sig == null) continue;
-                
+
                 ExternalHoldingInfo eh = new ExternalHoldingInfo();
+                eh.setShelvingLocation(shelf.getTextContent());
                 eh.setBarcode(barcode.getTextContent());
                 if (ser != null)
                     eh.setSerialNumbers(ser.getTextContent().replace(",", ", "));
@@ -459,22 +465,20 @@ public class IISHRecordLookupService implements RecordLookupService {
     private ExternalRecordInfo.MaterialType evaluateMaterialType(Node node) {
         try {
             String leader = xpLeader.evaluate(node);
-            return leaderToMaterialType(leader);
+            String titleForm = xp245kTitle.evaluate(node);
+            return leaderToMaterialType(leader, titleForm);
         } catch (XPathExpressionException e) {
             return ExternalRecordInfo.MaterialType.OTHER;
         }
 
     }
 
-    private ExternalRecordInfo.MaterialType leaderToMaterialType(String leader) {
-        String format;
+    private ExternalRecordInfo.MaterialType leaderToMaterialType(String leader, String titleForm) {
+        String format = leader.substring(6, 8);
+        String coll = titleForm.trim().toLowerCase();
 
-        // Invalid leader fix.
-        /*if (leader.length() < 9) {
-            format = leader.substring(1, 3);
-        } else {*/
-            format = leader.substring(6, 8);
-        //}
+        if (format.equals("ab"))
+            return ExternalRecordInfo.MaterialType.ARTICLE;
 
         if (format.equals("ar") || format.equals("as") || format.equals("ps"))
             return ExternalRecordInfo.MaterialType.SERIAL;
@@ -482,7 +486,7 @@ public class IISHRecordLookupService implements RecordLookupService {
         if (format.equals("am") || format.equals("pm"))
             return ExternalRecordInfo.MaterialType.BOOK;
 
-        if (format.equals("im") || format.equals("pi") || format.equals("ic"))
+        if (format.equals("im") || format.equals("pi") || format.equals("ic") || format.equals("jm"))
             return ExternalRecordInfo.MaterialType.SOUND;
 
         if (format.equals("do") || format.equals("oc"))
@@ -491,9 +495,39 @@ public class IISHRecordLookupService implements RecordLookupService {
         if (format.equals("bm") || format.equals("pc"))
             return ExternalRecordInfo.MaterialType.ARCHIVE;
 
-        if (format.equals("av") || format.equals("rm") || format.equals("gm") || format.equals("pv") || format.equals("km") || format.equals("kc"))
+        if (format.equals("av") || format.equals("rm") || format.equals("pv") || format.equals("km") || format.equals("kc"))
             return ExternalRecordInfo.MaterialType.VISUAL;
-        
+
+        if (format.equals("ac") && coll.contains("book collection"))
+            return ExternalRecordInfo.MaterialType.BOOK;
+
+        if (format.equals("ac") && coll.contains("serial collection"))
+            return ExternalRecordInfo.MaterialType.SERIAL;
+
+        if (format.equals("pc") && coll.contains("archief"))
+            return ExternalRecordInfo.MaterialType.ARCHIVE;
+
+        if (format.equals("pc") && coll.contains("archive"))
+            return ExternalRecordInfo.MaterialType.ARCHIVE;
+
+        if (format.equals("pc") && coll.contains("collection"))
+            return ExternalRecordInfo.MaterialType.DOCUMENTATION;
+
+        if (format.equals("gm") && coll.contains("moving image document"))
+            return ExternalRecordInfo.MaterialType.MOVING_VISUAL;
+
+        if (format.equals("gc") && coll.contains("moving image collection"))
+            return ExternalRecordInfo.MaterialType.MOVING_VISUAL;
+
+        if (format.equals("kc") && coll.contains("poster collection"))
+            return ExternalRecordInfo.MaterialType.VISUAL;
+
+        if (format.equals("rc") && coll.contains("object collection"))
+            return ExternalRecordInfo.MaterialType.VISUAL;
+
+        if (format.equals("jc") && coll.contains("music collection"))
+            return ExternalRecordInfo.MaterialType.SOUND;
+
         return ExternalRecordInfo.MaterialType.OTHER;
     }
 

@@ -95,9 +95,9 @@ INSERT INTO user_groups VALUES (4, 2);
 --
 -- Data for Name: reproduction_standard_options; Type: TABLE DATA; Schema: public; Owner postgres
 
-INSERT INTO reproduction_standard_options VALUES (1, 2, 'LEVEL1', 'SERIAL', 'More detailed description of this standard option.', 'Serial standard option', 2.34);
-INSERT INTO reproduction_standard_options VALUES (2, 3, 'LEVEL1', 'BOOK', 'More detailed description of this standard option.', 'Book standard option', 5.00);
-INSERT INTO reproduction_standard_options VALUES (3, 1, 'LEVEL1', 'SOUND', 'More detailed description of this standard option.', 'Sound standard option', 3.00);
-INSERT INTO reproduction_standard_options VALUES (4, 2, 'LEVEL1', 'DOCUMENTATION', 'More detailed description of this standard option.', 'Documentation standard option', 2.00);
-INSERT INTO reproduction_standard_options VALUES (5, 3, 'LEVEL1', 'ARCHIVE', 'More detailed description of this standard option.', 'Archive standard option', 3.10);
-INSERT INTO reproduction_standard_options VALUES (6, 3, 'LEVEL1', 'VISUAL', 'More detailed description of this standard option.', 'Visual standard option', 5.45);
+INSERT INTO reproduction_standard_options VALUES (1, 2, 'LEVEL1', 'SERIAL', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Serial standard option', 'Serial standaard optie', 2.34);
+INSERT INTO reproduction_standard_options VALUES (2, 3, 'LEVEL1', 'BOOK', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Book standard option', 'Book standaard optie', 5.00);
+INSERT INTO reproduction_standard_options VALUES (3, 1, 'LEVEL1', 'SOUND', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Sound standard option', 'Sound standaard optie', 3.00);
+INSERT INTO reproduction_standard_options VALUES (4, 2, 'LEVEL1', 'DOCUMENTATION', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Documentation standard option', 'Documentation standaard optie', 2.00);
+INSERT INTO reproduction_standard_options VALUES (5, 3, 'LEVEL1', 'ARCHIVE', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Archive standard option', 'Archive standaard optie', 3.10);
+INSERT INTO reproduction_standard_options VALUES (6, 3, 'LEVEL1', 'VISUAL', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Visual standard option', 'Visual standaard optie', 5.45);

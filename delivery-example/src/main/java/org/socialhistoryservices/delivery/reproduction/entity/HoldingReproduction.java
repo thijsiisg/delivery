@@ -259,7 +259,7 @@ public class HoldingReproduction extends HoldingRequest {
 		if (other instanceof HoldingReproduction) {
 			HoldingReproduction otherHr = (HoldingReproduction) other;
 
-			if (getStandardOption() != otherHr.getStandardOption()) {
+			if ((getStandardOption() != otherHr.getStandardOption()) || (otherHr.getStandardOption() == null)) {
 				setStandardOption(otherHr.getStandardOption());
 				setPrice(otherHr.getPrice());
 				setDeliveryTime(otherHr.getDeliveryTime());

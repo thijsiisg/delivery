@@ -5,16 +5,19 @@ import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproductio
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
+import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.validation.BindingResult;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.awt.print.PrinterException;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * Interface representing the service of the Reproduction package.
@@ -81,9 +84,9 @@ public interface ReproductionService {
      * @param oldRes     The old reproduction in the database (if present).
      * @param result     The binding result object to put the validation errors in.
      * @param isCustomer Whether the customer is creating the reproduction.
-     * @throws org.socialhistoryservices.delivery.request.service.ClosedException     Thrown when a holding is provided which
-     *                                                                                references a record which is restrictionType=CLOSED.
-     * @throws org.socialhistoryservices.delivery.request.service.NoHoldingsException Thrown when no holdings are provided.
+     * @throws ClosedException     Thrown when a holding is provided which
+     *                             references a record which is restrictionType=CLOSED.
+     * @throws NoHoldingsException Thrown when no holdings are provided.
      */
     public void createOrEdit(Reproduction newReproduction, Reproduction oldReproduction, BindingResult result,
                              boolean isCustomer) throws ClosedException, NoHoldingsException;
@@ -99,12 +102,30 @@ public interface ReproductionService {
     public Order createOrder(Reproduction r) throws IncompleteOrderDetailsException, OrderRegistrationFailureException;
 
     /**
+     * Will refresh the given order by retrieving the order details from PayWay.
+     * The API call is performed in a seperate thread and
+     * a Future object is returned to see when and whether the refresh was succesful.
+     *
+     * @param order The order to refresh. The id must be set.
+     * @return A Future object that will return the refreshed Order when succesful.
+     */
+    public Future<Order> refreshOrder(Order order);
+
+    /**
      * Initializes the holding reproductions.
      * Determines if we can already state the price and delivery time for one or more chosen holdings.
      *
      * @param reproduction The reproduction.
      */
     public void initHoldingReproductions(Reproduction reproduction);
+
+    /**
+     * Validates and saves the standard reproduction options.
+     *
+     * @param standardOptions The standard reproduction options.
+     * @param result          The binding result object to put the validation errors in.
+     */
+    public void editStandardOptions(ReproductionStandardOptions standardOptions, BindingResult result);
 
     /**
      * Add a Reproduction to the database.
@@ -125,9 +146,9 @@ public interface ReproductionService {
      *
      * @param reproduction The reproduction to print.
      * @param alwaysPrint  If set to true, already printed reproductions will also be printed.
-     * @throws java.awt.print.PrinterException Thrown when delivering the print job to the printer failed.
-     *                                         Does not say anything if the printer actually printed
-     *                                         (or ran out of paper for example).
+     * @throws PrinterException Thrown when delivering the print job to the printer failed.
+     *                          Does not say anything if the printer actually printed
+     *                          (or ran out of paper for example).
      */
     public abstract void printReproduction(Reproduction reproduction, boolean alwaysPrint) throws PrinterException;
 

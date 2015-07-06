@@ -1,6 +1,7 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
+import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
 import org.socialhistoryservices.delivery.request.service.RequestPrintable;
 import org.springframework.context.MessageSource;
 
@@ -34,6 +35,7 @@ public class ReproductionPrintable extends RequestPrintable {
         drawRepro(drawInfo);
         drawId(drawInfo);
         drawCreationDate(drawInfo);
+        drawReproductionInformation(drawInfo);
     }
 
     /**
@@ -43,16 +45,7 @@ public class ReproductionPrintable extends RequestPrintable {
      */
     private void drawRepro(DrawInfo drawInfo) {
         String printRepro = getMessage("print.repro", "Intended for repro");
-
-        Graphics2D g2d = drawInfo.getG2d();
-        g2d.setFont(boldFont);
-
-        int x = drawInfo.getOffsetX();
-        int y = drawInfo.getOffsetY();
-        g2d.drawString(printRepro, x, y);
-        y += MIN_LINE_HEIGHT;
-
-        drawInfo.setOffsetY(y);
+        drawKeyValue(drawInfo, null, printRepro, boldFont, false);
     }
 
     /**
@@ -64,5 +57,27 @@ public class ReproductionPrintable extends RequestPrintable {
         HoldingReproduction hr = (HoldingReproduction) holdingRequest;
         String idLabel = getMessage("reproduction.id", "Reproduction");
         drawKeyValue(drawInfo, idLabel, String.valueOf(hr.getReproduction().getId()));
+    }
+
+    /**
+     * Draws the reproduction information.
+     *
+     * @param drawInfo Draw offsets.
+     */
+    private void drawReproductionInformation(DrawInfo drawInfo) {
+        drawInfo.setOffsetY(drawInfo.getOffsetY() + MIN_LINE_HEIGHT);
+
+        HoldingReproduction hr = (HoldingReproduction) holdingRequest;
+        if (hr.getStandardOption() != null) {
+            ReproductionStandardOption standardOption = hr.getStandardOption();
+            drawKeyValue(drawInfo, null, standardOption.getOptionName(), boldFont, false);
+            drawKeyValue(drawInfo, null, standardOption.getOptionDescription(), italicFont, false);
+        } else {
+            drawKeyValue(drawInfo, null, getMessage("reproduction.customReproduction", "Custom reproduction"),
+                    boldFont, false);
+            drawKeyValue(drawInfo, null, hr.getCustomReproductionCustomer(), italicFont, false);
+            drawInfo.setOffsetY(drawInfo.getOffsetY() + MIN_LINE_HEIGHT);
+            drawKeyValue(drawInfo, null, hr.getCustomReproductionReply(), italicFont, false);
+        }
     }
 }

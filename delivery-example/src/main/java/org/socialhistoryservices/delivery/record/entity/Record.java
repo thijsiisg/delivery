@@ -426,7 +426,7 @@ public class Record {
         setRestriction(other.getRestriction());
         setComments(other.getComments());
 
-        setExternalInfo(other.getExternalInfo());
+        getExternalInfo().mergeWith(other.getExternalInfo());
 
         // Merge contact.
         Contact c = getContact();

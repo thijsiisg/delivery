@@ -17,8 +17,8 @@
     </a>
   </li>
   <li>
-    <a href="${rc.contextPath}/reproduction/?status=waiting_for_order">
-      <@_ "reproductionList.filterWaitForOrder" "Show reproductions waiting for order"/>
+    <a href="${rc.contextPath}/reproduction/?status=waiting_for_order_details">
+      <@_ "reproductionList.filterWaitForOrderDetails" "Show reproductions waiting for order details"/>
     </a>
   </li>
   <li>

@@ -3,7 +3,7 @@
 
 <#-- Build the title -->
 <#assign title>
-<@_ "reproductionSingle.title" "Reproduction"/> ${reproduction.id?c}
+  <@_ "reproductionSingle.title" "Reproduction"/> ${reproduction.id?c}
 </#assign>
 
 <#-- Build the page -->
@@ -13,8 +13,11 @@
 <ul class="reproductionDetails">
   <li><span><@_ "reproduction.customerName" "Name"/></span> ${reproduction.customerName?html}</li>
   <li><span><@_ "reproduction.customerEmail" "E-mail"/></span> ${reproduction.customerEmail?html}</li>
-  <li><span><@_ "reproduction.creationDate" "Created on"/></span> ${reproduction.creationDate?string(prop_dateFormat)}</li>
-  <li><span><@_ "reproduction.status" "Status"/></span> <@_ "reproduction.statusType.${reproduction.status}" reproduction.status?string /></li>
+  <li><span><@_ "reproduction.creationDate" "Created on"/></span> ${reproduction.creationDate?string(prop_dateFormat)}
+  </li>
+  <li>
+    <span><@_ "reproduction.status" "Status"/></span> <@_ "reproduction.statusType.${reproduction.status}" reproduction.status?string />
+  </li>
 
   <#assign yes>
     <@_ "yes" "Yes" />
@@ -25,13 +28,13 @@
 
   <li>
     <span><@_ "reproduction.printed" "Printed"/></span>
-    ${reproduction.printed?string(yes, no)}
+  ${reproduction.printed?string(yes, no)}
   </li>
 
   <#if reproduction.comment??>
     <li>
       <span><@_ "reproduction.comment" "Comment"/></span>
-      ${reproduction.comment?html}
+    ${reproduction.comment?html}
     </li>
   </#if>
 
@@ -97,18 +100,26 @@
 
         <li class="spacing">
           <span><@_ "reproductionStandardOption.price" "Price"/></span>
-          &euro; ${hr.price?string("0.00")}
+          <#if hr.price??>
+            &euro; ${hr.price?string("0.00")}
+          <#else>
+            <@_ "tbd" "To be determined"/>
+          </#if>
         </li>
 
         <li>
           <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
-          ${hr.deliveryTime?html} <@_ "days" "days"/>
+          <#if hr.deliveryTime??>
+            ${hr.deliveryTime?html} <@_ "days" "days"/>
+          <#else>
+            <@_ "tbd" "To be determined"/>
+          </#if>
         </li>
 
         <#if hr.comment??>
           <li>
             <span><@_ "holdingReproductions.comment" "Comment" /> </span>
-            ${hr.comment?html}
+          ${hr.comment?html}
           </li>
         </#if>
 

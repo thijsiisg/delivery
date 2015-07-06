@@ -319,3 +319,38 @@ function renumberHoldingReproductions() {
         newIdx++;
     });
 }
+
+function addNewStandardOption() {
+    var rows = $("table.reproduction_standard_options tr.standard_option");
+    var size = rows.size();
+    var newPrefix = "options["+(size)+"].";
+    var newStandardOption = $("#newStandardOption").clone();
+    newStandardOption.removeAttr("id");
+    newStandardOption.removeClass("hidden");
+    newStandardOption.addClass("standard_option");
+    newStandardOption.find("#new\\.optionNameNL")
+        .attr('id', newPrefix+"optionNameNL")
+        .attr('name', newPrefix+"optionNameNL");
+    newStandardOption.find("#new\\.optionNameEN")
+        .attr('id', newPrefix+"optionNameEN")
+        .attr('name', newPrefix+"optionNameEN");
+    newStandardOption.find("#new\\.optionDescriptionNL")
+        .attr('id', newPrefix+"optionDescriptionNL")
+        .attr('name', newPrefix+"optionDescriptionNL");
+    newStandardOption.find("#new\\.optionDescriptionEN")
+        .attr('id', newPrefix+"optionDescriptionEN")
+        .attr('name', newPrefix+"optionDescriptionEN");
+    newStandardOption.find("#new\\.materialType")
+        .attr('id', newPrefix+"materialType")
+        .attr('name', newPrefix+"materialType");
+    newStandardOption.find("#new\\.level")
+        .attr('id', newPrefix+"level")
+        .attr('name', newPrefix+"level");
+    newStandardOption.find("#new\\.price")
+        .attr('id', newPrefix+"price")
+        .attr('name', newPrefix+"price");
+    newStandardOption.find("#new\\.deliveryTime")
+        .attr('id', newPrefix+"deliveryTime")
+        .attr('name', newPrefix+"deliveryTime");
+    newStandardOption.appendTo("table.reproduction_standard_options tbody");
+}

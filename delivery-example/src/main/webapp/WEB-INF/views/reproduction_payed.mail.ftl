@@ -6,7 +6,7 @@
 </#if>
 
 --- <@_ "reproduction.records" "Items"/> ---
-<#list reproduction.holdingReproducttions as hr>
+<#list reproduction.holdingReproductions as hr>
  <#assign h = hr.holding>
  <#assign info = h.record.externalInfo>
 * ${h.record.title} - ${h.signature} <#if info.author??>/ ${info.author} </#if><#if hr.comment??>- ${hr.comment}</#if>

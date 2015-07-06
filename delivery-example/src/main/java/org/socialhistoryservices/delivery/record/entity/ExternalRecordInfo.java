@@ -38,6 +38,8 @@ public class ExternalRecordInfo {
         DOCUMENTATION,
         ARCHIVE,
         VISUAL,
+        MOVING_VISUAL,
+        ARTICLE,
         OTHER
     }
 
@@ -174,5 +176,15 @@ public class ExternalRecordInfo {
          displayYear = year;
     }
 
-
+    /**
+     * Merge other record's data with this record.
+     * @param other The other record.
+     */
+    public void mergeWith(ExternalRecordInfo other) {
+        setTitle(other.getTitle());
+        setMaterialType(other.getMaterialType());
+        setPublicationStatus(other.getPublicationStatus());
+        setAuthor(other.getAuthor());
+        setDisplayYear(other.getDisplayYear());
+    }
 }

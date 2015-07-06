@@ -119,9 +119,9 @@
             </a>
           </li>
         </#if>
-        <#if  _sec.ifAllGranted("ROLE_RESERVATION_MODIFY")>
+        <#if  _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY,ROLE_REPRODUCTION_MODIFY")>
         <li>
-          <a href="${rc.contextPath}/reservation/scan">
+          <a href="${rc.contextPath}/request/scan">
           <@_ "scan.title" "Scan Items"/>
           </a>
         </li>
@@ -144,6 +144,13 @@
           <li>
             <a href="${rc.contextPath}/reproduction/masscreateform">
               <@_ "reproductionMassCreate.title" "New Reproduction"/>
+            </a>
+          </li>
+        </#if>
+        <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_MODIFY")>
+          <li>
+            <a href="${rc.contextPath}/reproduction/standardoptions">
+              <@_ "reproductionStandardOption.title" "Standard reproduction options"/>
             </a>
           </li>
         </#if>

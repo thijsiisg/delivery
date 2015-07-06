@@ -2,8 +2,13 @@ package org.socialhistoryservices.delivery.api;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.*;
 
@@ -13,9 +18,10 @@ import java.net.*;
 public class SharedObjectRepositoryService {
     private static final Log LOGGER = LogFactory.getLog(SharedObjectRepositoryService.class);
 
-    private String url = "";
+    private String url;
 
-    public SharedObjectRepositoryService() {
+    public SharedObjectRepositoryService(String url) {
+        this.url = url;
     }
 
     /**
@@ -26,17 +32,29 @@ public class SharedObjectRepositoryService {
      */
     public boolean hasMetadataForPid(String pid) {
         try {
-            URL req = new URL(url + "/metadata/" + pid + "?accept=xml");
+            URL req = new URL(url + "/metadata/" + pid + "?accept=text/xml&format=xml");
 
             LOGGER.debug(String.format("hasMetadata(): Querying SOR API: %s", req.toString()));
             HttpURLConnection conn = (HttpURLConnection) req.openConnection();
-
-            conn.setRequestMethod("HEAD");
             conn.connect();
 
-            return (conn.getResponseCode() == HttpURLConnection.HTTP_OK);
+            // Try to parse the received XML
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setIgnoringComments(true);
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document document = db.parse(conn.getInputStream());
+
+            // See if there is an element with the PID and make sure it matches the PID we're requesting
+            Node pidNode = document.getElementsByTagName("pid").item(0);
+            return pidNode.getTextContent().equals(pid);
         } catch (IOException ioe) {
             LOGGER.debug("hasMetadata(): SOR API connection failed", ioe);
+            return false;
+        } catch (ParserConfigurationException pce) {
+            LOGGER.debug("hasMetadata(): Could not build document builder", pce);
+            return false;
+        } catch (SAXException saxe) {
+            LOGGER.debug("hasMetadata(): Could not parse received metadata", saxe);
             return false;
         }
     }

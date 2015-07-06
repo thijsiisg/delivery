@@ -21,7 +21,7 @@ import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.record.service.RecordService;
-import org.socialhistoryservices.delivery.request.controller.RequestController;
+import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
@@ -60,7 +60,7 @@ import java.util.*;
 @Controller
 @Transactional
 @RequestMapping(value = "/reservation")
-public class ReservationController extends RequestController {
+public class ReservationController extends AbstractRequestController {
 
     @Autowired
     private ReservationService reservations;
@@ -572,7 +572,10 @@ public class ReservationController extends RequestController {
 
 
         Permission perm = permissions.getPermissionByCode(permission);
-        if (!checkPermissions(model, perm, newRes)) return "reservation_choice";
+        if (!checkPermissions(model, perm, newRes)) {
+            model.addAttribute("holdingReservations", newRes.getHoldingReservations());
+            return "reservation_choice";
+        }
 
         if (perm != null ) {
             if (!commit) {
@@ -671,64 +674,6 @@ public class ReservationController extends RequestController {
     }
     // }}}
 
-    // {{{ Barcode scanning
-    /**
-     * Get the barcode scan page.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/scan",
-                    method = RequestMethod.GET)
-    @Secured("ROLE_RESERVATION_MODIFY")
-    public String scanBarcode() {
-        return "reservation_scan";
-    }
-
-    /**
-     * Process a scanned barcode.
-     *
-     * @param id The scanned Record id.
-     * @param model The model to add response attributes to.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/scan",
-                    method = RequestMethod.POST)
-    @Secured("ROLE_RESERVATION_MODIFY")
-    public String scanBarcode(@RequestParam(required = false) String id,
-                              Model model) {
-
-        Holding h;
-        try {
-            int ID = Integer.parseInt(id);
-            h = records.getHoldingById(ID);
-        }
-        catch (NumberFormatException ex) {
-            h = null;
-        }
-
-        if(h == null) {
-            model.addAttribute("error", "invalid");
-            return "reservation_scan";
-        }
-
-        Holding.Status oldStatus = h.getStatus();
-        Reservation res = reservations.getActiveFor(h);
-        if (res != null) {
-            reservations.markItem(res, h);
-        }
-
-        // Show the reservation corresponding to the scanned record.
-        if (res != null) {
-            model.addAttribute("oldStatus", oldStatus);
-            model.addAttribute("holding", h);
-            model.addAttribute("reservation", res);
-            return "reservation_scan";
-        }
-        model.addAttribute("error", "invalid");
-        return "reservation_scan";
-
-
-    }
-    // }}}
     // {{{ Batch process reservations
 
     /**

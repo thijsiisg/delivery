@@ -1,6 +1,7 @@
 package org.socialhistoryservices.delivery.reproduction.dao;
 
 import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
+import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption_;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;
@@ -108,7 +109,15 @@ public class ReproductionStandardOptionDAOImpl implements ReproductionStandardOp
 	public List<ReproductionStandardOption> listAll() {
 		CriteriaBuilder cb = getCriteriaBuilder();
 		CriteriaQuery<ReproductionStandardOption> cq = cb.createQuery(ReproductionStandardOption.class);
-		cq.select(cq.from(ReproductionStandardOption.class));
+        Root<ReproductionStandardOption> root = cq.from(ReproductionStandardOption.class);
+
+		cq.select(root);
+        cq.orderBy(
+                cb.asc(root.get(ReproductionStandardOption_.materialType)),
+                cb.asc(root.get(ReproductionStandardOption_.price)),
+                cb.asc(root.get(ReproductionStandardOption_.deliveryTime))
+        );
+
 		return list(cq);
 	}
 }

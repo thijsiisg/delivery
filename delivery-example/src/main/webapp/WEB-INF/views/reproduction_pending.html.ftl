@@ -59,7 +59,7 @@
               <@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: <@_ "tbd" "To be determined"/>
             </em>
 
-            <br/><br/>
+            <br/>
 
             <@_ "reproduction.customReproductionCustomer" "Your wish"/>: <br/>
             <em>${hr.customReproductionCustomer?html}</em>

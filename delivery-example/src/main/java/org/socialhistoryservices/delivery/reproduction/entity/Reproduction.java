@@ -27,9 +27,9 @@ public class Reproduction extends Request {
      * Status of the reproduction.
      */
     public enum Status {
-        WAITING_FOR_ORDER,
-        ORDER_READY,
-        CONFIRMED,
+        WAITING_FOR_ORDER_DETAILS,
+        HAS_ORDER_DETAILS,
+        ORDER_CREATED,
         PAYED,
         PENDING,
         ACTIVE,
@@ -125,6 +125,32 @@ public class Reproduction extends Request {
     @Override
     public String getEmail() {
         return getCustomerEmail();
+    }
+
+    /**
+     * The Reproduction's date.
+     */
+    @NotNull
+    @Temporal(TemporalType.DATE)
+    @Column(name = "date", nullable = false)
+    private Date date;
+
+    /**
+     * Get the Reproduction's date.
+     *
+     * @return the Reproduction's date.
+     */
+    public Date getDate() {
+        return date;
+    }
+
+    /**
+     * Set the Reproduction's date.
+     *
+     * @param date the Reproduction's date.
+     */
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     /**
@@ -441,7 +467,8 @@ public class Reproduction extends Request {
      * Set default data for Reproductions.
      */
     public Reproduction() {
-        setStatus(Status.WAITING_FOR_ORDER);
+        setStatus(Status.WAITING_FOR_ORDER_DETAILS);
+        setDate(new Date());
         setCreationDate(new Date());
         setPrinted(false);
         holdingReproductions = new ArrayList<HoldingReproduction>();

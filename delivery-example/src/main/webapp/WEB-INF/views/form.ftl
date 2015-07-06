@@ -131,7 +131,6 @@
 
 <#macro textarea_nolabel path class="">
   <@spring.bind path/>
-
   <@spring.formTextarea path "class='${class} field'"/>
 
   <#if spring.status.errorMessages?size != 0>

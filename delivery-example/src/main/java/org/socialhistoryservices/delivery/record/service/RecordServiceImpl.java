@@ -273,7 +273,6 @@ public class RecordServiceImpl implements RecordService {
             if (oldRecord == null) {
                 addRecord(newRecord);
             } else {
-	            cleanupExternalInfo(oldRecord);
                 oldRecord.mergeWith(newRecord);
                 saveRecord(oldRecord);
             }

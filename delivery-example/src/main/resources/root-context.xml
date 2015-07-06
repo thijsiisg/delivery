@@ -55,5 +55,6 @@
   </bean>
 
   <bean id="sharedObjectRepositoryService" class="org.socialhistoryservices.delivery.api.SharedObjectRepositoryService">
+    <constructor-arg name="url" value="${prop_sorAddress}"/>
   </bean>
 </beans>

@@ -205,7 +205,7 @@ public abstract class RequestPrintable implements Printable {
     protected void drawCreationDate(DrawInfo drawInfo) {
         String dateLabel = getMessage("request.creationDate", "Created at");
         String dateTimeFormat = properties.getProperty("prop_dateFormat") + " " +
-                properties.getProperty("prop_timeFormat", "HH:mm:ss");
+            properties.getProperty("prop_timeFormat", "HH:mm:ss");
 
         SimpleDateFormat spdf = new SimpleDateFormat(dateTimeFormat);
         drawKeyValue(drawInfo, dateLabel, spdf.format(holdingRequest.getRequest().getCreationDate()));
@@ -281,7 +281,7 @@ public abstract class RequestPrintable implements Printable {
     private void drawRestrictedNotice(DrawInfo drawInfo) {
         String key = getMessage("record.restriction", "Restriction Details");
         String value = getMessage("print.accessGranted",
-                "This item is not publicly available, but this person has been granted access.");
+            "This item is not publicly available, but this person has been granted access.");
 
         drawKeyValue(drawInfo, key, value);
     }
@@ -297,7 +297,7 @@ public abstract class RequestPrintable implements Printable {
             return;
         }
         String shelfLabel = getMessage("holding.shelf",
-                "Shelf");
+            "Shelf");
         drawKeyValue(drawInfo, shelfLabel, value);
     }
 
@@ -309,7 +309,7 @@ public abstract class RequestPrintable implements Printable {
      */
     private void drawDirection(DrawInfo drawInfo, String value) {
         String directionLabel = getMessage("holding.direction",
-                "Direction");
+            "Direction");
         drawKeyValue(drawInfo, directionLabel, value);
     }
 
@@ -324,7 +324,7 @@ public abstract class RequestPrintable implements Printable {
             return;
         }
         String cabinetLabel = getMessage("holding.cabinet",
-                "Cabinet");
+            "Cabinet");
         drawKeyValue(drawInfo, cabinetLabel, value);
     }
 
@@ -468,15 +468,16 @@ public abstract class RequestPrintable implements Printable {
         int x = drawInfo.getOffsetX();
         int y = drawInfo.getOffsetY();
         int width = drawInfo.getWidth();
-        int offset = drawInfo.getValueOffset();
+        int offset = (key != null) ? drawInfo.getValueOffset() : 0;
 
         // Draw key (word-wrap disabled)
-        g2d.setFont(boldFont);
-        FontMetrics fm = g2d.getFontMetrics();
-
-        g2d.drawString(key + ":", x, y);
+        if (key != null) {
+            g2d.setFont(boldFont);
+            g2d.drawString(key + ":", x, y);
+        }
 
         // Draw value (word-wrap enabled)
+        FontMetrics fm = g2d.getFontMetrics();
         FontRenderContext frc = g2d.getFontRenderContext();
 
         AttributedString styledText = new AttributedString(value);

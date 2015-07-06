@@ -43,9 +43,8 @@ public class ExternalHoldingInfo {
     }
 
     /** The Holding's barcode. */
-    @NotBlank
     @Size(max=255)
-    @Column(name="barcode", nullable=false, unique=true)
+    @Column(name="barcode", unique=true)
     private String barcode;
 
     /**
@@ -83,7 +82,42 @@ public class ExternalHoldingInfo {
          serialNumbers = nrs;
     }
 
-	/**
+    /**
+     * The Holding's shelving location.
+     */
+    @Size(max = 255)
+    @Column(name = "shelvingLocation")
+    private String shelvingLocation;
+
+    /**
+     * Set the shelving location.
+     *
+     * @return the shelving location.
+     */
+    public String getShelvingLocation() {
+        return shelvingLocation;
+    }
+
+    /**
+     * Get the shelving location.
+     *
+     * @param shelvingLocation the shelving location.
+     */
+    public void setShelvingLocation(String shelvingLocation) {
+        this.shelvingLocation = shelvingLocation;
+    }
+
+    /**
+     * Merge other record's data with this record.
+     * @param other The other record.
+     */
+    public void mergeWith(ExternalHoldingInfo other) {
+        setBarcode(other.getBarcode());
+        setSerialNumbers(other.getSerialNumbers());
+        setShelvingLocation(other.getShelvingLocation());
+    }
+
+    /**
 	 * Creates a new and empty ExternalHoldingInfo as a placeholder for non-existing holdings.
 	 * @return The new and empty getEmptyExternalInfo.
 	 */

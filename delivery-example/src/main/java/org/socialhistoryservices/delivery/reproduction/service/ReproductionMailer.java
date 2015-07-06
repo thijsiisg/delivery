@@ -20,11 +20,11 @@ public class ReproductionMailer extends RequestMailer {
      * @throws MailException Thrown when sending mail somehow failed.
      */
     public void mailPending(Reproduction reproduction) throws MailException {
-        assert reproduction.getStatus() == Reproduction.Status.WAITING_FOR_ORDER :
-                "Can only mail pending when Reproduction status is WAITING_FOR_ORDER";
+        assert reproduction.getStatus() == Reproduction.Status.WAITING_FOR_ORDER_DETAILS :
+                "Can only mail pending when Reproduction status is WAITING_FOR_ORDER_DETAILS";
 
         String subject = getMessage("reproductionMail.pendingSubject", "Confirmation of reproduction");
-        sendMail(reproduction, subject, "reproduction.pending.mail.ftl", getReproductionModel(reproduction));
+        sendMail(reproduction, subject, "reproduction_pending.mail.ftl", getReproductionModel(reproduction));
     }
 
     /**
@@ -34,11 +34,11 @@ public class ReproductionMailer extends RequestMailer {
      * @throws MailException Thrown when sending mail somehow failed.
      */
     public void mailOrderReady(Reproduction reproduction) throws MailException {
-        assert reproduction.getStatus() == Reproduction.Status.ORDER_READY :
-                "Can only mail pending when Reproduction status is ORDER_READY";
+        assert reproduction.getStatus() == Reproduction.Status.HAS_ORDER_DETAILS :
+                "Can only mail order ready when Reproduction status is HAS_ORDER_DETAILS";
 
         String subject = getMessage("reproductionMail.orderReadySubject", "Confirmation of reproduction (order ready)");
-        sendMail(reproduction, subject, "reproduction.order_ready.mail.ftl", getReproductionModel(reproduction));
+        sendMail(reproduction, subject, "reproduction_order_ready.mail.ftl", getReproductionModel(reproduction));
     }
 
     /**
@@ -52,7 +52,7 @@ public class ReproductionMailer extends RequestMailer {
                 "Can only mail pending when Reproduction status is PAYED";
 
         String subject = getMessage("reproductionMail.payedSubject", "Confirmation of payment");
-        sendMail(reproduction, subject, "reproduction.payed.mail.ftl", getReproductionModel(reproduction));
+        sendMail(reproduction, subject, "reproduction_payed.mail.ftl", getReproductionModel(reproduction));
     }
 
     /**

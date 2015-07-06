@@ -9,19 +9,17 @@ import org.socialhistoryservices.delivery.api.PayWayService;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
-import org.socialhistoryservices.delivery.reproduction.ListHolder;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.service.IncompleteOrderDetailsException;
 import org.socialhistoryservices.delivery.reproduction.service.OrderRegistrationFailureException;
 import org.socialhistoryservices.delivery.reproduction.service.ReproductionMailer;
 import org.socialhistoryservices.delivery.reproduction.service.ReproductionService;
-import org.socialhistoryservices.delivery.request.controller.RequestController;
+import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
+import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
-import org.socialhistoryservices.delivery.reservation.entity.Reservation;
-import org.socialhistoryservices.delivery.reservation.service.ReservationMailer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -48,7 +46,7 @@ import java.util.*;
 @Controller
 @Transactional
 @RequestMapping(value = "/reproduction")
-public class ReproductionController extends RequestController {
+public class ReproductionController extends AbstractRequestController {
     private static final Log LOGGER = LogFactory.getLog(ReproductionController.class);
 
     @Autowired
@@ -87,9 +85,9 @@ public class ReproductionController extends RequestController {
     @ModelAttribute("status_types")
     public Map<String, Reproduction.Status> statusTypes() {
         Map<String, Reproduction.Status> data = new LinkedHashMap<String, Reproduction.Status>();
-        data.put("WAITING_FOR_ORDER", Reproduction.Status.WAITING_FOR_ORDER);
-        data.put("ORDER_READY", Reproduction.Status.ORDER_READY);
-        data.put("CONFIRMED", Reproduction.Status.CONFIRMED);
+        data.put("WAITING_FOR_ORDER_DETAILS", Reproduction.Status.WAITING_FOR_ORDER_DETAILS);
+        data.put("HAS_ORDER_DETAILS", Reproduction.Status.HAS_ORDER_DETAILS);
+        data.put("ORDER_CREATED", Reproduction.Status.ORDER_CREATED);
         data.put("PAYED", Reproduction.Status.PAYED);
         data.put("PENDING", Reproduction.Status.PENDING);
         data.put("ACTIVE", Reproduction.Status.ACTIVE);
@@ -105,7 +103,7 @@ public class ReproductionController extends RequestController {
      */
     @ModelAttribute("levels")
     public Map<String, ReproductionStandardOption.Level> levels() {
-        Map<String, ReproductionStandardOption.Level> data = new HashMap<String, ReproductionStandardOption.Level>();
+        Map<String, ReproductionStandardOption.Level> data = new LinkedHashMap<String, ReproductionStandardOption.Level>();
         data.put("MASTER", ReproductionStandardOption.Level.MASTER);
         data.put("LEVEL1", ReproductionStandardOption.Level.LEVEL1);
         data.put("LEVEL2", ReproductionStandardOption.Level.LEVEL2);
@@ -120,13 +118,15 @@ public class ReproductionController extends RequestController {
      */
     @ModelAttribute("materialTypes")
     public Map<String, ExternalRecordInfo.MaterialType> materialTypes() {
-        Map<String, ExternalRecordInfo.MaterialType> data = new HashMap<String, ExternalRecordInfo.MaterialType>();
+        Map<String, ExternalRecordInfo.MaterialType> data = new LinkedHashMap<String, ExternalRecordInfo.MaterialType>();
+        data.put("ARTICLE", ExternalRecordInfo.MaterialType.ARTICLE);
         data.put("SERIAL", ExternalRecordInfo.MaterialType.SERIAL);
         data.put("BOOK", ExternalRecordInfo.MaterialType.BOOK);
         data.put("SOUND", ExternalRecordInfo.MaterialType.SOUND);
         data.put("DOCUMENTATION", ExternalRecordInfo.MaterialType.DOCUMENTATION);
         data.put("ARCHIVE", ExternalRecordInfo.MaterialType.ARCHIVE);
         data.put("VISUAL", ExternalRecordInfo.MaterialType.VISUAL);
+        data.put("MOVING_VISUAL", ExternalRecordInfo.MaterialType.MOVING_VISUAL);
         data.put("OTHER", ExternalRecordInfo.MaterialType.OTHER);
         return data;
     }
@@ -210,17 +210,17 @@ public class ReproductionController extends RequestController {
                                               Expression<Boolean> where) {
         Date date = getDateFilter(p);
         if (date != null) {
-            Expression<Boolean> exDate = cb.equal(rRoot.<Date>get(Reproduction_.creationDate), date);
+            Expression<Boolean> exDate = cb.between(rRoot.<Date>get(Reproduction_.date), date, date);
             where = (where != null) ? cb.and(where, exDate) : exDate;
         } else {
             Date fromDate = getFromDateFilter(p);
             Date toDate = getToDateFilter(p);
             if (fromDate != null) {
-                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(rRoot.<Date>get(Reproduction_.creationDate), date);
+                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(rRoot.<Date>get(Reproduction_.date), fromDate);
                 where = (where != null) ? cb.and(where, exDate) : exDate;
             }
             if (toDate != null) {
-                Expression<Boolean> exDate = cb.lessThanOrEqualTo(rRoot.<Date>get(Reproduction_.creationDate), date);
+                Expression<Boolean> exDate = cb.lessThanOrEqualTo(rRoot.<Date>get(Reproduction_.date), toDate);
                 where = (where != null) ? cb.and(where, exDate) : exDate;
             }
         }
@@ -682,10 +682,16 @@ public class ReproductionController extends RequestController {
         if (reproduction == null)
             throw new InvalidRequestException("No such reproduction.");
 
-        if (!reproduction.hasOrderDetails())
+        if (reproduction.getStatus().compareTo(Reproduction.Status.HAS_ORDER_DETAILS) < 0)
             throw new InvalidRequestException("Reproduction does not have all of the order details yet.");
 
-        if (reproduction.getStatus().compareTo(Reproduction.Status.ORDER_READY) >= 0)
+        if (reproduction.getStatus() == Reproduction.Status.ORDER_CREATED) {
+            Order order = reproduction.getOrder();
+            if (order != null)
+                return "redirect:" + payWayService.getPaymentPageRedirectLink(order.getId());
+        }
+
+        if (reproduction.getStatus().compareTo(Reproduction.Status.ORDER_CREATED) >= 0)
             throw new InvalidRequestException("Reproduction has been confirmed already.");
 
         model.addAttribute("reproduction", reproduction);
@@ -698,8 +704,8 @@ public class ReproductionController extends RequestController {
             }
 
             try {
-                // Change status to 'confirmed'
-                reproduction.updateStatusAndAssociatedHoldingStatus(Reproduction.Status.CONFIRMED);
+                // Change status to 'order created'
+                reproduction.updateStatusAndAssociatedHoldingStatus(Reproduction.Status.ORDER_CREATED);
                 Order order = reproductions.createOrder(reproduction);
 
                 // If the reproduction is for free, take care of delivey
@@ -737,7 +743,7 @@ public class ReproductionController extends RequestController {
      */
     @RequestMapping(value = "/order/accept", method = RequestMethod.POST)
     public HttpStatus accept(@RequestBody PayWayMessage payWayMessage) {
-        // Is the reveived PayWay message valid? Make sure the customer actually payed
+        // Is the received PayWay message valid? Make sure the customer actually payed
         if (!payWayService.isValid(payWayMessage)) {
             LOGGER.debug(String.format(
                     "/reproduction/order/accept : Invalid message received: %s", payWayMessage));
@@ -764,6 +770,7 @@ public class ReproductionController extends RequestController {
         }
 
         // Everything is fine, change status and send email to customer
+        reproductions.refreshOrder(order);
         reproduction.updateStatusAndAssociatedHoldingStatus(Reproduction.Status.PAYED);
         try {
             reproductionMailer.mailPayed(reproduction);
@@ -1000,62 +1007,33 @@ public class ReproductionController extends RequestController {
     }
 
     /**
-     * Get the barcode scan page.
+     * Displays all standard reproduction options for editing.
      *
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/scan", method = RequestMethod.GET)
-    @Secured("ROLE_REPRODUCTION_MODIFY")
-    public String scanBarcode() {
-        return "reproduction_scan";
-    }
-
-    /**
-     * Process a scanned barcode.
-     *
-     * @param id    The scanned Record id.
      * @param model The model to add response attributes to.
      * @return The view to resolve.
      */
-    @RequestMapping(value = "/scan", method = RequestMethod.POST)
-    @Secured("ROLE_REPRODUCTION_MODIFY")
-    public String scanBarcode(@RequestParam(required = false) String id, Model model) {
-        Holding h;
-        try {
-            int ID = Integer.parseInt(id);
-            h = records.getHoldingById(ID);
-        } catch (NumberFormatException ex) {
-            h = null;
-        }
-
-        if (h == null) {
-            model.addAttribute("error", "invalid");
-            return "reproduction_scan";
-        }
-
-        Holding.Status oldStatus = h.getStatus();
-        Reproduction r = reproductions.getActiveFor(h);
-        if (r != null) {
-            reproductions.markItem(r, h);
-        }
-
-        // Show the reproduction corresponding to the scanned record.
-        if (r != null) {
-            model.addAttribute("oldStatus", oldStatus);
-            model.addAttribute("holding", h);
-            model.addAttribute("reproduction", r);
-            return "reproduction_scan";
-        }
-
-        model.addAttribute("error", "invalid");
-        return "reproduction_scan";
-    }
-
     @RequestMapping(value = "/standardoptions", method = RequestMethod.GET)
     @Secured("ROLE_REPRODUCTION_MODIFY")
     public String showStandardOptions(Model model) {
-        ListHolder<ReproductionStandardOption> standardOptions = new ListHolder<ReproductionStandardOption>(
-                reproductions.getAllReproductionStandardOptions());
+        ReproductionStandardOptions standardOptions =
+                new ReproductionStandardOptions(reproductions.getAllReproductionStandardOptions());
+        model.addAttribute("standardOptions", standardOptions);
+        return "reproduction_standard_options_edit";
+    }
+
+    /**
+     * Updates all standard reproductions options.
+     *
+     * @param model           The model to add response attributes to.
+     * @param result          he object to save the validation errors.
+     * @param standardOptions The standard reproduction options.
+     * @return The view to resolve.
+     */
+    @RequestMapping(value = "/standardoptions", method = RequestMethod.POST)
+    @Secured("ROLE_REPRODUCTION_MODIFY")
+    public String editStandardOptions(@ModelAttribute("standardOptions") ReproductionStandardOptions standardOptions,
+                                      BindingResult result, Model model) {
+        reproductions.editStandardOptions(standardOptions, result);
         model.addAttribute("standardOptions", standardOptions);
         return "reproduction_standard_options_edit";
     }
