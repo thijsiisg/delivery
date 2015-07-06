@@ -16,8 +16,6 @@
 
 package org.socialhistoryservices.delivery.record.entity;
 
-import org.hibernate.validator.constraints.NotBlank;
-
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 

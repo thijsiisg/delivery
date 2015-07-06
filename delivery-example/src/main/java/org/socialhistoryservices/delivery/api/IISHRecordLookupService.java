@@ -398,8 +398,10 @@ public class IISHRecordLookupService implements RecordLookupService {
                 if (sig == null) continue;
 
                 ExternalHoldingInfo eh = new ExternalHoldingInfo();
-                eh.setShelvingLocation(shelf.getTextContent());
-                eh.setBarcode(barcode.getTextContent());
+                if (shelf != null)
+                    eh.setShelvingLocation(shelf.getTextContent());
+                if (barcode != null)
+                    eh.setBarcode(barcode.getTextContent());
                 if (ser != null)
                     eh.setSerialNumbers(ser.getTextContent().replace(",", ", "));
                 retMap.put(sig.getTextContent(),eh);
