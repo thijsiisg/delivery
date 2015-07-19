@@ -10,6 +10,7 @@ import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.request.service.GeneralRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.ui.Model;
@@ -25,6 +26,9 @@ import java.util.*;
 
 public abstract class AbstractRequestController extends ErrorHandlingController {
     private static final DateFormat API_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+    @Autowired
+    protected GeneralRequestService requests;
 
     @Autowired
     protected PermissionService permissions;
@@ -89,7 +93,8 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
                     return null;
                 }
                 holdings.add(h);
-            } else {
+            }
+            else {
                 for (int i = 1; i < elements.length; i++) {
                     boolean has = false;
                     for (Holding h : r.getHoldings()) {
@@ -341,9 +346,11 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         Expression<Boolean> where = null;
         if (sigWhere == null) {
             where = titleWhere;
-        } else if (titleWhere == null) {
+        }
+        else if (titleWhere == null) {
             where = sigWhere;
-        } else {
+        }
+        else {
             where = cb.and(titleWhere, sigWhere);
         }
 
@@ -359,5 +366,37 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         cq.distinct(true);
 
         return records.listHoldings(cq);
+    }
+
+    /**
+     * Extracts the holdings from a collection of holding requests.
+     *
+     * @param holdingRequests A collection of holding requests.
+     * @return A set of holdings.
+     */
+    protected Set<Holding> getHoldings(Collection<? extends HoldingRequest> holdingRequests) {
+        Set<Holding> holdings = new HashSet<Holding>();
+        for (HoldingRequest hr : holdingRequests) {
+            holdings.add(hr.getHolding());
+        }
+        return holdings;
+    }
+
+    /**
+     * Creates a map with the requests for which the given holdings are active.
+     *
+     * @param holdings The holdings.
+     * @return A map with the requests for which the given holdings are active.
+     */
+    protected Map<String, Request> getHoldingActiveRequests(Collection<Holding> holdings) {
+        Map<String, Request> holdingActiveRequests = new HashMap<String, Request>();
+        for (Holding holding : holdings) {
+            if (!holdingActiveRequests.containsKey(holding.toString())) {
+                Request request = requests.getActiveFor(holding);
+                if (request != null)
+                    holdingActiveRequests.put(holding.toString(), requests.getActiveFor(holding));
+            }
+        }
+        return holdingActiveRequests;
     }
 }

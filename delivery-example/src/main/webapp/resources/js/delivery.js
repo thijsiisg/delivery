@@ -54,16 +54,22 @@ $(document).ready(function(){
 	});
 
     $(':radio').change(function () {
-        var self = $(this);
+        var elem = $(this);
+        toggleCustomReproduction(elem);
+    });
+    toggleCustomReproduction();
+});
 
-        var anyNonCustom = $('.on-any-non-custom');
-        var allCustom = $('.on-all-custom');
+function toggleCustomReproduction(elem) {
+    var anyNonCustom = $('.on-any-non-custom');
+    var allCustom = $('.on-all-custom');
 
-        var list = self.closest('ul');
+    if (elem !== undefined) {
+        var list = elem.closest('ul');
         var nonCustom = list.find('.on-non-custom');
         var custom = list.find('.on-custom');
 
-        if (self.hasClass('custom')) {
+        if (elem.hasClass('custom')) {
             nonCustom.hide();
             custom.show();
         }
@@ -71,17 +77,17 @@ $(document).ready(function(){
             custom.hide();
             nonCustom.show();
         }
+    }
 
-        if ($(':radio.custom:checked').length > 0) {
-            anyNonCustom.hide();
-            allCustom.show();
-        }
-        else {
-            allCustom.hide();
-            anyNonCustom.show();
-        }
-    });
-});
+    if (($(':radio.custom:checked').length > 0) || ($('.warning').length > 0)) {
+        anyNonCustom.hide();
+        allCustom.show();
+    }
+    else {
+        allCustom.hide();
+        anyNonCustom.show();
+    }
+}
 
 function toggleField(infoId, fieldId, link, hideTxt, showTxt) {
     var field = $("#"+fieldId);

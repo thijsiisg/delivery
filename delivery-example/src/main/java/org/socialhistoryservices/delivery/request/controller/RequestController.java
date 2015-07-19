@@ -1,12 +1,17 @@
 package org.socialhistoryservices.delivery.request.controller;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.record.service.OnHoldException;
 import org.socialhistoryservices.delivery.record.service.RecordService;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.reproduction.service.ReproductionService;
+import org.socialhistoryservices.delivery.request.entity.Request;
+import org.socialhistoryservices.delivery.request.service.GeneralRequestService;
+import org.socialhistoryservices.delivery.request.service.RequestService;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +36,9 @@ public class RequestController extends AbstractRequestController {
 
     @Autowired
     private ReproductionService reproductions;
+
+    @Autowired
+    private GeneralRequestService requests;
 
     @Autowired
     private RecordService records;
@@ -71,37 +79,49 @@ public class RequestController extends AbstractRequestController {
         }
 
         // Determine access rights
-        SimpleGrantedAuthority reservationRole = new SimpleGrantedAuthority("ROLE_RESERVATION_MODIFY");
-        SimpleGrantedAuthority reproductionRole = new SimpleGrantedAuthority("ROLE_REPRODUCTION_MODIFY");
         Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>)
                 SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        boolean accessReservation = authorities.contains(new SimpleGrantedAuthority("ROLE_RESERVATION_MODIFY"));
+        boolean accessReproduction = authorities.contains(new SimpleGrantedAuthority("ROLE_REPRODUCTION_MODIFY"));
 
+        // Determine the active request
         Reservation reservation = null;
         Reproduction reproduction = null;
+        if (accessReservation)
+            reservation = reservations.getActiveFor(h, 1);
+        if (accessReproduction)
+            reproduction = reproductions.getActiveFor(h, 1);
+
+        boolean statusUpdated = false;
         Holding.Status oldStatus = h.getStatus();
 
-        // If the user may modify reservations, see if a reservation for this holding is active
-        if (authorities.contains(reservationRole)) {
-            reservation = reservations.getActiveFor(h);
-            if (reservation != null) {
-                reservations.markItem(reservation, h);
-            }
+        // If the user may modify reservations, mark item for the active reservation
+        if (reservation != null) {
+            reservations.markItem(reservation, h);
+            statusUpdated = true;
         }
 
-        // If the user may modify reproductions, see if a reproduction for this holding is active
-        if ((reservation == null) && authorities.contains(reproductionRole)) {
-            reproduction = reproductions.getActiveFor(h);
-            if (reproduction != null) {
-                reproductions.markItem(reproduction, h);
-            }
+        // If the user may modify reproductions, mark item for the active reproduction
+        if (reproduction != null) {
+            reproductions.markItem(reproduction, h);
+            statusUpdated = true;
         }
 
-        // Show the request corresponding to the scanned record.
-        if ((reservation != null) || (reproduction != null)) {
-            model.addAttribute("oldStatus", oldStatus);
+        // If there is no active request, then the holding is probably returned
+        if ((reservation == null) && (reproduction == null) && (h.getStatus() == Holding.Status.RETURNED)) {
+            requests.updateHoldingStatus(h, Holding.Status.AVAILABLE);
+            records.saveHolding(h);
+            statusUpdated = true;
+        }
+
+        // Show the request corresponding to the scanned record
+        if (statusUpdated) {
             model.addAttribute("holding", h);
             model.addAttribute("reservation", reservation);
             model.addAttribute("reproduction", reproduction);
+            model.addAttribute("oldStatus", oldStatus);
+            model.addAttribute("reservationOnHold", null); // TODO
+            model.addAttribute("reproductionOnHold", null); // TODO
             return "request_scan";
         }
 

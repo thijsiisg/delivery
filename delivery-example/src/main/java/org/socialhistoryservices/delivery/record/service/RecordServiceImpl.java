@@ -31,8 +31,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 
 import javax.persistence.criteria.*;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -82,6 +80,14 @@ public class RecordServiceImpl implements RecordService {
      */
     public void saveRecord(Record obj) {
         recordDAO.save(obj);
+    }
+
+    /**
+     * Save changes to a Holding in the database.
+     * @param obj Holding to save.
+     */
+    public void saveHolding(Holding obj) {
+        holdingDAO.save(obj);
     }
 
     /**
@@ -244,7 +250,7 @@ public class RecordServiceImpl implements RecordService {
                 newRecord.setRestrictionType(Record.RestrictionType.OPEN);
             }
         }
-       
+
         // Add holding/other API info if present
 	    newRecord.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
 	    Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
@@ -308,17 +314,6 @@ public class RecordServiceImpl implements RecordService {
             i++;
         }
     }
-
-	/**
-	 * Removes all associated external info from the given record.
-	 * @param record The record.
-	 */
-	private void cleanupExternalInfo(Record record) {
-		recordDAO.removeExternalInfo(record);
-		for (Holding holding : record.getHoldings()) {
-			holdingDAO.removeExternalInfo(holding);
-		}
-	}
 
     /**
      * Get the first available (not closed) holding for a record.

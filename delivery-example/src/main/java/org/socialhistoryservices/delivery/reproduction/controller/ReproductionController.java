@@ -6,8 +6,6 @@ import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.socialhistoryservices.delivery.api.PayWayMessage;
 import org.socialhistoryservices.delivery.api.PayWayService;
-import org.socialhistoryservices.delivery.permission.entity.Permission;
-import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
@@ -38,6 +36,7 @@ import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.print.PrinterException;
 import java.beans.PropertyEditorSupport;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -51,9 +50,6 @@ public class ReproductionController extends AbstractRequestController {
 
     @Autowired
     private ReproductionService reproductions;
-
-    @Autowired
-    private PermissionService permissions;
 
     @Autowired
     private ReproductionMailer reproductionMailer;
@@ -87,12 +83,12 @@ public class ReproductionController extends AbstractRequestController {
         Map<String, Reproduction.Status> data = new LinkedHashMap<String, Reproduction.Status>();
         data.put("WAITING_FOR_ORDER_DETAILS", Reproduction.Status.WAITING_FOR_ORDER_DETAILS);
         data.put("HAS_ORDER_DETAILS", Reproduction.Status.HAS_ORDER_DETAILS);
-        data.put("ORDER_CREATED", Reproduction.Status.ORDER_CREATED);
+        data.put("CONFIRMED", Reproduction.Status.CONFIRMED);
         data.put("PAYED", Reproduction.Status.PAYED);
-        data.put("PENDING", Reproduction.Status.PENDING);
         data.put("ACTIVE", Reproduction.Status.ACTIVE);
         data.put("COMPLETED", Reproduction.Status.COMPLETED);
         data.put("DELIVERED", Reproduction.Status.DELIVERED);
+        data.put("CANCELLED", Reproduction.Status.CANCELLED);
         return data;
     }
 
@@ -106,8 +102,6 @@ public class ReproductionController extends AbstractRequestController {
         Map<String, ReproductionStandardOption.Level> data = new LinkedHashMap<String, ReproductionStandardOption.Level>();
         data.put("MASTER", ReproductionStandardOption.Level.MASTER);
         data.put("LEVEL1", ReproductionStandardOption.Level.LEVEL1);
-        data.put("LEVEL2", ReproductionStandardOption.Level.LEVEL2);
-        data.put("LEVEL3", ReproductionStandardOption.Level.LEVEL3);
         return data;
     }
 
@@ -193,6 +187,11 @@ public class ReproductionController extends AbstractRequestController {
         PagedListHolder<HoldingReproduction> pagedListHolder = new PagedListHolder<HoldingReproduction>(hList);
         initOverviewModel(p, model, pagedListHolder);
 
+        // Fetch holding active request information
+        List<HoldingReproduction> holdingReproductions = pagedListHolder.getPageList();
+        Set<Holding> holdings = getHoldings(holdingReproductions);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
+
         return "reproduction_get_list";
     }
 
@@ -212,7 +211,8 @@ public class ReproductionController extends AbstractRequestController {
         if (date != null) {
             Expression<Boolean> exDate = cb.between(rRoot.<Date>get(Reproduction_.date), date, date);
             where = (where != null) ? cb.and(where, exDate) : exDate;
-        } else {
+        }
+        else {
             Date fromDate = getFromDateFilter(p);
             Date toDate = getToDateFilter(p);
             if (fromDate != null) {
@@ -372,15 +372,20 @@ public class ReproductionController extends AbstractRequestController {
             String sort = p.get("sort")[0];
             if (sort.equals("customerName")) {
                 e = rRoot.get(Reproduction_.customerName);
-            } else if (sort.equals("customerEmail")) {
+            }
+            else if (sort.equals("customerEmail")) {
                 e = rRoot.get(Reproduction_.customerEmail);
-            } else if (sort.equals("status")) {
+            }
+            else if (sort.equals("status")) {
                 e = rRoot.get(Reproduction_.status);
-            } else if (sort.equals("printed")) {
+            }
+            else if (sort.equals("printed")) {
                 e = rRoot.get(Reproduction_.printed);
-            } else if (sort.equals("signature")) {
+            }
+            else if (sort.equals("signature")) {
                 e = hRoot.get(Holding_.signature);
-            } else if (sort.equals("holdingStatus")) {
+            }
+            else if (sort.equals("holdingStatus")) {
                 e = hRoot.get(Holding_.status);
             }
         }
@@ -503,7 +508,7 @@ public class ReproductionController extends AbstractRequestController {
             }
 
             // Set the new status and holding statuses.
-            r.updateStatusAndAssociatedHoldingStatus(newStatus);
+            reproductions.updateStatusAndAssociatedHoldingStatus(r, newStatus);
             reproductions.saveReproduction(r);
         }
 
@@ -524,7 +529,7 @@ public class ReproductionController extends AbstractRequestController {
                                  @RequestParam(required = false) String code, Model model) {
         Reproduction reproduction = new Reproduction();
         reproduction.setHoldingReproductions(uriPathToHoldingReproductions(path));
-        return processReservationCreation(req, reproduction, null, code, model, false);
+        return processReproductionCreation(req, reproduction, null, code, model, false);
     }
 
     /**
@@ -540,7 +545,7 @@ public class ReproductionController extends AbstractRequestController {
     @RequestMapping(value = "/createform/{path:.*}", method = RequestMethod.POST)
     public String processCreateForm(HttpServletRequest req, @ModelAttribute("reproduction") Reproduction newRep,
                                     BindingResult result, @RequestParam(required = false) String code, Model model) {
-        return processReservationCreation(req, newRep, result, code, model, true);
+        return processReproductionCreation(req, newRep, result, code, model, true);
     }
 
     private List<HoldingReproduction> uriPathToHoldingReproductions(String path) {
@@ -557,12 +562,13 @@ public class ReproductionController extends AbstractRequestController {
         return hrs;
     }
 
-    private String processReservationCreation(HttpServletRequest req, Reproduction reproduction, BindingResult result,
-                                              String permission, Model model, boolean commit) {
+    private String processReproductionCreation(HttpServletRequest req, Reproduction reproduction, BindingResult result,
+                                               String permission, Model model, boolean commit) {
         if (!checkHoldings(model, reproduction))
             return "reproduction_error";
 
-        Permission perm = permissions.getPermissionByCode(permission);
+        // TODO: Permissions?
+        /*Permission perm = permissions.getPermissionByCode(permission);
         if (!checkPermissions(model, perm, reproduction))
             return "reproduction_choice";
 
@@ -571,16 +577,17 @@ public class ReproductionController extends AbstractRequestController {
                 reproduction.setCustomerName(perm.getName());
                 reproduction.setCustomerEmail(perm.getEmail());
             } else {
-                // TODO: reproduction.setPermission(perm);
+                reproduction.setPermission(perm);
             }
 
-            /*if (reproduction.getDate() == null || !perm.isValidOn(newRes.getDate())) {
+            if (reproduction.getDate() == null || !perm.isValidOn(newRes.getDate())) {
                     model.addAttribute("error", "notValidOnDate");
                     return "reservation_error";
-            }*/
-        }
+            }
+        }*/
 
-        // Obtain all the standard reproduction options
+        // Obtain the price for authenticated users and all the standard reproduction options
+        model.addAttribute("priceAuthenticated", BigDecimal.ZERO);
         model.addAttribute("reproductionStandardOptions", obtainStandardReproductionOptions());
 
         try {
@@ -591,7 +598,8 @@ public class ReproductionController extends AbstractRequestController {
                 if (!result.hasErrors()) {
                     return determineNextStep(reproduction, model);
                 }
-            } else {
+            }
+            else {
                 reproductions.validateHoldings(reproduction, null, false);
             }
         } catch (NoHoldingsException e) {
@@ -623,10 +631,12 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     private String determineNextStep(Reproduction reproduction, Model model) {
-        if (reproduction.hasOrderDetails()) {
-            // Mail the confirmation (order is ready) to the customer.
+        if (reproduction.getStatus() == Reproduction.Status.HAS_ORDER_DETAILS) {
+            model.asMap().clear();
+
+            // Mail the confirmation (offer is ready) to the customer.
             try {
-                reproductionMailer.mailOrderReady(reproduction);
+                reproductionMailer.mailOfferReady(reproduction);
             } catch (MailException me) {
                 model.addAttribute("error", "mail");
             }
@@ -685,13 +695,13 @@ public class ReproductionController extends AbstractRequestController {
         if (reproduction.getStatus().compareTo(Reproduction.Status.HAS_ORDER_DETAILS) < 0)
             throw new InvalidRequestException("Reproduction does not have all of the order details yet.");
 
-        if (reproduction.getStatus() == Reproduction.Status.ORDER_CREATED) {
+        if (reproduction.getStatus() == Reproduction.Status.CONFIRMED) {
             Order order = reproduction.getOrder();
             if (order != null)
                 return "redirect:" + payWayService.getPaymentPageRedirectLink(order.getId());
         }
 
-        if (reproduction.getStatus().compareTo(Reproduction.Status.ORDER_CREATED) >= 0)
+        if (reproduction.getStatus().compareTo(Reproduction.Status.CONFIRMED) >= 0)
             throw new InvalidRequestException("Reproduction has been confirmed already.");
 
         model.addAttribute("reproduction", reproduction);
@@ -704,8 +714,8 @@ public class ReproductionController extends AbstractRequestController {
             }
 
             try {
-                // Change status to 'order created'
-                reproduction.updateStatusAndAssociatedHoldingStatus(Reproduction.Status.ORDER_CREATED);
+                // Change status to 'confirmed by customer'
+                reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.CONFIRMED);
                 Order order = reproductions.createOrder(reproduction);
 
                 // If the reproduction is for free, take care of delivey
@@ -771,7 +781,7 @@ public class ReproductionController extends AbstractRequestController {
 
         // Everything is fine, change status and send email to customer
         reproductions.refreshOrder(order);
-        reproduction.updateStatusAndAssociatedHoldingStatus(Reproduction.Status.PAYED);
+        reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.PAYED);
         try {
             reproductionMailer.mailPayed(reproduction);
         } catch (MailException me) {

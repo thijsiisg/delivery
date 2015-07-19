@@ -481,6 +481,11 @@ a:hover {
     color: #73A0C9;
 }
 
+.warning {
+    color: #D67330;
+    font-style: italic;
+}
+
 .errors {
     color: #c42737;
     font-weight: bold;
@@ -506,6 +511,9 @@ ul.messages {
 ul.holdingDetails, ul.reproductionDetails {
     list-style: none;
     padding: 0;
+}
+
+ul.holdingDetails, ul.reproductionDetails.create {
     margin: 0 0 1em 5em;
 }
 

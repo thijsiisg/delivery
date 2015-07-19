@@ -125,9 +125,11 @@ public class ReservationDAOImpl implements ReservationDAO {
     /**
      * Get an active reservation relating to a specific Holding.
      * @param h Holding to find a reservation for.
+     * @param getAll Whether to return all active requests (0)
+     * or only those that are on hold (< 0) or those that are NOT on hold (> 0).
      * @return The active reservation, null if none exist.
      */
-    public Reservation getActiveFor(Holding h) {
+    public Reservation getActiveFor(Holding h, int getAll) {
         CriteriaBuilder cb = getCriteriaBuilder();
         CriteriaQuery<Reservation> cq = cb.createQuery(Reservation.class);
         Root<Reservation> resRoot = cq.from(Reservation.class);
@@ -140,8 +142,10 @@ public class ReservationDAOImpl implements ReservationDAO {
         Expression<Boolean> where = cb.equal(hRoot.get(Holding_.id),
                 h.getId());
 
-        where = cb.and(where, cb.notEqual(resRoot.<Reservation.Status>get(Reservation_.status),
-                                          Reservation.Status.COMPLETED));
+        where = cb.and(where, cb.equal(hrRoot.get(HoldingReservation_.completed), false));
+        if (getAll != 0) {
+            where = cb.and(where, cb.equal(hrRoot.get(HoldingReservation_.onHold), (getAll < 0)));
+        }
 
         cq.where(where);
         cq.orderBy(cb.desc(resRoot.<Date>get(Reservation_.creationDate)));

@@ -17,258 +17,308 @@ import java.math.BigDecimal;
 @Table(name = "holding_reproductions")
 public class HoldingReproduction extends HoldingRequest {
 
-	/**
-	 * The HoldingReproduction's id.
-	 */
-	@Id
-	@GeneratedValue
-	@Column(name = "id")
-	private int id;
+    /**
+     * The HoldingReproduction's id.
+     */
+    @Id
+    @GeneratedValue
+    @Column(name = "id")
+    private int id;
 
-	/**
-	 * Get the HoldingReproduction's id.
-	 *
-	 * @return the HoldingReproduction's id.
-	 */
-	public int getId() {
-		return id;
-	}
+    /**
+     * Get the HoldingReproduction's id.
+     *
+     * @return the HoldingReproduction's id.
+     */
+    public int getId() {
+        return id;
+    }
 
-	@Digits(integer = 5, fraction = 2)
-	@Column(name = "price")
-	private BigDecimal price;
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "price")
+    private BigDecimal price;
 
-	/**
-	 * Get the price.
-	 *
-	 * @return the price.
-	 */
-	public BigDecimal getPrice() {
-		return price;
-	}
+    /**
+     * Get the price.
+     *
+     * @return the price.
+     */
+    public BigDecimal getPrice() {
+        return price;
+    }
 
-	/**
-	 * Set the price.
-	 *
-	 * @param price the price.
-	 */
-	public void setPrice(BigDecimal price) {
-		this.price = price;
-	}
+    /**
+     * Set the price.
+     *
+     * @param price the price.
+     */
+    public void setPrice(BigDecimal price) {
+        if (price != null)
+            price = price.setScale(2);
+        this.price = price;
+    }
 
-	@Min(0)
-	@Column(name = "deliveryTime")
-	private Integer deliveryTime;
+    @Min(0)
+    @Column(name = "deliveryTime")
+    private Integer deliveryTime;
 
-	/**
-	 * Get the delivery time in days.
-	 *
-	 * @return the delivery time in days.
-	 */
-	public Integer getDeliveryTime() {
-		return deliveryTime;
-	}
+    /**
+     * Get the delivery time in days.
+     *
+     * @return the delivery time in days.
+     */
+    public Integer getDeliveryTime() {
+        return deliveryTime;
+    }
 
-	/**
-	 * Set the delivery time in days.
-	 *
-	 * @param deliveryTime the delivery time in days.
-	 */
-	public void setDeliveryTime(Integer deliveryTime) {
-		this.deliveryTime = deliveryTime;
-	}
+    /**
+     * Set the delivery time in days.
+     *
+     * @param deliveryTime the delivery time in days.
+     */
+    public void setDeliveryTime(Integer deliveryTime) {
+        this.deliveryTime = deliveryTime;
+    }
 
-	/**
-	 * The comment on a specific holding in a reproduction.
-	 */
-	@Size(max = 255)
-	@Column(name = "comment", nullable = true)
-	private String comment;
+    /**
+     * The comment on a specific holding in a reproduction.
+     */
+    @Size(max = 255)
+    @Column(name = "comment", nullable = true)
+    private String comment;
 
-	/**
-	 * Get the comment on a specific holding in a reproduction.
-	 *
-	 * @return The comment.
-	 */
-	@Override
-	public String getComment() {
-		return comment;
-	}
+    /**
+     * Get the comment on a specific holding in a reproduction.
+     *
+     * @return The comment.
+     */
+    @Override
+    public String getComment() {
+        return comment;
+    }
 
-	/**
-	 * Set the comment on a specific holding in a reproduction.
-	 *
-	 * @param val The value to set the comment to.
-	 */
-	@Override
-	public void setComment(String val) {
-		comment = val;
-	}
+    /**
+     * Set the comment on a specific holding in a reproduction.
+     *
+     * @param val The value to set the comment to.
+     */
+    @Override
+    public void setComment(String val) {
+        comment = val;
+    }
 
-	/**
-	 * The kind of custom reproduction the customer requires.
-	 */
-	@Column(name = "customReproductionCustomer", nullable = true, columnDefinition="TEXT")
-	private String customReproductionCustomer;
+    /**
+     * Is the holding on hold for this reproduction?
+     */
+    @Column(name = "on_hold", nullable = false)
+    private boolean onHold = false;
 
-	/**
-	 * Get the kind of custom reproduction the customer requires.
-	 *
-	 * @return the kind of custom reproduction the customer requires.
-	 */
-	public String getCustomReproductionCustomer() {
-		return customReproductionCustomer;
-	}
+    /**
+     * Is the holding on hold for this reproduction?
+     *
+     * @return Whether this holding is on hold for this reproduction.
+     */
+    public boolean isOnHold() {
+        return onHold;
+    }
 
-	/**
-	 * Set the kind of custom reproduction the customer requires.
-	 *
-	 * @param customReproductionCustomer the kind of custom reproduction the customer requires.
-	 */
-	public void setCustomReproductionCustomer(String customReproductionCustomer) {
-		this.customReproductionCustomer = customReproductionCustomer;
-	}
+    /**
+     * Set the holding on hold for this reproduction?
+     *
+     * @param onHold Whether the holding must be placed on hold for this reproduction.
+     */
+    public void setOnHold(boolean onHold) {
+        this.onHold = onHold;
+    }
 
-	/**
-	 * The kind of custom reproduction reply.
-	 */
-	@Column(name = "customReproductionReply", nullable = true, columnDefinition="TEXT")
-	private String customReproductionReply;
+    /**
+     * Is the holding completed for this reproduction?
+     */
+    @Column(name = "completed", nullable = false)
+    private boolean completed = false;
 
-	/**
-	 * Get the kind of custom reproduction reply.
-	 *
-	 * @return the kind of custom reproduction reply.
-	 */
-	public String getCustomReproductionReply() {
-		return customReproductionReply;
-	}
+    /**
+     * Is the holding completed for this reproduction?
+     *
+     * @return Whether this holding is completed for this reproduction.
+     */
+    public boolean isCompleted() {
+        return completed;
+    }
 
-	/**
-	 * Set the kind of custom reproduction reply.
-	 *
-	 * @param customReproductionReply the kind of custom reproduction reply.
-	 */
-	public void setCustomReproductionReply(String customReproductionReply) {
-		this.customReproductionReply = customReproductionReply;
-	}
+    /**
+     * Set the holding completed for this reproduction?
+     *
+     * @param completed Whether the holding has been completed for this reproduction.
+     */
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
 
-	/**
-	 * The HoldingReproduction's reproduction.
-	 */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "reproduction_id")
-	private Reproduction reproduction;
+    /**
+     * The kind of custom reproduction the customer requires.
+     */
+    @Column(name = "customReproductionCustomer", nullable = true, columnDefinition = "TEXT")
+    private String customReproductionCustomer;
 
-	/**
-	 * Get the HoldingReproduction's reproduction.
-	 *
-	 * @return the HoldingReproduction's reproduction.
-	 */
-	public Reproduction getReproduction() {
-		return reproduction;
-	}
+    /**
+     * Get the kind of custom reproduction the customer requires.
+     *
+     * @return the kind of custom reproduction the customer requires.
+     */
+    public String getCustomReproductionCustomer() {
+        return customReproductionCustomer;
+    }
 
-	/**
-	 * Set the HoldingReproduction's reproduction.
-	 *
-	 * @param reproduction the HoldingReproduction's reproduction.
-	 */
-	public void setReproduction(Reproduction reproduction) {
-		this.reproduction = reproduction;
-	}
+    /**
+     * Set the kind of custom reproduction the customer requires.
+     *
+     * @param customReproductionCustomer the kind of custom reproduction the customer requires.
+     */
+    public void setCustomReproductionCustomer(String customReproductionCustomer) {
+        this.customReproductionCustomer = customReproductionCustomer;
+    }
 
-	/**
-	 * Get the HoldingRequest's request.
-	 *
-	 * @return the HoldingRequest's request.
-	 */
-	@Override
-	public Request getRequest() {
-		return getReproduction();
-	}
+    /**
+     * The kind of custom reproduction reply.
+     */
+    @Column(name = "customReproductionReply", nullable = true, columnDefinition = "TEXT")
+    private String customReproductionReply;
 
-	/**
-	 * Set the HoldingRequest's request.
-	 *
-	 * @param request
-	 */
-	@Override
-	public void setRequest(Request request) {
-		setReproduction((Reproduction) request);
-	}
+    /**
+     * Get the kind of custom reproduction reply.
+     *
+     * @return the kind of custom reproduction reply.
+     */
+    public String getCustomReproductionReply() {
+        return customReproductionReply;
+    }
 
-	/**
-	 * The HoldingReproduction's holding.
-	 */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "holding_id")
-	private Holding holding;
+    /**
+     * Set the kind of custom reproduction reply.
+     *
+     * @param customReproductionReply the kind of custom reproduction reply.
+     */
+    public void setCustomReproductionReply(String customReproductionReply) {
+        this.customReproductionReply = customReproductionReply;
+    }
 
-	/**
-	 * Get the HoldingReproduction's holding.
-	 *
-	 * @return the HoldingReproduction's holding.
-	 */
-	@Override
-	public Holding getHolding() {
-		return holding;
-	}
+    /**
+     * The HoldingReproduction's reproduction.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reproduction_id")
+    private Reproduction reproduction;
 
-	/**
-	 * Set the HoldingReproduction's holding.
-	 *
-	 * @param h the HoldingReproduction's holding.
-	 */
-	@Override
-	public void setHolding(Holding h) {
-		this.holding = h;
-	}
+    /**
+     * Get the HoldingReproduction's reproduction.
+     *
+     * @return the HoldingReproduction's reproduction.
+     */
+    public Reproduction getReproduction() {
+        return reproduction;
+    }
 
-	/**
-	 * The HoldingReproduction's standard option (if chosen).
-	 */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "reproduction_standard_option_id")
-	private ReproductionStandardOption standardOption;
+    /**
+     * Set the HoldingReproduction's reproduction.
+     *
+     * @param reproduction the HoldingReproduction's reproduction.
+     */
+    public void setReproduction(Reproduction reproduction) {
+        this.reproduction = reproduction;
+    }
 
-	public ReproductionStandardOption getStandardOption() {
-		return standardOption;
-	}
+    /**
+     * Get the HoldingRequest's request.
+     *
+     * @return the HoldingRequest's request.
+     */
+    @Override
+    public Request getRequest() {
+        return getReproduction();
+    }
 
-	public void setStandardOption(ReproductionStandardOption standardOption) {
-		this.standardOption = standardOption;
-	}
+    /**
+     * Set the HoldingRequest's request.
+     *
+     * @param request
+     */
+    @Override
+    public void setRequest(Request request) {
+        setReproduction((Reproduction) request);
+    }
 
-	/**
-	 * Whether the price and delivery time is determined and thus has all order details.
-	 *
-	 * @return Whether this holding contains all order details.
-	 */
-	public boolean hasOrderDetails() {
-		return ((getPrice() != null) && (getDeliveryTime() != null));
-	}
+    /**
+     * The HoldingReproduction's holding.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "holding_id")
+    private Holding holding;
 
-	/**
-	 * Merge this HoldingRequest with another HoldingRequest.
-	 *
-	 * @param other Another HoldingRequest.
-	 */
-	public void mergeWith(HoldingRequest other) {
-		super.mergeWith(other);
-		if (other instanceof HoldingReproduction) {
-			HoldingReproduction otherHr = (HoldingReproduction) other;
+    /**
+     * Get the HoldingReproduction's holding.
+     *
+     * @return the HoldingReproduction's holding.
+     */
+    @Override
+    public Holding getHolding() {
+        return holding;
+    }
 
-			if ((getStandardOption() != otherHr.getStandardOption()) || (otherHr.getStandardOption() == null)) {
-				setStandardOption(otherHr.getStandardOption());
-				setPrice(otherHr.getPrice());
-				setDeliveryTime(otherHr.getDeliveryTime());
-			}
+    /**
+     * Set the HoldingReproduction's holding.
+     *
+     * @param h the HoldingReproduction's holding.
+     */
+    @Override
+    public void setHolding(Holding h) {
+        this.holding = h;
+    }
 
-			if (otherHr.getStandardOption() == null) {
-				setCustomReproductionCustomer(otherHr.getCustomReproductionCustomer());
-				setCustomReproductionReply(otherHr.getCustomReproductionReply());
-			}
-		}
-	}
+    /**
+     * The HoldingReproduction's standard option (if chosen).
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reproduction_standard_option_id")
+    private ReproductionStandardOption standardOption;
+
+    public ReproductionStandardOption getStandardOption() {
+        return standardOption;
+    }
+
+    public void setStandardOption(ReproductionStandardOption standardOption) {
+        this.standardOption = standardOption;
+    }
+
+    /**
+     * Whether the price and delivery time is determined and thus has all order details.
+     *
+     * @return Whether this holding contains all order details.
+     */
+    public boolean hasOrderDetails() {
+        return ((getPrice() != null) && (getDeliveryTime() != null));
+    }
+
+    /**
+     * Merge this HoldingRequest with another HoldingRequest.
+     *
+     * @param other Another HoldingRequest.
+     */
+    public void mergeWith(HoldingRequest other) {
+        super.mergeWith(other);
+        if (other instanceof HoldingReproduction) {
+            HoldingReproduction otherHr = (HoldingReproduction) other;
+
+            if ((getStandardOption() != otherHr.getStandardOption()) || (otherHr.getStandardOption() == null)) {
+                setStandardOption(otherHr.getStandardOption());
+                setPrice(otherHr.getPrice());
+                setDeliveryTime(otherHr.getDeliveryTime());
+            }
+
+            if (otherHr.getStandardOption() == null) {
+                setCustomReproductionCustomer(otherHr.getCustomReproductionCustomer());
+                setCustomReproductionReply(otherHr.getCustomReproductionReply());
+            }
+        }
+    }
 }

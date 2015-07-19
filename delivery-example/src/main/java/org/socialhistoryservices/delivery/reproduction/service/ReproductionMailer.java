@@ -24,21 +24,23 @@ public class ReproductionMailer extends RequestMailer {
                 "Can only mail pending when Reproduction status is WAITING_FOR_ORDER_DETAILS";
 
         String subject = getMessage("reproductionMail.pendingSubject", "Confirmation of reproduction");
-        sendMail(reproduction, subject, "reproduction_pending.mail.ftl", getReproductionModel(reproduction));
+        sendMail(reproduction, subject, "reproduction_pending.mail.ftl", getReproductionModel(reproduction),
+                reproduction.getRequestLocale());
     }
 
     /**
-     * Mail an order ready message for a reproduction to the customer.
+     * Mail an offer ready message for a reproduction to the customer.
      *
      * @param reproduction The reproduction to extract mail details from.
      * @throws MailException Thrown when sending mail somehow failed.
      */
-    public void mailOrderReady(Reproduction reproduction) throws MailException {
+    public void mailOfferReady(Reproduction reproduction) throws MailException {
         assert reproduction.getStatus() == Reproduction.Status.HAS_ORDER_DETAILS :
                 "Can only mail order ready when Reproduction status is HAS_ORDER_DETAILS";
 
-        String subject = getMessage("reproductionMail.orderReadySubject", "Confirmation of reproduction (order ready)");
-        sendMail(reproduction, subject, "reproduction_order_ready.mail.ftl", getReproductionModel(reproduction));
+        String subject = getMessage("reproductionMail.offerReadySubject", "Confirmation of reproduction (offer ready)");
+        sendMail(reproduction, subject, "reproduction_offer_ready.mail.ftl", getReproductionModel(reproduction),
+                reproduction.getRequestLocale());
     }
 
     /**
@@ -52,7 +54,8 @@ public class ReproductionMailer extends RequestMailer {
                 "Can only mail pending when Reproduction status is PAYED";
 
         String subject = getMessage("reproductionMail.payedSubject", "Confirmation of payment");
-        sendMail(reproduction, subject, "reproduction_payed.mail.ftl", getReproductionModel(reproduction));
+        sendMail(reproduction, subject, "reproduction_payed.mail.ftl", getReproductionModel(reproduction),
+                reproduction.getRequestLocale());
     }
 
     /**

@@ -1,7 +1,7 @@
 <#include "mail.ftl">
 <@mail reproduction.customerName>
-<@_ "reproductionMail.orderReadyMessage" " With this email we confirm your reproduction request. An order is ready on the following link:" /> \r\n
-${prop_urlSelf}/reproduction/confirm/${reproduction.id?c}/${reproduction.token}
+<@_ "reproductionMail.offerReadyMessage" " With this email we confirm your reproduction request. An order is ready on the following link:" /> \r\n
+${prop_urlSelf}/reproduction/confirm/${reproduction.id?c}/${reproduction.token}?locale=${locale}
 
 --- <@_ "reproduction.records" "Items"/> ---
 <#list reproduction.holdingReproductions as hr>

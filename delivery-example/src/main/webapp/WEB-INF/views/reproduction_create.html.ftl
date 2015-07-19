@@ -62,6 +62,12 @@
             <h3>${info.title?html}</h3>
 
             <ul class="holdingDetails">
+              <#if h.status != "AVAILABLE">
+                <li class="warning">
+                  <@_ "reproduction.holdingReserverdMsg" "This item is currently reserved, which may impact the time of delivery. You will be notified of the expected delivery time by email."/>
+                </li>
+              </#if>
+
               <li>
                 <span><@_ "record.externalInfo.materialType" "Material Type"/></span>
                 <@_ "record.externalInfo.materialType.${info.materialType}" ""/>
@@ -156,7 +162,7 @@
         <input type="radio" id="${id}" name="${spring.status.expression}"
                value="${value.id?c}"<#if spring.stringStatusValue == value> checked="checked" </#if>/>
 
-        <ul class="reproductionDetails">
+        <ul class="reproductionDetails create">
           <li>
             <#assign label=path + "." + value.optionName?html />
             <label for="${id}"><@spring.messageText label value.optionName?html/></label>
@@ -168,7 +174,12 @@
 
           <li class="spacing">
             <span><@_ "reproductionStandardOption.price" "Price"/></span>
-            &euro; ${value.price?string("0.00")}
+
+            <#if _sec.principal??>
+              &euro; ${priceAuthenticated?string("0.00")}
+            <#else>
+              &euro; ${value.price?string("0.00")}
+            </#if>
           </li>
 
           <li>

@@ -155,6 +155,11 @@ public class ReservationController extends AbstractRequestController {
                 ("prop_requestMaxDaysInAdvance")));
         model.addAttribute("maxReserveDate",cal.getTime());
 
+        // Fetch holding active request information
+        List<HoldingReservation> holdingReservations = pagedListHolder.getPageList();
+        Set<Holding> holdings = getHoldings(holdingReservations);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
+
         return "reservation_get_list";
     }
 
@@ -805,7 +810,7 @@ public class ReservationController extends AbstractRequestController {
             }
 
             // Set the new status and holding statuses.
-            r.updateStatusAndAssociatedHoldingStatus(newStatus);
+            reservations.updateStatusAndAssociatedHoldingStatus(r, newStatus);
             reservations.saveReservation(r);
         }
 

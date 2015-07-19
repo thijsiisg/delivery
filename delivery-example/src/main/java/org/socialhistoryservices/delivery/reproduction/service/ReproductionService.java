@@ -56,6 +56,14 @@ public interface ReproductionService {
     public ReproductionStandardOption getReproductionStandardOptionById(int id);
 
     /**
+     * List all Reproduction matching a built query.
+     *
+     * @param q The criteria query to execute
+     * @return A list of matching Reproductions.
+     */
+    public List<Reproduction> listReproductions(CriteriaQuery<Reproduction> q);
+
+    /**
      * List all HoldingReproduction matching a built query.
      *
      * @param q The criteria query to execute
@@ -69,6 +77,13 @@ public interface ReproductionService {
      * @return A list with all standard options for reproductions.
      */
     public List<ReproductionStandardOption> getAllReproductionStandardOptions();
+
+    /**
+     * Get a criteria builder for querying Reproductions.
+     *
+     * @return the CriteriaBuilder.
+     */
+    public CriteriaBuilder getReproductionCriteriaBuilder();
 
     /**
      * Get a criteria builder for querying HoldingReproductions.
@@ -92,6 +107,11 @@ public interface ReproductionService {
                              boolean isCustomer) throws ClosedException, NoHoldingsException;
 
     /**
+     * Scheduled task to cancel all reproductions not payed within 5 days after the offer was ready.
+     */
+    public void checkPayedReproductions();
+
+    /**
      * Creates an order for the given reproduction.
      *
      * @param r The reproduction.
@@ -110,14 +130,6 @@ public interface ReproductionService {
      * @return A Future object that will return the refreshed Order when succesful.
      */
     public Future<Order> refreshOrder(Order order);
-
-    /**
-     * Initializes the holding reproductions.
-     * Determines if we can already state the price and delivery time for one or more chosen holdings.
-     *
-     * @param reproduction The reproduction.
-     */
-    public void initHoldingReproductions(Reproduction reproduction);
 
     /**
      * Validates and saves the standard reproduction options.
@@ -165,18 +177,34 @@ public interface ReproductionService {
     /**
      * Mark a specific item in a reproduction as seen, bumping it to the next status.
      *
-     * @param h Holding to bump.
      * @param r Reproduction to change status for.
+     * @param h Holding to bump.
      */
     public void markItem(Reproduction r, Holding h);
 
     /**
-     * Returns the active reproduction with which this holding is associated.
+     * Mark a reproduction, bumping it to the next status.
      *
-     * @param h The Holding to get the active reproduction of
-     * @return The active reproduction, or null if no active reproduction exists
+     * @param r Reproduction to change status for.
      */
-    public Reproduction getActiveFor(Holding h);
+    public void markRequest(Reproduction r);
+
+    /**
+     * Merge the other reproduction's fields into this reproduction.
+     *
+     * @param reproduction The reproduction.
+     * @param other        The other reproduction.
+     */
+    public void merge(Reproduction reproduction, Reproduction other);
+
+    /**
+     * Set the reproduction status and update the associated holdings status accordingly.
+     * Only updates status forward.
+     *
+     * @param reproduction The reproduction.
+     * @param status       The reproduction which changed status.
+     */
+    public void updateStatusAndAssociatedHoldingStatus(Reproduction reproduction, Reproduction.Status status);
 
     /**
      * Validate provided holding part of request.
@@ -192,4 +220,14 @@ public interface ReproductionService {
      */
     public void validateHoldings(Request newReq, Request oldReq, boolean checkInUse)
             throws NoHoldingsException, InUseException, ClosedException;
+
+    /**
+     * Returns the active reproduction with which this holding is associated.
+     *
+     * @param h      The Holding to get the active reproduction of
+     * @param getAll Whether to return all active reproductions (0)
+     *               or only those that are on hold (< 0) or those that are NOT on hold (> 0).
+     * @return The active reproduction, or null if no active reproduction exists
+     */
+    public Reproduction getActiveFor(Holding h, int getAll);
 }

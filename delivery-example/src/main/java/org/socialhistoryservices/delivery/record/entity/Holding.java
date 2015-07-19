@@ -314,6 +314,14 @@ public class Holding {
     }
 
     /**
+     * Determines the PID for the holding, based on the barcode.
+     * @return The PID for this holding
+     */
+    public String determinePid() {
+        return "10622/" + externalInfo.getBarcode();
+    }
+
+    /**
      * Returns whether customers requesting a reproduction of this holding should choose a custom reproduction.
      * @return Whether this holding only allows a custom reproduction.
      */

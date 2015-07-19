@@ -46,6 +46,46 @@ public class HoldingReservation extends HoldingRequest {
         return id;
     }
 
+    /** Is the holding on hold for this reservation? */
+    @Column(name="on_hold", nullable=false)
+    private boolean onHold = false;
+
+    /**
+     * Is the holding on hold for this reservation?
+     * @return Whether this holding is on hold for this reservation.
+     */
+    public boolean isOnHold() {
+        return onHold;
+    }
+
+    /**
+     * Set the holding on hold for this reservation?
+     * @param onHold Whether the holding must be placed on hold for this reservation.
+     */
+    public void setOnHold(boolean onHold) {
+        this.onHold = onHold;
+    }
+
+    /** Is the holding completed for this reservation? */
+    @Column(name="completed", nullable=false)
+    private boolean completed = false;
+
+    /**
+     * Is the holding completed for this reservation?
+     * @return Whether this holding is completed for this reservation.
+     */
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    /**
+     * Set the holding completed for this reservation?
+     * @param completed Whether the holding has been completed for this reservation.
+     */
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
     /** The Reservation's name. */
     @Size(max=255)
     @Column(name="comment", nullable=true)

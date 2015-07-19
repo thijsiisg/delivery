@@ -125,18 +125,32 @@ public interface ReservationService {
     public void changeHoldingStatus(Reservation res, Holding.Status status);
 
     /**
-     * Mark a specific item in a reservation as seen, bumping it to the next status.
-     * @param h Holding to bump.
+     * Mark a specific item in a reservation as seen, bumping it to the next status.     *
      * @param res Reservation to change status for.
+     * @param h Holding to bump.
      */
     public void markItem(Reservation res, Holding h);
 
     /**
-     * Returns the active reservation with which this holding is associated.
-     * @param h The Holding to get the active reservation of.
-     * @return The active reservation, or null if no active reservation exists.
+     * Mark a reservation, bumping it to the next status.
+     * @param r Reservation to change status for.
      */
-    public Reservation getActiveFor(Holding h);
+    public void markRequest(Reservation r);
+
+    /**
+     * Merge the other reservation's fields into this reservation.
+     * @param reservation The reservation.
+     * @param other The other reservation to merge with.
+     */
+    public void merge(Reservation reservation, Reservation other);
+
+    /**
+     * Set the reservation status and update the associated holdings status
+     * accordingly. Only updates status forward.
+     * @param reservation The reservation.
+     * @param status The reservation which changed status.
+     */
+    public void updateStatusAndAssociatedHoldingStatus(Reservation reservation, Reservation.Status status);
 
     /**
      * Check whether there are any reservations made on the holding.
@@ -202,4 +216,13 @@ public interface ReservationService {
      * exceeded.
      */
     public Date getFirstValidReservationDate(Date from);
+
+    /**
+     * Returns the active reservation with which this holding is associated.
+     * @param h The Holding to get the active reservation of
+     * @param getAll Whether to return all active reservations (0)
+     * or only those that are on hold (< 0) or those that are NOT on hold (> 0).
+     * @return The active reservation, or null if no active reservation exists
+     */
+    public Reservation getActiveFor(Holding holding, int getAll);
 }

@@ -18,6 +18,7 @@ package org.socialhistoryservices.delivery.reservation.service;
 
 import org.socialhistoryservices.delivery.request.service.RequestMailer;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ExtendedModelMap;
@@ -44,6 +45,6 @@ public class ReservationMailer extends RequestMailer {
         model.addAttribute("reservation", res);
 
         String subject = getMessage("reservationMail.confirmationSubject", "Delivery: ");
-        sendMail(res, subject, "reservation_confirmation.mail.ftl", model);
+        sendMail(res, subject, "reservation_confirmation.mail.ftl", model, LocaleContextHolder.getLocale());
     }
 }

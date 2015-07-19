@@ -99,9 +99,11 @@ public interface ReservationDAO {
     /**
      * Get an active reservation relating to a specific Holding.
      * @param h Holding to find a reservation for.
+     * @param getAll Whether to return all active requests (0)
+     * or only those that are on hold (< 0) or those that are NOT on hold (> 0).
      * @return The active reservation, null if none exist.
      */
-    public Reservation getActiveFor(Holding h);
+    public Reservation getActiveFor(Holding h, int getAll);
 
     /**
      * Check whether there are any reservations made on the holding.

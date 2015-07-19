@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2013 International Institute of Social History
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -137,10 +137,12 @@ public class ReproductionDAOImpl implements ReproductionDAO {
     /**
      * Get an active reproduction relating to a specific Holding.
      *
-     * @param h Holding to find a reproduction for.
+     * @param h      Holding to find a reproduction for.
+     * @param getAll Whether to return all active requests (0)
+     *               or only those that are on hold (< 0) or those that are NOT on hold (> 0).
      * @return The active reproduction, null if none exist.
      */
-    public Reproduction getActiveFor(Holding h) {
+    public Reproduction getActiveFor(Holding h, int getAll) {
         CriteriaBuilder cb = getCriteriaBuilder();
         CriteriaQuery<Reproduction> cq = cb.createQuery(Reproduction.class);
         Root<Reproduction> rRoot = cq.from(Reproduction.class);
@@ -150,15 +152,10 @@ public class ReproductionDAOImpl implements ReproductionDAO {
         Join<HoldingReproduction, Holding> hRoot = hrRoot.join(HoldingReproduction_.holding);
         Expression<Boolean> where = cb.equal(hRoot.get(Holding_.id), h.getId());
 
-        where = cb.and(
-                where,
-                cb.notEqual(rRoot.<Reproduction.Status>get(Reproduction_.status), Reproduction.Status.COMPLETED)
-        );
-
-        where = cb.and(
-                where,
-                cb.notEqual(rRoot.<Reproduction.Status>get(Reproduction_.status), Reproduction.Status.DELIVERED)
-        );
+        where = cb.and(where, cb.equal(hrRoot.get(HoldingReproduction_.completed), false));
+        if (getAll != 0) {
+            where = cb.and(where, cb.equal(hrRoot.get(HoldingReproduction_.onHold), (getAll < 0)));
+        }
 
         cq.where(where);
         cq.orderBy(cb.desc(rRoot.<Date>get(Reproduction_.creationDate)));

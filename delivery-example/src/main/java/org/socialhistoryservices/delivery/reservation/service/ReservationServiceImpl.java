@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2013 International Institute of Social History
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,8 @@
 package org.socialhistoryservices.delivery.reservation.service;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
+import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.*;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
@@ -51,7 +53,7 @@ import org.apache.log4j.Logger;
  */
 @Service
 @Transactional
-public class ReservationServiceImpl extends RequestServiceImpl implements ReservationService {
+public class ReservationServiceImpl extends AbstractRequestService implements ReservationService {
     @Autowired
     private ReservationDAO reservationDAO;
 
@@ -107,7 +109,7 @@ public class ReservationServiceImpl extends RequestServiceImpl implements Reserv
         }
 
         // Make sure the holdings get set to the correct status.
-        obj.updateStatusAndAssociatedHoldingStatus(obj.getStatus());
+        updateStatusAndAssociatedHoldingStatus(obj, obj.getStatus());
 
         // Add to the database
         reservationDAO.add(obj);
@@ -169,7 +171,7 @@ public class ReservationServiceImpl extends RequestServiceImpl implements Reserv
      * @return the CriteriaBuilder.
      */
     public CriteriaBuilder getHoldingReservationCriteriaBuilder() {
-            return holdingReservationDAO.getCriteriaBuilder();
+        return holdingReservationDAO.getCriteriaBuilder();
     }
 
     /**
@@ -187,7 +189,7 @@ public class ReservationServiceImpl extends RequestServiceImpl implements Reserv
      * @return A list of matching Tuples.
      */
     public List<Tuple> listTuples(CriteriaQuery<Tuple> q) {
-            return reservationDAO.listForTuple(q);
+        return reservationDAO.listForTuple(q);
     }
 
     /**
@@ -210,37 +212,55 @@ public class ReservationServiceImpl extends RequestServiceImpl implements Reserv
 
     /**
      * Mark a specific item in a reservation as seen, bumping it to the next status.
-     * @param h Holding to bump.
      * @param res Reservation to change status for.
+     * @param h Holding to bump.
      */
     public void markItem(Reservation res, Holding h) {
         // Ignore old reservations
         if (res == null)
             return;
 
-        // Change holding status
-        switch (h.getStatus()) {
-            case RESERVED:
-                h.setStatus(Holding.Status.IN_USE);
-                break;
-            case IN_USE:
-                h.setStatus(Holding.Status.RETURNED);
-                break;
-            case RETURNED:
-                h.setStatus(Holding.Status.AVAILABLE);
-                break;
-        }
+        Holding.Status newStatus = super.markItem(h);
+        markReservation(res);
 
-        // Change reservation status
+        requests.updateHoldingStatus(h, newStatus);
+        saveReservation(res);
+    }
+
+    /**
+     * Mark a reservation, bumping it to the next status.
+     * @param res Reservation to change status for.
+     */
+    public void markRequest(Reservation res) {
+        // Ignore old reservations
+        if (res == null)
+            return;
+
+        markReservation(res);
+        saveReservation(res);
+    }
+
+    /**
+     * Mark a reservation, bumping it to the next status.
+     * @param res Reservation to change status for.
+     */
+    private void markReservation(Reservation res) {
         boolean complete = true;
         boolean reserved = true;
         for (HoldingReservation hr : res.getHoldingReservations()) {
-            Holding holding = hr.getHolding();
-            if (holding.getStatus() != Holding.Status.AVAILABLE) {
-                complete = false;
-            }
-            if (holding.getStatus() != Holding.Status.RESERVED) {
-                reserved = false;
+            if (!hr.isCompleted()) {
+                Holding holding = hr.getHolding();
+
+                if (holding.getStatus() == Holding.Status.RETURNED) {
+                    hr.setCompleted(true);
+                }
+                else {
+                    complete = false;
+                }
+
+                if (holding.getStatus() != Holding.Status.RESERVED) {
+                    reserved = false;
+                }
             }
         }
 
@@ -253,17 +273,87 @@ public class ReservationServiceImpl extends RequestServiceImpl implements Reserv
         else {
             res.setStatus(Reservation.Status.ACTIVE);
         }
-
-        saveReservation(res);
     }
 
     /**
-     * Returns the active reservation with which this holding is associated.
-     * @param h The Holding to get the active reservation of
-     * @return The active reservation, or null if no active reservation exists
+     * Merge the other reservation's fields into this reservation.
+     * @param reservation The reservation.
+     * @param other The other reservation to merge with.
      */
-    public Reservation getActiveFor(Holding h) {
-        return reservationDAO.getActiveFor(h);
+    public void merge(Reservation reservation, Reservation other) {
+        reservation.setDate(other.getDate());
+        reservation.setReturnDate(other.getReturnDate());
+        reservation.setPrinted(other.isPrinted());
+        reservation.setSpecial(other.getSpecial());
+        reservation.setVisitorName(other.getVisitorName());
+        reservation.setVisitorEmail(other.getVisitorEmail());
+        reservation.setComment(other.getComment());
+        //setPermission(other.getPermission());
+        //setQueueNo(other.getQueueNo());
+
+        if (other.getHoldingReservations() == null) {
+            for (HoldingReservation hr : reservation.getHoldingReservations()) {
+                requests.updateHoldingStatus(hr.getHolding(), Holding.Status.AVAILABLE);
+            }
+            reservation.setHoldingReservations(new ArrayList<HoldingReservation>());
+        }
+        else {
+            // Delete holdings that were not provided.
+            deleteHoldingsNotInProvidedRequest(reservation, other);
+
+            // Add/update provided.
+            addOrUpdateHoldingsProvidedByRequest(reservation, other);
+        }
+        updateStatusAndAssociatedHoldingStatus(reservation, other.getStatus());
+    }
+
+    /**
+     * Set the reservation status and update the associated holdings status
+     * accordingly. Only updates status forward.
+     * @param reservation The reservation.
+     * @param status The reservation which changed status.
+     */
+    public void updateStatusAndAssociatedHoldingStatus(Reservation reservation, Reservation.Status status) {
+        if (status.ordinal() < reservation.getStatus().ordinal()) {
+            return;
+        }
+        reservation.setStatus(status);
+        Holding.Status hStatus;
+        switch (status) {
+            case PENDING:
+                hStatus = Holding.Status.RESERVED;
+                break;
+            case ACTIVE:
+                hStatus = Holding.Status.IN_USE;
+                break;
+            default:
+                hStatus = Holding.Status.AVAILABLE;
+                break;
+        }
+        for (HoldingReservation hr : reservation.getHoldingReservations()) {
+            if (!hr.isCompleted()) {
+                if (status == Reservation.Status.COMPLETED) {
+                    hr.setCompleted(true);
+                    requests.updateHoldingStatus(hr.getHolding(), hStatus);
+                }
+                else if (!hr.isOnHold()) {
+                    requests.updateHoldingStatus(hr.getHolding(), hStatus);
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds a HoldingRequest to the HoldingRequests assoicated with this request.
+     *
+     * @param holdingRequest The HoldingRequests to add.
+     */
+    protected void addToHoldingRequests(Request request, HoldingRequest holdingRequest) {
+        Reservation reservation = (Reservation) request;
+        HoldingReservation holdingReservation = (HoldingReservation) holdingRequest;
+
+        holdingReservation.setReservation(reservation);
+        reservation.getHoldingReservations().add(holdingReservation);
     }
 
     /**
@@ -371,7 +461,7 @@ public class ReservationServiceImpl extends RequestServiceImpl implements Reserv
                     newRes.setCreationDate(new Date());
                     addReservation(newRes);
                 } else {
-                    oldRes.mergeWith(newRes);
+                    merge(oldRes, newRes);
                     saveReservation(oldRes);
                 }
             }
@@ -441,4 +531,14 @@ public class ReservationServiceImpl extends RequestServiceImpl implements Reserv
         return fromCal.getTime();
     }
 
+    /**
+     * Returns the active reservation with which this holding is associated.
+     * @param h The Holding to get the active reservation of
+     * @param getAll Whether to return all active reservations (0)
+     * or only those that are on hold (< 0) or those that are NOT on hold (> 0).
+     * @return The active reservation, or null if no active reservation exists
+     */
+    public Reservation getActiveFor(Holding holding, int getAll) {
+        return reservationDAO.getActiveFor(holding, getAll);
+    }
 }

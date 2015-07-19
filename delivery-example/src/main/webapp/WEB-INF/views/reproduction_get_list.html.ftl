@@ -183,6 +183,7 @@
         <th><@sortLink "customerName"><@_ "reproduction.customerName" "Name"/></@sortLink></th>
         <th><@sortLink "date"><@_ "reproduction.date" "Date"/></@sortLink></th>
         <th><@sortLink "printed"><@_ "reproduction.printed" "Printed"/></@sortLink></th>
+        <th><@sortLink "onHold"><@_ "reproduction.onHold" "On hold"/></@sortLink></th>
         <th><@sortLink "status"><@_ "reproduction.extended.status.status" "Reproduction status"/></@sortLink></th>
         <th><@sortLink "holdingStatus"><@_ "holding.extended.status" "Item status"/></@sortLink></th>
       </tr>
@@ -221,8 +222,16 @@
               </#assign>
 
               <td>${reproduction.printed?string(yes, no)}</td>
+              <td>${holdingReproduction.onHold?string(yes, no)}</td>
               <td><@_ "reproduction.statusType.${reproduction.status?string}" "${reproduction.status?string}" /></td>
-              <td><@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" /></td>
+
+              <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! reproduction/>
+              <td>
+                <@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" />
+                <#if (holding.status != "AVAILABLE") && !holdingActiveRequest.equals(reproduction)>
+                  <em>(by another request)</em>
+                </#if>
+              </td>
             </tr>
         </#list>
       </tbody>

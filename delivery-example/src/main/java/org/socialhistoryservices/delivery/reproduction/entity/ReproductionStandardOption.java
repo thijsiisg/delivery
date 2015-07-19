@@ -4,6 +4,8 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -19,15 +21,12 @@ import javax.validation.constraints.Size;
 @Table(name = "reproduction_standard_options")
 @Configurable
 public class ReproductionStandardOption {
-
     /**
      * Level of material access of the reproduction in the SOR.
      */
     public enum Level {
         MASTER,
-        LEVEL1,
-        LEVEL2,
-        LEVEL3
+        LEVEL1
     }
 
     /**

@@ -13,21 +13,35 @@
     <@submit "scan"/>
 
     <#if error??>
-    <ul class="errors">
-      <li>
-        <@_ "scan.error."+error error />.
-      </li>
-    </ul>
+      <ul class="errors">
+        <li>
+          <@_ "scan.error."+error error />.
+        </li>
+      </ul>
     <#elseif holding??>
-    <ul class="messages">
-      <li>
-        &quot;${holding.record.title?html} - ${holding.signature?html}&quot;
-        <@_ "scan.changedFrom" "has changed from status" />
-        &quot;<@_ "holding.statusType.${oldStatus?string}" oldStatus?string/>&quot;
-        <@_ "scan.changedTo" "to" />
-        &quot;<@_ "holding.statusType.${holding.status?string}" holding.status?string/>&quot;.
-      </li>
-    </ul>
+      <ul class="messages">
+        <li>
+          &quot;${holding.record.title?html} - ${holding.signature?html}&quot;
+          <@_ "scan.changedFrom" "has changed from status" />
+          &quot;<@_ "holding.statusType.${oldStatus?string}" oldStatus?string/>&quot;
+          <@_ "scan.changedTo" "to" />
+          &quot;<@_ "holding.statusType.${holding.status?string}" holding.status?string/>&quot;.
+        </li>
+
+        <#if reservationOnHold??>
+          <li>
+            The holding was placed on hold for reservation ${reservationOnHold.id?c}.
+            The holding may now return to ${reservationOnHold.getVisitorName()}.
+          </li>
+        </#if>
+
+        <#if reproductionOnHold??>
+          <li>
+            The holding was placed on hold for reproduction ${reproductionOnHold.id?c}.
+            The holding may now return to repro.
+          </li>
+        </#if>
+      </ul>
 
       <#if reproduction??>
       <h3><@_ "scan.assocReproduction" "Reproduction details"/></h3>

@@ -196,6 +196,7 @@
     <#--<th><@sortLink "returnDate"><@_ "reservation.returnDate" "Return
     Date"/></@sortLink></th>-->
     <th><@sortLink "printed"><@_ "reservation.printed" "Printed"/></@sortLink></th>
+    <th><@sortLink "onHold"><@_ "reservation.onHold" "On hold"/></@sortLink></th>
     <th><@sortLink "status"><@_ "reservation.extended.status.status" "Reservation status"/></@sortLink></th>
     <th><@sortLink "holdingStatus"><@_ "holding.extended.status" "Item status"/></@sortLink></th>
   </tr>
@@ -228,8 +229,15 @@
     <@_ "no" "No"/>
     </#assign>
     <td>${reservation.printed?string(yes, no)}</td>
+    <td>${holdingReservation.onHold?string(yes, no)}</td>
     <td><@_ "reservation.statusType.${reservation.status?string}" "${reservation.status?string}" /></td>
-    <td><@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" /></td>
+    <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! reservation/>
+    <td>
+      <@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" />
+      <#if (holding.status != "AVAILABLE") && !holdingActiveRequest.equals(reservation)>
+        <em>(by another request)</em>
+      </#if>
+    </td>
   </tr>
   </#list>
   </tbody>

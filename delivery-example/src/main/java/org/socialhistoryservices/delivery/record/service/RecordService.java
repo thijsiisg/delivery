@@ -64,6 +64,12 @@ public interface RecordService {
     public void saveRecord(Record obj);
 
     /**
+     * Save changes to a Holding in the database.
+     * @param obj Holding to save.
+     */
+    public void saveHolding(Holding obj);
+
+    /**
      * Retrieve the Record matching the given Id.
      * @param id Id of the Record to retrieve.
      * @return The Record matching the Id.

@@ -4,11 +4,14 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.reproduction.service.ReproductionService;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -29,12 +32,12 @@ public class Reproduction extends Request {
     public enum Status {
         WAITING_FOR_ORDER_DETAILS,
         HAS_ORDER_DETAILS,
-        ORDER_CREATED,
+        CONFIRMED,
         PAYED,
-        PENDING,
         ACTIVE,
         COMPLETED,
-        DELIVERED
+        DELIVERED,
+        CANCELLED
     }
 
     /**
@@ -154,6 +157,31 @@ public class Reproduction extends Request {
     }
 
     /**
+     * The Reproduction's date when the order details were known.
+     */
+    @Temporal(TemporalType.DATE)
+    @Column(name = "date_has_order_details")
+    private Date dateHasOrderDetails;
+
+    /**
+     * Returns the Reproduction's date when the order details were known.
+     *
+     * @return The Reproduction's date when the order details were known.
+     */
+    public Date getDateHasOrderDetails() {
+        return dateHasOrderDetails;
+    }
+
+    /**
+     * Sets the Reproduction's date when the order details were known.
+     *
+     * @param dateHasOrderDetails The Reproduction's date when the order details were known.
+     */
+    public void setDateHasOrderDetails(Date dateHasOrderDetails) {
+        this.dateHasOrderDetails = dateHasOrderDetails;
+    }
+
+    /**
      * The Reproduction's creation date.
      */
     @NotNull
@@ -235,6 +263,30 @@ public class Reproduction extends Request {
     }
 
     /**
+     * Extra comments about the expected delivery time of the reproduction.
+     */
+    @Column(name = "deliveryTimeComment", columnDefinition = "TEXT")
+    private String deliveryTimeComment;
+
+    /**
+     * Returns extra comments about the expected delivery time of the reproduction.
+     *
+     * @return Extra comments about the expected delivery time of the reproduction.
+     */
+    public String getDeliveryTimeComment() {
+        return deliveryTimeComment;
+    }
+
+    /**
+     * Sets extra comments about the expected delivery time of the reproduction.
+     *
+     * @param deliveryTimeComment Extra comments about the expected delivery time of the reproduction.
+     */
+    public void setDeliveryTimeComment(String deliveryTimeComment) {
+        this.deliveryTimeComment = deliveryTimeComment;
+    }
+
+    /**
      * The Reproductions's comment.
      */
     @Size(max = 255)
@@ -257,6 +309,28 @@ public class Reproduction extends Request {
      */
     public void setComment(String val) {
         comment = val;
+    }
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "requestLocale", nullable = false)
+    private Locale requestLocale;
+
+    /**
+     * Get the locale in which this Reproduction was requested.
+     *
+     * @return the Reproduction's request locale.
+     */
+    public Locale getRequestLocale() {
+        return requestLocale;
+    }
+
+    /**
+     * Set the Reproduction's request locale.
+     *
+     * @param locale the Reproduction's request locale.
+     */
+    public void setRequestLocale(Locale locale) {
+        requestLocale = locale;
     }
 
     /**
@@ -329,53 +403,12 @@ public class Reproduction extends Request {
     }
 
     /**
-     * Set the reproduction status and update the associated holdings status accordingly.
-     * Only updates status forward.
-     * <p/>
-     * TODO: Holding 'in use' state and relation with holdings in reservations.
-     *
-     * @param status The reservation which changed status.
-     */
-    public void updateStatusAndAssociatedHoldingStatus(Status status) {
-        if (status.ordinal() < getStatus().ordinal()) {
-            return;
-        }
-
-        setStatus(status);
-
-        Holding.Status hStatus = (status == Status.ACTIVE) ? Holding.Status.IN_USE : Holding.Status.AVAILABLE;
-        for (HoldingReproduction hr : getHoldingReproductions()) {
-            hr.getHolding().setStatus(hStatus);
-        }
-    }
-
-    /**
-     * Whether the price and delivery time is determined for all holdings and
-     * as a result this reproduction has all the order details.
-     *
-     * @return Whether all holdings have order details.
-     */
-    public boolean hasOrderDetails() {
-        List<HoldingReproduction> hrs = getHoldingReproductions();
-        if ((hrs == null) || hrs.isEmpty())
-            return false;
-
-        boolean hasOrderDetails = true;
-        for (HoldingReproduction hr : hrs) {
-            if (!hr.hasOrderDetails())
-                hasOrderDetails = false;
-        }
-
-        return hasOrderDetails;
-    }
-
-    /**
      * Computes the total price of all holdings together.
      *
      * @return The total price for this reproduction.
      */
     public BigDecimal getTotalPrice() {
-        BigDecimal price = new BigDecimal(0);
+        BigDecimal price = BigDecimal.ZERO;
         for (HoldingReproduction hr : getHoldingReproductions()) {
             price = price.add(hr.getPrice());
         }
@@ -389,7 +422,7 @@ public class Reproduction extends Request {
      * @return If this reproduction is for free.
      */
     public boolean isForFree() {
-        return getTotalPrice().equals(BigDecimal.ZERO);
+        return (getTotalPrice().compareTo(BigDecimal.ZERO) == 0);
     }
 
     /**
@@ -421,49 +454,6 @@ public class Reproduction extends Request {
     }
 
     /**
-     * Merge the other reproduction's fields into this reproduction.
-     *
-     * @param other The other reproduction.
-     */
-    @Override
-    public void mergeWith(Request o) {
-        setCustomerName(o.getName());
-        setCustomerEmail(o.getEmail());
-        setPrinted(o.isPrinted());
-
-        if (o instanceof Reproduction) {
-            Reproduction other = (Reproduction) o;
-            setComment(other.getComment());
-
-            if (other.getHoldingReproductions() == null) {
-                for (HoldingReproduction hr : getHoldingReproductions()) {
-                    hr.getHolding().setStatus(Holding.Status.AVAILABLE);
-                }
-                setHoldingReproductions(new ArrayList<HoldingReproduction>());
-            } else {
-                // Delete holdings that were not provided.
-                deleteHoldingsNotInProvidedRequest(other);
-
-                // Add/update provided.
-                addOrUpdateHoldingsProvidedByRequest(other);
-            }
-            updateStatusAndAssociatedHoldingStatus(other.getStatus());
-        }
-    }
-
-    /**
-     * Adds a HoldingRequest to the HoldingRequests assoicated with this request.
-     *
-     * @param holdingRequest The HoldingRequests to add.
-     */
-    @Override
-    protected void addToHoldingRequests(HoldingRequest holdingRequest) {
-        HoldingReproduction holdingReproduction = (HoldingReproduction) holdingRequest;
-        holdingReproduction.setReproduction(this);
-        getHoldingReproductions().add(holdingReproduction);
-    }
-
-    /**
      * Set default data for Reproductions.
      */
     public Reproduction() {
@@ -471,6 +461,7 @@ public class Reproduction extends Request {
         setDate(new Date());
         setCreationDate(new Date());
         setPrinted(false);
+        setRequestLocale(LocaleContextHolder.getLocale());
         holdingReproductions = new ArrayList<HoldingReproduction>();
         token = UUID.randomUUID().toString();
     }

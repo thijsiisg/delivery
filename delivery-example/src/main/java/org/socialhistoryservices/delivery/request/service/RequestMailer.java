@@ -6,6 +6,8 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.ui.Model;
 
+import java.util.Locale;
+
 /**
  * Mailer to send information/confirmation mails dealing with requests.
  */
@@ -20,11 +22,14 @@ public abstract class RequestMailer extends Mailer {
      * @param model        The model.
      * @throws MailException Thrown when sending mail somehow failed.
      */
-    protected void sendMail(Request request, String subject, String templateName, Model model) throws MailException {
+    protected void sendMail(Request request, String subject, String templateName, Model model, Locale locale)
+            throws MailException {
         // Do not mail when mail is disabled.
         if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
             return;
         }
+
+        model.addAttribute("locale", locale.toString());
 
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setFrom(properties.getProperty("prop_mailSystemAddress"));
@@ -32,7 +37,7 @@ public abstract class RequestMailer extends Mailer {
         msg.setReplyTo(getMessage("iisg.email", ""));
 
         msg.setSubject(subject);
-        msg.setText(templateToString(templateName, model));
+        msg.setText(templateToString(templateName, model, locale));
 
         mailSender.send(msg);
     }
