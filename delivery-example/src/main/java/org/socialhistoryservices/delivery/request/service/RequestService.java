@@ -3,10 +3,19 @@ package org.socialhistoryservices.delivery.request.service;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.Request;
 
+import java.util.concurrent.Future;
+
 /**
  * Represents the service of the request package to be used by the implementing services.
  */
 public interface RequestService {
+
+    /**
+     * Mark a request, bumping it to the next status.
+     *
+     * @param r Request to change status for.
+     */
+    public void markRequest(Request r);
 
     /**
      * Returns the active request with which this holding is associated.
@@ -21,7 +30,9 @@ public interface RequestService {
     /**
      * What should happen when the status of a holding is updated.
      *
-     * @param holding The holding. (With the status updated)
+     * @param holding       The holding. (With the status updated)
+     * @param activeRequest The request which triggered the holding change.
+     * @return A Future, indicating when the method is finished and whether some updates were performed.
      */
-    public void onHoldingStatusUpdate(Holding holding);
+    public Future<Boolean> onHoldingStatusUpdate(Holding holding, Request activeRequest);
 }

@@ -22,8 +22,8 @@
     </a>
   </li>
   <li>
-    <a href="${rc.contextPath}/reproduction/?status=pending">
-      <@_ "reproductionList.filterPending" "Show reproductions pending for repro"/>
+    <a href="${rc.contextPath}/reproduction/?status=active">
+      <@_ "reproductionList.filterActive" "Show reproductions active for repro"/>
     </a>
   </li>
   <li>
@@ -194,14 +194,15 @@
           <#assign reproduction = holdingReproduction.reproduction>
 
             <tr>
-              <td><input type="checkbox" name="checked" value="${reproduction.id?c}" class="checkItem"/></td>
+              <td><input type="checkbox" name="checked" class="checkItem"
+                         value="${reproduction.id?c}:${holding.id?c}"/></td>
               <td>
                 <a href="${rc.contextPath}/reproduction/${reproduction.id?c}">
                   <@_ "reproductionList.show" "Show"/>
                 </a>
                 <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_MODIFY")>
                   /
-                  <a href="${rc.contextPath}/reproduction/edit/${reproduction.id?c}">
+                  <a href="${rc.contextPath}/reproduction/${reproduction.id?c}/edit">
                     <@_ "reproductionList.edit" "Edit"/>
                   </a>
                 </#if>
@@ -224,14 +225,7 @@
               <td>${reproduction.printed?string(yes, no)}</td>
               <td>${holdingReproduction.onHold?string(yes, no)}</td>
               <td><@_ "reproduction.statusType.${reproduction.status?string}" "${reproduction.status?string}" /></td>
-
-              <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! reproduction/>
-              <td>
-                <@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" />
-                <#if (holding.status != "AVAILABLE") && !holdingActiveRequest.equals(reproduction)>
-                  <em>(by another request)</em>
-                </#if>
-              </td>
+              <td><@holdingStatus holdingActiveRequests reproduction holding/></td>
             </tr>
         </#list>
       </tbody>
@@ -248,7 +242,7 @@
 
     <#if _sec.ifAnyGranted("ROLE_REPRODUCTION_MODIFY,ROLE_REPRODUCTION_DELETE")>
       <fieldset class="actions">
-        <legend><@_ "reproductionList.withSelected" "With Selected"/>:</legend>
+        <legend><@_ "reproductionList.withSelectedReproductions" "With selected reproductions"/>:</legend>
 
         <#assign printLabel>
           <@_ "reproductionList.print" "Print"/>
@@ -280,7 +274,7 @@
             <li>
               <select name="newStatus">
                 <#list status_types?keys as k>
-                  <#if k != "PENDING"> <!-- TODO -->
+                  <#if k != "WAITING_FOR_ORDER_DETAILS">
                     <option value="${k}"
                       <#if RequestParameters["status"]?? && RequestParameters["status"]?upper_case == k>
                             selected="selected"</#if>>
@@ -304,6 +298,37 @@
           </#if>
         </ul>
       </fieldset>
+
+      <#if _sec.ifAllGranted("ROLE_REPRODUCTION_MODIFY")>
+        <fieldset class="actions">
+          <legend><@_ "reproductionList.withSelectedHoldings" "With selected holdings"/>:</legend>
+
+          <#assign onHoldLabel>
+            <@_ "reproductionList.onHold" "Place on hold"/>
+          </#assign>
+          <#assign statusLabel>
+            <@_ "reproductionList.toStatus" "Change Status"/>
+          </#assign>
+
+          <ul>
+            <li>
+              <input type="submit" name="onHold" value="${onHoldLabel}"/>
+            </li>
+
+            <li>
+              <select name="newHoldingStatus">
+                <#list holding_status_types?keys as k>
+                  <option value="${k}">
+                    <@_ "holding.statusType.${k}" "${k}"/>
+                  </option>
+                </#list>
+              </select>
+
+              <input type="submit" name="changeHoldingStatus" value="${statusLabel}"/>
+            </li>
+          </ul>
+        </fieldset>
+      </#if>
     </#if>
   </form>
 </#if>

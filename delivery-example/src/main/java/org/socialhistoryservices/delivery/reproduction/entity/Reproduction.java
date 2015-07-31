@@ -11,9 +11,12 @@ import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import javax.persistence.*;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -157,6 +160,30 @@ public class Reproduction extends Request {
     }
 
     /**
+     * Whether the offer for this reproduction was ready immediatly after creation.
+     */
+    @Column(name = "offer_ready_immediatly")
+    private boolean offerReadyImmediatly;
+
+    /**
+     * Get whether the offer for this reproduction was ready immediatly after creation.
+     *
+     * @return Whether the offer for this reproduction was ready immediatly after creation.
+     */
+    public boolean isOfferReadyImmediatly() {
+        return offerReadyImmediatly;
+    }
+
+    /**
+     * Set whether the offer for this reproduction was ready immediatly after creation.
+     *
+     * @param offerReadyImmediatly Whether the offer for this reproduction was ready immediatly after creation.
+     */
+    public void setOfferReadyImmediatly(boolean offerReadyImmediatly) {
+        this.offerReadyImmediatly = offerReadyImmediatly;
+    }
+
+    /**
      * The Reproduction's date when the order details were known.
      */
     @Temporal(TemporalType.DATE)
@@ -254,12 +281,65 @@ public class Reproduction extends Request {
     /**
      * Check if the Reproduction (is considered) to be printed at least once.
      *
-     * @return True if the Reproduction was printed at least once,
-     * false otherwise.
+     * @return True if the Reproduction was printed at least once, false otherwise.
      */
     @Override
     public boolean isPrinted() {
         return printed;
+    }
+
+    /**
+     * The discount specified for this reproduction.
+     */
+    @NotNull
+    @Min(0)
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "discount", nullable = false)
+    private BigDecimal discount;
+
+    /**
+     * Get the discount specified.
+     *
+     * @return The discount specified.
+     */
+    public BigDecimal getDiscount() {
+        return discount;
+    }
+
+    /**
+     * Set the discount specified.
+     *
+     * @param discount The discount specified.
+     */
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount.setScale(2);
+    }
+
+    /**
+     * The price of the copyright specified for this reproduction.
+     */
+    @NotNull
+    @Min(0)
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "copyright_price", nullable = false)
+    private BigDecimal copyrightPrice;
+
+    /**
+     * Get the price of the copyright specified for this reproduction.
+     *
+     * @return The price of the copyright.
+     */
+    public BigDecimal getCopyrightPrice() {
+        return copyrightPrice;
+    }
+
+    /**
+     * Set the price of the copyright specified for this reproduction.
+     *
+     * @param copyrightPrice The price of the copyright.
+     */
+    public void setCopyrightPrice(BigDecimal copyrightPrice) {
+        this.copyrightPrice = copyrightPrice.setScale(2);
     }
 
     /**
@@ -409,9 +489,19 @@ public class Reproduction extends Request {
      */
     public BigDecimal getTotalPrice() {
         BigDecimal price = BigDecimal.ZERO;
+
+        // First add the price of each holding in this reproduction
         for (HoldingReproduction hr : getHoldingReproductions()) {
             price = price.add(hr.getPrice());
         }
+
+        // Then add the price for copyright and substract the discount
+        price = price.add(getCopyrightPrice());
+        price = price.subtract(getDiscount());
+
+        // We cannot have a negative price
+        if (price.compareTo(BigDecimal.ZERO) < 0)
+            price = BigDecimal.ZERO;
 
         return price.setScale(2);
     }
@@ -453,6 +543,16 @@ public class Reproduction extends Request {
         return false;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Reproduction) {
+            Reproduction other = (Reproduction) obj;
+            if ((this.getId() != 0) && (other.getId() != 0))
+                return (this.getId() == other.getId());
+        }
+        return super.equals(obj);
+    }
+
     /**
      * Set default data for Reproductions.
      */
@@ -461,6 +561,8 @@ public class Reproduction extends Request {
         setDate(new Date());
         setCreationDate(new Date());
         setPrinted(false);
+        setDiscount(BigDecimal.ZERO);
+        setCopyrightPrice(BigDecimal.ZERO);
         setRequestLocale(LocaleContextHolder.getLocale());
         holdingReproductions = new ArrayList<HoldingReproduction>();
         token = UUID.randomUUID().toString();

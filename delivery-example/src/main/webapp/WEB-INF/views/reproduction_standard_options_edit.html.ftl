@@ -15,12 +15,13 @@
   <table class="reproduction_standard_options">
     <thead>
     <tr>
-      <td><@_ "reproductionStandardOption.optionName" "Option name"/></td>
-      <td><@_ "reproductionStandardOption.optionDescription" "Option description"/></td>
       <td><@_ "reproductionStandardOption.materialType" "Material type"/></td>
       <td><@_ "reproductionStandardOption.level" "SOR level"/></td>
+      <td><@_ "reproductionStandardOption.optionName" "Option name"/></td>
+      <td><@_ "reproductionStandardOption.optionDescription" "Option description"/></td>
       <td><@_ "reproductionStandardOption.price" "Price"/></td>
       <td><@_ "reproductionStandardOption.deliveryTime" "Delivery time"/></td>
+      <td><@_ "reproductionStandardOption.enabled" "Is enabled?"/></td>
     </tr>
     </thead>
 
@@ -30,7 +31,12 @@
       <tr class="standard_option">
         <td>
           <input type="hidden" name="options[${idx}].id" value="${standardOptions.options[idx].id}" class="id"/>
-
+          <@_ "record.externalInfo.materialType." + materialTypes[standardOptions.options[idx].materialType] ""/>
+        </td>
+        <td>
+          <@_ "reproductionStandardOption.level." + levels[standardOptions.options[idx].level] ""/>
+        </td>
+        <td>
           <label>
             <span>NL:</span>
             <@input_nolabel "standardOptions.options[${idx}].optionNameNL"/>
@@ -49,12 +55,6 @@
             <span>EN:</span>
             <@textarea_nolabel "standardOptions.options[${idx}].optionDescriptionEN"/>
           </label>
-        </td>
-        <td>
-          <@select_nolabel "standardOptions.options[${idx}].materialType" "record.externalInfo.materialType" materialTypes/>
-        </td>
-        <td>
-          <@select_nolabel "standardOptions.options[${idx}].level" "reproductionStandardOption.level" levels/>
         </td>
         <td>
           <label>
@@ -82,6 +82,12 @@
             </#if>
           </label>
         </td>
+        <td>
+          <label>
+            <@spring.formCheckbox "standardOptions.options[${idx}].enabled"/>
+            <span><@_ "yes" "Yes" /></span>
+          </label>
+        </td>
       </tr>
         <#assign idx = idx + 1>
       </#list>
@@ -89,6 +95,26 @@
 
     <tfoot>
     <tr id="newStandardOption" class="hidden">
+      <td>
+        <select id="new.materialType" name="new.materialType" class="field">
+          <#list materialTypes?keys as value>
+            <#assign label = "record.externalInfo.materialType." + materialTypes[value]?html/>
+            <option value="${value?html}">
+              <@spring.messageText label materialTypes[value]?html/>
+            </option>
+          </#list>
+        </select>
+      </td>
+      <td>
+        <select id="new.level" name="new.level" class="field">
+          <#list levels?keys as value>
+            <#assign label = "reproductionStandardOption.level." + levels[value]?html/>
+            <option value="${value?html}">
+              <@spring.messageText label levels[value]?html/>
+            </option>
+          </#list>
+        </select>
+      </td>
       <td>
         <label>
           <span>NL:</span>
@@ -112,26 +138,6 @@
         </label>
       </td>
       <td>
-        <select id="new.materialType" name="new.materialType" class="field">
-          <#list materialTypes?keys as value>
-            <#assign label = "record.externalInfo.materialType." + materialTypes[value]?html/>
-            <option value="${value?html}">
-              <@spring.messageText label materialTypes[value]?html/>
-            </option>
-          </#list>
-        </select>
-      </td>
-      <td>
-        <select id="new.level" name="new.level" class="field">
-          <#list levels?keys as value>
-            <#assign label = "reproductionStandardOption.level." + levels[value]?html/>
-            <option value="${value?html}">
-              <@spring.messageText label levels[value]?html/>
-            </option>
-          </#list>
-        </select>
-      </td>
-      <td>
         <label>
           <input type="text" id="new.price" name="new.price" value="${0?string('0.00')}" class="small"/>
           <span>EUR</span>
@@ -141,6 +147,12 @@
         <label>
           <input type="text" id="new.deliveryTime" name="new.deliveryTime" value="0" class="small">
           <span><@_ "days" "days"/></span>
+        </label>
+      </td>
+      <td>
+        <label>
+          <input id="new.enabled" name="new.enabled" checked="checked" type="checkbox"/>
+          <span><@_ "yes" "Yes"/></span>
         </label>
       </td>
     </tr>

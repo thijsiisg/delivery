@@ -22,7 +22,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    
+
     <bean id="myCustomProperties" class="org.socialhistoryservices.utils.PropertiesLoader">
       <constructor-arg index="0" value="customProperties" />
       <constructor-arg index="1">
@@ -31,12 +31,13 @@
           <value>prop_permissionMaxPageLen</value>
           <value>prop_permissionPageStepSize</value>
           <value>prop_requestPageLen</value>
+          <value>prop_requestPageStepSize</value>
           <value>prop_requestLatestTime</value>
           <value>prop_requestAutoPrintStartTime</value>
           <value>prop_requestMaxPageLen</value>
-          <value>prop_requestMaxDaysInAdvance</value>
-          <value>prop_requestPageStepSize</value>
-          <value>prop_requestMaxItems</value>
+          <value>prop_reservationMaxDaysInAdvance</value>
+          <value>prop_reservationMaxItems</value>
+          <value>prop_reproductionMaxDaysPayment</value>
           <value>prop_dateFormat</value>
           <value>prop_dbUsername</value>
           <value>prop_dbPassword</value>
@@ -47,6 +48,7 @@
           <value>prop_mailHost</value>
           <value>prop_mailPort</value>
           <value>prop_mailSystemAddress</value>
+          <value>prop_mailReadingRoom</value>
           <value>prop_urlSelf</value>
           <value>prop_urlSearch</value>
           <value>prop_pidSeparator</value>
@@ -58,6 +60,7 @@
           <value>prop_apiPort</value>
           <value>prop_loadInitialData</value>
           <value>prop_sorAddress</value>
+          <value>prop_sorAccessToken</value>
           <value>prop_payWayAddress</value>
           <value>prop_payWayPassPhraseIn</value>
           <value>prop_payWayPassPhraseOut</value>

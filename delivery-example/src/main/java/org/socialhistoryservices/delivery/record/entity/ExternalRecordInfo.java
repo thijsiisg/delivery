@@ -110,7 +110,28 @@ public class ExternalRecordInfo {
         materialType = type;
     }
 
-	// TODO: Update previous publication statuses
+    /**
+     * Holder of the copyright.
+     */
+    @Size(max=255)
+    @Column(name="copyright")
+    private String copyright;
+
+    /**
+     * Get the holder of the copyright.
+     * @return The holder of the copyright.
+     */
+    public String getCopyright() {
+        return copyright;
+    }
+
+    /**
+     * Set the holder of the copyright.
+     * @param copyright The holder of the copyright.
+     */
+    public void setCopyright(String copyright) {
+        this.copyright = copyright;
+    }
 
 	@NotNull
 	@Enumerated(EnumType.STRING)
@@ -183,6 +204,7 @@ public class ExternalRecordInfo {
     public void mergeWith(ExternalRecordInfo other) {
         setTitle(other.getTitle());
         setMaterialType(other.getMaterialType());
+        setCopyright(other.getCopyright());
         setPublicationStatus(other.getPublicationStatus());
         setAuthor(other.getAuthor());
         setDisplayYear(other.getDisplayYear());

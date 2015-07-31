@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * Represents the service of the request package.
@@ -21,15 +23,38 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
     private Set<RequestService> requests;
 
     /**
+     * Mark a request, bumping it to the next status.
+     *
+     * @param r Request to change status for.
+     */
+    public void markRequest(Request r) {
+        for (RequestService requestService : requests)
+            requestService.markRequest(r);
+    }
+
+    /**
      * Updates the status of a holding.
      *
      * @param holding The holding.
      * @param status  The new status.
+     * @return A list of futures for each request after the status update.
      */
-    public void updateHoldingStatus(Holding holding, Holding.Status status) {
+    public List<Future<Boolean>> updateHoldingStatus(Holding holding, Holding.Status status) {
+        return updateHoldingStatus(holding, status, null);
+    }
+
+    /**
+     * Updates the status of a holding.
+     *
+     * @param holding       The holding.
+     * @param status        The new status.
+     * @param activeRequest The request which triggered the holding change.
+     * @return A list of futures for each request after the status update.
+     */
+    public List<Future<Boolean>> updateHoldingStatus(Holding holding, Holding.Status status, Request activeRequest) {
         holding.setStatus(status);
         checkRequestHoldingsOnHold(holding);
-        sentHoldingStatusUpdateEvent(holding);
+        return sentHoldingStatusUpdateEvent(holding, activeRequest);
     }
 
     /**
@@ -83,9 +108,10 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
      */
     public Request markItemOnHold(Holding holding) throws OnHoldException {
         Request request = getOnHoldFor(holding);
-        if (request != null)
+        if (getOnHoldFor(holding) != null)
             throw new OnHoldException(request, holding);
 
+        request = getActiveFor(holding);
         for (HoldingRequest hr : request.getHoldingRequests()) {
             Holding h = hr.getHolding();
             if ((holding.getId() == h.getId()) && (holding.getStatus() == Holding.Status.IN_USE)) {
@@ -104,11 +130,22 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
      * @throws OnHoldException If no holding was placed on hold for a request.
      */
     public Request markItemActive(Holding holding) throws OnHoldException {
-        Request request = getOnHoldFor(holding);
-        if (request == null)
+        Request requestOnHold = getOnHoldFor(holding);
+        if (requestOnHold == null)
             throw new OnHoldException(holding);
 
-        for (HoldingRequest hr : request.getHoldingRequests()) {
+        // Make sure to mark the holding complete for the active request
+        Request requestActive = getActiveFor(holding);
+        if (requestActive != null) {
+            for (HoldingRequest hr : requestActive.getHoldingRequests()) {
+                if (hr.getHolding().getId() == holding.getId())
+                    hr.setCompleted(true);
+                markRequest(requestActive);
+            }
+        }
+
+        // Now remove the flag 'on hold' and make sure the holding status is back to 'in use'
+        for (HoldingRequest hr : requestOnHold.getHoldingRequests()) {
             Holding h = hr.getHolding();
             if (holding.getId() == h.getId()) {
                 hr.setOnHold(false);
@@ -116,7 +153,7 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
             }
         }
 
-        return request;
+        return requestOnHold;
     }
 
     /**
@@ -159,12 +196,17 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
     /**
      * Lets all the request services know that the status of one of the holdings is updated.
      *
-     * @param holding The holding.
+     * @param holding       The holding.
+     * @param activeRequest The request which triggered the holding change.
+     * @return A list of futures for each request.
      */
-    private void sentHoldingStatusUpdateEvent(Holding holding) {
+    private List<Future<Boolean>> sentHoldingStatusUpdateEvent(Holding holding, Request activeRequest) {
+        List<Future<Boolean>> futureList = new ArrayList<Future<Boolean>>();
         for (RequestService requestService : requests) {
-            requestService.onHoldingStatusUpdate(holding);
+            Future<Boolean> future = requestService.onHoldingStatusUpdate(holding, activeRequest);
+            futureList.add(future);
         }
+        return futureList;
     }
 
     /**
@@ -176,9 +218,8 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
     private void checkRequestHoldingsOnHold(Holding holding) {
         try {
             Holding.Status newStatus = holding.getStatus();
-            if ((newStatus == Holding.Status.AVAILABLE) || (newStatus == Holding.Status.RETURNED)) {
+            if (newStatus != Holding.Status.IN_USE)
                 markItemActive(holding);
-            }
         } catch (OnHoldException e) {
             // No problem, we don't expect a holding to be on hold all the time
         }

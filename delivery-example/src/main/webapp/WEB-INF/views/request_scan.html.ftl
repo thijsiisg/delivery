@@ -3,6 +3,13 @@
 
 <#assign title><@_ "scan.title" "Scan Items"/></#assign>
 
+<#assign yes>
+  <@_ "yes" "Yes" />
+</#assign>
+<#assign no>
+  <@_ "no" "No" />
+</#assign>
+
 <@base title>
 <h1>${title}</h1>
   <@form_plain "" "scan">
@@ -28,17 +35,26 @@
           &quot;<@_ "holding.statusType.${holding.status?string}" holding.status?string/>&quot;.
         </li>
 
-        <#if reservationOnHold??>
+        <#if requestActiveAfter?? && (requestActiveBefore != requestActiveAfter)>
           <li>
-            The holding was placed on hold for reservation ${reservationOnHold.id?c}.
-            The holding may now return to ${reservationOnHold.getVisitorName()}.
+            The item was active for ${requestActiveBefore?html}
+            <#if requestActiveAfter??>
+              and is now active for ${requestActiveAfter?html}.
+            <#else>
+              and is now no langer active.
+            </#if>
           </li>
         </#if>
 
-        <#if reproductionOnHold??>
+        <#if requestsOnHoldBefore??>
           <li>
-            The holding was placed on hold for reproduction ${reproductionOnHold.id?c}.
-            The holding may now return to repro.
+            The item was on hold for ${requestsOnHoldBefore?html}.
+          </li>
+        </#if>
+
+        <#if requestsOnHoldAfter??>
+          <li>
+            The item is on hold for ${requestsOnHoldAfter?html}.
           </li>
         </#if>
       </ul>
@@ -49,11 +65,39 @@
       <ul class="reproductionDetails">
         <li><span><@_ "reproduction.customerName" "Name"/></span> ${reproduction.customerName?html}</li>
         <li><span><@_ "reproduction.customerEmail" "E-mail"/></span> ${reproduction.customerEmail?html}</li>
-        <li><span><@_ "reproduction.creationDate" "Date"/></span> ${reproduction.creationDate?string(prop_dateFormat)}
+
+        <li class="spacing">
+          <span><@_ "reproduction.creationDate" "Created on"/></span> ${reproduction.creationDate?string(prop_dateFormat)}
         </li>
         <li>
-          <span><@_ "reproduction.status" "Status"/></span> <@_ "reproduction.statusType.${reproduction.status?string}" reproduction.status?string/>
+          <span><@_ "reproduction.status" "Status"/></span> <@_ "reproduction.statusType.${reproduction.status}" reproduction.status?string />
         </li>
+
+        <li>
+          <span><@_ "reproduction.printed" "Printed"/></span>
+        ${reproduction.printed?string(yes, no)}
+        </li>
+
+        <#if reproduction.comment??>
+          <li>
+            <span><@_ "reproduction.comment" "Comment"/></span>
+          ${reproduction.comment?html}
+          </li>
+        </#if>
+
+        <#if reproduction.discount gt 0>
+          <li class="spacing">
+            <span><@_ "reproduction.discount" "Discount"/></span>
+            &euro; ${reproduction.discount?string("0.00")}
+          </li>
+        </#if>
+
+        <#if reproduction.deliveryTimeComment??>
+          <li <#if reproduction.discount lte 0>class="spacing"</#if>>
+            <span><@_ "reproduction.deliveryTimeComment" "Estimated time of delivery"/></span>
+          ${reproduction.deliveryTimeComment?html}
+          </li>
+        </#if>
 
         <#list reproduction.holdingReproductions as hr>
           <#assign h = hr.holding>
@@ -104,6 +148,11 @@
                 <#else>
                 ${h.record.pid?html}
                 </#if>
+              </li>
+
+              <li>
+                <span><@_ "reproduction.onHold" "On hold"/></span>
+                ${hr.onHold?string(yes, no)}
               </li>
 
               <li>
@@ -176,6 +225,7 @@
         <tr>
           <th>ID</th>
           <th><@_ "record.title" "Titel"/></th>
+          <th><@_ "reservation.onHold" "On hold"/></th>
           <th><@_ "holding.status" "Status"/></th>
         </tr>
         </thead>
@@ -185,6 +235,7 @@
           <tr>
             <td>${h.id?c}</td>
             <td>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></td>
+            <td>${hr.onHold?string(yes, no)}</td>
             <td><@_ "holding.statusType.${h.status?string}" h.status?string/></td>
           </tr>
           </#list>

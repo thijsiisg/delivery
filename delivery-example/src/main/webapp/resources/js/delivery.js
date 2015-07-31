@@ -358,5 +358,8 @@ function addNewStandardOption() {
     newStandardOption.find("#new\\.deliveryTime")
         .attr('id', newPrefix+"deliveryTime")
         .attr('name', newPrefix+"deliveryTime");
+    newStandardOption.find("#new\\.enabled")
+        .attr('id', newPrefix+"enabled")
+        .attr('name', newPrefix+"enabled");
     newStandardOption.appendTo("table.reproduction_standard_options tbody");
 }

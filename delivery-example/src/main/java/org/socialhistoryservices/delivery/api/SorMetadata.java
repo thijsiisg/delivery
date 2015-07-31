@@ -1,6 +1,6 @@
 package org.socialhistoryservices.delivery.api;
 
-import org.codehaus.jackson.JsonNode;
+import java.util.Map;
 
 /**
  * Maps some of the data obtained from the metadata API from the Shared Object Repository.
@@ -10,9 +10,9 @@ public class SorMetadata {
 
     private boolean isMaster;
     private String contentType;
-    private JsonNode content;
+    private Map<String, String> content;
 
-    public SorMetadata(boolean isMaster, String contentType, JsonNode content) {
+    public SorMetadata(boolean isMaster, String contentType, Map<String, String> content) {
         this.isMaster = isMaster;
         this.contentType = contentType;
         this.content = content;
@@ -37,11 +37,11 @@ public class SorMetadata {
     }
 
     /**
-     * The content metadata in JSON.
+     * The content metadata.
      *
-     * @return The content metadata in JSON.
+     * @return The content metadata.
      */
-    public JsonNode getContent() {
+    public Map<String, String> getContent() {
         return content;
     }
 
@@ -50,14 +50,14 @@ public class SorMetadata {
      *
      * @return True if we can determine that the file is a TIFF with the valid DPI.
      */
-    private boolean isTiff() {
+    public boolean isTiff() {
         try {
             if (isMaster && contentType.equals("image/tiff")) {
-                if (content.has("x-resolution")) {
-                    String xResolution = content.get("x-resolution").getValueAsText();
+                if (content.containsKey("x-resolution")) {
+                    String xResolution = content.get("x-resolution");
 
                     // Try to obtain the number such that we can determine the DPI value
-                    xResolution = xResolution.replaceAll("\\d+", "");
+                    xResolution = xResolution.replaceAll("([^\\d]*)([\\d]*)(.*)", "$2");
                     int dpi = Integer.parseInt(xResolution);
 
                     return (dpi >= TIFF_MASTER_DPI);

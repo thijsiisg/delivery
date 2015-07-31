@@ -45,9 +45,14 @@
 
           ${h.record.title?html} <#if info.author??>/ ${info.author}</#if>
           - ${h.signature?html} <#if hr.comment??>- ${hr.comment}</#if>
-
           <br/>
 
+          <#if holdingsNotInSor?seq_contains(h)>
+            <@_ "reproduction.holdingReserverdMail" "Currently reserved item."/>
+            <br/>
+          </#if>
+
+          <br/>
           <#if hr.standardOption??>
             <em>
               <@_ "reproductionStandardOption.price" "Price"/>: &euro; ${hr.price?string("0.00")} -

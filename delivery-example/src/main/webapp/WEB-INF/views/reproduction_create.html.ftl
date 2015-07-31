@@ -102,10 +102,19 @@
                   </#if>
                 </li>
               </#if>
+
+              <#if _sec.isAnonymous() && (h.record.copyrightPrice gt 0)>
+                <li>
+                  <em>
+                    <@_ "reproduction.copyrightPrice" "For this item, you will also be charged with copyright costs of"/>
+                    &euro; ${h.record.copyrightPrice?string('0.00')}
+                  </em>
+                </li>
+              </#if>
             </ul>
 
             <#assign reproductionOptions = []/>
-            <#if reproductionStandardOptions[info.materialType.name()]??>
+            <#if !h.allowOnlyCustomReproduction() && reproductionStandardOptions[info.materialType.name()]??>
               <#assign reproductionOptions = reproductionStandardOptions[info.materialType.name()]/>
             </#if>
 
@@ -175,10 +184,10 @@
           <li class="spacing">
             <span><@_ "reproductionStandardOption.price" "Price"/></span>
 
-            <#if _sec.principal??>
-              &euro; ${priceAuthenticated?string("0.00")}
-            <#else>
+            <#if _sec.isAnonymous()>
               &euro; ${value.price?string("0.00")}
+            <#else>
+              &euro; ${priceAuthenticated?string("0.00")}
             </#if>
           </li>
 
@@ -193,7 +202,7 @@
     <li>
       <#assign id="${spring.status.expression}.null">
         <input type="radio" id="${id}" name="${spring.status.expression}" class="custom"
-               value="0"<#if spring.stringStatusValue == ""> checked="checked" </#if>/>
+               value="0"<#if spring.stringStatusValue == ""> checked="checked"</#if>/>
 
         <ul class="reproductionDetails">
           <li>

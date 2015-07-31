@@ -39,3 +39,10 @@
 <@_ "mail.email" ""/>: <@_ "iisg.email" ""/>
 <@_ "mail.website" ""/>: <@_ "iisg.website" ""/>
 </#macro>
+
+<#macro mailRaedingRoom>
+    <#nested>
+
+----
+    <@_ "mail.auto" "This is an email automatically sent by Delivery."/>
+</#macro>

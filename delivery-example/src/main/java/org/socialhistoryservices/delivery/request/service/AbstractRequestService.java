@@ -3,11 +3,14 @@ package org.socialhistoryservices.delivery.request.service;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.record.entity.Record;
+import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
+import org.socialhistoryservices.delivery.reproduction.service.ClosedForReproductionException;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.Validator;
@@ -17,6 +20,7 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * Represents the service of the request package to be used by the implementing services.
@@ -34,10 +38,29 @@ public abstract class AbstractRequestService implements RequestService {
     /**
      * What should happen when the status of a holding is updated.
      *
-     * @param holding The holding. (With the status updated)
+     * @param holding       The holding. (With the status updated)
+     * @param activeRequest The request which triggered the holding change.
+     * @return A Future, indicating when the method is finished and whether some updates were performed.
      */
-    public void onHoldingStatusUpdate(Holding holding) {
-        // By default nothing...
+    public Future<Boolean> onHoldingStatusUpdate(Holding holding, Request activeRequest) {
+        return new AsyncResult<Boolean>(false);
+    }
+
+    /**
+     * Validate provided holding part of request.
+     *
+     * @param newReq The new request containing holdings.
+     * @param oldReq The old request if applicable (or null).
+     * @throws ClosedException     Thrown when a holding is provided which
+     *                             references a record which is restrictionType=CLOSED.
+     * @throws NoHoldingsException Thrown when no holdings are provided.
+     */
+    public void validateHoldings(Request newReq, Request oldReq) throws NoHoldingsException, ClosedException {
+        try {
+            validateHoldings(newReq, oldReq, false);
+        } catch (InUseException iue) {
+            // Will not be thrown.
+        }
     }
 
     /**
@@ -52,7 +75,24 @@ public abstract class AbstractRequestService implements RequestService {
      *                             to the request is already in use by another request.
      * @throws NoHoldingsException Thrown when no holdings are provided.
      */
-    public void validateHoldings(Request newReq, Request oldReq, boolean checkInUse)
+    public void validateHoldingsAndAvailability(Request newReq, Request oldReq)
+            throws NoHoldingsException, InUseException, ClosedException {
+        validateHoldings(newReq, oldReq, true);
+    }
+
+    /**
+     * Validate provided holding part of request.
+     *
+     * @param newReq     The new request containing holdings.
+     * @param oldReq     The old request if applicable (or null).
+     * @param checkInUse Whether to validate on holdings that are in use currently.
+     * @throws ClosedException     Thrown when a holding is provided which
+     *                             references a record which is restrictionType=CLOSED.
+     * @throws InUseException      Thrown when a new holding provided to be added
+     *                             to the request is already in use by another request.
+     * @throws NoHoldingsException Thrown when no holdings are provided.
+     */
+    private void validateHoldings(Request newReq, Request oldReq, boolean checkInUse)
             throws NoHoldingsException, InUseException, ClosedException {
         if (newReq.getHoldingRequests() == null || newReq.getHoldingRequests().isEmpty()) {
             throw new NoHoldingsException();
@@ -156,7 +196,9 @@ public abstract class AbstractRequestService implements RequestService {
      */
     protected void changeHoldingStatus(Request request, Holding.Status status) {
         for (HoldingRequest hr : request.getHoldingRequests()) {
-            requests.updateHoldingStatus(hr.getHolding(), status);
+            Holding h = hr.getHolding();
+            if (requests.getActiveFor(h) == request)
+                requests.updateHoldingStatus(h, status, request);
         }
     }
 
@@ -239,7 +281,7 @@ public abstract class AbstractRequestService implements RequestService {
                 h.setStatus(Holding.Status.RETURNED);
                 break;
             case RETURNED:
-                h.setStatus(Holding.Status.RESERVED);
+                h.setStatus(Holding.Status.AVAILABLE);
                 break;
         }
         return h.getStatus();

@@ -66,6 +66,7 @@
         <th>ID</th>
         <th><@_ "record.title" "Title"/></th>
         <th>PID</th>
+        <th><@_ "reservation.onHold" "On hold"/></th>
         <th><@_ "holding.status" "Status"/></th>
       </tr>
     </thead>
@@ -81,8 +82,8 @@
             ${h.record.pid?html}
             </#if>
         </td>
-
-        <td><@_ "holding.statusType.${h.status?string}" h.status?string/></td>
+        <td>${hr.onHold?string(yes, no)}</td></td>
+        <td><@holdingStatus holdingActiveRequests reservation h/></td></td>
       </tr>
       </#list>
     </tbody>

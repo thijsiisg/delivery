@@ -197,7 +197,7 @@
     Date"/></@sortLink></th>-->
     <th><@sortLink "printed"><@_ "reservation.printed" "Printed"/></@sortLink></th>
     <th><@sortLink "onHold"><@_ "reservation.onHold" "On hold"/></@sortLink></th>
-    <th><@sortLink "status"><@_ "reservation.extended.status.status" "Reservation status"/></@sortLink></th>
+    <th><@sortLink "status"><@_ "reservation.extended.status" "Reservation status"/></@sortLink></th>
     <th><@sortLink "holdingStatus"><@_ "holding.extended.status" "Item status"/></@sortLink></th>
   </tr>
   </thead>
@@ -206,7 +206,7 @@
 	 <#assign holding = holdingReservation.holding>
      <#assign reservation = holdingReservation.reservation>
   <tr>
-    <td><input type="checkbox" name="checked" value="${reservation.id?c}"
+    <td><input type="checkbox" name="checked" value="${reservation.id?c}:${holding.id?c}"
                class="checkItem" /></td>
     <td>
       <a href="${rc.contextPath}/reservation/${reservation.id?c}">
@@ -232,12 +232,7 @@
     <td>${holdingReservation.onHold?string(yes, no)}</td>
     <td><@_ "reservation.statusType.${reservation.status?string}" "${reservation.status?string}" /></td>
     <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! reservation/>
-    <td>
-      <@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" />
-      <#if (holding.status != "AVAILABLE") && !holdingActiveRequest.equals(reservation)>
-        <em>(by another request)</em>
-      </#if>
-    </td>
+    <td><@holdingStatus holdingActiveRequests reservation holding/></td>
   </tr>
   </#list>
   </tbody>
@@ -254,7 +249,7 @@
 
 <#if _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY,ROLE_RESERVATION_DELETE")>
 <fieldset class="actions">
-  <legend><@_ "reservationList.withSelected" "With Selected"/>:</legend>
+  <legend><@_ "reservationList.withSelectedReservations" "With Selected Reservations"/>:</legend>
   <#assign printLabel>
   <@_ "reservationList.print" "Print"/>
   </#assign>
@@ -300,6 +295,37 @@
   </#if>
   </ul>
 </fieldset>
+
+<#if _sec.ifAllGranted("ROLE_RESERVATION_MODIFY")>
+  <fieldset class="actions">
+    <legend><@_ "reservationList.withSelectedHoldings" "With selected holdings"/>:</legend>
+
+    <#assign onHoldLabel>
+      <@_ "reservationList.onHold" "Place on hold"/>
+    </#assign>
+    <#assign statusLabel>
+      <@_ "reservationList.toStatus" "Change Status"/>
+    </#assign>
+
+    <ul>
+      <li>
+        <input type="submit" name="onHold" value="${onHoldLabel}"/>
+      </li>
+
+      <li>
+        <select name="newHoldingStatus">
+          <#list holding_status_types?keys as k>
+            <option value="${k}">
+              <@_ "holding.statusType.${k}" "${k}"/>
+            </option>
+          </#list>
+        </select>
+
+        <input type="submit" name="changeHoldingStatus" value="${statusLabel}"/>
+      </li>
+    </ul>
+  </fieldset>
+</#if>
 </#if>
 </#if>
 </form>

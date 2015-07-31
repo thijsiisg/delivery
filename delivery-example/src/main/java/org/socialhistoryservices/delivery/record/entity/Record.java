@@ -24,6 +24,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -161,19 +162,19 @@ public class Record {
     }
 
     /**
+     * Get the copyright holder.
+     * @return The holder of the copyright.
+     */
+    public String getCopyright() {
+        return externalInfo.getCopyright();
+    }
+
+    /**
      * Get the publication status.
      * @return the publication status.
      */
     public ExternalRecordInfo.PublicationStatus getPublicationStatus() {
         return externalInfo.getPublicationStatus();
-    }
-
-    /**
-     * Set the publication status.
-     * @param publicationStatus the publication status.
-     */
-    public void setPublicationStatus(ExternalRecordInfo.PublicationStatus publicationStatus) {
-        externalInfo.setPublicationStatus(publicationStatus);
     }
 
     /** The Record's comments. */
@@ -496,6 +497,28 @@ public class Record {
                 it.remove();
             }
         }
+    }
+
+    /**
+     * Returns whether IISH is (one of) the copyright holder.
+     * @return Whether IISH is (one of) the copyright holder.
+     */
+    public boolean isCopyrightIISH() {
+        if (externalInfo.getCopyright() != null) {
+            String copyright = externalInfo.getCopyright().toLowerCase();
+            return (copyright.contains("iish") || copyright.contains("iisg"));
+        }
+        return false;
+    }
+
+    /**
+     * The price of the copyright to be included in the total reproduction price if this record is included.
+     * @return The price of the copyright.
+     */
+    public BigDecimal getCopyrightPrice() {
+        if (isCopyrightIISH())
+            return new BigDecimal("23.45");
+        return BigDecimal.ZERO;
     }
 
     /**

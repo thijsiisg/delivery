@@ -24,7 +24,10 @@ import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -361,6 +364,16 @@ public class Reservation extends Request {
      */
     public void setComment(String val) {
         comment = val;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Reservation) {
+            Reservation other = (Reservation) obj;
+            if ((this.getId() != 0) && (other.getId() != 0))
+                return (this.getId() == other.getId());
+        }
+        return super.equals(obj);
     }
 
     /**

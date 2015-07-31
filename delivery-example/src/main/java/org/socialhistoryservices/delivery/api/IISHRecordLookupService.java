@@ -49,7 +49,7 @@ public class IISHRecordLookupService implements RecordLookupService {
     private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpAlt2Author, xpAlt3Author;
     private XPathExpression xp245aTitle, xp500aTitle, xp600aTitle, xp610aTitle, xp650aTitle, xp651aTitle, xp245kTitle;
     private XPathExpression xp245bSubTitle, xpYear, xpShelvingLocations, xpSerialNumbers, xpSignatures, xpBarcodes, xpLeader;
-	private XPathExpression xp542mAccess;
+	private XPathExpression xp540bCopyright, xp542mAccess;
     private XPathExpression xpNumberOfRecords;
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
 
@@ -165,6 +165,8 @@ public class IISHRecordLookupService implements RecordLookupService {
                     "/marc:subfield[@code=\"a\"]");
             xpLeader = xpath.compile("marc:leader");
 
+            xp540bCopyright = xpath.compile("marc:datafield[@tag=540]" +
+                    "/marc:subfield[@code=\"b\"]");
 	        xp542mAccess = xpath.compile("marc:datafield[@tag=542]" +
 			        "/marc:subfield[@code=\"m\"]");
 
@@ -354,6 +356,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
         externalInfo.setMaterialType(evaluateMaterialType(node));
 
+        externalInfo.setCopyright(evaluateCopyright(node));
 	    externalInfo.setPublicationStatus(evaluatePublicationStatus(node));
 
         return externalInfo;
@@ -596,6 +599,20 @@ public class IISHRecordLookupService implements RecordLookupService {
         }
     }
 
+    /**
+     * Fetches copyright from MARCXML.
+     * @param node The XML node to execute the XPath on.
+     * @return The holder of the copyright.
+     */
+    private String evaluateCopyright(Node node) {
+        try {
+            String copyright = xp540bCopyright.evaluate(node);
+            return copyright.isEmpty() ? null : copyright;
+        } catch (XPathExpressionException ex) {
+            return null;
+        }
+    }
+
 	/**
 	 * Fetches publication status from MARCXML.
 	 * @param node The XML node to execute the XPath on.
@@ -613,7 +630,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
 			return publicationStatus;
 		} catch (XPathExpressionException ex) {
-			return null;
+			return ExternalRecordInfo.PublicationStatus.CLOSED;
 		}
 	}
 }

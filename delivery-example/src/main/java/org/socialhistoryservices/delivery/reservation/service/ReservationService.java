@@ -47,6 +47,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import java.awt.print.PrinterException;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * Interface representing the service of the reservation package.
@@ -128,14 +129,9 @@ public interface ReservationService {
      * Mark a specific item in a reservation as seen, bumping it to the next status.     *
      * @param res Reservation to change status for.
      * @param h Holding to bump.
+     * @return A list of futures for each request after the status update.
      */
-    public void markItem(Reservation res, Holding h);
-
-    /**
-     * Mark a reservation, bumping it to the next status.
-     * @param r Reservation to change status for.
-     */
-    public void markRequest(Reservation r);
+    public List<Future<Boolean>> markItem(Reservation res, Holding h);
 
     /**
      * Merge the other reservation's fields into this reservation.
@@ -197,17 +193,16 @@ public interface ReservationService {
 
     /**
      * Validate provided holding part of request.
-     *
-     * @param newReq     The new request containing holdings.
-     * @param oldReq     The old request if applicable (or null).
-     * @param checkInUse Whether to validate on holdings that are in use currently.
+     * @param newReq The new request containing holdings.
+     * @param oldReq The old request if applicable (or null).
      * @throws ClosedException     Thrown when a holding is provided which
      *                             references a record which is restrictionType=CLOSED.
      * @throws InUseException      Thrown when a new holding provided to be added
      *                             to the request is already in use by another request.
      * @throws NoHoldingsException Thrown when no holdings are provided.
      */
-    public void validateHoldings(Request newReq, Request oldReq, boolean checkInUse) throws NoHoldingsException, InUseException, ClosedException;
+    public void validateHoldingsAndAvailability(Request newReq, Request oldReq)
+            throws NoHoldingsException, InUseException, ClosedException;
 
     /**
      * Get the first valid reservation date after or equal to from.

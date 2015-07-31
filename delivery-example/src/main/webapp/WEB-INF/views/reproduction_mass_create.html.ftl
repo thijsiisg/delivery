@@ -37,7 +37,7 @@
       <#assign info = hr.holding.record.externalInfo>
 
       <#assign reproductionOptions = []/>
-      <#if reproductionStandardOptions[info.materialType.name()]??>
+      <#if !hr.holding.allowOnlyCustomReproduction() && reproductionStandardOptions[info.materialType.name()]??>
         <#assign reproductionOptions = reproductionStandardOptions[info.materialType.name()]/>
       </#if>
 
@@ -50,14 +50,8 @@
 
         <ul class="inner">
           <li>
-            <#if hr.holding.status != "AVAILABLE" || hr.holding.record.realRestrictionType == "CLOSED">
-              <span class="red">
-            <#else>
-              <span class="green">
-            </#if>
-
             ${hr.holding.record.title?html} <#if info.author??>/
-            ${info.author}</#if> - ${hr.holding.signature?html}</span>
+            ${info.author}</#if> - ${hr.holding.signature?html}
           </li>
 
           <li>
@@ -129,9 +123,15 @@
   </ul>
 
   <ul class="form">
+    <li><@textarea "reproduction.deliveryTimeComment" "" "deliveryTimeComment"/></li>
+    <li><@input "reproduction.discount" "" "" "price"/></li>
+    <li>
+      <label for="free" class="field"><@_ "reproductionMassCreate.free" "Free"/></label>
+      <input type="checkbox" name="free" id="free" class="field"/>
+    </li>
     <li>
       <label for="mail" class="field"><@_ "reproductionMassCreate.mail" "Mail"/></label>
-      <input type="checkbox" name="mail" id="mail" class="field"/>
+      <input type="checkbox" name="mail" id="mail" class="field" checked="checked"/>
     </li>
   </ul>
 </fieldset>
@@ -156,97 +156,89 @@
 
   <input type="submit" name="searchSubmit" value="${searchLabel}"/>
 
-  <#if holdingList??>
-    <ul id="holdingSearch" class="holdingReproductionDetails">
+  <ul id="holdingSearch" class="holdingReproductionDetails">
+    <#if holdingList??>
       <#assign noResults = holdingList?size == 0>
 
       <#list holdingList as h>
         <#assign info = h.record.externalInfo>
 
         <#assign reproductionOptions = []/>
-        <#if reproductionStandardOptions[info.materialType.name()]??>
+        <#if !h.allowOnlyCustomReproduction() && reproductionStandardOptions[info.materialType.name()]??>
           <#assign reproductionOptions = reproductionStandardOptions[info.materialType.name()]/>
         </#if>
 
-        <#if h.status != "AVAILABLE" || h.record.realRestrictionType == "CLOSED">
-          <li>
-            <span class="red">${h.record.title?html} <#if info.author??>/
-            ${info.author}</#if> - ${h.signature?html}</span>
-          </li>
-        <#else>
-          <li>
-            <input type="button" class="addButton" onclick="addNewHoldingReproduction($(this).parent());"
-                   value="<@_ "addHolding.submit"/>"/>
-            <input type="hidden" class="holding" value="${h.id?c}"/>
+        <li>
+          <input type="button" class="addButton" onclick="addNewHoldingReproduction($(this).parent());"
+                 value="<@_ "addHolding.submit"/>"/>
+          <input type="hidden" class="holding" value="${h.id?c}"/>
 
-            <ul class="inner">
-              <li>
-                <span class="green">${h.record.title?html} <#if info.author??>/
-                ${info.author}</#if> - ${h.signature?html}</span>
-              </li>
+          <ul class="inner">
+            <li>
+              ${h.record.title?html} <#if info.author??>/ ${info.author}</#if> - ${h.signature?html}
+            </li>
 
+            <li class="hidden">
+              <#list reproductionOptions as value>
+                <label class="group">
+                  <input type="radio" class="standardOption" value="${value.id?c}"/>
+                  ${value.optionName?html}
+                </label>
+
+                <span>
+                  (&euro; ${value.price?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
+                </span>
+              </#list>
+
+              <label class="group">
+                <input type="radio" class="standardOption custom" value="0" checked="checked"/>
+                <@_ "reproduction.customReproduction" "Custom reproduction"/>
+              </label>
+            </li>
+
+            <#if info.materialType == "SERIAL">
               <li class="hidden">
-                <#list reproductionOptions as value>
-                  <label class="group">
-                    <input type="radio" class="standardOption" value="${value.id?c}"/>
-                    ${value.optionName?html}
-                  </label>
-
-                  <span>
-                    (&euro; ${value.price?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
-                  </span>
-                </#list>
-
                 <label class="group">
-                  <input type="radio" class="standardOption custom" value="0" checked="checked"/>
-                  <@_ "reproduction.customReproduction" "Custom reproduction"/>
+                  <strong class="label"><@_ "holdingReproductions.comment" "" /></strong>
+                  <input type="text" class="comment"/>
+
+                  <#if h.externalInfo.serialNumbers??>
+                    ( <strong><@_ "reproductionCreate.serialAvailable" ""/>:</strong>
+                  ${h.externalInfo.serialNumbers} )
+                  </#if>
                 </label>
               </li>
+            </#if>
 
-              <#if info.materialType == "SERIAL">
-                <li class="hidden">
-                  <label class="group">
-                    <strong class="label"><@_ "holdingReproductions.comment" "" /></strong>
-                    <input type="text" class="comment"/>
+            <li class="hidden on-custom">
+              <label class="group">
+                <strong class="label"><@_ "reproductionStandardOption.price" "Price"/></strong>
+                <input type="text" class="price" value="${0?string("0.00")}"/>
+              </label>
+            </li>
 
-                    <#if h.externalInfo.serialNumbers??>
-                      ( <strong><@_ "reproductionCreate.serialAvailable" ""/>:</strong>
-                    ${h.externalInfo.serialNumbers} )
-                    </#if>
-                  </label>
-                </li>
-              </#if>
+            <li class="hidden on-custom">
+              <label class="group">
+                <strong class="label"><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></strong>
+                <input type="text" class="deliveryTime" value="0"/>
+              </label>
+            </li>
 
-              <li class="hidden on-custom">
-                <label class="group">
-                  <strong class="label"><@_ "reproductionStandardOption.price" "Price"/></strong>
-                  <input type="text" class="price" value="${0?string("0.00")}"/>
-                </label>
-              </li>
+            <li class="hidden on-custom">
+              <label class="group">
+                <strong class="label"><@_ "reproduction.customReproductionCustomer.backend" "Customer's wish"/></strong>
+                <textarea class="customReproductionCustomer"></textarea>
+              </label>
+            </li>
 
-              <li class="hidden on-custom">
-                <label class="group">
-                  <strong class="label"><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></strong>
-                  <input type="text" class="deliveryTime" value="0"/>
-                </label>
-              </li>
-
-              <li class="hidden on-custom">
-                <label class="group">
-                  <strong class="label"><@_ "reproduction.customReproductionCustomer.backend" "Customer's wish"/></strong>
-                  <textarea class="customReproductionCustomer"></textarea>
-                </label>
-              </li>
-
-              <li class="hidden on-custom">
-                <label class="group">
-                  <strong class="label"><@_ "reproduction.customReproductionReply" "Reply on wish"/></strong>
-                  <textarea class="customReproductionReply"></textarea>
-                </label>
-              </li>
-            </ul>
-          </li>
-        </#if>
+            <li class="hidden on-custom">
+              <label class="group">
+                <strong class="label"><@_ "reproduction.customReproductionReply" "Reply on wish"/></strong>
+                <textarea class="customReproductionReply"></textarea>
+              </label>
+            </li>
+          </ul>
+        </li>
       </#list>
 
       <#if noResults>
@@ -254,8 +246,8 @@
           <span><@_ "search.notfound" "No results..."/></span>
         </li>
       </#if>
-    </ul>
-  </#if>
+    </#if>
+  </ul>
 </fieldset>
 
 <@buttons>

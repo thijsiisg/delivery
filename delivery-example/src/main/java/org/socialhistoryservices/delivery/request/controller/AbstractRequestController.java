@@ -7,16 +7,22 @@ import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
+import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.record.service.RecordService;
 import org.socialhistoryservices.delivery.request.service.GeneralRequestService;
+import org.socialhistoryservices.delivery.request.util.BulkActionIds;
+import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import java.beans.PropertyEditorSupport;
 import java.text.DateFormat;
@@ -26,6 +32,9 @@ import java.util.*;
 
 public abstract class AbstractRequestController extends ErrorHandlingController {
     private static final DateFormat API_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+    @Autowired
+    protected MessageSource messageSource;
 
     @Autowired
     protected GeneralRequestService requests;
@@ -57,7 +66,7 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
      */
     @ModelAttribute("holding_status_types")
     public Map<String, Holding.Status> holdingStatusTypes() {
-        Map<String, Holding.Status> data = new HashMap<String, Holding.Status>();
+        Map<String, Holding.Status> data = new LinkedHashMap<String, Holding.Status>();
         data.put("AVAILABLE", Holding.Status.AVAILABLE);
         data.put("RESERVED", Holding.Status.RESERVED);
         data.put("IN_USE", Holding.Status.IN_USE);
@@ -78,6 +87,7 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         for (String tuple : tuples) {
             String[] elements = tuple.split(properties.getProperty("prop_holdingSeparator", ":"));
             Record r = records.getRecordByPid(elements[0]);
+
             if (r == null) {
                 // Try creating the record.
                 try {
@@ -87,6 +97,12 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
                     return null;
                 }
             }
+            else {
+                // TODO: Can we update the external data of the record?
+                /*records.updateExternalInfo(r);
+                records.saveRecord(r);*/
+            }
+
             if (elements.length == 1) {
                 Holding h = records.getHoldingForRecord(r, mustBeAvailable);
                 if (h == null) {
@@ -152,16 +168,17 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         return (afterOpen && beforeClose);
     }
 
+    /**
+     * Checks the holdings of a request.
+     *
+     * @param model   The model to add errors to.
+     * @param request The Request with holdings to check.
+     * @return Whether no errors were found.
+     */
     protected boolean checkHoldings(Model model, Request request) {
         List<? extends HoldingRequest> holdingRequests = request.getHoldingRequests();
         if (holdingRequests == null) {
             model.addAttribute("error", "availability");
-            return false;
-        }
-
-        // TODO: Only reservations ???
-        if (holdingRequests.size() > Integer.parseInt(properties.getProperty("prop_requestMaxItems"))) {
-            model.addAttribute("error", "limitItems");
             return false;
         }
 
@@ -205,8 +222,15 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         return true;
     }
 
+    /**
+     * Initilizes the model for use with an overview.
+     *
+     * @param p               The parameter map.
+     * @param model           The model.
+     * @param pagedListHolder The paged list holder.
+     */
     protected void initOverviewModel(Map<String, String[]> p, Model model, PagedListHolder<?> pagedListHolder) {
-        // Set the amount of reproductions per page
+        // Set the amount of requests per page
         pagedListHolder.setPageSize(parsePageLenFilter(p));
 
         // Set the current page, internal starts at 0, external at 1
@@ -226,6 +250,12 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         model.addAttribute("tomorrow", cal.getTime());
     }
 
+    /**
+     * Returns a single date from the parameter map.
+     *
+     * @param p The parameter map to search the given filter value in.
+     * @return A date, if found.
+     */
     protected Date getDateFilter(Map<String, String[]> p) {
         Date date = null;
         if (p.containsKey("date")) {
@@ -238,6 +268,12 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         return date;
     }
 
+    /**
+     * Returns a 'from' date from the parameter map.
+     *
+     * @param p The parameter map to search the given filter value in.
+     * @return A date, if found.
+     */
     protected Date getFromDateFilter(Map<String, String[]> p) {
         Date date = null;
         boolean containsFrom = p.containsKey("from_date") && !p.get("from_date")[0].trim().equals("");
@@ -251,6 +287,12 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         return date;
     }
 
+    /**
+     * Returns a 'to' date from the parameter map.
+     *
+     * @param p The parameter map to search the given filter value in.
+     * @return A date, if found.
+     */
     protected Date getToDateFilter(Map<String, String[]> p) {
         Date date = null;
         boolean containsTo = p.containsKey("to_date") && !p.get("to_date")[0].trim().equals("");
@@ -365,7 +407,20 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         // cq.orderBy(cb.asc(eRoot.get(ExternalRecordInfo_.title)));
         cq.distinct(true);
 
-        return records.listHoldings(cq);
+        List<Holding> holdings = records.listHoldings(cq);
+
+        // TODO: Can we update the external data of the record?
+        Set<Record> r = new HashSet<Record>();
+        for (Holding holding : holdings) {
+            Record record = holding.getRecord();
+            if (!r.contains(record)) {
+                records.updateExternalInfo(record);
+                records.saveRecord(record);
+                r.add(record);
+            }
+        }
+
+        return holdings;
     }
 
     /**
@@ -398,5 +453,39 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
             }
         }
         return holdingActiveRequests;
+    }
+
+    /**
+     * From a list of request id and holding id pairs, extract the ids.
+     *
+     * @param bulk A list of request id and holding id pairs.
+     * @return The ids.
+     */
+    protected List<BulkActionIds> getIdsFromBulk(List<String> bulk) {
+        List<BulkActionIds> bulkActionIds = new ArrayList<BulkActionIds>();
+        for (String bulkIds : bulk) {
+            String[] ids = bulkIds.split(":");
+            if (ids.length == 2)
+                bulkActionIds.add(new BulkActionIds(Integer.parseInt(ids[0]), Integer.parseInt(ids[1])));
+        }
+        return bulkActionIds;
+    }
+
+    /**
+     * Returns the request as a string.
+     *
+     * @param request The Request.
+     * @return The request as a string.
+     */
+    protected String getRequestAsString(Request request) {
+        if (request instanceof Reservation) {
+            return messageSource.getMessage("reservation.id", new Object[]{}, LocaleContextHolder.getLocale()) +
+                    " " + ((Reservation) request).getId();
+        }
+        if (request instanceof Reproduction) {
+            return messageSource.getMessage("reproduction.id", new Object[]{}, LocaleContextHolder.getLocale()) +
+                    " " + ((Reproduction) request).getId();
+        }
+        return null;
     }
 }

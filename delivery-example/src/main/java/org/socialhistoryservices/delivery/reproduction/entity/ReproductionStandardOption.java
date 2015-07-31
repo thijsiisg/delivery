@@ -262,18 +262,40 @@ public class ReproductionStandardOption {
         this.deliveryTime = deliveryTime;
     }
 
+    @NotNull
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled;
+
+    /**
+     * Get whether this standard option is enabled.
+     *
+     * @return Whether this standard option is enabled.
+     */
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    /**
+     * Set whether this standard option is enabled.
+     *
+     * @param enabled Whether this standard option is enabled.
+     */
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     /**
      * Merge the other standard option's fields into this standard option.
      *
      * @param other The other reproduction standard option.
      */
     public void mergeWith(ReproductionStandardOption other) {
-        setMaterialType(other.getMaterialType());
         setOptionNameNL(other.getOptionNameNL());
         setOptionNameEN(other.getOptionNameEN());
         setOptionDescriptionNL(other.getOptionDescriptionNL());
         setOptionDescriptionEN(other.getOptionDescriptionEN());
         setPrice(other.getPrice());
         setDeliveryTime(other.getDeliveryTime());
+        setEnabled(other.isEnabled());
     }
 }

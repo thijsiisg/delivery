@@ -112,12 +112,10 @@ public class SharedObjectRepositoryService {
             contentType = contentTypeElement.getTextContent();
         }
 
-        JsonNode content = null;
+        Map<String, String> contentAttributes = new HashMap<String, String>();
         if ((contentNodes.getLength() == 1) && (contentNodes.item(0).getNodeType() == Node.ELEMENT_NODE)) {
             Element contentElement = (Element) contentNodes.item(0);
             if (contentElement.hasAttributes()) {
-                Map<String, String> contentAttributes = new HashMap<String, String>();
-
                 NamedNodeMap contentElementAttributes = contentElement.getAttributes();
                 for (int i = 0; i < contentElementAttributes.getLength(); i++) {
                     Node contentElementAttribute = contentElementAttributes.item(i);
@@ -126,12 +124,9 @@ public class SharedObjectRepositoryService {
                             contentElementAttribute.getNodeValue()
                     );
                 }
-
-                ObjectMapper objectMapper = new ObjectMapper();
-                content = objectMapper.valueToTree(contentAttributes);
             }
         }
 
-        return new SorMetadata(master, contentType, content);
+        return new SorMetadata(master, contentType, contentAttributes);
     }
 }

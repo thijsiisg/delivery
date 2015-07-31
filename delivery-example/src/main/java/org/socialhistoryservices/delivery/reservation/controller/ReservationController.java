@@ -20,11 +20,14 @@ import org.codehaus.jackson.JsonNode;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
+import org.socialhistoryservices.delivery.record.service.OnHoldException;
 import org.socialhistoryservices.delivery.record.service.RecordService;
 import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
+import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
+import org.socialhistoryservices.delivery.request.util.BulkActionIds;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation_;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
@@ -96,6 +99,7 @@ public class ReservationController extends AbstractRequestController {
         }
         model.addAttribute("callback", callback);
         model.addAttribute("reservation", r);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(r.getHoldings()));
         return "reservation_get";
     }
 
@@ -142,7 +146,7 @@ public class ReservationController extends AbstractRequestController {
         Join<HoldingReservation,Holding> hRoot = hrRoot.join
 		        (HoldingReservation_.holding);
 
-	    cq.orderBy(parseSortFilter(p, cb, resRoot, hRoot));
+	    cq.orderBy(parseSortFilter(p, cb, hrRoot, resRoot, hRoot));
 
         // Fetch result set
         List<HoldingReservation> hList = reservations.listHoldingReservations(cq);
@@ -152,7 +156,7 @@ public class ReservationController extends AbstractRequestController {
 
         Calendar cal = GregorianCalendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, Integer.parseInt(properties.getProperty
-                ("prop_requestMaxDaysInAdvance")));
+                ("prop_reservationMaxDaysInAdvance")));
         model.addAttribute("maxReserveDate",cal.getTime());
 
         // Fetch holding active request information
@@ -167,11 +171,14 @@ public class ReservationController extends AbstractRequestController {
      * Parse the sort and sort_dir filters into an Order to be used in a query.
      * @param p The parameter list to search the filter values in.
      * @param cb The criteria builder used to construct the Order.
+     * @param hrRoot The root of the holding reservation used to construct the Order.
      * @param resRoot The root of the reservation used to construct the Order.
+     * @param hRoot The root of the holding used to construct the Order.
      * @return The order the query should be in (asc/desc) sorted on provided
      * column. Defaults to asc on the PK column.
      */
-    private Order parseSortFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Join<HoldingReservation,Holding> hRoot) {
+    private Order parseSortFilter(Map<String, String[]> p, CriteriaBuilder cb, From<?,HoldingReservation> hrRoot,
+                                  From<?,Reservation> resRoot, From<?,Holding> hRoot) {
         boolean containsSort = p.containsKey("sort");
         boolean containsSortDir = p.containsKey("sort_dir");
         Expression e = resRoot.get(Reservation_.date);
@@ -191,6 +198,8 @@ public class ReservationController extends AbstractRequestController {
 		        e = hRoot.get(Holding_.signature);
             } else if (sort.equals("holdingStatus")) {
 	            e = hRoot.get(Holding_.status);
+            } else if (sort.equals("onHold")) {
+                e = hrRoot.get(HoldingReservation_.onHold);
             }
         }
         if (containsSortDir &&
@@ -617,7 +626,7 @@ public class ReservationController extends AbstractRequestController {
                     return "reservation_success";
                 }
             } else {
-                reservations.validateHoldings(newRes, null, true);
+                reservations.validateHoldingsAndAvailability(newRes, null);
             }
 
         } catch (NoHoldingsException e) {
@@ -632,6 +641,26 @@ public class ReservationController extends AbstractRequestController {
         model.addAttribute("reservation", newRes);
 
         return "reservation_create";
+    }
+
+    /**
+     * Checks the holdings of a request.
+     * @param model   The model to add errors to.
+     * @param request The Request with holdings to check.
+     * @return Whether no errors were found.
+     */
+    @Override
+    protected boolean checkHoldings(Model model, Request request) {
+        if (!super.checkHoldings(model, request))
+            return false;
+
+        int maxItems = Integer.parseInt(properties.getProperty("prop_reservationMaxItems"));
+        if (request.getHoldingRequests().size() > maxItems) {
+            model.addAttribute("error", "limitItems");
+            return false;
+        }
+
+        return true;
     }
 
 	private List<HoldingReservation> uriPathToHoldingReservations(String path) {
@@ -692,14 +721,14 @@ public class ReservationController extends AbstractRequestController {
                     params = "delete")
     @Secured("ROLE_RESERVATION_DELETE")
     public String batchProcessDelete(HttpServletRequest req,
-                                     @RequestParam(required=false) Set<Integer>
+                                     @RequestParam(required=false) List<String>
                                              checked) {
 
         // Delete all the provided reservations
         if (checked != null) {
 
-            for (int id : checked) {
-                delete(id);
+            for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+                delete(bulkActionIds.getRequestId());
             }
         }
         String qs = req.getQueryString() != null ?
@@ -718,7 +747,7 @@ public class ReservationController extends AbstractRequestController {
                     method = RequestMethod.POST,
                     params = "print")
     public String batchProcessPrint(HttpServletRequest req,
-                                    @RequestParam(required = false) Set<Integer>
+                                    @RequestParam(required = false) List<String>
                                             checked) {
         String qs = req.getQueryString() != null ?
                     "?" + req.getQueryString() : "";
@@ -728,8 +757,8 @@ public class ReservationController extends AbstractRequestController {
             return "redirect:/reservation/" + qs;
         }
 
-        for(int id : checked) {
-            Reservation r = reservations.getReservationById(id);
+        for(BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Reservation r = reservations.getReservationById(bulkActionIds.getRequestId());
             if (r != null) {
                 try {
                     reservations.printReservation(r);
@@ -753,7 +782,7 @@ public class ReservationController extends AbstractRequestController {
                     method = RequestMethod.POST,
                     params = "printForce")
     public String batchProcessPrintForce(HttpServletRequest req,
-                                         @RequestParam(required = false) Set<Integer>
+                                         @RequestParam(required = false) List<String>
                                                  checked) {
         String qs = req.getQueryString() != null ?
                     "?" + req.getQueryString() : "";
@@ -763,8 +792,8 @@ public class ReservationController extends AbstractRequestController {
             return "redirect:/reservation/" + qs;
         }
 
-        for(int id : checked) {
-            Reservation r = reservations.getReservationById(id);
+        for(BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Reservation r = reservations.getReservationById(bulkActionIds.getRequestId());
             if (r != null) {
                 try {
                     reservations.printReservation(r, true);
@@ -789,7 +818,7 @@ public class ReservationController extends AbstractRequestController {
                     params = "changeStatus")
     @Secured("ROLE_RESERVATION_MODIFY")
     public String batchProcessChangeStatus(HttpServletRequest req,
-                                     @RequestParam(required=false) Set<Integer>
+                                     @RequestParam(required=false) List<String>
                                              checked,
                                      @RequestParam Reservation.Status
                                              newStatus) {
@@ -801,8 +830,8 @@ public class ReservationController extends AbstractRequestController {
             return "redirect:/reservation/" + qs;
         }
 
-        for (int id : checked) {
-            Reservation r = reservations.getReservationById(id);
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Reservation r = reservations.getReservationById(bulkActionIds.getRequestId());
 
             // Only change reservations which exist.
             if (r == null) {
@@ -816,6 +845,85 @@ public class ReservationController extends AbstractRequestController {
 
         return "redirect:/reservation/" + qs;
     }
+
+    /**
+     * Change status of marked holdings.
+     * @param req The HTTP request object.
+     * @param checked The holdings marked.
+     * @param newHoldingStatus The status the selected holdings should be set to.
+     * @return The view to resolve.
+     */
+    @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "changeHoldingStatus")
+    @Secured("ROLE_RESERVATION_MODIFY")
+    public String batchProcessChangeHoldingStatus(HttpServletRequest req,
+                                                  @RequestParam(required = false) List<String> checked,
+                                                  @RequestParam Holding.Status newHoldingStatus) {
+        String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
+
+        // Simply redirect to previous page if no holdings were selected
+        if (checked == null) {
+            return "redirect:/reservation/" + qs;
+        }
+
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Holding h = records.getHoldingById(bulkActionIds.getHoldingId());
+            if (h == null) {
+                continue;
+            }
+
+            // Only update the status if the holding is active for the same reservation
+            Request request = requests.getActiveFor(h);
+            if ((request instanceof Reservation) &&
+                    (((Reservation) request).getId() == bulkActionIds.getRequestId())) {
+                // Set the new status
+                requests.updateHoldingStatus(h, newHoldingStatus);
+                records.saveHolding(h);
+            }
+        }
+
+        return "redirect:/reservation/" + qs;
+    }
+
+    /**
+     * Place marked holdings on hold.
+     * @param req The HTTP request object.
+     * @param checked The holdings marked.
+     * @return The view to resolve.
+     */
+    @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "onHold")
+    @Secured("ROLE_RESERVATION_MODIFY")
+    public String batchProcessOnHold(HttpServletRequest req, @RequestParam(required = false) List<String> checked) {
+        String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
+
+        // Simply redirect to previous page if no holdings were selected
+        if (checked == null) {
+            return "redirect:/reservation/" + qs;
+        }
+
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Holding h = records.getHoldingById(bulkActionIds.getHoldingId());
+            if (h == null) {
+                continue;
+            }
+
+            // Only update the status if the holding is active for the same reservation
+            Request request = requests.getActiveFor(h);
+            if ((request instanceof Reservation) &&
+                    (((Reservation) request).getId() == bulkActionIds.getRequestId())) {
+                // Place on hold
+                try {
+                    requests.markItemOnHold(h);
+                    records.saveHolding(h);
+                }
+                catch (OnHoldException ohe) {
+                    // Its a batch update, so ignore
+                }
+            }
+        }
+
+        return "redirect:/reservation/" + qs;
+    }
+
     // }}}
     // {{{ Delete API
     /**
@@ -866,7 +974,7 @@ public class ReservationController extends AbstractRequestController {
      */
     @ModelAttribute("status_types")
     public Map<String, Reservation.Status> statusTypes() {
-        Map<String, Reservation.Status> data = new HashMap<String, Reservation.Status>();
+        Map<String, Reservation.Status> data = new LinkedHashMap<String, Reservation.Status>();
         data.put("PENDING", Reservation.Status.PENDING);
         data.put("ACTIVE", Reservation.Status.ACTIVE);
         data.put("COMPLETED", Reservation.Status.COMPLETED);

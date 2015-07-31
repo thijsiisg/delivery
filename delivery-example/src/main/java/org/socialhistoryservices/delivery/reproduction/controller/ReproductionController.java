@@ -7,23 +7,25 @@ import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.socialhistoryservices.delivery.api.PayWayMessage;
 import org.socialhistoryservices.delivery.api.PayWayService;
 import org.socialhistoryservices.delivery.record.entity.*;
+import org.socialhistoryservices.delivery.record.service.OnHoldException;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
-import org.socialhistoryservices.delivery.reproduction.service.IncompleteOrderDetailsException;
-import org.socialhistoryservices.delivery.reproduction.service.OrderRegistrationFailureException;
-import org.socialhistoryservices.delivery.reproduction.service.ReproductionMailer;
-import org.socialhistoryservices.delivery.reproduction.service.ReproductionService;
+import org.socialhistoryservices.delivery.reproduction.service.*;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
+import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
+import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
-import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
+import org.socialhistoryservices.delivery.request.util.BulkActionIds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -130,16 +132,24 @@ public class ReproductionController extends AbstractRequestController {
      *
      * @param id    ID of the reproduction to fetch.
      * @param model Passed view model.
+     * @param error In case of an error.
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/{id:[\\d]+}", method = RequestMethod.GET)
     @Secured("ROLE_REPRODUCTION_VIEW")
-    public String getSingle(@PathVariable int id, Model model) {
+    public String getSingle(@PathVariable int id, Model model, @RequestParam(required = false) String error) {
         Reproduction r = reproductions.getReproductionById(id);
         if (r == null) {
             throw new ResourceNotFoundException();
         }
+
         model.addAttribute("reproduction", r);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(r.getHoldings()));
+
+        // Was there an email error?
+        if (error != null)
+            model.addAttribute("error", error);
+
         return "reproduction_get";
     }
 
@@ -147,7 +157,7 @@ public class ReproductionController extends AbstractRequestController {
      * Get a list of reproductions.
      *
      * @param req   The HTTP request object.
-     * @param model Passed view model.
+     * @param model Passed view model.     *
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -180,7 +190,7 @@ public class ReproductionController extends AbstractRequestController {
 
         Join<HoldingReproduction, Holding> hRoot = hrRoot.join(HoldingReproduction_.holding);
 
-        cq.orderBy(parseSortFilter(p, cb, rRoot, hRoot));
+        cq.orderBy(parseSortFilter(p, cb, hrRoot, rRoot, hRoot));
 
         // Fetch result set
         List<HoldingReproduction> hList = reproductions.listHoldingReproductions(cq);
@@ -355,15 +365,17 @@ public class ReproductionController extends AbstractRequestController {
     /**
      * Parse the sort and sort_dir filters into an Order to be used in a query.
      *
-     * @param p     The parameter list to search the filter values in.
-     * @param cb    The criteria builder used to construct the Order.
-     * @param rRoot The root of the reservation used to construct the Order.
-     * @param hRoot The root of the holding used to construct the Order.
+     * @param p      The parameter list to search the filter values in.
+     * @param cb     The criteria builder used to construct the Order.
+     * @param hrRoot The root of the reproduction holding used to construct the Order.
+     * @param rRoot  The root of the reproduction used to construct the Order.
+     * @param hRoot  The root of the holding used to construct the Order.
      * @return The order the query should be in (asc/desc) sorted on provided column. Defaults to asc on the PK column.
      */
     private javax.persistence.criteria.Order parseSortFilter(Map<String, String[]> p, CriteriaBuilder cb,
-                                                             Join<HoldingReproduction, Reproduction> rRoot,
-                                                             Join<HoldingReproduction, Holding> hRoot) {
+                                                             From<?, HoldingReproduction> hrRoot,
+                                                             From<?, Reproduction> rRoot,
+                                                             From<?, Holding> hRoot) {
         boolean containsSort = p.containsKey("sort");
         boolean containsSortDir = p.containsKey("sort_dir");
         Expression e = rRoot.get(Reproduction_.creationDate);
@@ -388,6 +400,9 @@ public class ReproductionController extends AbstractRequestController {
             else if (sort.equals("holdingStatus")) {
                 e = hRoot.get(Holding_.status);
             }
+            else if (sort.equals("onHold")) {
+                e = hrRoot.get(HoldingReproduction_.onHold);
+            }
         }
 
         if (containsSortDir && p.get("sort_dir")[0].toLowerCase().equals("asc")) {
@@ -405,11 +420,11 @@ public class ReproductionController extends AbstractRequestController {
      */
     @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "delete")
     @Secured("ROLE_REPRODUCTION_DELETE")
-    public String batchProcessDelete(HttpServletRequest req, @RequestParam(required = false) Set<Integer> checked) {
+    public String batchProcessDelete(HttpServletRequest req, @RequestParam(required = false) List<String> checked) {
         // Delete all the provided reproductions
         if (checked != null) {
-            for (int id : checked) {
-                Reproduction r = reproductions.getReproductionById(id);
+            for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+                Reproduction r = reproductions.getReproductionById(bulkActionIds.getRequestId());
                 if (r != null) {
                     reproductions.removeReproduction(r);
                 }
@@ -428,7 +443,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "print")
-    public String batchProcessPrint(HttpServletRequest req, @RequestParam(required = false) Set<Integer> checked) {
+    public String batchProcessPrint(HttpServletRequest req, @RequestParam(required = false) List<String> checked) {
         String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
 
         // Simply redirect to previous page if no reservations were selected
@@ -436,8 +451,8 @@ public class ReproductionController extends AbstractRequestController {
             return "redirect:/reproduction/" + qs;
         }
 
-        for (int id : checked) {
-            Reproduction r = reproductions.getReproductionById(id);
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Reproduction r = reproductions.getReproductionById(bulkActionIds.getRequestId());
             if (r != null) {
                 try {
                     reproductions.printReproduction(r);
@@ -458,7 +473,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "printForce")
-    public String batchProcessPrintForce(HttpServletRequest req, @RequestParam(required = false) Set<Integer> checked) {
+    public String batchProcessPrintForce(HttpServletRequest req, @RequestParam(required = false) List<String> checked) {
         String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
 
         // Simply redirect to previous page if no reservations were selected
@@ -466,8 +481,8 @@ public class ReproductionController extends AbstractRequestController {
             return "redirect:/reproduction/" + qs;
         }
 
-        for (int id : checked) {
-            Reproduction r = reproductions.getReproductionById(id);
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Reproduction r = reproductions.getReproductionById(bulkActionIds.getRequestId());
             if (r != null) {
                 try {
                     reproductions.printReproduction(r, true);
@@ -481,7 +496,7 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     /**
-     * Change status of marked reproductions
+     * Change status of marked reproductions.
      *
      * @param req       The HTTP request object.
      * @param checked   The reproductions marked.
@@ -490,7 +505,7 @@ public class ReproductionController extends AbstractRequestController {
      */
     @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "changeStatus")
     @Secured("ROLE_REPRODUCTION_MODIFY")
-    public String batchProcessChangeStatus(HttpServletRequest req, @RequestParam(required = false) Set<Integer> checked,
+    public String batchProcessChangeStatus(HttpServletRequest req, @RequestParam(required = false) List<String> checked,
                                            @RequestParam Reproduction.Status newStatus) {
         String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
 
@@ -499,8 +514,8 @@ public class ReproductionController extends AbstractRequestController {
             return "redirect:/reproduction/" + qs;
         }
 
-        for (int id : checked) {
-            Reproduction r = reproductions.getReproductionById(id);
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Reproduction r = reproductions.getReproductionById(bulkActionIds.getRequestId());
 
             // Only change reproductions which exist.
             if (r != null) {
@@ -516,20 +531,97 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     /**
+     * Change status of marked holdings.
+     *
+     * @param req              The HTTP request object.
+     * @param checked          The holdings marked.
+     * @param newHoldingStatus The status the selected holdings should be set to.
+     * @return The view to resolve.
+     */
+    @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "changeHoldingStatus")
+    @Secured("ROLE_REPRODUCTION_MODIFY")
+    public String batchProcessChangeHoldingStatus(HttpServletRequest req,
+                                                  @RequestParam(required = false) List<String> checked,
+                                                  @RequestParam Holding.Status newHoldingStatus) {
+        String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
+
+        // Simply redirect to previous page if no holdings were selected
+        if (checked == null) {
+            return "redirect:/reproduction/" + qs;
+        }
+
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Holding h = records.getHoldingById(bulkActionIds.getHoldingId());
+            if (h == null) {
+                continue;
+            }
+
+            // Only update the status if the holding is active for the same reproduction
+            Request request = requests.getActiveFor(h);
+            if ((request instanceof Reproduction) &&
+                    (((Reproduction) request).getId() == bulkActionIds.getRequestId())) {
+                // Set the new status
+                requests.updateHoldingStatus(h, newHoldingStatus);
+                records.saveHolding(h);
+            }
+        }
+
+        return "redirect:/reproduction/" + qs;
+    }
+
+    /**
+     * Place marked holdings on hold.
+     *
+     * @param req     The HTTP request object.
+     * @param checked The holdings marked.
+     * @return The view to resolve.
+     */
+    @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "onHold")
+    @Secured("ROLE_REPRODUCTION_MODIFY")
+    public String batchProcessOnHold(HttpServletRequest req, @RequestParam(required = false) List<String> checked) {
+        String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
+
+        // Simply redirect to previous page if no holdings were selected
+        if (checked == null) {
+            return "redirect:/reproduction/" + qs;
+        }
+
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Holding h = records.getHoldingById(bulkActionIds.getHoldingId());
+            if (h == null) {
+                continue;
+            }
+
+            // Only update the status if the holding is active for the same reproduction
+            Request request = requests.getActiveFor(h);
+            if ((request instanceof Reproduction) &&
+                    (((Reproduction) request).getId() == bulkActionIds.getRequestId())) {
+                // Place on hold
+                try {
+                    requests.markItemOnHold(h);
+                    records.saveHolding(h);
+                } catch (OnHoldException ohe) {
+                    // Its a batch update, so ignore
+                }
+            }
+        }
+
+        return "redirect:/reproduction/" + qs;
+    }
+
+    /**
      * Show the create form of a reproduction.
      *
      * @param req   The HTTP request.
      * @param path  The pid/signature string (URL encoded).
-     * @param code  The permission code to use for restricted records. TODO: ?
      * @param model The model to add response attributes to.
      * @return The view to resolve.
      */
     @RequestMapping(value = "/createform/{path:.*}", method = RequestMethod.GET)
-    public String showCreateForm(HttpServletRequest req, @PathVariable String path,
-                                 @RequestParam(required = false) String code, Model model) {
+    public String showCreateForm(HttpServletRequest req, @PathVariable String path, Model model) {
         Reproduction reproduction = new Reproduction();
         reproduction.setHoldingReproductions(uriPathToHoldingReproductions(path));
-        return processReproductionCreation(req, reproduction, null, code, model, false);
+        return processReproductionCreation(req, reproduction, null, model, false);
     }
 
     /**
@@ -538,20 +630,26 @@ public class ReproductionController extends AbstractRequestController {
      * @param req    The HTTP request.
      * @param newRep The submitted reproduction.
      * @param result The binding result to put errors in.
-     * @param code   The permission code to use for restricted records.
      * @param model  The model to add response attributes to.
      * @return The view to resolve.
      */
     @RequestMapping(value = "/createform/{path:.*}", method = RequestMethod.POST)
     public String processCreateForm(HttpServletRequest req, @ModelAttribute("reproduction") Reproduction newRep,
-                                    BindingResult result, @RequestParam(required = false) String code, Model model) {
-        return processReproductionCreation(req, newRep, result, code, model, true);
+                                    BindingResult result, Model model) {
+        return processReproductionCreation(req, newRep, result, model, true);
     }
 
+    /**
+     * Translates the URI path to a list of holding reproductions.
+     *
+     * @param path The given path.
+     * @return A list of created holding reproductions.
+     */
     private List<HoldingReproduction> uriPathToHoldingReproductions(String path) {
         List<Holding> holdings = uriPathToHoldings(path, false);
-        if (holdings == null)
+        if (holdings == null) {
             return null;
+        }
 
         List<HoldingReproduction> hrs = new ArrayList<HoldingReproduction>();
         for (Holding holding : holdings) {
@@ -562,29 +660,21 @@ public class ReproductionController extends AbstractRequestController {
         return hrs;
     }
 
+    /**
+     * Processes the reproduction creation procedure.
+     *
+     * @param req          The request.
+     * @param reproduction The reproduction to create.
+     * @param result       The binding result.
+     * @param model        The model.
+     * @param commit       Whether to commit the result to the database.
+     * @return The view to resolve.
+     */
     private String processReproductionCreation(HttpServletRequest req, Reproduction reproduction, BindingResult result,
-                                               String permission, Model model, boolean commit) {
-        if (!checkHoldings(model, reproduction))
+                                               Model model, boolean commit) {
+        if (!checkHoldings(model, reproduction)) {
             return "reproduction_error";
-
-        // TODO: Permissions?
-        /*Permission perm = permissions.getPermissionByCode(permission);
-        if (!checkPermissions(model, perm, reproduction))
-            return "reproduction_choice";
-
-        if (perm != null) {
-            if (!commit) {
-                reproduction.setCustomerName(perm.getName());
-                reproduction.setCustomerEmail(perm.getEmail());
-            } else {
-                reproduction.setPermission(perm);
-            }
-
-            if (reproduction.getDate() == null || !perm.isValidOn(newRes.getDate())) {
-                    model.addAttribute("error", "notValidOnDate");
-                    return "reservation_error";
-            }
-        }*/
+        }
 
         // Obtain the price for authenticated users and all the standard reproduction options
         model.addAttribute("priceAuthenticated", BigDecimal.ZERO);
@@ -592,49 +682,69 @@ public class ReproductionController extends AbstractRequestController {
 
         try {
             if (commit) {
-                // Make sure a Captcha was entered correctly.
+                // Make sure a Captcha was entered correctly
                 checkCaptcha(req, result, model);
-                reproductions.createOrEdit(reproduction, null, result, true);
-                if (!result.hasErrors()) {
+
+                // Logged in customers can order reproduction for free
+                boolean loggedIn = !(SecurityContextHolder.getContext().getAuthentication()
+                        instanceof AnonymousAuthenticationToken);
+
+                reproductions.createOrEdit(reproduction, null, result, true, loggedIn);
+                if (!result.hasErrors())
                     return determineNextStep(reproduction, model);
-                }
             }
             else {
-                reproductions.validateHoldings(reproduction, null, false);
+                reproductions.validateReproductionHoldings(reproduction, null);
             }
         } catch (NoHoldingsException e) {
             throw new ResourceNotFoundException();
-        } catch (InUseException e) {
-            // TODO: Should not be trown.
         } catch (ClosedException e) {
             model.addAttribute("error", "restricted");
             return "reproduction_error";
+        } catch (ClosedForReproductionException e) {
+            model.addAttribute("error", "closed");
+            return "reproduction_error";
         }
-        model.addAttribute("reproduction", reproduction);
 
+        model.addAttribute("reproduction", reproduction);
         return "reproduction_create";
     }
 
+    /**
+     * Returns a map of the possible standard reproduction options per material type.
+     *
+     * @return A map with options per material type.
+     */
     private Map<String, List<ReproductionStandardOption>> obtainStandardReproductionOptions() {
         Map<String, List<ReproductionStandardOption>> reproductionStandardOptions =
                 new HashMap<String, List<ReproductionStandardOption>>();
         for (ReproductionStandardOption standardOption : reproductions.getAllReproductionStandardOptions()) {
-            String materialType = standardOption.getMaterialType().name();
-            List<ReproductionStandardOption> options = new ArrayList<ReproductionStandardOption>();
-            if (reproductionStandardOptions.containsKey(materialType)) {
-                options = reproductionStandardOptions.get(materialType);
+            if (standardOption.isEnabled()) {
+                String materialType = standardOption.getMaterialType().name();
+                List<ReproductionStandardOption> options = new ArrayList<ReproductionStandardOption>();
+                if (reproductionStandardOptions.containsKey(materialType))
+                    options = reproductionStandardOptions.get(materialType);
+                options.add(standardOption);
+                reproductionStandardOptions.put(materialType, options);
             }
-            options.add(standardOption);
-            reproductionStandardOptions.put(materialType, options);
         }
         return reproductionStandardOptions;
     }
 
+    /**
+     * After creating a new reproduction, determine the next step.
+     * Either the reproduction has to go to the reading room first,
+     * or an offer can be created right away allowing the customer to confirm/pay immediately.
+     *
+     * @param reproduction The reproduction.
+     * @param model        The model.
+     * @return The view to resolve.
+     */
     private String determineNextStep(Reproduction reproduction, Model model) {
-        if (reproduction.getStatus() == Reproduction.Status.HAS_ORDER_DETAILS) {
-            model.asMap().clear();
+        model.asMap().clear();
 
-            // Mail the confirmation (offer is ready) to the customer.
+        if (reproduction.getStatus() == Reproduction.Status.HAS_ORDER_DETAILS) {
+            // Mail the confirmation (offer is ready) to the customer
             try {
                 reproductionMailer.mailOfferReady(reproduction);
             } catch (MailException me) {
@@ -643,16 +753,56 @@ public class ReproductionController extends AbstractRequestController {
 
             return "redirect:/reproduction/confirm/" + reproduction.getId() + "/" + reproduction.getToken();
         }
+        else {
+            // Collect information about the holdings which are not in the SOR and are currently reserved by others
+            Set<Holding> holdingsNotInSor = new HashSet<Holding>();
+            for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
+                Holding h = hr.getHolding();
+                if (!requests.getActiveFor(h).equals(reproduction) && !reproductions.isHoldingReproductionInSor(hr))
+                    holdingsNotInSor.add(h);
+            }
 
-        // Mail the reproduction details to the customer.
-        try {
-            reproductionMailer.mailPending(reproduction);
-        } catch (MailException me) {
-            model.addAttribute("error", "mail");
+            // Mail the reproduction pending details to the customer and inform the reading room
+            try {
+                reproductionMailer.mailPending(reproduction, holdingsNotInSor);
+            } catch (MailException me) {
+                model.addAttribute("error", "mail");
+            }
+
+            model.addAttribute("reproduction", reproduction);
+            model.addAttribute("holdingsNotInSor", holdingsNotInSor);
+
+            return "reproduction_pending";
+        }
+    }
+
+    /**
+     * Checks the holdings of a request.
+     *
+     * @param model   The model to add errors to.
+     * @param request The Request with holdings to check.
+     * @return Whether no errors were found.
+     */
+    @Override
+    protected boolean checkHoldings(Model model, Request request) {
+        if (!super.checkHoldings(model, request)) {
+            return false;
         }
 
-        model.addAttribute("reproduction", reproduction);
-        return "reproduction_pending";
+        for (HoldingRequest holdingRequest : request.getHoldingRequests()) {
+            Holding h = holdingRequest.getHolding();
+            Record r = h.getRecord();
+
+            // Determine whether the record is closed for reproduction
+            if (r.getCopyright() != null &&
+                    (r.getPublicationStatus() == ExternalRecordInfo.PublicationStatus.MINIMAL ||
+                            r.getPublicationStatus() == ExternalRecordInfo.PublicationStatus.CLOSED)) {
+                model.addAttribute("error", "closed");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -689,20 +839,24 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     private String processConfirmation(HttpServletRequest req, Reproduction reproduction, Model model, boolean commit) {
-        if (reproduction == null)
+        if (reproduction == null) {
             throw new InvalidRequestException("No such reproduction.");
+        }
 
-        if (reproduction.getStatus().compareTo(Reproduction.Status.HAS_ORDER_DETAILS) < 0)
+        if (reproduction.getStatus().compareTo(Reproduction.Status.HAS_ORDER_DETAILS) < 0) {
             throw new InvalidRequestException("Reproduction does not have all of the order details yet.");
+        }
 
         if (reproduction.getStatus() == Reproduction.Status.CONFIRMED) {
             Order order = reproduction.getOrder();
-            if (order != null)
+            if (order != null) {
                 return "redirect:" + payWayService.getPaymentPageRedirectLink(order.getId());
+            }
         }
 
-        if (reproduction.getStatus().compareTo(Reproduction.Status.CONFIRMED) >= 0)
+        if (reproduction.getStatus().compareTo(Reproduction.Status.CONFIRMED) >= 0) {
             throw new InvalidRequestException("Reproduction has been confirmed already.");
+        }
 
         model.addAttribute("reproduction", reproduction);
         if (commit) {
@@ -720,6 +874,12 @@ public class ReproductionController extends AbstractRequestController {
 
                 // If the reproduction is for free, take care of delivey
                 if (reproduction.isForFree()) {
+                    try {
+                        reproductionMailer.mailPayed(reproduction);
+                    } catch (MailException me) {
+                        LOGGER.debug("/reproduction/confirm : Failed to send payment confirmation email to customer");
+                    }
+
                     // TODO: Delivery of reproduction, redirect?
                     return "";
                 }
@@ -788,6 +948,13 @@ public class ReproductionController extends AbstractRequestController {
             LOGGER.debug("/reproduction/order/accept : Failed to send payment confirmation email to customer");
         }
 
+        // Move to 'active' if all holdings that are required by repro are already reserved
+        if ((reproduction.getStatus() == Reproduction.Status.PAYED)
+                && reproductions.isActiveForAllRequiredHoldings(reproduction)) {
+            reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
+        }
+
+        reproductions.saveReproduction(reproduction);
         return HttpStatus.OK;
     }
 
@@ -853,7 +1020,7 @@ public class ReproductionController extends AbstractRequestController {
      * @param model Passed view model.
      * @return The name of the view to use.
      */
-    @RequestMapping(value = "/edit/{id:[\\d]+}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id:[\\d]+}/edit", method = RequestMethod.GET)
     @Secured("ROLE_REPRODUCTION_MODIFY")
     public String showEditForm(@PathVariable int id, Model model) {
         Reproduction r = reproductions.getReproductionById(id);
@@ -863,6 +1030,7 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("original", r);
         model.addAttribute("reproduction", r);
         model.addAttribute("reproductionStandardOptions", obtainStandardReproductionOptions());
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(r.getHoldings()));
 
         return "reproduction_mass_create";
     }
@@ -887,6 +1055,11 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("holdingList", holdingList);
         model.addAttribute("reproductionStandardOptions", obtainStandardReproductionOptions());
 
+        List<Holding> holdings = new ArrayList<Holding>();
+        holdings.addAll(newReproduction.getHoldings());
+        holdings.addAll(holdingList);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
+
         return "reproduction_mass_create";
     }
 
@@ -900,7 +1073,7 @@ public class ReproductionController extends AbstractRequestController {
      * @param model           The model to add attributes to.
      * @return The view to resolve.
      */
-    @RequestMapping(value = "/edit/{id:[\\d]+}", method = RequestMethod.POST, params = "searchSubmit")
+    @RequestMapping(value = "/{id:[\\d]+}/edit", method = RequestMethod.POST, params = "searchSubmit")
     @Secured("ROLE_REPRODUCTION_MODIFY")
     public String processSearchEditForm(@PathVariable int id, @ModelAttribute("reproduction") Reproduction reproduction,
                                         @RequestParam String searchTitle, @RequestParam String searchSignature,
@@ -917,6 +1090,11 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("holdingList", holdingList);
         model.addAttribute("reproductionStandardOptions", obtainStandardReproductionOptions());
 
+        List<Holding> holdings = new ArrayList<Holding>();
+        holdings.addAll(reproduction.getHoldings());
+        holdings.addAll(holdingList);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
+
         return "reproduction_mass_create";
     }
 
@@ -927,7 +1105,7 @@ public class ReproductionController extends AbstractRequestController {
      * @param result          The object to save the validation errors.
      * @param searchTitle     The keywords to search for in the title.
      * @param searchSignature The keywords to search for in the signature.
-     * @param print           Whether or not to print this reproduction.
+     * @param free            Whether this reproduction is for free.
      * @param mail            Whether or not to mail a reproduction confirmation.
      * @param model           The model to add attributes to.
      * @return The view to resolve.
@@ -936,17 +1114,23 @@ public class ReproductionController extends AbstractRequestController {
     @Secured("ROLE_REPRODUCTION_CREATE")
     public String processMassCreateForm(@ModelAttribute("reproduction") Reproduction newReproduction,
                                         BindingResult result, @RequestParam String searchTitle,
-                                        @RequestParam(required = false) String searchSignature, Boolean mail,
-                                        Model model) {
+                                        @RequestParam(required = false) String searchSignature,
+                                        boolean free, boolean mail, Model model) {
         List<Holding> holdingList = searchMassCreate(newReproduction, searchTitle, searchSignature);
 
         try {
-            reproductions.createOrEdit(newReproduction, null, result, false);
+            reproductions.createOrEdit(newReproduction, null, result, false, free);
             if (!result.hasErrors()) {
-                /*if (mail != null) {
-                    resMailer.mailConfirmation(newRes);
-                }*/
-                return "redirect:/reproduction/" + newReproduction.getId();
+                // Mail the confirmation (offer is ready) to the customer
+                boolean mailSuccess = true;
+                if (mail) {
+                    try {
+                        reproductionMailer.mailOfferReady(newReproduction);
+                    } catch (MailException me) {
+                        mailSuccess = false;
+                    }
+                }
+                return "redirect:/reproduction/" + newReproduction.getId() + (!mailSuccess ? "?mail=error" : "");
             }
         } catch (ClosedException e) {
             String msg = msgSource.getMessage("reproduction.error.restricted", null, "",
@@ -956,11 +1140,20 @@ public class ReproductionController extends AbstractRequestController {
             String msg = msgSource.getMessage("reproduction.error.noHoldings", null, "",
                     LocaleContextHolder.getLocale());
             result.addError(new ObjectError(result.getObjectName(), null, null, msg));
+        } catch (ClosedForReproductionException e) {
+            String msg = msgSource.getMessage("reproduction.error.restricted", null, "",
+                    LocaleContextHolder.getLocale());
+            result.addError(new ObjectError(result.getObjectName(), null, null, msg));
         }
 
         model.addAttribute("reproduction", newReproduction);
         model.addAttribute("holdingList", holdingList);
         model.addAttribute("reproductionStandardOptions", obtainStandardReproductionOptions());
+
+        List<Holding> holdings = new ArrayList<Holding>();
+        holdings.addAll(newReproduction.getHoldings());
+        holdings.addAll(holdingList);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
         return "reproduction_mass_create";
     }
@@ -973,16 +1166,17 @@ public class ReproductionController extends AbstractRequestController {
      * @param result          The object to save the validation errors.
      * @param searchTitle     The keywords to search for in the title.
      * @param searchSignature The keywords to search for in the signature.
-     * @param print           Whether or not to print this reproduction.
+     * @param free            Whether this reproduction is for free.
      * @param mail            Whether or not to mail a reproduction confirmation.
      * @param model           The model to add attributes to.
      * @return The view to resolve.
      */
-    @RequestMapping(value = "/edit/{id:[\\d]+}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{id:[\\d]+}/edit", method = RequestMethod.POST)
     @Secured("ROLE_REPRODUCTION_MODIFY")
     public String processEditForm(@PathVariable int id, @ModelAttribute("reproduction") Reproduction reproduction,
                                   BindingResult result, @RequestParam String searchTitle,
-                                  @RequestParam(required = false) String searchSignature, Boolean mail, Model model) {
+                                  @RequestParam(required = false) String searchSignature,
+                                  boolean free, boolean mail, Model model) {
         Reproduction originalReproduction = reproductions.getReproductionById(id);
         if (originalReproduction == null) {
             throw new ResourceNotFoundException();
@@ -991,12 +1185,18 @@ public class ReproductionController extends AbstractRequestController {
         List<Holding> holdingList = searchMassCreate(reproduction, searchTitle, searchSignature);
 
         try {
-            reproductions.createOrEdit(reproduction, originalReproduction, result, false);
+            reproductions.createOrEdit(reproduction, originalReproduction, result, false, free);
             if (!result.hasErrors()) {
-                /*if (mail != null) {
-                    resMailer.mailConfirmation(newRes);
-                }*/
-                return "redirect:/reproduction/" + originalReproduction.getId();
+                // Mail the confirmation (offer is ready) to the customer
+                boolean mailSuccess = true;
+                if (mail) {
+                    try {
+                        reproductionMailer.mailOfferReady(reproduction);
+                    } catch (MailException me) {
+                        mailSuccess = false;
+                    }
+                }
+                return "redirect:/reproduction/" + reproduction.getId() + (!mailSuccess ? "?mail=error" : "");
             }
         } catch (ClosedException e) {
             String msg = msgSource.getMessage("reproduction.error.restricted", null, "",
@@ -1006,12 +1206,21 @@ public class ReproductionController extends AbstractRequestController {
             String msg = msgSource.getMessage("reproduction.error.noHoldings", null, "",
                     LocaleContextHolder.getLocale());
             result.addError(new ObjectError(result.getObjectName(), null, null, msg));
+        } catch (ClosedForReproductionException e) {
+            String msg = msgSource.getMessage("reproduction.error.restricted", null, "",
+                    LocaleContextHolder.getLocale());
+            result.addError(new ObjectError(result.getObjectName(), null, null, msg));
         }
 
         model.addAttribute("original", originalReproduction);
         model.addAttribute("reproduction", reproduction);
         model.addAttribute("holdingList", holdingList);
         model.addAttribute("reproductionStandardOptions", obtainStandardReproductionOptions());
+
+        List<Holding> holdings = new ArrayList<Holding>();
+        holdings.addAll(reproduction.getHoldings());
+        holdings.addAll(holdingList);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
         return "reproduction_mass_create";
     }
@@ -1069,8 +1278,15 @@ public class ReproductionController extends AbstractRequestController {
         }
     }
 
+    /**
+     * Validates the token bound to a reproduction.
+     *
+     * @param reproduction The reproduction.
+     * @param token        The token.
+     */
     private void validateToken(Reproduction reproduction, String token) {
-        if ((reproduction != null) && !reproduction.getToken().equalsIgnoreCase(token))
+        if ((reproduction != null) && !reproduction.getToken().equalsIgnoreCase(token)) {
             throw new InvalidRequestException("Invalid token provided.");
+        }
     }
 }

@@ -104,6 +104,14 @@ public interface RecordService {
     public List<Record> listRecords(CriteriaQuery<Record> query);
 
     /**
+     * List all Records.
+     * @param offset The offset.
+     * @param maxResults The max number of records to fetch.
+     * @return A list of Records.
+     */
+    public List<Record> listIterable(int offset, int maxResults);
+
+    /**
      * Get a single Record matching a built query.
      * @param query The query to match by.
      * @return The matching Record.
@@ -136,6 +144,17 @@ public interface RecordService {
      * past to open status.
      */
     public void checkEmbargoDates();
+
+    /**
+     * Scheduled task to update the external info from all records in the database.
+     */
+    public void updateExternalInfo();
+
+    /**
+     * Updates the external info of the given record.
+     * @param record The record of which to update the external info.
+     */
+    public void updateExternalInfo(Record record);
 
     /**
      * Edit records.

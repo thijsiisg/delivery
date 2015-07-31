@@ -16,6 +16,8 @@
 
 package org.socialhistoryservices.delivery.record.service;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.api.RecordLookupService;
 import org.socialhistoryservices.delivery.record.dao.HoldingDAO;
@@ -25,8 +27,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 
@@ -56,6 +62,10 @@ public class RecordServiceImpl implements RecordService {
     @Autowired
     private RecordLookupService lookup;
 
+    @Autowired
+    private PlatformTransactionManager platformTransactionManager;
+
+    private static final Log LOGGER = LogFactory.getLog(RecordServiceImpl.class);
 
     /**
      * Add a Record to the database.
@@ -123,14 +133,22 @@ public class RecordServiceImpl implements RecordService {
      */
     public Record resolveRecordByPid(String pid) {
         Record root = getRecordByPid(pid);
-        if (root != null)
+        if (root != null) {
+            // TODO: Can we update the external data of the record?
+            /*updateExternalInfo(root);
+            saveRecord(root);*/
             return root;
+        }
         String itemSeparator = properties.getProperty("prop_itemSeparator", ".");
         while (pid.contains(itemSeparator)) {
             pid = pid.substring(0, pid.lastIndexOf(itemSeparator));
             Record rec = getRecordByPid(pid);
-            if (rec != null)
+            if (rec != null) {
+                // TODO: Can we update the external data of the record?
+                /*updateExternalInfo(rec);
+                saveRecord(rec);*/
                 return rec;
+            }
         }
         return null;
     }
@@ -150,6 +168,16 @@ public class RecordServiceImpl implements RecordService {
      */
     public List<Record> listRecords(CriteriaQuery<Record> query) {
         return recordDAO.list(query);
+    }
+
+    /**
+     * List all Records.
+     * @param offset     The offset.
+     * @param maxResults The max number of records to fetch.
+     * @return A list of Records.
+     */
+    public List<Record> listIterable(int offset, int maxResults) {
+        return recordDAO.listIterable(offset, maxResults);
     }
 
     /**
@@ -221,6 +249,82 @@ public class RecordServiceImpl implements RecordService {
     }
 
     /**
+     * TODO: Right now it is just for testing.
+     * Scheduled task to update the external info from all records in the database.
+     * Runs at midnight at the first day of every new month.
+     * No automatic transactions, the method will manage the transactions.
+     */
+    //@Scheduled(cron="0 0 1 * *")
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    public void updateExternalInfo() {
+        int offset = 0;
+        List<Record> records;
+        TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
+
+        // Perform batch updates with max 100 records at a time
+        // Each batch of 100 records runs in its own transaction
+        LOGGER.debug("updateExternalInfo : Start batch update");
+        while ((records = listIterable(offset, 100)).size() > 0) {
+            LOGGER.debug("updateExternalInfo : Start with " + offset + " - " + offset+records.size());
+            final List<Record> curBatch = records;
+            transactionTemplate.execute(new TransactionCallback<Object>() {
+                public Object doInTransaction(TransactionStatus status) {
+                    for (Record record : curBatch) {
+                        updateExternalInfo(record);
+                        saveRecord(record);
+                    }
+                    return null;
+                }
+            });
+            offset += records.size();
+        }
+        LOGGER.debug("updateExternalInfo : End batch update");
+    }
+
+    /**
+     * Updates the external info of the given record.
+     * @param record The record of which to update the external info.
+     */
+    public void updateExternalInfo(Record record) {
+        try {
+            String pid = record.getPid();
+
+            ExternalRecordInfo eri = lookup.getRecordMetaDataByPid(pid);
+            Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
+
+            if (record.getExternalInfo() != null)
+                record.getExternalInfo().mergeWith(eri);
+            else
+                record.setExternalInfo(eri);
+
+            for (String signature : ehMap.keySet()) {
+                boolean found = false;
+
+                for (Holding h : record.getHoldings()) {
+                    if (signature.equals(h.getSignature())) {
+                        if (h.getExternalInfo() != null)
+                            h.getExternalInfo().mergeWith(ehMap.get(signature));
+                        else
+                            h.setExternalInfo(ehMap.get(signature));
+
+                        found = true;
+                    }
+                }
+
+                if (!found) {
+                    Holding holding = new Holding();
+                    holding.setSignature(signature);
+                    record.addHolding(holding);
+                    holding.setRecord(record);
+                }
+            }
+        }
+        catch (NoSuchPidException nspe) {
+            // PID not found, then just skip the record
+        }
+    }
+
+    /**
      * Edit records.
      * @param newRecord The new record to put.
      * @param oldRecord The old record (or null if none).
@@ -252,24 +356,7 @@ public class RecordServiceImpl implements RecordService {
         }
 
         // Add holding/other API info if present
-	    newRecord.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
-	    Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
-	    for (String signature : ehMap.keySet()) {
-		    boolean found = false;
-
-		    for (Holding h : newRecord.getHoldings()) {
-			    if (signature.equals(h.getSignature())) {
-				    h.setExternalInfo(ehMap.get(signature));
-				    found = true;
-			    }
-		    }
-
-		    if (!found) {
-			    Holding holding = new Holding();
-			    holding.setSignature(signature);
-			    newRecord.addHolding(holding);
-		    }
-	    }
+	    updateExternalInfo(newRecord);
 
         // Validate the record.
         validateRecord(newRecord, result);

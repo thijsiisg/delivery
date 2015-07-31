@@ -6,11 +6,8 @@ import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
-import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
-import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.validation.BindingResult;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -56,6 +53,14 @@ public interface ReproductionService {
     public ReproductionStandardOption getReproductionStandardOptionById(int id);
 
     /**
+     * Get the first Reproduction matching a built query.
+     *
+     * @param q The criteria query to execute
+     * @return The first matching Reproduction.
+     */
+    public Reproduction getReproduction(CriteriaQuery<Reproduction> q);
+
+    /**
      * List all Reproduction matching a built query.
      *
      * @param q The criteria query to execute
@@ -99,12 +104,61 @@ public interface ReproductionService {
      * @param oldRes     The old reproduction in the database (if present).
      * @param result     The binding result object to put the validation errors in.
      * @param isCustomer Whether the customer is creating the reproduction.
-     * @throws ClosedException     Thrown when a holding is provided which
-     *                             references a record which is restrictionType=CLOSED.
-     * @throws NoHoldingsException Thrown when no holdings are provided.
+     * @param forFree    Whether the reproduction is for free.
+     * @throws ClosedException                Thrown when a holding is provided which
+     *                                        references a record which is restrictionType=CLOSED.
+     * @throws NoHoldingsException            Thrown when no holdings are provided.
+     * @throws ClosedForReproductionException Thrown when a holding is provided which is closed for reproductions.
      */
     public void createOrEdit(Reproduction newReproduction, Reproduction oldReproduction, BindingResult result,
-                             boolean isCustomer) throws ClosedException, NoHoldingsException;
+                             boolean isCustomer, boolean forFree)
+            throws ClosedException, NoHoldingsException, ClosedForReproductionException;
+
+    /**
+     * Validate provided holding part of reproduction.
+     *
+     * @param newRep The new reproduction containing holdings.
+     * @param oldRep The old reproduction if applicable (or null).
+     * @throws ClosedException                Thrown when a holding is provided which
+     *                                        references a record which is restrictionType=CLOSED.
+     * @throws NoHoldingsException            Thrown when no holdings are provided.
+     * @throws ClosedForReproductionException Thrown when a holding is provided which is closed for reproductions.
+     */
+    public void validateReproductionHoldings(Reproduction newRep, Reproduction oldRep)
+            throws NoHoldingsException, ClosedException, ClosedForReproductionException;
+
+    /**
+     * Whether the price and delivery time is determined for all holdings and
+     * as a result the reproduction has all the order details.
+     *
+     * @param reproduction The reproduction.
+     * @return Whether all holdings have order details.
+     */
+    public boolean hasOrderDetails(Reproduction reproduction);
+
+    /**
+     * Check if all the holdings that are required by repro are active for the given reproduction.
+     *
+     * @param reproduction The reproduction.
+     * @return Whether all required holdings are active for repro.
+     */
+    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction);
+
+    /**
+     * Returns all holding reproductions of those that are not yet found in the SOR.
+     *
+     * @param reproduction The reproduction.
+     * @return All holding reproductions of those that are not yet found in the SOR.
+     */
+    public List<HoldingReproduction> getHoldingsReproductionsNotInSor(Reproduction reproduction);
+
+    /**
+     * Determine whether a wish for a holding reproduction is in the SOR.
+     *
+     * @param holdingReproduction The holding reproduction.
+     * @return Whether a wish for a holding reproduction is in the SOR.
+     */
+    public boolean isHoldingReproductionInSor(HoldingReproduction holdingReproduction);
 
     /**
      * Scheduled task to cancel all reproductions not payed within 5 days after the offer was ready.
@@ -179,15 +233,9 @@ public interface ReproductionService {
      *
      * @param r Reproduction to change status for.
      * @param h Holding to bump.
+     * @return A list of futures for each request after the status update.
      */
-    public void markItem(Reproduction r, Holding h);
-
-    /**
-     * Mark a reproduction, bumping it to the next status.
-     *
-     * @param r Reproduction to change status for.
-     */
-    public void markRequest(Reproduction r);
+    public List<Future<Boolean>> markItem(Reproduction r, Holding h);
 
     /**
      * Merge the other reproduction's fields into this reproduction.
@@ -205,21 +253,6 @@ public interface ReproductionService {
      * @param status       The reproduction which changed status.
      */
     public void updateStatusAndAssociatedHoldingStatus(Reproduction reproduction, Reproduction.Status status);
-
-    /**
-     * Validate provided holding part of request.
-     *
-     * @param newReq     The new request containing holdings.
-     * @param oldReq     The old request if applicable (or null).
-     * @param checkInUse Whether to validate on holdings that are in use currently.
-     * @throws ClosedException     Thrown when a holding is provided which
-     *                             references a record which is restrictionType=CLOSED.
-     * @throws InUseException      Thrown when a new holding provided to be added
-     *                             to the request is already in use by another request.
-     * @throws NoHoldingsException Thrown when no holdings are provided.
-     */
-    public void validateHoldings(Request newReq, Request oldReq, boolean checkInUse)
-            throws NoHoldingsException, InUseException, ClosedException;
 
     /**
      * Returns the active reproduction with which this holding is associated.

@@ -10,10 +10,16 @@
 <@base "${title}">
 <h1>${title}</h1>
 
+<#if error??>
+  <div class="errors"><@_ "reproduction.error."+error error /></div>
+</#if>
+
 <ul class="reproductionDetails">
   <li><span><@_ "reproduction.customerName" "Name"/></span> ${reproduction.customerName?html}</li>
   <li><span><@_ "reproduction.customerEmail" "E-mail"/></span> ${reproduction.customerEmail?html}</li>
-  <li><span><@_ "reproduction.creationDate" "Created on"/></span> ${reproduction.creationDate?string(prop_dateFormat)}
+
+  <li class="spacing">
+    <span><@_ "reproduction.creationDate" "Created on"/></span> ${reproduction.creationDate?string(prop_dateFormat)}
   </li>
   <li>
     <span><@_ "reproduction.status" "Status"/></span> <@_ "reproduction.statusType.${reproduction.status}" reproduction.status?string />
@@ -35,6 +41,20 @@
     <li>
       <span><@_ "reproduction.comment" "Comment"/></span>
     ${reproduction.comment?html}
+    </li>
+  </#if>
+
+  <#if reproduction.discount gt 0>
+    <li class="spacing">
+      <span><@_ "reproduction.discount" "Discount"/></span>
+      &euro; ${reproduction.discount?string("0.00")}
+    </li>
+  </#if>
+
+  <#if reproduction.deliveryTimeComment??>
+    <li <#if reproduction.discount lte 0>class="spacing"</#if>>
+      <span><@_ "reproduction.deliveryTimeComment" "Estimated time of delivery"/></span>
+      ${reproduction.deliveryTimeComment?html}
     </li>
   </#if>
 
@@ -94,8 +114,13 @@
         </li>
 
         <li>
+          <span><@_ "reproduction.onHold" "On hold"/></span>
+          ${hr.onHold?string(yes, no)}
+        </li>
+
+        <li>
           <span><@_ "holding.status" "Status"/></span>
-          <@_ "holding.statusType.${h.status?string}" h.status?string/>
+          <@holdingStatus holdingActiveRequests reproduction h/>
         </li>
 
         <li class="spacing">

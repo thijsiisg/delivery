@@ -95,9 +95,8 @@ INSERT INTO user_groups VALUES (4, 2);
 --
 -- Data for Name: reproduction_standard_options; Type: TABLE DATA; Schema: public; Owner postgres
 
-INSERT INTO reproduction_standard_options VALUES (1, 2, 'LEVEL1', 'SERIAL', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Serial standard option', 'Serial standaard optie', 2.34);
-INSERT INTO reproduction_standard_options VALUES (2, 3, 'LEVEL1', 'BOOK', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Book standard option', 'Book standaard optie', 5.00);
-INSERT INTO reproduction_standard_options VALUES (3, 1, 'LEVEL1', 'SOUND', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Sound standard option', 'Sound standaard optie', 3.00);
-INSERT INTO reproduction_standard_options VALUES (4, 2, 'LEVEL1', 'DOCUMENTATION', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Documentation standard option', 'Documentation standaard optie', 2.00);
-INSERT INTO reproduction_standard_options VALUES (5, 3, 'LEVEL1', 'ARCHIVE', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Archive standard option', 'Archive standaard optie', 3.10);
-INSERT INTO reproduction_standard_options VALUES (6, 3, 'LEVEL1', 'VISUAL', 'More detailed description of this standard option.', 'Meer gedetaileerde beschrijving van deze standaard optie.', 'Visual standard option', 'Visual standaard optie', 5.45);
+INSERT INTO reproduction_standard_options VALUES (1, 1, 't', 'MASTER', 'BOOK', 'The complete brochure/book as a PDF.', 'De hele brochure/boek als een PDF.', 'PDF', 'PDF', 10.50);
+INSERT INTO reproduction_standard_options VALUES (2, 2, 't', 'MASTER', 'SOUND', 'The complete tape/cassette in MP3.', 'De hele tape/cassette als een MP3.', 'MP3', 'MP3', 5.45);
+INSERT INTO reproduction_standard_options VALUES (3, 3, 't', 'MASTER', 'MOVING_VISUAL', 'The complete tape/film in MP4.', 'De hele tape/film als een MP4.', 'MP4', 'MP4', 9.75);
+INSERT INTO reproduction_standard_options VALUES (4, 4, 't', 'MASTER', 'VISUAL', 'The complete picture/poster/object as a TIFF of 300 dpi.', 'De hele afbeelding/poster/object als een TIFF van 300 dpi.', 'TIFF', 'TIFF', 13.00);
+INSERT INTO reproduction_standard_options VALUES (5, 5, 't', 'LEVEL1', 'VISUAL', 'The complete picture/poster/object as a JPEG.', 'De hele afbeelding/poster/object als een JPEG.', 'JPEG', 'JPEG', 2.00);

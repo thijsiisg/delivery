@@ -45,6 +45,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 
@@ -214,30 +215,20 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * Mark a specific item in a reservation as seen, bumping it to the next status.
      * @param res Reservation to change status for.
      * @param h Holding to bump.
+     * @return A list of futures for each request after the status update.
      */
-    public void markItem(Reservation res, Holding h) {
+    public List<Future<Boolean>> markItem(Reservation res, Holding h) {
         // Ignore old reservations
         if (res == null)
-            return;
+            return Collections.emptyList();
 
         Holding.Status newStatus = super.markItem(h);
         markReservation(res);
 
-        requests.updateHoldingStatus(h, newStatus);
+        List<Future<Boolean>> futureList = requests.updateHoldingStatus(h, newStatus);
         saveReservation(res);
-    }
 
-    /**
-     * Mark a reservation, bumping it to the next status.
-     * @param res Reservation to change status for.
-     */
-    public void markRequest(Reservation res) {
-        // Ignore old reservations
-        if (res == null)
-            return;
-
-        markReservation(res);
-        saveReservation(res);
+        return futureList;
     }
 
     /**
@@ -251,7 +242,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
             if (!hr.isCompleted()) {
                 Holding holding = hr.getHolding();
 
-                if (holding.getStatus() == Holding.Status.RETURNED) {
+                if (holding.getStatus() == Holding.Status.AVAILABLE) {
                     hr.setCompleted(true);
                 }
                 else {
@@ -453,7 +444,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
             // Execute this method below the date check, or else the date will
             // not be checked if this method throws an exception; not displaying
             // the error immediately, but only when the holdings are valid instead.
-            validateHoldings(newRes, oldRes, true);
+            validateHoldingsAndAvailability(newRes, oldRes);
 
             // Add or save the record when no errors are present.
             if (!result.hasErrors()) {
@@ -519,7 +510,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
 
         Calendar maxCal = GregorianCalendar.getInstance();
         int maxDaysInAdvance = Integer.parseInt(properties.getProperty
-                ("prop_requestMaxDaysInAdvance"));
+                ("prop_reservationMaxDaysInAdvance"));
         maxCal.add(Calendar.DAY_OF_YEAR, maxDaysInAdvance);
         if (fromCal.get(Calendar.YEAR) > maxCal.get(Calendar.YEAR) || (fromCal
                     .get(Calendar.YEAR) == maxCal.get(Calendar.YEAR) && fromCal
@@ -529,6 +520,20 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                     }
 
         return fromCal.getTime();
+    }
+
+    /**
+     * Mark a request, bumping it to the next status.
+     * @param r Request to change status for.
+     */
+    public void markRequest(Request r) {
+        // Ignore old reservations
+        if (!(r instanceof Reservation))
+            return;
+
+        Reservation reservation = (Reservation) r;
+        markReservation(reservation);
+        saveReservation(reservation);
     }
 
     /**

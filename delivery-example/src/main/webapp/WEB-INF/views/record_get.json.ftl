@@ -30,6 +30,9 @@ ${callback}([
     </#if>
     "restrictionType": "${record.realRestrictionType}",
     "publicationStatus": "${record.publicationStatus}",
+     <#if record.copyright??>
+      "copyright": "${record.copyright?js_string}",
+     </#if>
 
     "holdings" : [
       <#list record.holdings as h>

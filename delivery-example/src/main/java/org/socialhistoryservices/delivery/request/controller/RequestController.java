@@ -22,7 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * Controller of the Request package, handles all /request/* requests.
@@ -84,44 +87,55 @@ public class RequestController extends AbstractRequestController {
         boolean accessReservation = authorities.contains(new SimpleGrantedAuthority("ROLE_RESERVATION_MODIFY"));
         boolean accessReproduction = authorities.contains(new SimpleGrantedAuthority("ROLE_REPRODUCTION_MODIFY"));
 
+        // Information about the current state
+        Holding.Status oldStatus = h.getStatus();
+        Request requestActiveBefore = requests.getActiveFor(h);
+        Request requestsOnHoldBefore = requests.getOnHoldFor(h);
+
         // Determine the active request
         Reservation reservation = null;
         Reproduction reproduction = null;
-        if (accessReservation)
-            reservation = reservations.getActiveFor(h, 1);
-        if (accessReproduction)
-            reproduction = reproductions.getActiveFor(h, 1);
-
-        boolean statusUpdated = false;
-        Holding.Status oldStatus = h.getStatus();
-
-        // If the user may modify reservations, mark item for the active reservation
-        if (reservation != null) {
-            reservations.markItem(reservation, h);
-            statusUpdated = true;
-        }
-
-        // If the user may modify reproductions, mark item for the active reproduction
-        if (reproduction != null) {
-            reproductions.markItem(reproduction, h);
-            statusUpdated = true;
-        }
-
-        // If there is no active request, then the holding is probably returned
-        if ((reservation == null) && (reproduction == null) && (h.getStatus() == Holding.Status.RETURNED)) {
-            requests.updateHoldingStatus(h, Holding.Status.AVAILABLE);
-            records.saveHolding(h);
-            statusUpdated = true;
-        }
+        List<Future<Boolean>> futureList = new ArrayList<Future<Boolean>>();
+        if (accessReservation && (requestActiveBefore instanceof Reservation))
+            reservation = (Reservation) requestActiveBefore;
+        if (accessReproduction && (requestActiveBefore instanceof Reproduction))
+            reproduction = (Reproduction) requestActiveBefore;
 
         // Show the request corresponding to the scanned record
-        if (statusUpdated) {
+        if ((reservation != null) || (reproduction != null)) {
+            // If the user may modify reservations, mark item for the active reservation
+            if (reservation != null)
+                futureList = reservations.markItem(reservation, h);
+
+            // If the user may modify reproductions, mark item for the active reproduction
+            if (reproduction != null)
+                futureList = reproductions.markItem(reproduction, h);
+
+            // Wait until holding status is completly updated
+            boolean finished = false;
+            while (!finished) {
+                finished = true;
+                for (Future<Boolean> future : futureList) {
+                    if (!future.isDone())
+                        finished = false;
+                }
+            }
+
+            // Gather information about the new state
+            Request requestActiveAfter = requests.getActiveFor(h);
+            Request requestsOnHoldAfter = requests.getOnHoldFor(h);
+
             model.addAttribute("holding", h);
+            model.addAttribute("oldStatus", oldStatus);
+
             model.addAttribute("reservation", reservation);
             model.addAttribute("reproduction", reproduction);
-            model.addAttribute("oldStatus", oldStatus);
-            model.addAttribute("reservationOnHold", null); // TODO
-            model.addAttribute("reproductionOnHold", null); // TODO
+
+            model.addAttribute("requestActiveBefore", getRequestAsString(requestActiveBefore));
+            model.addAttribute("requestsOnHoldBefore", getRequestAsString(requestsOnHoldBefore));
+            model.addAttribute("requestActiveAfter", getRequestAsString(requestActiveAfter));
+            model.addAttribute("requestsOnHoldAfter", getRequestAsString(requestsOnHoldAfter));
+
             return "request_scan";
         }
 

@@ -135,3 +135,11 @@ ${totalPages}
       </#list>
     }
 </#macro>
+
+<#macro holdingStatus holdingActiveRequests request holding>
+  <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! request/>
+  <@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" />
+  <#if (holding.status != "AVAILABLE") && !holdingActiveRequest.equals(request)>
+    <em>(<@_ "anotherRequest" "by another request"/>)</em>
+  </#if>
+</#macro>

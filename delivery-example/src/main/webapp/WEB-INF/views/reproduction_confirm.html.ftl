@@ -12,7 +12,22 @@
 <@body>
 <h1>${title}</h1>
 
-<#if reproduction.containsCustomReproduction()>
+<#if reproduction.isOfferReadyImmediatly()>
+  <ol class="progress on-all-non-custom">
+    <li class="step">
+      1. <@_ "reproduction.steps.request" "Request reproduction"/>
+    </li>
+    <li class="step active">
+      2. <@_ "reproduction.steps.confirm" "Confirm reproduction request"/>
+    </li>
+    <li class="step">
+      3. <@_ "reproduction.steps.payment" "Payment of reproduction"/>
+    </li>
+    <li class="step">
+      4. <@_ "reproduction.steps.delivery" "Delivery of reproduction"/>
+    </li>
+  </ol>
+<#else>
   <ol class="progress on-any-custom">
     <li class="step">
       1. <@_ "reproduction.steps.request" "Request reproduction"/>
@@ -30,25 +45,14 @@
       5. <@_ "reproduction.steps.delivery" "Delivery of reproduction"/>
     </li>
   </ol>
-<#else>
-  <ol class="progress on-all-non-custom">
-    <li class="step">
-      1. <@_ "reproduction.steps.request" "Request reproduction"/>
-    </li>
-    <li class="step active">
-      2. <@_ "reproduction.steps.confirm" "Confirm reproduction request"/>
-    </li>
-    <li class="step">
-      3. <@_ "reproduction.steps.payment" "Payment of reproduction"/>
-    </li>
-    <li class="step">
-      4. <@_ "reproduction.steps.delivery" "Delivery of reproduction"/>
-    </li>
-  </ol>
 </#if>
 
 <#if paywayError??>
   <div class="errors">${paywayError?html}</div>
+</#if>
+
+<#if error??>
+  <div class="errors"><@_ "reproduction.error."+error error /></div>
 </#if>
 
 <section>
@@ -97,7 +101,7 @@
               </#if>
             </ul>
 
-            <ul class="reproductionDetails">
+            <ul class="reproductionDetails create">
               <#if hr.standardOption??>
                 <li>
                   <span>${hr.standardOption.optionName?html}</span>
@@ -141,11 +145,18 @@
 
     <div class="reproduction_confirm_form">
       <fieldset>
+        <#if reproduction.deliveryTimeComment??>
+          <div class="deliveryComment">
+            <label><@_ "reproduction.deliveryTimeComment" "Expected delivery time"/>:</label>
+            <em>${reproduction.deliveryTimeComment?html}</em>
+          </div>
+        </#if>
+
         <table>
           <thead>
             <tr>
               <td><@_ "reproduction.record" "Item"/></td>
-              <td><@_ "reproductionStandardOption.price" "Price"/></td>
+              <td class="price_column"><@_ "reproductionStandardOption.price" "Price"/></td>
               <td><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></td>
             </tr>
           </thead>
@@ -154,14 +165,30 @@
               <#assign h = hr.holding/>
               <tr>
                 <td>${h.record.externalInfo.title?html} - ${h.signature?html}</td>
-                <td>&euro; ${hr.price?string("0.00")}</td>
+                <td class="price_column">&euro; ${hr.price?string("0.00")}</td>
                 <td>${hr.deliveryTime?html} <@_ "days" "days"/></td>
               </tr>
             </#list>
 
+            <#if reproduction.copyrightPrice gt 0>
+              <tr class="additional">
+                <td class="label"><@_ "reproduction.copyright" "Copyright"/>:</td>
+                <td class="price_column">&euro; ${reproduction.copyrightPrice?string("0.00")}</td>
+                <td>&nbsp;</td>
+              </tr>
+            </#if>
+
+            <#if reproduction.discount gt 0>
+              <tr class="additional">
+                <td class="label"><@_ "reproduction.discount" "Discount"/>:</td>
+                <td class="price_column">&euro; ${reproduction.discount?string("0.00")}</td>
+                <td>&nbsp;</td>
+              </tr>
+            </#if>
+
             <tr class="total">
               <td class="label"><@_ "total" "Total"/>:</td>
-              <td>&euro; ${reproduction.getTotalPrice()?string("0.00")}</td>
+              <td class="price_column">&euro; ${reproduction.getTotalPrice()?string("0.00")}</td>
               <td>${reproduction.getEstimatedDeliveryTime()?html} <@_ "days" "days"/></td>
             </tr>
           </tbody>

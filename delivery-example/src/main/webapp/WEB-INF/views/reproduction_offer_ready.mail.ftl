@@ -3,6 +3,8 @@
 <@_ "reproductionMail.offerReadyMessage" " With this email we confirm your reproduction request. An order is ready on the following link:" /> \r\n
 ${prop_urlSelf}/reproduction/confirm/${reproduction.id?c}/${reproduction.token}?locale=${locale}
 
+<@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
+
 --- <@_ "reproduction.records" "Items"/> ---
 <#list reproduction.holdingReproductions as hr>
  <#assign h = hr.holding>

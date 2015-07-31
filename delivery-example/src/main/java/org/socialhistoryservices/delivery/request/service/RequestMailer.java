@@ -14,6 +14,18 @@ import java.util.Locale;
 public abstract class RequestMailer extends Mailer {
 
     /**
+     * Send information/confirmation mails to the reading room.
+     *
+     * @param subject      The subject of the email.
+     * @param templateName The name of the template to use.
+     * @param model        The model.
+     * @throws MailException Thrown when sending mail somehow failed.
+     */
+    protected void sendMail(String subject, String templateName, Model model, Locale locale) throws MailException {
+        sendMail(properties.getProperty("prop_mailReadingRoom"), subject, templateName, model, locale);
+    }
+
+    /**
      * Send information/confirmation mails dealing with requests
      *
      * @param request      The request in question.
@@ -24,6 +36,20 @@ public abstract class RequestMailer extends Mailer {
      */
     protected void sendMail(Request request, String subject, String templateName, Model model, Locale locale)
             throws MailException {
+        sendMail(request.getEmail(), subject, templateName, model, locale);
+    }
+
+    /**
+     * Send information/confirmation mails.
+     *
+     * @param to           The recipient.
+     * @param subject      The subject of the email.
+     * @param templateName The name of the template to use.
+     * @param model        The model.
+     * @throws MailException Thrown when sending mail somehow failed.
+     */
+    private void sendMail(String to, String subject, String templateName, Model model, Locale locale)
+            throws MailException {
         // Do not mail when mail is disabled.
         if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
             return;
@@ -33,7 +59,7 @@ public abstract class RequestMailer extends Mailer {
 
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setFrom(properties.getProperty("prop_mailSystemAddress"));
-        msg.setTo(request.getEmail());
+        msg.setTo(to);
         msg.setReplyTo(getMessage("iisg.email", ""));
 
         msg.setSubject(subject);
