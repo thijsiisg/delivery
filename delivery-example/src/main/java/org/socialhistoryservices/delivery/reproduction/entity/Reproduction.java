@@ -529,20 +529,6 @@ public class Reproduction extends Request {
         return deliveryTime;
     }
 
-    /**
-     * Returns whether this reproduction contains any custom reproduction requests.
-     *
-     * @return Wether this reproduction contains any custom reproduction requests.
-     */
-    public boolean containsCustomReproduction() {
-        for (HoldingReproduction hr : getHoldingReproductions()) {
-            if (hr.getStandardOption() == null)
-                return true;
-        }
-
-        return false;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Reproduction) {

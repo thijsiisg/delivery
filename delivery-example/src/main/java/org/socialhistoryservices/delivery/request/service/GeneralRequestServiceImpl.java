@@ -140,8 +140,8 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
             for (HoldingRequest hr : requestActive.getHoldingRequests()) {
                 if (hr.getHolding().getId() == holding.getId())
                     hr.setCompleted(true);
-                markRequest(requestActive);
             }
+            markRequest(requestActive);
         }
 
         // Now remove the flag 'on hold' and make sure the holding status is back to 'in use'
@@ -185,12 +185,16 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
      * @return The active request, null if none exist.
      */
     public Request getActiveFor(Holding holding, int getAll) {
+        Request activeRequest = null;
         for (RequestService requestService : requests) {
             Request request = requestService.getActiveFor(holding, getAll);
-            if (request != null)
-                return request;
+            // The request with the earliest creation date is always the actual active request
+            if ((request != null) &&
+                    ((activeRequest == null) || activeRequest.getCreationDate().after(request.getCreationDate()))) {
+                activeRequest = request;
+            }
         }
-        return null;
+        return activeRequest;
     }
 
     /**

@@ -22,7 +22,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import java.beans.PropertyEditorSupport;
 import java.text.DateFormat;

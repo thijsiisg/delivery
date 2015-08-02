@@ -287,7 +287,7 @@
               <input type="submit" name="changeStatus" value="${statusLabel}"/>
 
               <span class="note">
-                <@_ "reproductionList.ignoreStatusBackwards" "Reproduction status can only be changed in forward order, i.e. Pending->Active->Completed, but not the other way around."/>
+                <@_ "reproductionList.ignoreStatusBackwards" "The status can only be changed forward (Waiting for order details->Has order details->Confirmed->Payed->Active->Completed->Delivered->Cancelled), not the other way around."/>
               </span>
             </li>
           </#if>

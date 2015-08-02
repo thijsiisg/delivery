@@ -517,14 +517,11 @@ public class ReproductionController extends AbstractRequestController {
         for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
             Reproduction r = reproductions.getReproductionById(bulkActionIds.getRequestId());
 
-            // Only change reproductions which exist.
+            // Only change reproductions which exist
             if (r != null) {
-                continue;
+                reproductions.updateStatusAndAssociatedHoldingStatus(r, newStatus);
+                reproductions.saveReproduction(r);
             }
-
-            // Set the new status and holding statuses.
-            reproductions.updateStatusAndAssociatedHoldingStatus(r, newStatus);
-            reproductions.saveReproduction(r);
         }
 
         return "redirect:/reproduction/" + qs;
@@ -552,17 +549,15 @@ public class ReproductionController extends AbstractRequestController {
 
         for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
             Holding h = records.getHoldingById(bulkActionIds.getHoldingId());
-            if (h == null) {
-                continue;
-            }
-
-            // Only update the status if the holding is active for the same reproduction
-            Request request = requests.getActiveFor(h);
-            if ((request instanceof Reproduction) &&
-                    (((Reproduction) request).getId() == bulkActionIds.getRequestId())) {
-                // Set the new status
-                requests.updateHoldingStatus(h, newHoldingStatus);
-                records.saveHolding(h);
+            if (h != null) {
+                // Only update the status if the holding is active for the same reproduction
+                Request request = requests.getActiveFor(h);
+                if ((request instanceof Reproduction) &&
+                        (((Reproduction) request).getId() == bulkActionIds.getRequestId())) {
+                    // Set the new status
+                    requests.updateHoldingStatus(h, newHoldingStatus);
+                    records.saveHolding(h);
+                }
             }
         }
 
@@ -588,20 +583,18 @@ public class ReproductionController extends AbstractRequestController {
 
         for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
             Holding h = records.getHoldingById(bulkActionIds.getHoldingId());
-            if (h == null) {
-                continue;
-            }
-
-            // Only update the status if the holding is active for the same reproduction
-            Request request = requests.getActiveFor(h);
-            if ((request instanceof Reproduction) &&
-                    (((Reproduction) request).getId() == bulkActionIds.getRequestId())) {
-                // Place on hold
-                try {
-                    requests.markItemOnHold(h);
-                    records.saveHolding(h);
-                } catch (OnHoldException ohe) {
-                    // Its a batch update, so ignore
+            if (h != null) {
+                // Only update the status if the holding is active for the same reproduction
+                Request request = requests.getActiveFor(h);
+                if ((request instanceof Reproduction) &&
+                        (((Reproduction) request).getId() == bulkActionIds.getRequestId())) {
+                    // Place on hold
+                    try {
+                        requests.markItemOnHold(h);
+                        records.saveHolding(h);
+                    } catch (OnHoldException ohe) {
+                        // Its a batch update, so ignore
+                    }
                 }
             }
         }
@@ -838,6 +831,15 @@ public class ReproductionController extends AbstractRequestController {
         return processConfirmation(req, reproduction, model, true);
     }
 
+    /**
+     * Processes the confirmation of a reproduction by the customer.
+     *
+     * @param req          The HTTP request.
+     * @param reproduction The reproduction.
+     * @param model        The model to add response attributes to.
+     * @param commit       Whether to commit the confirmation to the database and create an order.
+     * @return The view to resolve.
+     */
     private String processConfirmation(HttpServletRequest req, Reproduction reproduction, Model model, boolean commit) {
         if (reproduction == null) {
             throw new InvalidRequestException("No such reproduction.");
@@ -847,6 +849,7 @@ public class ReproductionController extends AbstractRequestController {
             throw new InvalidRequestException("Reproduction does not have all of the order details yet.");
         }
 
+        // If the customer already confirmed the reproduction, just redirect to the payment page
         if (reproduction.getStatus() == Reproduction.Status.CONFIRMED) {
             Order order = reproduction.getOrder();
             if (order != null) {
@@ -854,12 +857,14 @@ public class ReproductionController extends AbstractRequestController {
             }
         }
 
+        // If already moved on from the status 'confirmed', the customer has no business on this page anymore
         if (reproduction.getStatus().compareTo(Reproduction.Status.CONFIRMED) >= 0) {
             throw new InvalidRequestException("Reproduction has been confirmed already.");
         }
 
         model.addAttribute("reproduction", reproduction);
         if (commit) {
+            // Did the customer accept the terms and conditions?
             String accept = req.getParameter("accept_terms_conditions");
             if (!"accept".equals(accept)) {
                 String msg = msgSource.getMessage("accept.error", null, LocaleContextHolder.getLocale());
@@ -868,7 +873,7 @@ public class ReproductionController extends AbstractRequestController {
             }
 
             try {
-                // Change status to 'confirmed by customer'
+                // Change status to 'confirmed by customer' and create order
                 reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.CONFIRMED);
                 Order order = reproductions.createOrder(reproduction);
 
@@ -880,8 +885,8 @@ public class ReproductionController extends AbstractRequestController {
                         LOGGER.debug("/reproduction/confirm : Failed to send payment confirmation email to customer");
                     }
 
-                    // TODO: Delivery of reproduction, redirect?
-                    return "";
+                    // Show payment accepted page
+                    return "redirect:/reproduction/order/accept";
                 }
 
                 // Otherwise redirect the user to the payment page

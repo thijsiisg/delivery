@@ -1,7 +1,6 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
 import org.apache.log4j.Logger;
-import org.omg.PortableInterceptor.ACTIVE;
 import org.socialhistoryservices.delivery.api.*;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.reproduction.dao.HoldingReproductionDAO;
@@ -312,9 +311,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             case HAS_ORDER_DETAILS:
                 reproduction.setDateHasOrderDetails(new Date());
                 break;
-            case ACTIVE:
-                hStatus = Holding.Status.IN_USE;
-                break;
             case COMPLETED:
             case DELIVERED:
             case CANCELLED:
@@ -325,11 +321,10 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
         // Update the holdings of the reproduction
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            if (!hr.isCompleted())
+            if ((hStatus != null) && !hr.isCompleted() && !hr.isOnHold()) {
                 hr.setCompleted(completedStatus);
-
-            if ((hStatus != null) && !hr.isCompleted() && !hr.isOnHold())
                 requests.updateHoldingStatus(hr.getHolding(), hStatus);
+            }
         }
     }
 
@@ -503,7 +498,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
     /**
      * Whether all holdings of the reproduction are currently available.
-     * Takes only holdings into account of which there is no digital object in the SOR.
      *
      * @param hrs The holding reproductions to check for.
      * @return Whether all holdings of the reproduction are currently available.
@@ -671,7 +665,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             PayWayMessage message = new PayWayMessage();
             message.put("amount", amount);
             message.put("currency", "EUR");
-            message.put("language", LocaleContextHolder.getLocale().toString().equals("en") ? "en_US" : "nl_NL");
+            message.put("language", r.getRequestLocale().toString().equals("en") ? "en_US" : "nl_NL");
             message.put("cn", r.getCustomerName());
             message.put("email", r.getCustomerEmail());
             message.put("owneraddress", null);
