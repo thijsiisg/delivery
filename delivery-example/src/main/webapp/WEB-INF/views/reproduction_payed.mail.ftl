@@ -5,6 +5,8 @@
   <@_ "reproductionMail.payedNotFreeMessage" "You will also receive an email from our payment provider to confirm the payment." />
 </#if>
 
+<@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
+
 --- <@_ "reproduction.records" "Items"/> ---
 <#list reproduction.holdingReproductions as hr>
  <#assign h = hr.holding>

@@ -22,6 +22,7 @@ import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.record.service.OnHoldException;
 import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
 import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
@@ -690,7 +691,7 @@ public class ReservationController extends AbstractRequestController {
             return;
         }
 
-        if (isBetweenOpeningAndClosingTime(create)) {
+        if (DateUtils.isBetweenOpeningAndClosingTime(properties, create)) {
             // Run this in a separate thread, we do nothing on failure so in
             // this case this is perfectly possible.
             // This speeds up the processing of the page for the end-user.

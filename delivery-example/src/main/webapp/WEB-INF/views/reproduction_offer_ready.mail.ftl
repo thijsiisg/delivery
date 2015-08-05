@@ -1,6 +1,6 @@
 <#include "mail.ftl">
 <@mail reproduction.customerName>
-<@_ "reproductionMail.offerReadyMessage" " With this email we confirm your reproduction request. An order is ready on the following link:" /> \r\n
+<@_ "reproductionMail.offerReadyMessage" " With this email we confirm your reproduction request. An order is ready on the following link:" />
 ${prop_urlSelf}/reproduction/confirm/${reproduction.id?c}/${reproduction.token}?locale=${locale}
 
 <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
@@ -18,7 +18,14 @@ ${prop_urlSelf}/reproduction/confirm/${reproduction.id?c}/${reproduction.token}?
 <@_ "reproduction.customReproductionCustomer" "Your wish"/>:
 ${hr.customReproductionCustomer}
 
+    <#if hr.customReproductionReply??>
 ${hr.customReproductionReply}
+    </#if>
   </#if>
 </#list>
+<#if reproduction.deliveryTimeComment??>
+
+<@_ "reproduction.deliveryTimeComment" "Expected delivery time"/>:
+${reproduction.deliveryTimeComment}
+</#if>
 </@mail>

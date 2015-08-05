@@ -1,5 +1,7 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
+import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.record.entity.Record;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
 import org.socialhistoryservices.delivery.request.service.RequestPrintable;
@@ -36,6 +38,19 @@ public class ReproductionPrintable extends RequestPrintable {
         drawId(drawInfo);
         drawCreationDate(drawInfo);
         drawReproductionInformation(drawInfo);
+    }
+
+    /**
+     * Draw all holding info.
+     *
+     * @param drawInfo Draw Offsets.
+     */
+    @Override
+    protected void drawHoldingInfo(DrawInfo drawInfo) {
+        super.drawHoldingInfo(drawInfo);
+
+        Holding h = holdingRequest.getHolding();
+        drawHoldingPid(drawInfo, h.determinePid());
     }
 
     /**
@@ -79,5 +94,16 @@ public class ReproductionPrintable extends RequestPrintable {
             drawInfo.setOffsetY(drawInfo.getOffsetY() + MIN_LINE_HEIGHT);
             drawKeyValue(drawInfo, null, hr.getCustomReproductionReply(), italicFont, false);
         }
+    }
+
+    /**
+     * Draw the PID of the holding.
+     *
+     * @param drawInfo Draw offsets.
+     * @param value    The value to draw.
+     */
+    private void drawHoldingPid(DrawInfo drawInfo, String value) {
+        String typeLabel = getMessage("holding.pid", "Item PID");
+        drawKeyValue(drawInfo, typeLabel, value, italicFont, true);
     }
 }

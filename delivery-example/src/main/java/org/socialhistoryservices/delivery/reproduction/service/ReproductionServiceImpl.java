@@ -9,6 +9,7 @@ import org.socialhistoryservices.delivery.reproduction.dao.ReproductionDAO;
 import org.socialhistoryservices.delivery.reproduction.dao.ReproductionStandardOptionDAO;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
+import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -55,6 +57,9 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
     @Autowired
     private SharedObjectRepositoryService sorService;
+
+    @Autowired
+    private ReproductionMailer reproductionMailer;
 
     @Autowired
     private BeanFactory bf;
@@ -311,7 +316,14 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             case HAS_ORDER_DETAILS:
                 reproduction.setDateHasOrderDetails(new Date());
                 break;
+            case PAYED:
+                mailPayed(reproduction);
+                break;
+            case ACTIVE:
+                autoPrintReproduction(reproduction);
+                break;
             case COMPLETED:
+                mailSorLinks(reproduction);
             case DELIVERED:
             case CANCELLED:
                 completedStatus = true;
@@ -323,15 +335,61 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             if ((hStatus != null) && !hr.isCompleted() && !hr.isOnHold()) {
                 hr.setCompleted(completedStatus);
-                requests.updateHoldingStatus(hr.getHolding(), hStatus);
+                requests.updateHoldingStatus(hr.getHolding(), hStatus, reproduction);
             }
+        }
+    }
+
+    /**
+     * Auto print all holdings of the given reproduction, if possible.
+     *
+     * @param reproduction The reproduction.
+     */
+    private void autoPrintReproduction(final Reproduction reproduction) {
+        if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date())) {
+            // Run this in a separate thread, we do nothing on failure so in this case this is perfectly possible
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        printReproduction(reproduction);
+                    } catch (PrinterException e) {
+                        // Do nothing, let an employee print it later on
+                    }
+                }
+            }).start();
+        }
+    }
+
+    /**
+     * Email the customer a payment confirmation.
+     *
+     * @param reproduction The reproduction.
+     */
+    private void mailPayed(Reproduction reproduction) {
+        try {
+            reproductionMailer.mailPayed(reproduction);
+        } catch (MailException me) {
+            // Do nothing
+        }
+    }
+
+    /**
+     * Email repro concerning the addresses in the SOR.
+     *
+     * @param reproduction The reproduction.
+     */
+    private void mailSorLinks(Reproduction reproduction) {
+        try {
+            reproductionMailer.mailSorLinks(reproduction);
+        } catch (MailException me) {
+            // Do nothing
         }
     }
 
     /**
      * Adds a HoldingRequest to the HoldingRequests assoicated with this request.
      *
-     * @param request
+     * @param request        The request.
      * @param holdingRequest The HoldingRequests to add.
      */
     protected void addToHoldingRequests(Request request, HoldingRequest holdingRequest) {
@@ -417,10 +475,13 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             // Obtain the holding reproductions which are not found in the SOR
             List<HoldingReproduction> hrNotInSor = getHoldingsReproductionsNotInSor(newReproduction);
 
-            // Move status forward if all order details are known already
-            if (hasOrderDetails(newReproduction) && hasOnlyAvailableHoldings(hrNotInSor)) {
-                newReproduction.setOfferReadyImmediatly(true);
-                updateStatusAndAssociatedHoldingStatus(newReproduction, Reproduction.Status.HAS_ORDER_DETAILS);
+            // Move status forward if all order details are known
+            if (hasOrderDetails(newReproduction)) {
+                // If created by a customer, then also check availability
+                if (!isCustomer || hasOnlyAvailableHoldings(hrNotInSor)) {
+                    newReproduction.setOfferReadyImmediatly(true);
+                    updateStatusAndAssociatedHoldingStatus(newReproduction, Reproduction.Status.HAS_ORDER_DETAILS);
+                }
             }
 
             // Reserve all holdings that are currently available, but not yet in the SOR
@@ -528,17 +589,33 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     /**
      * Check if all the holdings that are required by repro are active for the given reproduction.
      *
-     * @param reproduction The reproduction.
+     * @param hrs The holding reproductions to check for.
      * @return Whether all required holdings are active for repro.
      */
-    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction) {
-        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
+    public boolean isActiveForAllRequiredHoldings(List<HoldingReproduction> hrs) {
+        for (HoldingReproduction hr : hrs) {
+            Reproduction r = hr.getReproduction();
             Holding h = hr.getHolding();
-            if (!requests.getActiveFor(h).equals(reproduction) && !isHoldingReproductionInSor(hr)) {
+            if (!requests.getActiveFor(h).equals(r)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Returns all holding reproductions of those that are found in the SOR.
+     *
+     * @param reproduction The reproduction.
+     * @return All holding reproductions of those that are found in the SOR.
+     */
+    public List<HoldingReproduction> getHoldingsReproductionsInSor(Reproduction reproduction) {
+        List<HoldingReproduction> hrs = new ArrayList<HoldingReproduction>();
+        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
+            if (isHoldingReproductionInSor(hr))
+                hrs.add(hr);
+        }
+        return hrs;
     }
 
     /**
@@ -608,12 +685,11 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     @Scheduled(cron = "0 0 * * * MON-FRI")
     public void checkPayedReproductions() {
         // Determine the number of days
-        String nrOfDays = properties.getProperty("prop_reproductionMaxDaysPayment", "5");
-        Integer nrDays = Integer.parseInt(nrOfDays);
+        Integer nrOfDays = Integer.parseInt(properties.getProperty("prop_reproductionMaxDaysPayment", "5"));
 
         // Determine the date that many days ago
         Calendar calendar = GregorianCalendar.getInstance();
-        calendar.add(Calendar.DAY_OF_YEAR, -nrDays);
+        calendar.add(Calendar.DAY_OF_YEAR, -nrOfDays);
 
         // Build the query
         CriteriaBuilder builder = getReproductionCriteriaBuilder();
@@ -936,8 +1012,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
                 // If the customer has already payed,
                 // then move to 'active' if all holdings that are required by repro are active for repro
-                if ((reproduction.getStatus() == Reproduction.Status.PAYED)
-                        && isActiveForAllRequiredHoldings(reproduction))
+                List<HoldingReproduction> hr = getHoldingsReproductionsNotInSor(reproduction);
+                if ((reproduction.getStatus() == Reproduction.Status.PAYED) && isActiveForAllRequiredHoldings(hr))
                     updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
 
                 saveReproduction(reproduction);

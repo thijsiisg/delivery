@@ -216,7 +216,7 @@ public abstract class RequestPrintable implements Printable {
      *
      * @param drawInfo Draw Offsets.
      */
-    private void drawHoldingInfo(DrawInfo drawInfo) {
+    protected void drawHoldingInfo(DrawInfo drawInfo) {
         Holding h = holdingRequest.getHolding();
         Record r = h.getRecord();
 
@@ -480,7 +480,7 @@ public abstract class RequestPrintable implements Printable {
         FontMetrics fm = g2d.getFontMetrics();
         FontRenderContext frc = g2d.getFontRenderContext();
 
-        AttributedString styledText = new AttributedString(value);
+        AttributedString styledText = new AttributedString(value.replace("\n", " "));
         styledText.addAttribute(TextAttribute.FONT, font);
         styledText.addAttribute(TextAttribute.UNDERLINE, underline ? 1 : -1);
 

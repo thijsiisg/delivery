@@ -325,10 +325,10 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
             if (!hr.isCompleted()) {
                 if (status == Reservation.Status.COMPLETED) {
                     hr.setCompleted(true);
-                    requests.updateHoldingStatus(hr.getHolding(), hStatus);
+                    requests.updateHoldingStatus(hr.getHolding(), hStatus, reservation);
                 }
                 else if (!hr.isOnHold()) {
-                    requests.updateHoldingStatus(hr.getHolding(), hStatus);
+                    requests.updateHoldingStatus(hr.getHolding(), hStatus, reservation);
                 }
             }
         }

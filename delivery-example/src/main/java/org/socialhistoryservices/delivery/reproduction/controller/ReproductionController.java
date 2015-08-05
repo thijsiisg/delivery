@@ -751,7 +751,7 @@ public class ReproductionController extends AbstractRequestController {
             Set<Holding> holdingsNotInSor = new HashSet<Holding>();
             for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
                 Holding h = hr.getHolding();
-                if (!requests.getActiveFor(h).equals(reproduction) && !reproductions.isHoldingReproductionInSor(hr))
+                if (!reproduction.equals(requests.getActiveFor(h)) && !reproductions.isHoldingReproductionInSor(hr))
                     holdingsNotInSor.add(h);
             }
 
@@ -879,11 +879,8 @@ public class ReproductionController extends AbstractRequestController {
 
                 // If the reproduction is for free, take care of delivey
                 if (reproduction.isForFree()) {
-                    try {
-                        reproductionMailer.mailPayed(reproduction);
-                    } catch (MailException me) {
-                        LOGGER.debug("/reproduction/confirm : Failed to send payment confirmation email to customer");
-                    }
+                    // Determine if we can move up to either 'completed' or 'active' immediatly
+                    changeStatusAfterPayment(reproduction);
 
                     // Show payment accepted page
                     return "redirect:/reproduction/order/accept";
@@ -947,17 +944,9 @@ public class ReproductionController extends AbstractRequestController {
         // Everything is fine, change status and send email to customer
         reproductions.refreshOrder(order);
         reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.PAYED);
-        try {
-            reproductionMailer.mailPayed(reproduction);
-        } catch (MailException me) {
-            LOGGER.debug("/reproduction/order/accept : Failed to send payment confirmation email to customer");
-        }
 
-        // Move to 'active' if all holdings that are required by repro are already reserved
-        if ((reproduction.getStatus() == Reproduction.Status.PAYED)
-                && reproductions.isActiveForAllRequiredHoldings(reproduction)) {
-            reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
-        }
+        // Determine if we can move up to either 'completed' or 'active' immediatly
+        changeStatusAfterPayment(reproduction);
 
         reproductions.saveReproduction(reproduction);
         return HttpStatus.OK;
@@ -991,6 +980,19 @@ public class ReproductionController extends AbstractRequestController {
     @RequestMapping(value = "/order/exception", method = RequestMethod.GET)
     public String exception() {
         return "reproduction_order_exception";
+    }
+
+    /**
+     * Determine if we can move up to either 'completed' or 'active' immediatly.
+     *
+     * @param reproduction The reproduction.
+     */
+    private void changeStatusAfterPayment(Reproduction reproduction) {
+        List<HoldingReproduction> hr = reproductions.getHoldingsReproductionsNotInSor(reproduction);
+        if (hr.isEmpty())
+            reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.COMPLETED);
+        else if (reproductions.isActiveForAllRequiredHoldings(hr))
+            reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
     }
 
     /**
@@ -1196,12 +1198,14 @@ public class ReproductionController extends AbstractRequestController {
                 boolean mailSuccess = true;
                 if (mail) {
                     try {
-                        reproductionMailer.mailOfferReady(reproduction);
+                        // Determine which one was updated
+                        Reproduction r = (originalReproduction == null) ? reproduction : originalReproduction;
+                        reproductionMailer.mailOfferReady(r);
                     } catch (MailException me) {
                         mailSuccess = false;
                     }
                 }
-                return "redirect:/reproduction/" + reproduction.getId() + (!mailSuccess ? "?mail=error" : "");
+                return "redirect:/reproduction/" + originalReproduction.getId() + (!mailSuccess ? "?mail=error" : "");
             }
         } catch (ClosedException e) {
             String msg = msgSource.getMessage("reproduction.error.restricted", null, "",
@@ -1260,27 +1264,6 @@ public class ReproductionController extends AbstractRequestController {
         reproductions.editStandardOptions(standardOptions, result);
         model.addAttribute("standardOptions", standardOptions);
         return "reproduction_standard_options_edit";
-    }
-
-    /**
-     * Print a reproduction if it currently is between the opening and closing times of the readingroom.
-     *
-     * @param reproduction The reproduction to print.
-     */
-    private void autoPrint(final Reproduction reproduction) {
-        if (isBetweenOpeningAndClosingTime(new Date())) {
-            // Run this in a separate thread, we do nothing on failure so in this case this is perfectly possible.
-            // This speeds up the processing of the page for the end-user.
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        reproductions.printReproduction(reproduction);
-                    } catch (PrinterException e) {
-                        // Do nothing, let an employee print it later on.
-                    }
-                }
-            }).start();
-        }
     }
 
     /**
