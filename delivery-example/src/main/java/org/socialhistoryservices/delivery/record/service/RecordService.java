@@ -151,10 +151,11 @@ public interface RecordService {
     public void updateExternalInfo();
 
     /**
-     * Updates the external info of the given record.
-     * @param record The record of which to update the external info.
+     * Updates the external info of the given record, if necessary.
+     * @param record      The record of which to update the external info.
+     * @param hardRefresh Always update the external info.
      */
-    public void updateExternalInfo(Record record);
+    public void updateExternalInfo(Record record, boolean hardRefresh);
 
     /**
      * Edit records.

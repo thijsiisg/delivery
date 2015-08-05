@@ -23,6 +23,7 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -101,6 +102,26 @@ public class Record {
      */
     public void setExternalInfo(ExternalRecordInfo info) {
         this.externalInfo = info;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="external_info_updated")
+    private Date externalInfoUpdated;
+
+    /**
+     * Get the date/time the external info of this record was last updated.
+     * @return The date/time the external info of this record was last updated.
+     */
+    public Date getExternalInfoUpdated() {
+        return externalInfoUpdated;
+    }
+
+    /**
+     * Set the date/time the external info of this record was last updated.
+     * @param externalInfoUpdated The date/time the external info of this record was last updated.
+     */
+    public void setExternalInfoUpdated(Date externalInfoUpdated) {
+        this.externalInfoUpdated = externalInfoUpdated;
     }
 
     /**
@@ -528,6 +549,7 @@ public class Record {
         holdings = LazyList.decorate(new ArrayList<Holding>(), new InstantiateFactory(Holding.class));
         children = new ArrayList<Record>();
         externalInfo = new ExternalRecordInfo();
+        setExternalInfoUpdated(new Date());
         setRestrictionType(RestrictionType.OPEN);
     }
 }

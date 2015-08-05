@@ -97,9 +97,8 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
                 }
             }
             else {
-                // TODO: Can we update the external data of the record?
-                /*records.updateExternalInfo(r);
-                records.saveRecord(r);*/
+                records.updateExternalInfo(r, false);
+                records.saveRecord(r);
             }
 
             if (elements.length == 1) {
@@ -408,12 +407,12 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
 
         List<Holding> holdings = records.listHoldings(cq);
 
-        // TODO: Can we update the external data of the record?
+        // Update the external data of the records, if necessary
         Set<Record> r = new HashSet<Record>();
         for (Holding holding : holdings) {
             Record record = holding.getRecord();
             if (!r.contains(record)) {
-                records.updateExternalInfo(record);
+                records.updateExternalInfo(record, false);
                 records.saveRecord(record);
                 r.add(record);
             }

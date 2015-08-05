@@ -134,9 +134,8 @@ public class RecordServiceImpl implements RecordService {
     public Record resolveRecordByPid(String pid) {
         Record root = getRecordByPid(pid);
         if (root != null) {
-            // TODO: Can we update the external data of the record?
-            /*updateExternalInfo(root);
-            saveRecord(root);*/
+            updateExternalInfo(root, false);
+            saveRecord(root);
             return root;
         }
         String itemSeparator = properties.getProperty("prop_itemSeparator", ".");
@@ -144,9 +143,8 @@ public class RecordServiceImpl implements RecordService {
             pid = pid.substring(0, pid.lastIndexOf(itemSeparator));
             Record rec = getRecordByPid(pid);
             if (rec != null) {
-                // TODO: Can we update the external data of the record?
-                /*updateExternalInfo(rec);
-                saveRecord(rec);*/
+                updateExternalInfo(rec, false);
+                saveRecord(rec);
                 return rec;
             }
         }
@@ -270,7 +268,7 @@ public class RecordServiceImpl implements RecordService {
             transactionTemplate.execute(new TransactionCallback<Object>() {
                 public Object doInTransaction(TransactionStatus status) {
                     for (Record record : curBatch) {
-                        updateExternalInfo(record);
+                        updateExternalInfo(record, false);
                         saveRecord(record);
                     }
                     return null;
@@ -282,13 +280,23 @@ public class RecordServiceImpl implements RecordService {
     }
 
     /**
-     * Updates the external info of the given record.
-     * @param record The record of which to update the external info.
+     * Updates the external info of the given record, if necessary.
+     * @param record      The record of which to update the external info.
+     * @param hardRefresh Always update the external info.
      */
-    public void updateExternalInfo(Record record) {
+    public void updateExternalInfo(Record record, boolean hardRefresh) {
         try {
-            String pid = record.getPid();
+            // Do we need to update the external info?
+            Integer days = Integer.parseInt(properties.getProperty("prop_externalInfoMinDaysCache"));
+            Calendar calendar = GregorianCalendar.getInstance();
+            calendar.add(Calendar.DAY_OF_YEAR, -days);
 
+            Date lastUpdated = record.getExternalInfoUpdated();
+            if (!hardRefresh && (lastUpdated != null) && lastUpdated.after(calendar.getTime()))
+                return;
+
+            // We need to update the external info
+            String pid = record.getPid();
             ExternalRecordInfo eri = lookup.getRecordMetaDataByPid(pid);
             Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
 
@@ -318,9 +326,11 @@ public class RecordServiceImpl implements RecordService {
                     holding.setRecord(record);
                 }
             }
+
+            record.setExternalInfoUpdated(new Date());
         }
         catch (NoSuchPidException nspe) {
-            // PID not found, then just skip the record
+            // PID not found, or API down, then just skip the record
         }
     }
 
@@ -356,7 +366,7 @@ public class RecordServiceImpl implements RecordService {
         }
 
         // Add holding/other API info if present
-	    updateExternalInfo(newRecord);
+	    updateExternalInfo(newRecord, true);
 
         // Validate the record.
         validateRecord(newRecord, result);

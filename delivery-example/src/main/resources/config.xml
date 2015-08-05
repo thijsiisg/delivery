@@ -38,6 +38,7 @@
           <value>prop_reservationMaxDaysInAdvance</value>
           <value>prop_reservationMaxItems</value>
           <value>prop_reproductionMaxDaysPayment</value>
+          <value>prop_externalInfoMinDaysCache</value>
           <value>prop_dateFormat</value>
           <value>prop_dbUsername</value>
           <value>prop_dbPassword</value>
