@@ -472,20 +472,17 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
         // Add or save the record when no errors are present.
         if (!result.hasErrors()) {
-            // Obtain the holding reproductions which are not found in the SOR
-            List<HoldingReproduction> hrNotInSor = getHoldingsReproductionsNotInSor(newReproduction);
-
             // Move status forward if all order details are known
             if (hasOrderDetails(newReproduction)) {
                 // If created by a customer, then also check availability
-                if (!isCustomer || hasOnlyAvailableHoldings(hrNotInSor)) {
+                if (!isCustomer || hasOnlyAvailableRequiredHoldings(newReproduction)) {
                     newReproduction.setOfferReadyImmediatly(true);
                     updateStatusAndAssociatedHoldingStatus(newReproduction, Reproduction.Status.HAS_ORDER_DETAILS);
                 }
             }
 
             // Reserve all holdings that are currently available, but not yet in the SOR
-            reserveAvailableHoldings(hrNotInSor);
+            reserveAvailableRequiredHoldings(newReproduction);
 
             // Now add or save the record
             if (oldReproduction == null) {
@@ -558,15 +555,15 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
-     * Whether all holdings of the reproduction are currently available.
+     * Whether all required holdings of the reproduction are currently available.
      *
      * @param hrs The holding reproductions to check for.
      * @return Whether all holdings of the reproduction are currently available.
      */
-    private boolean hasOnlyAvailableHoldings(List<HoldingReproduction> hrs) {
-        for (HoldingReproduction hr : hrs) {
+    private boolean hasOnlyAvailableRequiredHoldings(Reproduction reproduction) {
+        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             Holding h = hr.getHolding();
-            if (h.getStatus() != Holding.Status.AVAILABLE)
+            if (!hr.isInSor() && (h.getStatus() != Holding.Status.AVAILABLE))
                 return false;
         }
 
@@ -574,14 +571,14 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
-     * Reserve all the holdings of the given reproduction that are currently available.
+     * Reserve all the required holdings of the given reproduction that are currently available.
      *
      * @param hrs The holding reproductions to check for.
      */
-    private void reserveAvailableHoldings(List<HoldingReproduction> hrs) {
-        for (HoldingReproduction hr : hrs) {
+    private void reserveAvailableRequiredHoldings(Reproduction reproduction) {
+        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             Holding h = hr.getHolding();
-            if (h.getStatus() == Holding.Status.AVAILABLE)
+            if (!hr.isInSor() && (h.getStatus() == Holding.Status.AVAILABLE))
                 requests.updateHoldingStatus(h, Holding.Status.RESERVED);
         }
     }
@@ -589,48 +586,16 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     /**
      * Check if all the holdings that are required by repro are active for the given reproduction.
      *
-     * @param hrs The holding reproductions to check for.
+     * @param reproduction The reproduction.
      * @return Whether all required holdings are active for repro.
      */
-    public boolean isActiveForAllRequiredHoldings(List<HoldingReproduction> hrs) {
-        for (HoldingReproduction hr : hrs) {
-            Reproduction r = hr.getReproduction();
+    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction) {
+        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             Holding h = hr.getHolding();
-            if (!requests.getActiveFor(h).equals(r)) {
+            if (!hr.isInSor() && !requests.getActiveFor(h).equals(reproduction))
                 return false;
-            }
         }
         return true;
-    }
-
-    /**
-     * Returns all holding reproductions of those that are found in the SOR.
-     *
-     * @param reproduction The reproduction.
-     * @return All holding reproductions of those that are found in the SOR.
-     */
-    public List<HoldingReproduction> getHoldingsReproductionsInSor(Reproduction reproduction) {
-        List<HoldingReproduction> hrs = new ArrayList<HoldingReproduction>();
-        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            if (isHoldingReproductionInSor(hr))
-                hrs.add(hr);
-        }
-        return hrs;
-    }
-
-    /**
-     * Returns all holding reproductions of those that are not yet found in the SOR.
-     *
-     * @param reproduction The reproduction.
-     * @return All holding reproductions of those that are not yet found in the SOR.
-     */
-    public List<HoldingReproduction> getHoldingsReproductionsNotInSor(Reproduction reproduction) {
-        List<HoldingReproduction> hrs = new ArrayList<HoldingReproduction>();
-        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            if (!isHoldingReproductionInSor(hr))
-                hrs.add(hr);
-        }
-        return hrs;
     }
 
     /**
@@ -886,6 +851,10 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             // Make sure the price is for free
             if (forFree)
                 hr.setPrice(BigDecimal.ZERO);
+
+            // Do we already have information whether the item is available in the SOR?
+            if (hr.isInSor() == null)
+                hr.setInSor(isHoldingReproductionInSor(hr));
         }
 
         // Make sure the price is for free, otherwise determine the copyright price for this reproduction
@@ -1012,8 +981,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
                 // If the customer has already payed,
                 // then move to 'active' if all holdings that are required by repro are active for repro
-                List<HoldingReproduction> hr = getHoldingsReproductionsNotInSor(reproduction);
-                if ((reproduction.getStatus() == Reproduction.Status.PAYED) && isActiveForAllRequiredHoldings(hr))
+                if ((reproduction.getStatus() == Reproduction.Status.PAYED) &&
+                        isActiveForAllRequiredHoldings(reproduction))
                     updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
 
                 saveReproduction(reproduction);

@@ -1,7 +1,7 @@
 <#include "base.ftl">
 
 <#assign title>
-<@_ "reproduction.order.accept" "Payment successfully completed"/>
+<@_ "reproduction.order.confirm" "Reproduction successfully confirmed"/>
 </#assign>
 
 <@userbase title>
@@ -11,7 +11,7 @@
   </heading>
 
   <section>
-    <p><@_html "reproduction.order.accept.message" "Within a few minutes you will receive an email from us confirming your payment. You will also receive a second email from our payment provider confirming your payment." /></p>
+    <p><@_html "reproduction.order.confirm.message" "Within a few minutes you will receive an email from us confirming your request." /></p>
     <p><@_html "reproduction.order.confirm.accept.message" "You will receive an email with the download instructions once the materials are digitized."/></p>
   </section>
 

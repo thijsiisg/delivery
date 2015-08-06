@@ -7,6 +7,7 @@ import org.socialhistoryservices.delivery.request.entity.Request;
 import javax.persistence.*;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
@@ -153,6 +154,30 @@ public class HoldingReproduction extends HoldingRequest {
      */
     public void setCompleted(boolean completed) {
         this.completed = completed;
+    }
+
+    /**
+     * Is there already a reproduction in the SOR?
+     */
+    @Column(name = "inSor")
+    private Boolean inSor;
+
+    /**
+     * Get whether there already is a reproduction in the SOR.
+     *
+     * @return Is there already a reproduction in the SOR?
+     */
+    public Boolean isInSor() {
+        return inSor;
+    }
+
+    /**
+     * Set whether there already is a reproduction in the SOR.
+     *
+     * @param inSor Is there already a reproduction in the SOR?
+     */
+    public void setInSor(boolean inSor) {
+        this.inSor = inSor;
     }
 
     /**

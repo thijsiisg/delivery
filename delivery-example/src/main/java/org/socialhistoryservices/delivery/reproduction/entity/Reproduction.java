@@ -529,6 +529,19 @@ public class Reproduction extends Request {
         return deliveryTime;
     }
 
+    /**
+     * Determine if all holdings of this reproduction are already in the SOR.
+     *
+     * @return Whether all holdings of this reproduction are already in the SOR.
+     */
+    public boolean isCompletelyInSor() {
+        for (HoldingReproduction hr : getHoldingReproductions()) {
+            if (!hr.isInSor())
+                return false;
+        }
+        return true;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Reproduction) {

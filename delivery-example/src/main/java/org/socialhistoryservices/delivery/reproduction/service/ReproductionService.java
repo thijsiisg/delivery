@@ -139,26 +139,10 @@ public interface ReproductionService {
     /**
      * Check if all the holdings that are required by repro are active for the given reproduction.
      *
-     * @param hrs The holding reproductions to check for.
+     * @param reproduction The reproduction.
      * @return Whether all required holdings are active for repro.
      */
-    public boolean isActiveForAllRequiredHoldings(List<HoldingReproduction> hrs);
-
-    /**
-     * Returns all holding reproductions of those that are found in the SOR.
-     *
-     * @param reproduction The reproduction.
-     * @return All holding reproductions of those that are found in the SOR.
-     */
-    public List<HoldingReproduction> getHoldingsReproductionsInSor(Reproduction reproduction);
-
-    /**
-     * Returns all holding reproductions of those that are not yet found in the SOR.
-     *
-     * @param reproduction The reproduction.
-     * @return All holding reproductions of those that are not yet found in the SOR.
-     */
-    public List<HoldingReproduction> getHoldingsReproductionsNotInSor(Reproduction reproduction);
+    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction);
 
     /**
      * Determine whether a wish for a holding reproduction is in the SOR.

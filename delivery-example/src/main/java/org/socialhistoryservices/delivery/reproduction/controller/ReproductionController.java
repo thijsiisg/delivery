@@ -648,6 +648,7 @@ public class ReproductionController extends AbstractRequestController {
         for (Holding holding : holdings) {
             HoldingReproduction hr = new HoldingReproduction();
             hr.setHolding(holding);
+            hr.setInSor(reproductions.isHoldingReproductionInSor(hr));
             hrs.add(hr);
         }
         return hrs;
@@ -883,7 +884,7 @@ public class ReproductionController extends AbstractRequestController {
                     changeStatusAfterPayment(reproduction);
 
                     // Show payment accepted page
-                    return "redirect:/reproduction/order/accept";
+                    return "redirect:/reproduction/order/confirm";
                 }
 
                 // Otherwise redirect the user to the payment page
@@ -898,6 +899,16 @@ public class ReproductionController extends AbstractRequestController {
         }
 
         return "reproduction_confirm";
+    }
+
+    /**
+     * Reproduction confirmed, no payment required.
+     *
+     * @return The view to resolve.
+     */
+    @RequestMapping(value = "/order/confirm", method = RequestMethod.GET)
+    public String confirm() {
+        return "reproduction_order_confirm";
     }
 
     /**
@@ -988,10 +999,9 @@ public class ReproductionController extends AbstractRequestController {
      * @param reproduction The reproduction.
      */
     private void changeStatusAfterPayment(Reproduction reproduction) {
-        List<HoldingReproduction> hr = reproductions.getHoldingsReproductionsNotInSor(reproduction);
-        if (hr.isEmpty())
+        if (reproduction.isCompletelyInSor())
             reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.COMPLETED);
-        else if (reproductions.isActiveForAllRequiredHoldings(hr))
+        else if (reproductions.isActiveForAllRequiredHoldings(reproduction))
             reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
     }
 
