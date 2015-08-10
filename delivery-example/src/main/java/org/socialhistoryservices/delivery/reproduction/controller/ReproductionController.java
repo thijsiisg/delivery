@@ -648,7 +648,6 @@ public class ReproductionController extends AbstractRequestController {
         for (Holding holding : holdings) {
             HoldingReproduction hr = new HoldingReproduction();
             hr.setHolding(holding);
-            hr.setInSor(reproductions.isHoldingReproductionInSor(hr));
             hrs.add(hr);
         }
         return hrs;
@@ -752,7 +751,7 @@ public class ReproductionController extends AbstractRequestController {
             Set<Holding> holdingsNotInSor = new HashSet<Holding>();
             for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
                 Holding h = hr.getHolding();
-                if (!reproduction.equals(requests.getActiveFor(h)) && !reproductions.isHoldingReproductionInSor(hr))
+                if (!hr.isInSor() && !reproduction.equals(requests.getActiveFor(h)))
                     holdingsNotInSor.add(h);
             }
 

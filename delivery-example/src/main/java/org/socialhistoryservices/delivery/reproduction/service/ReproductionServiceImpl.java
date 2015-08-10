@@ -246,21 +246,17 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         for (HoldingReproduction hr : r.getHoldingReproductions()) {
             if (!hr.isCompleted()) {
                 Holding holding = hr.getHolding();
-                if (holding.getStatus() == Holding.Status.AVAILABLE) {
+                if (holding.getStatus() == Holding.Status.AVAILABLE)
                     hr.setCompleted(true);
-                }
-                else {
+                else
                     complete = false;
-                }
             }
         }
 
-        if (complete) {
-            r.setStatus(Reproduction.Status.COMPLETED);
-        }
-        else {
-            r.setStatus(Reproduction.Status.ACTIVE);
-        }
+        if (complete)
+            updateStatusAndAssociatedHoldingStatus(r, Reproduction.Status.COMPLETED);
+        else
+            updateStatusAndAssociatedHoldingStatus(r, Reproduction.Status.ACTIVE);
     }
 
     /**
@@ -459,6 +455,11 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     public void createOrEdit(Reproduction newReproduction, Reproduction oldReproduction, BindingResult result,
                              boolean isCustomer, boolean forFree)
             throws ClosedException, NoHoldingsException, ClosedForReproductionException {
+        // Determine for all the item whether it is already available in the SOR
+        for (HoldingReproduction hr : newReproduction.getHoldingReproductions()) {
+            hr.setInSor(isHoldingReproductionInSor(hr));
+        }
+
         // Validate the reproduction.
         validateRequest(newReproduction, result);
         validateReproductionHoldings(newReproduction, oldReproduction);
@@ -557,7 +558,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     /**
      * Whether all required holdings of the reproduction are currently available.
      *
-     * @param hrs The holding reproductions to check for.
+     * @param reproduction The reproduction.
      * @return Whether all holdings of the reproduction are currently available.
      */
     private boolean hasOnlyAvailableRequiredHoldings(Reproduction reproduction) {
@@ -573,13 +574,19 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     /**
      * Reserve all the required holdings of the given reproduction that are currently available.
      *
-     * @param hrs The holding reproductions to check for.
+     * @param reproduction The reproduction.
      */
     private void reserveAvailableRequiredHoldings(Reproduction reproduction) {
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             Holding h = hr.getHolding();
+
+            // If the holding is not in the SOR and available, then reserve for repro
             if (!hr.isInSor() && (h.getStatus() == Holding.Status.AVAILABLE))
-                requests.updateHoldingStatus(h, Holding.Status.RESERVED);
+                requests.updateHoldingStatus(h, Holding.Status.RESERVED, reproduction);
+
+            // Also make sure that holdings that no longer required by repro are made available again
+            if (hr.isInSor() && reproduction.equals(requests.getActiveFor(h)))
+                requests.updateHoldingStatus(h, Holding.Status.AVAILABLE, reproduction);
         }
     }
 
@@ -604,7 +611,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param holdingReproduction The holding reproduction.
      * @return Whether a wish for a holding reproduction is in the SOR.
      */
-    public boolean isHoldingReproductionInSor(HoldingReproduction holdingReproduction) {
+    private boolean isHoldingReproductionInSor(HoldingReproduction holdingReproduction) {
         ReproductionStandardOption standardOption = holdingReproduction.getStandardOption();
         if (standardOption != null) {
             Holding holding = holdingReproduction.getHolding();
@@ -851,10 +858,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             // Make sure the price is for free
             if (forFree)
                 hr.setPrice(BigDecimal.ZERO);
-
-            // Do we already have information whether the item is available in the SOR?
-            if (hr.isInSor() == null)
-                hr.setInSor(isHoldingReproductionInSor(hr));
         }
 
         // Make sure the price is for free, otherwise determine the copyright price for this reproduction

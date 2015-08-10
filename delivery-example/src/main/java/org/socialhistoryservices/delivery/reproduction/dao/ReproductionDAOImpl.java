@@ -158,7 +158,7 @@ public class ReproductionDAOImpl implements ReproductionDAO {
         }
 
         cq.where(where);
-        cq.orderBy(cb.desc(rRoot.<Date>get(Reproduction_.creationDate)));
+        cq.orderBy(cb.asc(rRoot.<Date>get(Reproduction_.creationDate)));
 
         try {
             TypedQuery q = entityManager.createQuery(cq);

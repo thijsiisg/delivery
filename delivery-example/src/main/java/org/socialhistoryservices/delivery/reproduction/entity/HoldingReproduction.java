@@ -159,15 +159,16 @@ public class HoldingReproduction extends HoldingRequest {
     /**
      * Is there already a reproduction in the SOR?
      */
-    @Column(name = "inSor")
-    private Boolean inSor;
+    @NotNull
+    @Column(name = "inSor", nullable = false)
+    private boolean inSor;
 
     /**
      * Get whether there already is a reproduction in the SOR.
      *
      * @return Is there already a reproduction in the SOR?
      */
-    public Boolean isInSor() {
+    public boolean isInSor() {
         return inSor;
     }
 
@@ -178,6 +179,7 @@ public class HoldingReproduction extends HoldingRequest {
      */
     public void setInSor(boolean inSor) {
         this.inSor = inSor;
+        this.completed = inSor; // If already in the SOR, no need for it to go to repro
     }
 
     /**
@@ -333,6 +335,10 @@ public class HoldingReproduction extends HoldingRequest {
         super.mergeWith(other);
         if (other instanceof HoldingReproduction) {
             HoldingReproduction otherHr = (HoldingReproduction) other;
+
+            if (getStandardOption() != otherHr.getStandardOption()) {
+                setInSor(otherHr.isInSor());
+            }
 
             if ((getStandardOption() != otherHr.getStandardOption()) || (otherHr.getStandardOption() == null)) {
                 setStandardOption(otherHr.getStandardOption());

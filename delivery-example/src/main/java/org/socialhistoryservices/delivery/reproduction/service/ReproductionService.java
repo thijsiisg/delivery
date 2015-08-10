@@ -145,14 +145,6 @@ public interface ReproductionService {
     public boolean isActiveForAllRequiredHoldings(Reproduction reproduction);
 
     /**
-     * Determine whether a wish for a holding reproduction is in the SOR.
-     *
-     * @param holdingReproduction The holding reproduction.
-     * @return Whether a wish for a holding reproduction is in the SOR.
-     */
-    public boolean isHoldingReproductionInSor(HoldingReproduction holdingReproduction);
-
-    /**
      * Scheduled task to cancel all reproductions not payed within 5 days after the offer was ready.
      */
     public void checkPayedReproductions();

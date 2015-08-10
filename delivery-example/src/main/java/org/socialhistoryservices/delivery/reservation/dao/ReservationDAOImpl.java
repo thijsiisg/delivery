@@ -148,7 +148,7 @@ public class ReservationDAOImpl implements ReservationDAO {
         }
 
         cq.where(where);
-        cq.orderBy(cb.desc(resRoot.<Date>get(Reservation_.creationDate)));
+        cq.orderBy(cb.asc(resRoot.<Date>get(Reservation_.creationDate)));
 
         try {
             TypedQuery q = entityManager.createQuery(cq);

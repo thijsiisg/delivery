@@ -6,7 +6,7 @@
 
 <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
 
---- <@_ "reproduction.records" "All tems"/> ---
+--- <@_ "reproduction.records" "All items"/> ---
 <#list reproduction.holdingReproductions as hr>
   <#assign h = hr.holding>
   <#assign info = h.record.externalInfo>
@@ -16,5 +16,6 @@ ${prop_sorAddress}/file/${hr.standardOption.level?lower_case}/10622/${h.external
   <#else>
 <@_ "reproduction.customReproduction" "Custom reproduction"/>
   </#if>
+
 </#list>
 </@mailRaedingRoom>

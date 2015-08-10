@@ -407,7 +407,7 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
             if (!holdingActiveRequests.containsKey(holding.toString())) {
                 Request request = requests.getActiveFor(holding);
                 if (request != null)
-                    holdingActiveRequests.put(holding.toString(), requests.getActiveFor(holding));
+                    holdingActiveRequests.put(holding.toString(), request);
             }
         }
         return holdingActiveRequests;
