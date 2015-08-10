@@ -15,8 +15,11 @@
   <#if hr.standardOption??>
 <@_ "reproductionStandardOption.price" "Price"/>: ${hr.price?string("0.00")} EUR
 <@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: ${hr.deliveryTime} <@_ "days" "days"/>
+<#if locale == 'nl'>${hr.standardOption.optionDescriptionNL}<#else>${hr.standardOption.optionDescriptionEN}</#if>
   <#else>
-<@_ "reproductionStandardOption.price" "Price"/>: <@_ "tbd" "To be determined"/> - <@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: <@_ "tbd" "To be determined"/>
+<@_ "reproductionStandardOption.price" "Price"/>: <@_ "tbd" "To be determined"/>
+<@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: <@_ "tbd" "To be determined"/>
+
 <@_ "reproduction.customReproductionCustomer" "Your wish"/>:
 ${hr.customReproductionCustomer}
   </#if>

@@ -205,7 +205,7 @@
                 <a href="${rc.contextPath}/reproduction/${reproduction.id?c}">
                   <@_ "reproductionList.show" "Show"/>
                 </a>
-                <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_MODIFY")>
+                <#if _sec.ifAllGranted("ROLE_REPRODUCTION_MODIFY") && (reproduction.status == "WAITING_FOR_ORDER_DETAILS" || reproduction.status == "HAS_ORDER_DETAILS")>
                   /
                   <a href="${rc.contextPath}/reproduction/${reproduction.id?c}/edit">
                     <@_ "reproductionList.edit" "Edit"/>

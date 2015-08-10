@@ -923,14 +923,9 @@ public class ReproductionController extends AbstractRequestController {
     /**
      * A one time PayWay response after the payment has been made, in our case, to send an email.
      */
-    @RequestMapping(value = "/order/accept", method = RequestMethod.POST)
-    public HttpStatus accept(@RequestBody PayWayMessage payWayMessage) {
-        // Is the received PayWay message valid? Make sure the customer actually payed
-        if (!payWayService.isValid(payWayMessage)) {
-            LOGGER.debug(String.format(
-                    "/reproduction/order/accept : Invalid message received: %s", payWayMessage));
-            return HttpStatus.BAD_REQUEST;
-        }
+    @RequestMapping(value = "/order/accept", method = RequestMethod.GET, params = "POST")
+    public HttpStatus accept(@RequestParam Map<String, String> requestParams) {
+        PayWayMessage payWayMessage = new PayWayMessage(requestParams);
 
         // Check the reproduction ...
         Integer reproductionId = payWayMessage.getInteger("userid");
@@ -1040,9 +1035,15 @@ public class ReproductionController extends AbstractRequestController {
     @Secured("ROLE_REPRODUCTION_MODIFY")
     public String showEditForm(@PathVariable int id, Model model) {
         Reproduction r = reproductions.getReproductionById(id);
-        if (r == null) {
+        if (r == null)
             throw new ResourceNotFoundException();
+
+        // It is not allowed to modify a reproduction after confirmation by the customer
+        if (r.getStatus().ordinal() >= Reproduction.Status.CONFIRMED.ordinal()) {
+            model.addAttribute("error", "confirmed");
+            return "reproduction_error";
         }
+
         model.addAttribute("original", r);
         model.addAttribute("reproduction", r);
         model.addAttribute("reproductionStandardOptions", obtainStandardReproductionOptions());
@@ -1097,6 +1098,12 @@ public class ReproductionController extends AbstractRequestController {
         Reproduction originalReproduction = reproductions.getReproductionById(id);
         if (originalReproduction == null) {
             throw new ResourceNotFoundException();
+        }
+
+        // It is not allowed to modify a reproduction after confirmation by the customer
+        if (originalReproduction.getStatus().ordinal() >= Reproduction.Status.CONFIRMED.ordinal()) {
+            model.addAttribute("error", "confirmed");
+            return "reproduction_error";
         }
 
         List<Holding> holdingList = searchMassCreate(reproduction, searchTitle, searchSignature);
@@ -1196,6 +1203,12 @@ public class ReproductionController extends AbstractRequestController {
         Reproduction originalReproduction = reproductions.getReproductionById(id);
         if (originalReproduction == null) {
             throw new ResourceNotFoundException();
+        }
+
+        // It is not allowed to modify a reproduction after confirmation by the customer
+        if (reproduction.getStatus().ordinal() >= Reproduction.Status.CONFIRMED.ordinal()) {
+            model.addAttribute("error", "confirmed");
+            return "reproduction_error";
         }
 
         List<Holding> holdingList = searchMassCreate(reproduction, searchTitle, searchSignature);
