@@ -973,15 +973,18 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         Join<HoldingReproduction, Holding> hRoot = hrRoot.join(HoldingReproduction_.holding);
 
         // We only want to update reproductions that are not yet active or finished
-        Expression<Boolean> statusIn = builder.in(reproductionRoot.get(Reproduction_.status))
+        Predicate statusIn = builder.in(reproductionRoot.get(Reproduction_.status))
                 .value(Reproduction.Status.WAITING_FOR_ORDER_DETAILS)
                 .value(Reproduction.Status.HAS_ORDER_DETAILS)
                 .value(Reproduction.Status.CONFIRMED)
                 .value(Reproduction.Status.PAYED);
 
-        // And only the reproductions that contain the same holding
-        Expression<Boolean> holdingEqual = builder.equal(hRoot.get(Holding_.id), holding.getId());
-        query.where(builder.and(statusIn, holdingEqual));
+        // And only the reproductions that contain the same holding, not in SOR and not completed
+        Predicate holdingEqual = builder.equal(hRoot.get(Holding_.id), holding.getId());
+        Predicate inSor = builder.equal(hrRoot.get(HoldingReproduction_.inSor), false);
+        Predicate notCompleted = builder.equal(hrRoot.get(HoldingReproduction_.completed), false);
+
+        query.where(builder.and(statusIn, holdingEqual, inSor, notCompleted));
 
         // Check the first found reproduction
         Reproduction reproduction = getReproduction(query);
