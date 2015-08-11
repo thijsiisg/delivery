@@ -145,6 +145,15 @@ public interface ReproductionService {
     public boolean isActiveForAllRequiredHoldings(Reproduction reproduction);
 
     /**
+     * Check if all the holdings that are required by repro are active for the given reproduction.
+     *
+     * @param reproduction The reproduction.
+     * @param holding      The holding to ignore. (As it is being updated)
+     * @return Whether all required holdings are active for repro.
+     */
+    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction, Holding holding);
+
+    /**
      * Scheduled task to cancel all reproductions not payed within 5 days after the offer was ready.
      */
     public void checkPayedReproductions();

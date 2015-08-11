@@ -597,10 +597,23 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @return Whether all required holdings are active for repro.
      */
     public boolean isActiveForAllRequiredHoldings(Reproduction reproduction) {
+        return isActiveForAllRequiredHoldings(reproduction, null);
+    }
+
+    /**
+     * Check if all the holdings that are required by repro are active for the given reproduction.
+     *
+     * @param reproduction The reproduction.
+     * @param holding      The holding to ignore. (As it is being updated)
+     * @return Whether all required holdings are active for repro.
+     */
+    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction, Holding holding) {
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             Holding h = hr.getHolding();
-            if (!hr.isInSor() && !requests.getActiveFor(h).equals(reproduction))
-                return false;
+            if ((holding == null) || (holding.getId() != h.getId())) {
+                if (!hr.isInSor() && !requests.getActiveFor(h).equals(reproduction))
+                    return false;
+            }
         }
         return true;
     }
@@ -822,13 +835,13 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         // Validate associated HoldingReproductions if present.
         int i = 0;
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            if ((hr.getStandardOption() == null) && (hr.getPrice() != null)
-                    && (hr.getPrice().compareTo(BigDecimal.ZERO) < 0)) {
+            if ((hr.getStandardOption() == null) && ((hr.getPrice() == null)
+                    || (hr.getPrice().compareTo(BigDecimal.ZERO) < 0))) {
                 result.addError(new FieldError(result.getObjectName(), "holdingReproductions[" + i + "].price",
                         hr.getPrice(), false, new String[]{"validator.price"}, null, "Required"));
             }
 
-            if ((hr.getStandardOption() == null) && (hr.getDeliveryTime() != null) && (hr.getDeliveryTime() <= 0)) {
+            if ((hr.getStandardOption() == null) && ((hr.getDeliveryTime() == null) || (hr.getDeliveryTime() <= 0))) {
                 result.addError(new FieldError(result.getObjectName(), "holdingReproductions[" + i + "].deliveryTime",
                         hr.getDeliveryTime(), false, new String[]{"validator.deliveryTime"}, null, "Required"));
             }
@@ -972,25 +985,21 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
         // Check the first found reproduction
         Reproduction reproduction = getReproduction(query);
-
-        if (reproduction != null) {
-            if ((activeRequest == null) || !reproduction.equals(activeRequest)) {
-                // Find the holding, and reserve for this reproduction
-                for (Holding h : reproduction.getHoldings()) {
-                    if (h.getId() == holding.getId()) {
-                        holding.setStatus(Holding.Status.RESERVED);
-                    }
-                }
-
-                // If the customer has already payed,
-                // then move to 'active' if all holdings that are required by repro are active for repro
-                if ((reproduction.getStatus() == Reproduction.Status.PAYED) &&
-                        isActiveForAllRequiredHoldings(reproduction))
-                    updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
-
-                saveReproduction(reproduction);
-                return new AsyncResult<Boolean>(true);
+        if ((reproduction != null) && ((activeRequest == null) || !reproduction.equals(activeRequest))) {
+            // Find the holding, and reserve for this reproduction
+            for (Holding h : reproduction.getHoldings()) {
+                if (h.getId() == holding.getId())
+                    holding.setStatus(Holding.Status.RESERVED);
             }
+
+            // If the customer has already payed,
+            // then move to 'active' if all holdings that are required by repro are active for repro
+            if ((reproduction.getStatus() == Reproduction.Status.PAYED) &&
+                    isActiveForAllRequiredHoldings(reproduction, holding))
+                updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
+
+            saveReproduction(reproduction);
+            return new AsyncResult<Boolean>(true);
         }
 
         return new AsyncResult<Boolean>(false);

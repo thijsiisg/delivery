@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Future;
 
 /**
@@ -135,6 +133,14 @@ public class RequestController extends AbstractRequestController {
             model.addAttribute("requestsOnHoldBefore", getRequestAsString(requestsOnHoldBefore));
             model.addAttribute("requestActiveAfter", getRequestAsString(requestActiveAfter));
             model.addAttribute("requestsOnHoldAfter", getRequestAsString(requestsOnHoldAfter));
+
+            // Also add information about the state of each of the reservation and/or reproduction holdings
+            Set<Holding> holdings = new HashSet<Holding>();
+            if ((reservation != null) && (reservation.getHoldings() != null))
+                holdings.addAll(reservation.getHoldings());
+            if ((reproduction != null) && (reproduction.getHoldings() != null))
+                holdings.addAll(reproduction.getHoldings());
+            model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
             return "request_scan";
         }

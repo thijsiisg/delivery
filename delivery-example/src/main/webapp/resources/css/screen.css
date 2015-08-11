@@ -171,6 +171,10 @@ ul li em {
     display: table-cell;
 }
 
+ul li em.available-info {
+    display: inline;
+}
+
 .btlist {
     float: left;
 }

@@ -37,24 +37,24 @@
 
         <#if requestActiveAfter?? && (requestActiveBefore != requestActiveAfter)>
           <li>
-            The item was active for ${requestActiveBefore?html}
+            <@_ "scan.activeBefore" "The item was active for" /> ${requestActiveBefore?html}
             <#if requestActiveAfter??>
-              and is now active for ${requestActiveAfter?html}.
+              <@_ "scan.activeAfter" "and is now active for" /> ${requestActiveAfter?html}.
             <#else>
-              and is now no langer active.
+              <@_ "scan.notActive" "and is now no langer active." />
             </#if>
           </li>
         </#if>
 
         <#if requestsOnHoldBefore??>
           <li>
-            The item was on hold for ${requestsOnHoldBefore?html}.
+            <@_ "scan.wasOnHold" "The item was on hold for" /> ${requestsOnHoldBefore?html}.
           </li>
         </#if>
 
         <#if requestsOnHoldAfter??>
           <li>
-            The item is on hold for ${requestsOnHoldAfter?html}.
+            <@_ "scan.isOnHold" "The item is on hold for " /> ${requestsOnHoldAfter?html}.
           </li>
         </#if>
       </ul>
@@ -63,6 +63,7 @@
       <h3><@_ "scan.assocReproduction" "Reproduction details"/></h3>
 
       <ul class="reproductionDetails">
+        <li><span><@_ "reproduction.id" "Reproduction"/></span> ${reproduction.id?c}</li>
         <li><span><@_ "reproduction.customerName" "Name"/></span> ${reproduction.customerName?html}</li>
         <li><span><@_ "reproduction.customerEmail" "E-mail"/></span> ${reproduction.customerEmail?html}</li>
 
@@ -157,7 +158,7 @@
 
               <li>
                 <span><@_ "holding.status" "Status"/></span>
-                <@_ "holding.statusType.${h.status?string}" h.status?string/>
+                <@holdingStatus holdingActiveRequests reproduction h/>
               </li>
 
               <li class="spacing">
@@ -208,6 +209,7 @@
       <h3><@_ "scan.assocReservation" "Reservation details"/></h3>
 
       <ul class="reservationDetails">
+        <li><span><@_ "reservation.id" "Reservation"/></span> ${reservation.id?c}</li>
         <li><span><@_ "reservation.visitorName" "Name"/></span> ${reservation.visitorName?html}</li>
         <li><span><@_ "reservation.visitorEmail" "E-mail"/></span> ${reservation.visitorEmail?html}</li>
         <li><span><@_ "reservation.date" "Date"/></span> ${reservation.date?string(prop_dateFormat)}</li>
@@ -236,7 +238,7 @@
             <td>${h.id?c}</td>
             <td>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></td>
             <td>${hr.onHold?string(yes, no)}</td>
-            <td><@_ "holding.statusType.${h.status?string}" h.status?string/></td>
+            <td><@holdingStatus holdingActiveRequests reservation h/></td>
           </tr>
           </#list>
         </tbody>
