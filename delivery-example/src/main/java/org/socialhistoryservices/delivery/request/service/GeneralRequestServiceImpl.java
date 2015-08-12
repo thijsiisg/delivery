@@ -116,6 +116,7 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
             Holding h = hr.getHolding();
             if ((holding.getId() == h.getId()) && (holding.getStatus() == Holding.Status.IN_USE)) {
                 hr.setOnHold(true);
+                sentHoldingOnHoldEvent(h, request, getActiveFor(h));
             }
         }
 
@@ -208,6 +209,23 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
         List<Future<Boolean>> futureList = new ArrayList<Future<Boolean>>();
         for (RequestService requestService : requests) {
             Future<Boolean> future = requestService.onHoldingStatusUpdate(holding, activeRequest);
+            futureList.add(future);
+        }
+        return futureList;
+    }
+
+    /**
+     * Lets all the request services know that a holding has been placed on hold.
+     *
+     * @param holding        The holding which has been placed on hold.
+     * @param previousActive The request for which the holding was active, before being placed on hold.
+     * @param nowActive      The request for which the holding is now active.
+     * @return A list of futures for each request.
+     */
+    private List<Future<Boolean>> sentHoldingOnHoldEvent(Holding holding, Request previousActive, Request nowActive) {
+        List<Future<Boolean>> futureList = new ArrayList<Future<Boolean>>();
+        for (RequestService requestService : requests) {
+            Future<Boolean> future = requestService.onHoldingOnHold(holding, previousActive, nowActive);
             futureList.add(future);
         }
         return futureList;

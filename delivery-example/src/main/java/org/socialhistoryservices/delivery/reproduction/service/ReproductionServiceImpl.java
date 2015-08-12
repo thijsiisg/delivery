@@ -985,6 +985,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         Predicate notCompleted = builder.equal(hrRoot.get(HoldingReproduction_.completed), false);
 
         query.where(builder.and(statusIn, holdingEqual, inSor, notCompleted));
+        query.orderBy(builder.asc(reproductionRoot.<Date>get(Reproduction_.creationDate)));
 
         // Check the first found reproduction
         Reproduction reproduction = getReproduction(query);
@@ -997,6 +998,29 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
             // If the customer has already payed,
             // then move to 'active' if all holdings that are required by repro are active for repro
+            if ((reproduction.getStatus() == Reproduction.Status.PAYED) &&
+                    isActiveForAllRequiredHoldings(reproduction, holding))
+                updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
+
+            saveReproduction(reproduction);
+            return new AsyncResult<Boolean>(true);
+        }
+
+        return new AsyncResult<Boolean>(false);
+    }
+
+    /**
+     * What should happen when a holding is placed on hold.
+     *
+     * @param holding        The holding which has been placed on hold.
+     * @param previousActive The request for which the holding was active, before being placed on hold.
+     * @param nowActive      The request for which the holding is now active.
+     * @return A Future, indicating when the method is finished and whether some updates were performed.
+     */
+    @Async
+    public Future<Boolean> onHoldingOnHold(Holding holding, Request previousActive, Request nowActive) {
+        if (nowActive instanceof Reproduction) {
+            Reproduction reproduction = getReproductionById(((Reproduction) nowActive).getId());
             if ((reproduction.getStatus() == Reproduction.Status.PAYED) &&
                     isActiveForAllRequiredHoldings(reproduction, holding))
                 updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);

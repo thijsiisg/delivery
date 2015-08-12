@@ -35,4 +35,14 @@ public interface RequestService {
      * @return A Future, indicating when the method is finished and whether some updates were performed.
      */
     public Future<Boolean> onHoldingStatusUpdate(Holding holding, Request activeRequest);
+
+    /**
+     * What should happen when a holding is placed on hold.
+     *
+     * @param holding        The holding which has been placed on hold.
+     * @param previousActive The request for which the holding was active, before being placed on hold.
+     * @param nowActive      The request for which the holding is now active.
+     * @return A Future, indicating when the method is finished and whether some updates were performed.
+     */
+    public Future<Boolean> onHoldingOnHold(Holding holding, Request previousActive, Request nowActive);
 }

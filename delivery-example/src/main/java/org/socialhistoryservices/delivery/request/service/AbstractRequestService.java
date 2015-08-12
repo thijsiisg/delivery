@@ -47,6 +47,18 @@ public abstract class AbstractRequestService implements RequestService {
     }
 
     /**
+     * What should happen when a holding is placed on hold.
+     *
+     * @param holding        The holding which has been placed on hold.
+     * @param previousActive The request for which the holding was active, before being placed on hold.
+     * @param nowActive      The request for which the holding is now active.
+     * @return A Future, indicating when the method is finished and whether some updates were performed.
+     */
+    public Future<Boolean> onHoldingOnHold(Holding holding, Request previousActive, Request nowActive) {
+        return new AsyncResult<Boolean>(false);
+    }
+
+    /**
      * Validate provided holding part of request.
      *
      * @param newReq The new request containing holdings.
