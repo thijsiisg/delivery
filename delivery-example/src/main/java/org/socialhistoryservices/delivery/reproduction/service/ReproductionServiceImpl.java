@@ -17,7 +17,6 @@ import org.socialhistoryservices.delivery.request.service.*;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -314,6 +313,12 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 break;
             case PAYED:
                 mailPayed(reproduction);
+                // If all holdings that are required by repro are active for repro,
+                // then immediatly move the status to 'active'
+                if (isActiveForAllRequiredHoldings(reproduction)) {
+                    updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
+                    return;
+                }
                 break;
             case ACTIVE:
                 autoPrintReproduction(reproduction);
@@ -880,13 +885,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         }
         else {
             BigDecimal copyrightPrice = BigDecimal.ZERO;
-            List<Holding> holdings = reproduction.getHoldings();
-            Set<Record> records = new HashSet<Record>();
-            for (Holding h : holdings) {
-                Record record = h.getRecord();
-                if (!records.contains(record))
-                    copyrightPrice = copyrightPrice.add(record.getCopyrightPrice());
-            }
+            for (Holding h : reproduction.getHoldings())
+                copyrightPrice = copyrightPrice.add(h.getRecord().getCopyrightPrice());
             reproduction.setCopyrightPrice(copyrightPrice);
         }
     }

@@ -669,20 +669,14 @@ public class ReproductionController extends AbstractRequestController {
             return "reproduction_error";
         }
 
-        // Obtain the price for authenticated users and all the standard reproduction options
-        model.addAttribute("priceAuthenticated", BigDecimal.ZERO);
+        // Obtain all the standard reproduction options
         model.addAttribute("reproductionStandardOptions", obtainStandardReproductionOptions());
 
         try {
             if (commit) {
                 // Make sure a Captcha was entered correctly
                 checkCaptcha(req, result, model);
-
-                // Logged in customers can order reproduction for free
-                boolean loggedIn = !(SecurityContextHolder.getContext().getAuthentication()
-                        instanceof AnonymousAuthenticationToken);
-
-                reproductions.createOrEdit(reproduction, null, result, true, loggedIn);
+                reproductions.createOrEdit(reproduction, null, result, true, false);
                 if (!result.hasErrors())
                     return determineNextStep(reproduction, model);
             }

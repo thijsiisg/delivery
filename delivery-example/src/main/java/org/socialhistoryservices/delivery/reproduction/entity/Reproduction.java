@@ -521,12 +521,19 @@ public class Reproduction extends Request {
      * @return The estimated delivery time for this reproduction.
      */
     public int getEstimatedDeliveryTime() {
-        int deliveryTime = 0;
-        for (HoldingReproduction hr : getHoldingReproductions()) {
-            deliveryTime += hr.getDeliveryTime();
-        }
+        List<HoldingReproduction> holdingReproductions = getHoldingReproductions();
 
-        return deliveryTime;
+        // When there are more than 10 items, repro requires about 2 weeks
+        if (holdingReproductions.size() > 10)
+            return 14;
+
+        // Otherwise, determine delivery time by the item with the longest estimated delivery time
+        int longestDeliveryTime = 0;
+        for (HoldingReproduction hr : holdingReproductions) {
+            if (hr.getDeliveryTime() > longestDeliveryTime)
+                longestDeliveryTime = hr.getDeliveryTime();
+        }
+        return longestDeliveryTime;
     }
 
     /**

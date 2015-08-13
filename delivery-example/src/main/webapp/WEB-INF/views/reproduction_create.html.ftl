@@ -183,12 +183,7 @@
 
           <li class="spacing">
             <span><@_ "reproductionStandardOption.price" "Price"/></span>
-
-            <#if _sec.isAnonymous()>
-              &euro; ${value.price?string("0.00")}
-            <#else>
-              &euro; ${priceAuthenticated?string("0.00")}
-            </#if>
+            &euro; ${value.price?string("0.00")}
           </li>
 
           <li>
