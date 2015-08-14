@@ -17,6 +17,7 @@
 package org.socialhistoryservices.delivery.record.entity;
 
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Index;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
@@ -180,6 +181,7 @@ public class Holding {
     /** The Holding's record. */
     @NotNull
     @ManyToOne
+    @Index(name="holdings_record_fk")
     @JoinColumn(name="record_id")
     private Record record;
 
@@ -242,7 +244,7 @@ public class Holding {
         this.status = status;
     }
 
-
+    @Index(name="holdings_external_info_fk")
     @OneToOne(cascade=CascadeType.ALL)
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     @JoinColumn(name="external_info_id")

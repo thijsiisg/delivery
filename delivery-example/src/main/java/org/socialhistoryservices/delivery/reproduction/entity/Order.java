@@ -1,7 +1,5 @@
 package org.socialhistoryservices.delivery.reproduction.entity;
 
-import org.hibernate.annotations.Cascade;
-import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.api.PayWayMessage;
 import org.springframework.beans.factory.annotation.Configurable;
 
