@@ -197,6 +197,26 @@ public class ExternalRecordInfo {
          displayYear = year;
     }
 
+    @Size(max=255)
+    @Column(name="physical_description")
+    private String physicalDescription;
+
+    /**
+     * Get the physical description.
+     * @return the physical description.
+     */
+    public String getPhysicalDescription() {
+        return physicalDescription;
+    }
+
+    /**
+     * Set the physical description.
+     * @param physicalDescription the physical description.
+     */
+    public void setPhysicalDescription(String physicalDescription) {
+        this.physicalDescription = physicalDescription;
+    }
+
     /**
      * Merge other record's data with this record.
      * @param other The other record.
@@ -208,5 +228,6 @@ public class ExternalRecordInfo {
         setPublicationStatus(other.getPublicationStatus());
         setAuthor(other.getAuthor());
         setDisplayYear(other.getDisplayYear());
+        setPhysicalDescription(other.getPhysicalDescription());
     }
 }

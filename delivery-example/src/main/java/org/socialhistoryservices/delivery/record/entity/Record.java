@@ -197,6 +197,14 @@ public class Record {
         return externalInfo.getPublicationStatus();
     }
 
+    /**
+     * Get the physical description.
+     * @return the physical description.
+     */
+    public String getPhysicalDescription() {
+        return externalInfo.getPhysicalDescription();
+    }
+
     /** The Record's comments. */
     @Column(name="comments", columnDefinition="TEXT")
     private String comments;

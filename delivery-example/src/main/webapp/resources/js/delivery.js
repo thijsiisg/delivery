@@ -358,6 +358,12 @@ function addNewStandardOption() {
     newStandardOption.find("#new\\.deliveryTime")
         .attr('id', newPrefix+"deliveryTime")
         .attr('name', newPrefix+"deliveryTime");
+    newStandardOption.find("#new\\.minNumberOfPages")
+        .attr('id', newPrefix+"minNumberOfPages")
+        .attr('name', newPrefix+"minNumberOfPages");
+    newStandardOption.find("#new\\.maxNumberOfPages")
+        .attr('id', newPrefix+"maxNumberOfPages")
+        .attr('name', newPrefix+"maxNumberOfPages");
     newStandardOption.find("#new\\.enabled")
         .attr('id', newPrefix+"enabled")
         .attr('name', newPrefix+"enabled");

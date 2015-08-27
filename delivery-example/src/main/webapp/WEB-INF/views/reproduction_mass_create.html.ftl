@@ -56,15 +56,17 @@
 
           <li>
             <#list reproductionOptions as value>
-              <label class="group">
-                <input type="radio" class="standardOption" name="holdingReproductions[${i}].standardOption"
-                       value="${value.id?c}"<#if hr.standardOption?? && hr.standardOption.id == value.id> checked="checked"</#if>/>
-                ${value.optionName?html}
-              </label>
+              <#if hr.holding.acceptsReproductionOption(value)>
+                <label class="group">
+                  <input type="radio" class="standardOption" name="holdingReproductions[${i}].standardOption"
+                         value="${value.id?c}"<#if hr.standardOption?? && hr.standardOption.id == value.id> checked="checked"</#if>/>
+                  ${value.optionName?html}
+                </label>
 
-              <span>
-                (&euro; ${value.price?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
-              </span>
+                <span>
+                  (&euro; ${value.price?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
+                </span>
+              </#if>
             </#list>
 
             <label class="group">
@@ -180,14 +182,16 @@
 
             <li class="hidden">
               <#list reproductionOptions as value>
-                <label class="group">
-                  <input type="radio" class="standardOption" value="${value.id?c}"/>
-                  ${value.optionName?html}
-                </label>
+                <#if h.acceptsReproductionOption(value)>
+                  <label class="group">
+                    <input type="radio" class="standardOption" value="${value.id?c}"/>
+                    ${value.optionName?html}
+                  </label>
 
-                <span>
-                  (&euro; ${value.price?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
-                </span>
+                  <span>
+                    (&euro; ${value.price?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
+                  </span>
+                </#if>
               </#list>
 
               <label class="group">

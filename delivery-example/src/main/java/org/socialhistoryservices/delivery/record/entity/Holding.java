@@ -19,6 +19,8 @@ package org.socialhistoryservices.delivery.record.entity;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
+import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
+import org.socialhistoryservices.delivery.reproduction.util.Pages;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
@@ -327,6 +329,33 @@ public class Holding {
      */
     public boolean allowOnlyCustomReproduction() {
         return "KNAW".equals(externalInfo.getShelvingLocation());
+    }
+
+    /**
+     * Returns whether the holding accepts the given standard reproduction option.
+     * @param standardOption The standard reproduction option.
+     * @return Whether the holding accepts the given standard reproduction option.
+     */
+    public boolean acceptsReproductionOption(ReproductionStandardOption standardOption) {
+        // Material types have to match
+        if (record.getExternalInfo().getMaterialType() != standardOption.getMaterialType())
+            return false;
+
+        // In case of books, there can be different options for different page numbers
+        if (record.getExternalInfo().getMaterialType() == ExternalRecordInfo.MaterialType.BOOK) {
+            Pages pages = new Pages(record);
+            Integer min = standardOption.getMinNumberOfPages();
+            Integer max = standardOption.getMaxNumberOfPages();
+
+            if (pages.containsNumberOfPages()) {
+                int nrPages = pages.getNumberOfPages();
+                return ((min == null || min <= nrPages) && (max == null || max >= nrPages));
+            }
+
+            return (min == null && max == null);
+        }
+
+        return true;
     }
 
     public String toString() {

@@ -118,7 +118,7 @@
               <#assign reproductionOptions = reproductionStandardOptions[info.materialType.name()]/>
             </#if>
 
-            <@reproductionHoldingOptions "reproduction.holdingReproductions[${idx}].standardOption" reproductionOptions/>
+            <@reproductionHoldingOptions "reproduction.holdingReproductions[${idx}].standardOption" reproductionOptions h/>
 
             <#assign idx = idx + 1>
           </#list>
@@ -161,37 +161,39 @@
 </section>
 </@body>
 
-<#macro reproductionHoldingOptions path options>
+<#macro reproductionHoldingOptions path options holding>
   <@spring.bind path/>
 
   <ul class="holdingDetails">
     <#list options as value>
-      <li>
-        <#assign id="${spring.status.expression}.${value_index}">
-        <input type="radio" id="${id}" name="${spring.status.expression}"
-               value="${value.id?c}"<#if spring.stringStatusValue == value> checked="checked" </#if>/>
+      <#if holding.acceptsReproductionOption(value)>
+        <li>
+          <#assign id="${spring.status.expression}.${value_index}">
+          <input type="radio" id="${id}" name="${spring.status.expression}"
+                 value="${value.id?c}"<#if spring.stringStatusValue == value> checked="checked" </#if>/>
 
-        <ul class="reproductionDetails create">
-          <li>
-            <#assign label=path + "." + value.optionName?html />
-            <label for="${id}"><@spring.messageText label value.optionName?html/></label>
-          </li>
+          <ul class="reproductionDetails create">
+            <li>
+              <#assign label=path + "." + value.optionName?html />
+              <label for="${id}"><@spring.messageText label value.optionName?html/></label>
+            </li>
 
-          <li>
-            <em>${value.optionDescription?html}</em>
-          </li>
+            <li>
+              <em>${value.optionDescription?html}</em>
+            </li>
 
-          <li class="spacing">
-            <span><@_ "reproductionStandardOption.price" "Price"/></span>
-            &euro; ${value.price?string("0.00")}
-          </li>
+            <li class="spacing">
+              <span><@_ "reproductionStandardOption.price" "Price"/></span>
+              &euro; ${value.price?string("0.00")}
+            </li>
 
-          <li>
-            <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
-            ${value.deliveryTime?html} <@_ "days" "days"/>
-          </li>
-        </ul>
-      </li>
+            <li>
+              <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
+              ${value.deliveryTime?html} <@_ "days" "days"/>
+            </li>
+          </ul>
+        </li>
+      </#if>
     </#list>
 
     <li>

@@ -48,7 +48,7 @@ public class IISHRecordLookupService implements RecordLookupService {
     private XPathExpression xpSearchIdent;
     private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpAlt2Author, xpAlt3Author;
     private XPathExpression xp245aTitle, xp500aTitle, xp600aTitle, xp610aTitle, xp650aTitle, xp651aTitle, xp245kTitle;
-    private XPathExpression xp245bSubTitle, xpYear, xpShelvingLocations, xpSerialNumbers, xpSignatures, xpBarcodes, xpLeader;
+    private XPathExpression xp245bSubTitle, xpYear, xpPhysicalDescription, xpShelvingLocations, xpSerialNumbers, xpSignatures, xpBarcodes, xpLeader;
 	private XPathExpression xp540bCopyright, xp542mAccess;
     private XPathExpression xpNumberOfRecords;
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
@@ -155,6 +155,8 @@ public class IISHRecordLookupService implements RecordLookupService {
                     "/marc:subfield[@code=\"b\"]");
             xpYear = xpath.compile("marc:datafield[@tag=260]" +
                     "/marc:subfield[@code=\"c\"]");
+            xpPhysicalDescription = xpath.compile("marc:datafield[@tag=300]" +
+                    "/marc:subfield[@code=\"a\"]");
             xpShelvingLocations = xpath.compile("marc:datafield[@tag=852]" +
                     "/marc:subfield[@code=\"c\"]");
             xpSignatures = xpath.compile("marc:datafield[@tag=852]" +
@@ -358,6 +360,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
         externalInfo.setCopyright(evaluateCopyright(node));
 	    externalInfo.setPublicationStatus(evaluatePublicationStatus(node));
+        externalInfo.setPhysicalDescription(evaluatePhysicalDescription(node));
 
         return externalInfo;
     }
@@ -543,6 +546,14 @@ public class IISHRecordLookupService implements RecordLookupService {
             return null;
         }
 
+    }
+
+    private String evaluatePhysicalDescription(Node node) {
+        try {
+            return xpPhysicalDescription.evaluate(node);
+        } catch (XPathExpressionException e) {
+            return null;
+        }
     }
 
 

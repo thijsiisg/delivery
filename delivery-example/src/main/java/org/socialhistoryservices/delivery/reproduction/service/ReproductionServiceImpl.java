@@ -819,7 +819,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
             // Determine whether the customer may actually choose the currently chosen standard reproduction option
             if ((standardOption != null) && (!standardOption.isEnabled() || h.allowOnlyCustomReproduction() ||
-                    (standardOption.getMaterialType() != h.getRecord().getExternalInfo().getMaterialType()))) {
+                    (h.acceptsReproductionOption(standardOption)))) {
                 result.addError(new FieldError(result.getObjectName(),
                         "holdingReproductions[" + i + "].standardOption", "", false,
                         new String[]{"validator.standardOption"}, null, "Required"));
