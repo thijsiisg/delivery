@@ -19,6 +19,7 @@ package org.socialhistoryservices.delivery.record.entity;
 import org.apache.commons.collections.functors.InstantiateFactory;
 import org.apache.commons.collections.list.LazyList;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Index;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
@@ -81,6 +82,7 @@ public class Record {
         this.pid = pid;
     }
 
+    @Index(name="records_external_info_fk")
     @OneToOne(cascade=CascadeType.ALL)
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     @JoinColumn(name="external_info_id")
