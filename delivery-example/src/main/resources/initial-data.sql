@@ -91,13 +91,3 @@ INSERT INTO user_groups VALUES (1, 2);
 INSERT INTO user_groups VALUES (2, 2);
 INSERT INTO user_groups VALUES (3, 2);
 INSERT INTO user_groups VALUES (4, 2);
-
---
--- Data for Name: reproduction_standard_options; Type: TABLE DATA; Schema: public; Owner postgres
-
-INSERT INTO reproduction_standard_options VALUES (1, 1, 't', 'MASTER', 'BOOK', 50, NULL, 'The complete brochure/book as a PDF.', 'De hele brochure/boek als een PDF.', 'PDF', 'PDF', 10);
-INSERT INTO reproduction_standard_options VALUES (2, 2, 't', 'MASTER', 'BOOK', NULL, 51, 'The complete brochure/book as a PDF.', 'De hele brochure/boek als een PDF.', 'PDF', 'PDF', 20);
-INSERT INTO reproduction_standard_options VALUES (3, 3, 't', 'MASTER', 'SOUND', NULL, NULL, 'The complete tape/cassette in MP3.', 'De hele tape/cassette als een MP3.', 'MP3', 'MP3', 5.45);
-INSERT INTO reproduction_standard_options VALUES (4, 4, 't', 'MASTER', 'MOVING_VISUAL', NULL, NULL, 'The complete tape/film in MP4.', 'De hele tape/film als een MP4.', 'MP4', 'MP4', 9.75);
-INSERT INTO reproduction_standard_options VALUES (5, 5, 't', 'MASTER', 'VISUAL', NULL, NULL, 'The complete picture/poster/object as a TIFF of 300 dpi.', 'De hele afbeelding/poster/object als een TIFF van 300 dpi.', 'TIFF', 'TIFF', 13.00);
-INSERT INTO reproduction_standard_options VALUES (6, 6, 't', 'LEVEL1', 'VISUAL', NULL, NULL, 'The complete picture/poster/object as a JPEG.', 'De hele afbeelding/poster/object als een JPEG.', 'JPEG', 'JPEG', 2.00);
