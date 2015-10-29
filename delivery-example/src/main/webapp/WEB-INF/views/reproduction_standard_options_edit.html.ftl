@@ -32,7 +32,7 @@
       <#list standardOptions.options as stOption>
       <tr class="standard_option">
         <td>
-          <input type="hidden" name="options[${idx}].id" value="${standardOptions.options[idx].id}" class="id"/>
+          <input type="hidden" name="options[${idx}].id" value="${standardOptions.options[idx].id?c}" class="id"/>
           <input type="hidden" name="options[${idx}].materialType" value="${standardOptions.options[idx].materialType}"/>
           <@_ "record.externalInfo.materialType." + materialTypes[standardOptions.options[idx].materialType] ""/>
         </td>

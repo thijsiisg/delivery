@@ -106,9 +106,9 @@
 
           <li class="spacing">
             <#if hr.standardOption??>
-              <h3>${hr.standardOption.optionName?html} - Holding ${h.id}</h3>
+              <h3>${hr.standardOption.optionName?html} - Holding ${h.id?c}</h3>
             <#else>
-              <h3><@_ "reproduction.customReproduction" "Custom reproduction"/> - Holding ${h.id}</h3>
+              <h3><@_ "reproduction.customReproduction" "Custom reproduction"/> - Holding ${h.id?c}</h3>
             </#if>
 
             <ul class="holdingDetails">
