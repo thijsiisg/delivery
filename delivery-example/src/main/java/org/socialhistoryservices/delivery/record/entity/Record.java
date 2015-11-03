@@ -542,16 +542,6 @@ public class Record {
     }
 
     /**
-     * The price of the copyright to be included in the total reproduction price if this record is included.
-     * @return The price of the copyright.
-     */
-    public BigDecimal getCopyrightPrice() {
-        if (isCopyrightIISH())
-            return new BigDecimal("23.45");
-        return BigDecimal.ZERO;
-    }
-
-    /**
      * Initialize defaults.
      */
     public Record() {

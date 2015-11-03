@@ -269,7 +269,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         reproduction.setCustomerEmail(other.getEmail());
         reproduction.setPrinted(other.isPrinted());
         reproduction.setDiscount(other.getDiscount());
-        reproduction.setCopyrightPrice(other.getCopyrightPrice());
         reproduction.setRequestLocale(other.getRequestLocale());
         reproduction.setDateHasOrderDetails(other.getDateHasOrderDetails());
         reproduction.setDeliveryTimeComment(other.getDeliveryTimeComment());
@@ -805,6 +804,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             // If a standard option is chosen, then ignore the provided values
             if (standardOption != null) {
                 hr.setPrice(null);
+                hr.setCopyrightPrice(null);
                 hr.setDeliveryTime(null);
                 hr.setCustomReproductionCustomer(null);
                 hr.setCustomReproductionReply(null);
@@ -866,28 +866,26 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             ReproductionStandardOption standardOption = hr.getStandardOption();
 
-            // Determine if we can specify the price and delivery time, but have not done so yet
-            if ((standardOption != null) && ((hr.getPrice() == null) || (hr.getDeliveryTime() == null))) {
-                if (!forFree)
+            // Determine if we can specify the price, copyright price and delivery time, but have not done so yet
+            if ((standardOption != null) &&
+                    ((hr.getPrice() == null) || (hr.getCopyrightPrice() == null) || (hr.getDeliveryTime() == null))) {
+                if (!forFree) {
                     hr.setPrice(standardOption.getPrice());
+
+                    // Only set the copyright price when the IISH has the copyright for this record
+                    if (hr.getHolding().getRecord().isCopyrightIISH())
+                        hr.setCopyrightPrice(standardOption.getCopyrightPrice());
+                    else
+                        hr.setCopyrightPrice(BigDecimal.ZERO);
+                }
                 hr.setDeliveryTime(standardOption.getDeliveryTime());
             }
 
             // Make sure the price is for free
-            if (forFree)
+            if (forFree) {
                 hr.setPrice(BigDecimal.ZERO);
-        }
-
-        // Make sure the price is for free, otherwise determine the copyright price for this reproduction
-        if (forFree) {
-            reproduction.setCopyrightPrice(BigDecimal.ZERO);
-            reproduction.setDiscount(BigDecimal.ZERO);
-        }
-        else {
-            BigDecimal copyrightPrice = BigDecimal.ZERO;
-            for (Holding h : reproduction.getHoldings())
-                copyrightPrice = copyrightPrice.add(h.getRecord().getCopyrightPrice());
-            reproduction.setCopyrightPrice(copyrightPrice);
+                hr.setCopyrightPrice(BigDecimal.ZERO);
+            }
         }
     }
 

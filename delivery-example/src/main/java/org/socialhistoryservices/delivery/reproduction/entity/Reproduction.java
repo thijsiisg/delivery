@@ -311,33 +311,6 @@ public class Reproduction extends Request {
     }
 
     /**
-     * The price of the copyright specified for this reproduction.
-     */
-    @NotNull
-    @Min(0)
-    @Digits(integer = 5, fraction = 2)
-    @Column(name = "copyright_price", nullable = false)
-    private BigDecimal copyrightPrice;
-
-    /**
-     * Get the price of the copyright specified for this reproduction.
-     *
-     * @return The price of the copyright.
-     */
-    public BigDecimal getCopyrightPrice() {
-        return copyrightPrice;
-    }
-
-    /**
-     * Set the price of the copyright specified for this reproduction.
-     *
-     * @param copyrightPrice The price of the copyright.
-     */
-    public void setCopyrightPrice(BigDecimal copyrightPrice) {
-        this.copyrightPrice = copyrightPrice.setScale(2);
-    }
-
-    /**
      * Extra comments about the expected delivery time of the reproduction.
      */
     @Column(name = "deliveryTimeComment", columnDefinition = "TEXT")
@@ -485,13 +458,13 @@ public class Reproduction extends Request {
     public BigDecimal getTotalPrice() {
         BigDecimal price = BigDecimal.ZERO;
 
-        // First add the price of each holding in this reproduction
+        // First add the price and copyright price of each holding in this reproduction
         for (HoldingReproduction hr : getHoldingReproductions()) {
             price = price.add(hr.getPrice());
+            price = price.add(hr.getCopyrightPrice());
         }
 
-        // Then add the price for copyright and substract the discount
-        price = price.add(getCopyrightPrice());
+        // Then substract the discount
         price = price.subtract(getDiscount());
 
         // We cannot have a negative price
@@ -508,6 +481,19 @@ public class Reproduction extends Request {
      */
     public boolean isForFree() {
         return (getTotalPrice().compareTo(BigDecimal.ZERO) == 0);
+    }
+
+    /**
+     * Determine the copyright price only.
+     *
+     * @return the copyright price.
+     */
+    public BigDecimal getCopyrightPrice() {
+        BigDecimal copyrightPrice = BigDecimal.ZERO;
+        for (HoldingReproduction hr : getHoldingReproductions()) {
+            copyrightPrice = copyrightPrice.add(hr.getCopyrightPrice());
+        }
+        return copyrightPrice.setScale(2);
     }
 
     /**
@@ -563,7 +549,6 @@ public class Reproduction extends Request {
         setCreationDate(new Date());
         setPrinted(false);
         setDiscount(BigDecimal.ZERO);
-        setCopyrightPrice(BigDecimal.ZERO);
         setRequestLocale(LocaleContextHolder.getLocale());
         holdingReproductions = new ArrayList<HoldingReproduction>();
         token = UUID.randomUUID().toString();

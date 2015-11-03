@@ -102,15 +102,6 @@
                   </#if>
                 </li>
               </#if>
-
-              <#if _sec.isAnonymous() && (h.record.copyrightPrice gt 0)>
-                <li>
-                  <em>
-                    <@_ "reproduction.copyrightPrice" "For this item, you will also be charged with copyright costs of"/>
-                    &euro; ${h.record.copyrightPrice?string('0.00')}
-                  </em>
-                </li>
-              </#if>
             </ul>
 
             <#assign reproductionOptions = []/>
@@ -186,6 +177,13 @@
               <span><@_ "reproductionStandardOption.price" "Price"/></span>
               &euro; ${value.price?string("0.00")}
             </li>
+
+            <#if ((value.copyrightPrice gt 0) && holding.record.isCopyrightIISH())>
+              <li>
+                <span><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/></span>
+                &euro; ${value.copyrightPrice?string('0.00')}
+              </li>
+            </#if>
 
             <li>
               <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>

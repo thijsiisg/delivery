@@ -4,15 +4,10 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 /**
  * ReproductionOption object representing a ReproductionStandardOption.
@@ -307,6 +302,30 @@ public class ReproductionStandardOption {
     }
 
     @NotNull
+    @Min(0)
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "copyrightPrice", nullable = false)
+    private BigDecimal copyrightPrice = BigDecimal.ZERO;
+
+    /**
+     * Get the additional copyright price.
+     *
+     * @return the additional copyright price.
+     */
+    public BigDecimal getCopyrightPrice() {
+        return copyrightPrice;
+    }
+
+    /**
+     * Set the additional copyright price.
+     *
+     * @param copyrightPrice the additional copyright price.
+     */
+    public void setCopyrightPrice(BigDecimal copyrightPrice) {
+        this.copyrightPrice = copyrightPrice;
+    }
+
+    @NotNull
     @Column(name = "enabled", nullable = false)
     private boolean enabled;
 
@@ -342,6 +361,7 @@ public class ReproductionStandardOption {
         setDeliveryTime(other.getDeliveryTime());
         setMinNumberOfPages(other.getMinNumberOfPages());
         setMaxNumberOfPages(other.getMaxNumberOfPages());
+        setCopyrightPrice(other.getCopyrightPrice());
         setEnabled(other.isEnabled());
     }
 }

@@ -50,14 +50,38 @@ public class HoldingReproduction extends HoldingRequest {
     }
 
     /**
-     * Set the price.
+     * Set the copyright price.
      *
-     * @param price the price.
+     * @param price the copyright price.
      */
     public void setPrice(BigDecimal price) {
         if (price != null)
             price = price.setScale(2);
         this.price = price;
+    }
+
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "copyrightPrice")
+    private BigDecimal copyrightPrice;
+
+    /**
+     * Get the copyright price.
+     *
+     * @return the copyright price.
+     */
+    public BigDecimal getCopyrightPrice() {
+        return copyrightPrice;
+    }
+
+    /**
+     * Set the copyright price.
+     *
+     * @param copyrightPrice the copyright price.
+     */
+    public void setCopyrightPrice(BigDecimal copyrightPrice) {
+        if (copyrightPrice != null)
+            copyrightPrice = copyrightPrice.setScale(2);
+        this.copyrightPrice = copyrightPrice;
     }
 
     @Min(0)
@@ -348,6 +372,7 @@ public class HoldingReproduction extends HoldingRequest {
             if ((getStandardOption() != otherHr.getStandardOption()) || (otherHr.getStandardOption() == null)) {
                 setStandardOption(otherHr.getStandardOption());
                 setPrice(otherHr.getPrice());
+                setCopyrightPrice(otherHr.getCopyrightPrice());
                 setDeliveryTime(otherHr.getDeliveryTime());
             }
 
