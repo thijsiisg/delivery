@@ -14,6 +14,7 @@
   </#if>
   <#if hr.standardOption??>
 <@_ "reproductionStandardOption.price" "Price"/>: ${hr.price?string("0.00")} EUR
+<#if hr.copyrightPrice gt 0><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/>: ${hr.copyrightPrice?string("0.00")} EUR</#if>
 <@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: ${hr.deliveryTime} <@_ "days" "days"/>
 <#if locale == 'nl'>${hr.standardOption.optionDescriptionNL}<#else>${hr.standardOption.optionDescriptionEN}</#if>
   <#else>

@@ -21,8 +21,7 @@
       <td><@_ "reproductionStandardOption.optionDescription" "Option description"/></td>
       <td><@_ "reproductionStandardOption.price" "Price"/></td>
       <td><@_ "reproductionStandardOption.deliveryTime" "Delivery time"/></td>
-      <td><@_ "reproductionStandardOption.minNumberOfPages" "Min pages"/></td>
-      <td><@_ "reproductionStandardOption.maxNumberOfPages" "Max pages"/></td>
+      <td>&nbsp;</td>
       <td><@_ "reproductionStandardOption.enabled" "Is enabled?"/></td>
     </tr>
     </thead>
@@ -32,7 +31,7 @@
       <#list standardOptions.options as stOption>
       <tr class="standard_option">
         <td>
-          <input type="hidden" name="options[${idx}].id" value="${standardOptions.options[idx].id}" class="id"/>
+          <input type="hidden" name="options[${idx}].id" value="${standardOptions.options[idx].id?c}" class="id"/>
           <input type="hidden" name="options[${idx}].materialType" value="${standardOptions.options[idx].materialType}"/>
           <@_ "record.externalInfo.materialType." + materialTypes[standardOptions.options[idx].materialType] ""/>
         </td>
@@ -89,6 +88,7 @@
         <td>
           <#if standardOptions.options[idx].materialType == "BOOK">
             <label>
+              <@_ "reproductionStandardOption.minNumberOfPages" "Min pages"/>
               <@spring.formInput "standardOptions.options[${idx}].minNumberOfPages" "class='small'"/>
               <#if spring.status.errorMessages?size != 0>
                 <ul class="errors">
@@ -99,11 +99,25 @@
               </#if>
             </label>
           </#if>
-        </td>
-        <td>
+
           <#if standardOptions.options[idx].materialType == "BOOK">
             <label>
+              <@_ "reproductionStandardOption.maxNumberOfPages" "Max pages"/>
               <@spring.formInput "standardOptions.options[${idx}].maxNumberOfPages" "class='small'"/>
+              <#if spring.status.errorMessages?size != 0>
+                <ul class="errors">
+                  <li>
+                    <@spring.showErrors "</li><li>"/>
+                  </li>
+                </ul>
+              </#if>
+            </label>
+          </#if>
+
+          <#if standardOptions.options[idx].materialType == "VISUAL">
+            <label>
+              <@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/>
+              <@spring.formInput "standardOptions.options[${idx}].copyrightPrice" "class='small'"/>
               <#if spring.status.errorMessages?size != 0>
                 <ul class="errors">
                   <li>
@@ -181,16 +195,7 @@
           <span><@_ "days" "days"/></span>
         </label>
       </td>
-      <td>
-        <label>
-          <input type="text" id="new.minNumberOfPages" name="new.minNumberOfPages" value="" class="small">
-        </label>
-      </td>
-      <td>
-        <label>
-          <input type="text" id="new.maxNumberOfPages" name="new.maxNumberOfPages" value="" class="small">
-        </label>
-      </td>
+      <td></td>
       <td>
         <label>
           <input id="new.enabled" name="new.enabled" checked="checked" type="checkbox"/>

@@ -106,9 +106,9 @@
 
           <li class="spacing">
             <#if hr.standardOption??>
-              <h3>${hr.standardOption.optionName?html} - Holding ${h.id}</h3>
+              <h3>${hr.standardOption.optionName?html} - Holding ${h.id?c}</h3>
             <#else>
-              <h3><@_ "reproduction.customReproduction" "Custom reproduction"/> - Holding ${h.id}</h3>
+              <h3><@_ "reproduction.customReproduction" "Custom reproduction"/> - Holding ${h.id?c}</h3>
             </#if>
 
             <ul class="holdingDetails">
@@ -169,6 +169,13 @@
                   <@_ "tbd" "To be determined"/>
                 </#if>
               </li>
+
+              <#if hr.copyrightPrice gt 0>
+                <li>
+                  <span><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/></span>
+                  &euro; ${hr.copyrightPrice?string("0.00")}
+                </li>
+              </#if>
 
               <li>
                 <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
