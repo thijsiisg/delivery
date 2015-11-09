@@ -911,6 +911,7 @@ public class ReproductionController extends AbstractRequestController {
      */
     @RequestMapping(value = "/order/accept", method = RequestMethod.GET)
     public String accept() {
+        LOGGER.debug(String.format("/reproduction/order/accept : Called order accept."));
         return "reproduction_order_accept";
     }
 
@@ -920,6 +921,16 @@ public class ReproductionController extends AbstractRequestController {
     @RequestMapping(value = "/order/accept", method = RequestMethod.GET, params = "POST")
     public HttpStatus accept(@RequestParam Map<String, String> requestParams) {
         PayWayMessage payWayMessage = new PayWayMessage(requestParams);
+
+        LOGGER.debug(String.format(
+                "/reproduction/order/accept : Called POST order accept with message %s", payWayMessage));
+
+        // Make sure the message is valid
+        if (!payWayService.isValid(payWayMessage)) {
+            LOGGER.debug(String.format(
+                    "/reproduction/order/accept : Invalid signature for message %s", payWayMessage));
+            return HttpStatus.BAD_REQUEST;
+        }
 
         // Check the reproduction ...
         Integer reproductionId = payWayMessage.getInteger("userid");
