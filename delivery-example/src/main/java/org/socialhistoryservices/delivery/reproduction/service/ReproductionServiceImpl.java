@@ -669,7 +669,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
-     * Scheduled task to cancel all reproductions not payed within 5 days after the offer was ready.
+     * Scheduled task to cancel all reproductions not payed within the time frame after the offer was ready.
      */
     @Scheduled(cron = "0 0 * * * MON-FRI")
     public void checkPayedReproductions() {
@@ -682,16 +682,22 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
         // Build the query
         CriteriaBuilder builder = getReproductionCriteriaBuilder();
-
         CriteriaQuery<Reproduction> query = builder.createQuery(Reproduction.class);
         Root<Reproduction> reproductionRoot = query.from(Reproduction.class);
         query.select(reproductionRoot);
 
-        Expression<Boolean> criteria = builder.lessThan(
+        // Only reproductions outside the given time frame
+        Expression<Boolean> dateCriteria = builder.lessThan(
                 reproductionRoot.get(Reproduction_.dateHasOrderDetails),
                 calendar.getTime()
         );
-        query.where(criteria);
+
+        // Only reproductions that have an offer, but are not yet payed
+        Expression<Boolean> statusCriteria = builder.in(reproductionRoot.get(Reproduction_.status))
+                .value(Reproduction.Status.HAS_ORDER_DETAILS)
+                .value(Reproduction.Status.CONFIRMED);
+
+        query.where(builder.and(dateCriteria, statusCriteria));
 
         // Cancel all found reproductions
         for (Reproduction reproduction : listReproductions(query)) {
