@@ -56,7 +56,7 @@
           <#if hr.standardOption??>
             <em>
               <@_ "reproductionStandardOption.price" "Price"/>: &euro; ${hr.price?string("0.00")} -
-              <#if hr.copyrightPrice gt 0>
+              <#if hr.copyrightPrice?? && hr.copyrightPrice gt 0>
                 <@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/>: &euro; ${hr.copyrightPrice?string("0.00")} -
               </#if>
               <@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: ${hr.deliveryTime?html} <@_ "days" "days"/>

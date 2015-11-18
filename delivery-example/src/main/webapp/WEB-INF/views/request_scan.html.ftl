@@ -170,7 +170,7 @@
                 </#if>
               </li>
 
-              <#if hr.copyrightPrice gt 0>
+              <#if hr.copyrightPrice?? && hr.copyrightPrice gt 0>
                 <li>
                   <span><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/></span>
                   &euro; ${hr.copyrightPrice?string("0.00")}
