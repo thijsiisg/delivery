@@ -24,8 +24,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -38,7 +36,6 @@ import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.print.PrinterException;
 import java.beans.PropertyEditorSupport;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -157,7 +154,7 @@ public class ReproductionController extends AbstractRequestController {
      * Get a list of reproductions.
      *
      * @param req   The HTTP request object.
-     * @param model Passed view model.     *
+     * @param model Passed view model.
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
@@ -845,9 +842,28 @@ public class ReproductionController extends AbstractRequestController {
 
         // If the customer already confirmed the reproduction, just redirect to the payment page
         if (reproduction.getStatus() == Reproduction.Status.CONFIRMED) {
-            Order order = reproduction.getOrder();
-            if (order != null) {
+            try {
+                Order order = reproduction.getOrder();
+                if (order == null) {
+                    order = reproductions.createOrder(reproduction);
+
+                    // If the reproduction is for free, take care of delivery
+                    if (reproduction.isForFree()) {
+                        // Determine if we can move up to either 'completed' or 'active' immediatly
+                        changeStatusAfterPayment(reproduction);
+
+                        // Show payment accepted page
+                        return "redirect:/reproduction/order/confirm";
+                    }
+                }
+
                 return "redirect:" + payWayService.getPaymentPageRedirectLink(order.getId());
+            } catch (IncompleteOrderDetailsException onre) {
+                // We already checked for this one though
+                throw new InvalidRequestException("Reproduction is not ready yet.");
+            } catch (OrderRegistrationFailureException orfe) {
+                String msg = msgSource.getMessage("payway.error", null, LocaleContextHolder.getLocale());
+                throw new InvalidRequestException(msg);
             }
         }
 
@@ -871,7 +887,7 @@ public class ReproductionController extends AbstractRequestController {
                 reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.CONFIRMED);
                 Order order = reproductions.createOrder(reproduction);
 
-                // If the reproduction is for free, take care of delivey
+                // If the reproduction is for free, take care of delivery
                 if (reproduction.isForFree()) {
                     // Determine if we can move up to either 'completed' or 'active' immediatly
                     changeStatusAfterPayment(reproduction);

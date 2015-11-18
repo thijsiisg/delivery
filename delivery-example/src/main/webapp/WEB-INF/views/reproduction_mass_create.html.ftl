@@ -4,7 +4,7 @@
 <#-- Build the title -->
 <#assign title>
   <#if original??>
-    <@_ "reproductionEdit.title" "Edit Reproduction"/> ${original.id?html}
+    <@_ "reproductionEdit.title" "Edit Reproduction"/> ${original.id?c}
   <#else>
     <@_ "reproductionMassCreate.title" "New Reproduction"/>
   </#if>

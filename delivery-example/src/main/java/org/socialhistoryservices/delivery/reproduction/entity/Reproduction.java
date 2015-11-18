@@ -461,7 +461,8 @@ public class Reproduction extends Request {
         // First add the price and copyright price of each holding in this reproduction
         for (HoldingReproduction hr : getHoldingReproductions()) {
             price = price.add(hr.getPrice());
-            price = price.add(hr.getCopyrightPrice());
+            if (hr.getCopyrightPrice() != null)
+                price = price.add(hr.getCopyrightPrice());
         }
 
         // Then substract the discount
@@ -491,7 +492,8 @@ public class Reproduction extends Request {
     public BigDecimal getCopyrightPrice() {
         BigDecimal copyrightPrice = BigDecimal.ZERO;
         for (HoldingReproduction hr : getHoldingReproductions()) {
-            copyrightPrice = copyrightPrice.add(hr.getCopyrightPrice());
+            if (hr.getCopyrightPrice() != null)
+                copyrightPrice = copyrightPrice.add(hr.getCopyrightPrice());
         }
         return copyrightPrice.setScale(2);
     }
