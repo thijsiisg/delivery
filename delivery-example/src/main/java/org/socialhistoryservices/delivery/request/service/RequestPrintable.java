@@ -187,6 +187,13 @@ public abstract class RequestPrintable implements Printable {
     protected abstract void drawRequestInfo(DrawInfo drawInfo);
 
     /**
+     * Draws all holding info.
+     *
+     * @param drawInfo Draw offsets.
+     */
+    protected abstract void drawHoldingInfo(DrawInfo drawInfo);
+
+    /**
      * Draws the name of the person making the request.
      *
      * @param drawInfo Draw offsets.
@@ -195,7 +202,6 @@ public abstract class RequestPrintable implements Printable {
         String nameLabel = getMessage("request.name", "Name");
         drawKeyValue(drawInfo, nameLabel, holdingRequest.getRequest().getName(), italicFont, true);
     }
-
 
     /**
      * Draws the creation date of the request.
@@ -212,32 +218,60 @@ public abstract class RequestPrintable implements Printable {
     }
 
     /**
-     * Draw all holding info.
+     * Draw record info.
      *
      * @param drawInfo Draw Offsets.
      */
-    protected void drawHoldingInfo(DrawInfo drawInfo) {
-        Holding h = holdingRequest.getHolding();
-        Record r = h.getRecord();
+    protected void drawRecordInfo(DrawInfo drawInfo) {
+        Record r = holdingRequest.getHolding().getRecord();
 
-        // Draw title + pid.
         drawTitle(drawInfo, r.getTitle());
         drawAuthor(drawInfo, r.getExternalInfo().getAuthor());
         //drawPid(drawInfo, r.getPid());
+    }
 
-        // Draw location info.
+    /**
+     * Draw material info.
+     *
+     * @param drawInfo Draw Offsets.
+     */
+    protected void drawMaterialInfo(DrawInfo drawInfo) {
+        Record r = holdingRequest.getHolding().getRecord();
+
         drawMaterialType(drawInfo, r.getExternalInfo().getMaterialType());
         drawInventory(drawInfo, r);
         drawComment(drawInfo, holdingRequest.getComment());
-        drawType(drawInfo, h.getSignature());
+    }
+
+    /**
+     * Draw location info.
+     *
+     * @param drawInfo Draw Offsets.
+     */
+    protected void drawLocationInfo(DrawInfo drawInfo) {
+        Holding h = holdingRequest.getHolding();
+        Record r = h.getRecord();
+
         drawFloor(drawInfo, h.getFloor());
         drawDirection(drawInfo, h.getDirection());
         drawCabinet(drawInfo, h.getCabinet());
         drawShelf(drawInfo, h.getShelf());
+
         if (r.getRealRestrictionType() != Record.RestrictionType.OPEN) {
             drawInfo.setOffsetY(drawInfo.getOffsetY() + 10);
             drawRestrictedNotice(drawInfo);
         }
+    }
+
+    /**
+     * Draw the type of the location.
+     *
+     * @param drawInfo Draw offsets.
+     * @param value    The value to draw.
+     */
+    protected void drawType(DrawInfo drawInfo, String value) {
+        String typeLabel = getMessage("holding.signature", "Signature");
+        drawKeyValue(drawInfo, typeLabel, value, italicFont, true);
     }
 
     /**
@@ -379,17 +413,6 @@ public abstract class RequestPrintable implements Printable {
         String pid = r.getPid();
 
         drawKeyValue(drawInfo, queueLabel, pid.substring(pid.lastIndexOf(".") + 1));
-    }
-
-    /**
-     * Draw the type of the location.
-     *
-     * @param drawInfo Draw offsets.
-     * @param value    The value to draw.
-     */
-    private void drawType(DrawInfo drawInfo, String value) {
-        String typeLabel = getMessage("holding.signature", "Signature");
-        drawKeyValue(drawInfo, typeLabel, value, italicFont, true);
     }
 
     /**

@@ -343,20 +343,17 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     /**
      * Auto print all holdings of the given reproduction, if possible.
      *
+     * Run this in a separate thread, we do nothing on failure so in this case this is perfectly possible.
+     *
      * @param reproduction The reproduction.
      */
+    @Async
     private void autoPrintReproduction(final Reproduction reproduction) {
-        if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date())) {
-            // Run this in a separate thread, we do nothing on failure so in this case this is perfectly possible
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        printReproduction(reproduction);
-                    } catch (PrinterException e) {
-                        // Do nothing, let an employee print it later on
-                    }
-                }
-            }).start();
+        try {
+            if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date()))
+                printReproduction(reproduction);
+        } catch (PrinterException e) {
+            // Do nothing, let an employee print it later on
         }
     }
 

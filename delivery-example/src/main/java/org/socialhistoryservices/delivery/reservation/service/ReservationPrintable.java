@@ -68,6 +68,18 @@ public class ReservationPrintable extends RequestPrintable {
     }
 
     /**
+     * Draws all holding info.
+     * @param drawInfo Draw offsets.
+     */
+    @Override
+    protected void drawHoldingInfo(DrawInfo drawInfo) {
+        drawRecordInfo(drawInfo);
+        drawMaterialInfo(drawInfo);
+        drawType(drawInfo, holdingRequest.getHolding().getSignature());
+        drawLocationInfo(drawInfo);
+    }
+
+    /**
      * Draws the queue number.
      * @param drawInfo Draw offsets.
      */

@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -681,30 +682,26 @@ public class ReservationController extends AbstractRequestController {
     /**
      * Print a reservation if it has been reserved between the opening and
      * closing times of the readingroom.
+     *
+     * Run this in a separate thread, we do nothing on failure so in this case this is perfectly possible.
+     * This speeds up the processing of the page for the end-user.
+     *
      * @param res The reservation to print.
      */
+    @Async
     private void autoPrint(final Reservation res) {
-        Date create = res.getCreationDate();
-        Date access = res.getDate();
-        // Do not print when not reserved on same day as access.
-        if (access.after(create)) {
-            return;
-        }
+        try {
+            Date create = res.getCreationDate();
+            Date access = res.getDate();
 
-        if (DateUtils.isBetweenOpeningAndClosingTime(properties, create)) {
-            // Run this in a separate thread, we do nothing on failure so in
-            // this case this is perfectly possible.
-            // This speeds up the processing of the page for the end-user.
-            new Thread(new Runnable() {
+            // Do not print when not reserved on same day as access.
+            if (access.after(create))
+                return;
 
-                public void run() {
-                    try {
-                        reservations.printReservation(res);
-                    } catch (PrinterException e) {
-                        // Do nothing, let an employee print it later on.
-                    }
-                }
-            }).start();
+            if (DateUtils.isBetweenOpeningAndClosingTime(properties, create))
+                reservations.printReservation(res);
+        } catch (PrinterException e) {
+            // Do nothing, let an employee print it later on.
         }
     }
     // }}}

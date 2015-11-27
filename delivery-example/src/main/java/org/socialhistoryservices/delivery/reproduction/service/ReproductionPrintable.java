@@ -1,13 +1,10 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
-import org.socialhistoryservices.delivery.record.entity.Holding;
-import org.socialhistoryservices.delivery.record.entity.Record;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
 import org.socialhistoryservices.delivery.request.service.RequestPrintable;
 import org.springframework.context.MessageSource;
 
-import java.awt.*;
 import java.text.DateFormat;
 import java.util.Properties;
 
@@ -47,10 +44,11 @@ public class ReproductionPrintable extends RequestPrintable {
      */
     @Override
     protected void drawHoldingInfo(DrawInfo drawInfo) {
-        super.drawHoldingInfo(drawInfo);
-
-        Holding h = holdingRequest.getHolding();
-        drawHoldingPid(drawInfo, h.determinePid());
+        drawRecordInfo(drawInfo);
+        drawMaterialInfo(drawInfo);
+        drawHoldingPid(drawInfo, holdingRequest.getHolding().determinePid());
+        drawType(drawInfo, holdingRequest.getHolding().getSignature());
+        drawLocationInfo(drawInfo);
     }
 
     /**
