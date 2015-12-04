@@ -13,6 +13,7 @@ import org.socialhistoryservices.delivery.reservation.service.ReservationService
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -80,10 +81,14 @@ public class RequestController extends AbstractRequestController {
         }
 
         // Determine access rights
-        Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>)
-                SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-        boolean accessReservation = authorities.contains(new SimpleGrantedAuthority("ROLE_RESERVATION_MODIFY"));
-        boolean accessReproduction = authorities.contains(new SimpleGrantedAuthority("ROLE_REPRODUCTION_MODIFY"));
+        boolean accessReservation = false;
+        boolean accessReproduction = false;
+        for (GrantedAuthority authority : SecurityContextHolder.getContext().getAuthentication().getAuthorities()) {
+            if (authority.getAuthority().equals("ROLE_RESERVATION_MODIFY"))
+                accessReservation = true;
+            if (authority.getAuthority().equals("ROLE_REPRODUCTION_MODIFY"))
+                accessReproduction = true;
+        }
 
         // Information about the current state
         Holding.Status oldStatus = h.getStatus();
