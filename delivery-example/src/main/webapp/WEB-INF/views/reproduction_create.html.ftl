@@ -196,6 +196,7 @@
 
     <li>
       <#assign id="${spring.status.expression}.null">
+      <#assign materialType = holding.record.externalInfo.materialType>
         <input type="radio" id="${id}" name="${spring.status.expression}" class="custom"
                value="0"<#if spring.stringStatusValue == ""> checked="checked"</#if>/>
 
@@ -205,7 +206,12 @@
           </li>
 
           <li>
-            <em><@_ "reproduction.customReproductionCustomer.description" ""/></em>
+            <em>
+              <@_ "reproduction.customReproductionCustomer.description" "Describe your wishes as exactly as possible. You will get an offer by email."/>
+              <#if reproductionCustomNotes[materialType]?? && reproductionCustomNotes[materialType].note??>
+                <br/> ${reproductionCustomNotes[materialType].note?html}
+              </#if>
+            </em>
           </li>
 
           <li class="spacing">

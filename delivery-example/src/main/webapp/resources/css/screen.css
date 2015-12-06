@@ -893,32 +893,37 @@ a.refreshCaptcha {
     margin-left: 20px;
 }
 
-table.reproduction_standard_options, table.reproduction_standard_options tr, table.reproduction_standard_options td {
+table.reproduction_options {
+    margin-bottom: 10px;
+}
+
+
+table.reproduction_options, table.reproduction_options tr, table.reproduction_options td {
     vertical-align: top;
     border-collapse: collapse;
 }
 
-table.reproduction_standard_options thead {
+table.reproduction_options thead {
     border-bottom: 1px solid #888;
     font-weight: bold;
 }
 
-table.reproduction_standard_options tbody tr {
+table.reproduction_options tbody tr {
     border-bottom: 1px solid #cccccc;
 }
 
-table.reproduction_standard_options tfoot {
+table.reproduction_options tfoot {
     border-top: 1px solid #888;
 }
 
-table.reproduction_standard_options td, table.reproduction_standard_options th {
+table.reproduction_options td, table.reproduction_options th {
     padding: 5px;
 }
 
-table.reproduction_standard_options input[type="text"],
-table.reproduction_standard_options input[type="checkbox"],
-table.reproduction_standard_options select,
-table.reproduction_standard_options textarea {
+table.reproduction_options input[type="text"],
+table.reproduction_options input[type="checkbox"],
+table.reproduction_options select,
+table.reproduction_options textarea {
     display: inline-block;
     margin: auto;
     max-width: 20em;
@@ -926,35 +931,35 @@ table.reproduction_standard_options textarea {
     vertical-align: middle;
 }
 
-table.reproduction_standard_options textarea {
+table.reproduction_options textarea {
     max-width: none;
 }
 
-table.reproduction_standard_options label {
+table.reproduction_options label {
     display: block;
     margin-top: 3px;
     margin-bottom: 3px;
 }
 
-table.reproduction_standard_options label span {
+table.reproduction_options label span {
     display: inline-block;
     width: 30px;
 }
 
-table.reproduction_standard_options .small {
+table.reproduction_options .small {
     width: 6em;
 }
 
-table.reproduction_standard_options select {
+table.reproduction_options select {
     width: 12em;
 }
 
-table.reproduction_standard_options textarea, .deliveryTimeComment {
+table.reproduction_options textarea, .deliveryTimeComment {
     height: 60px;
     width: 300px;
 }
 
-table.reproduction_standard_options ul.errors {
+table.reproduction_options ul.errors {
     margin-left: 0;
     padding-left: 0;
 }

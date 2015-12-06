@@ -1,6 +1,6 @@
 <#include "mail.ftl">
 <@mail reproduction.customerName>
-<@_ "reproduction.customRequest.message" "Your reproduction request has been successfully received. You will be notified of the total price and estimated delivery time by email." />
+<@_ "reproduction.requestSuccess" "Your reproduction request has been successfully received. You will be notified of the total price and estimated delivery time by email." />
 
 <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
 

@@ -3,10 +3,7 @@ package org.socialhistoryservices.delivery.reproduction.service;
 import org.apache.log4j.Logger;
 import org.socialhistoryservices.delivery.api.*;
 import org.socialhistoryservices.delivery.record.entity.*;
-import org.socialhistoryservices.delivery.reproduction.dao.HoldingReproductionDAO;
-import org.socialhistoryservices.delivery.reproduction.dao.OrderDAO;
-import org.socialhistoryservices.delivery.reproduction.dao.ReproductionDAO;
-import org.socialhistoryservices.delivery.reproduction.dao.ReproductionStandardOptionDAO;
+import org.socialhistoryservices.delivery.reproduction.dao.*;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
@@ -50,6 +47,9 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
     @Autowired
     private ReproductionStandardOptionDAO reproductionStandardOptionDAO;
+
+    @Autowired
+    private ReproductionCustomNoteDAO reproductionCustomNoteDAO;
 
     @Autowired
     private PayWayService payWayService;
@@ -135,6 +135,13 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 reproductionStandardOptionDAO.add(option1);
             }
         }
+
+        for (ReproductionCustomNote customNote : standardOptions.getCustomNotes()) {
+            if (customNote.getId() > 0)
+                reproductionCustomNoteDAO.save(customNote);
+            else
+                reproductionCustomNoteDAO.add(customNote);
+        }
     }
 
     /**
@@ -194,6 +201,28 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      */
     public List<ReproductionStandardOption> getAllReproductionStandardOptions() {
         return reproductionStandardOptionDAO.listAll();
+    }
+
+    /**
+     * Returns all custom notes for reproductions.
+     *
+     * @return A list with all custom notes for reproductions.
+     */
+    public List<ReproductionCustomNote> getAllReproductionCustomNotes() {
+        return reproductionCustomNoteDAO.listAll();
+    }
+
+    /**
+     * Returns all custom notes for reproductions.
+     *
+     * @return A map with all custom notes for reproductions by material type name.
+     */
+    public Map<String, ReproductionCustomNote> getAllReproductionCustomNotesAsMap() {
+        Map<String, ReproductionCustomNote> customNotes = new HashMap<String, ReproductionCustomNote>();
+        for (ReproductionCustomNote reproductionCustomNote : getAllReproductionCustomNotes()) {
+            customNotes.put(reproductionCustomNote.getMaterialType().name(), reproductionCustomNote);
+        }
+        return customNotes;
     }
 
     /**
@@ -918,6 +947,14 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         for (ReproductionStandardOption standardOption : standardOptions.getOptions()) {
             result.pushNestedPath("options[" + i + "]");
             validator.validate(standardOption, result);
+            result.popNestedPath();
+            i++;
+        }
+
+        i = 0;
+        for (ReproductionCustomNote customNote : standardOptions.getCustomNotes()) {
+            result.pushNestedPath("customNotes[" + i + "]");
+            validator.validate(customNote, result);
             result.popNestedPath();
             i++;
         }

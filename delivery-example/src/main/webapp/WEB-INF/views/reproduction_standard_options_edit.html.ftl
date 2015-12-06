@@ -12,7 +12,7 @@
   <@form "" "standardOptions">
   <h1>${title}</h1>
 
-  <table class="reproduction_standard_options">
+  <table class="reproduction_options reproduction_standard_options">
     <thead>
     <tr>
       <td><@_ "reproductionStandardOption.materialType" "Material type"/></td>
@@ -206,9 +206,46 @@
     </tfoot>
   </table>
 
+  <table class="reproduction_options reproduction_custom_notes">
+    <thead>
+    <tr>
+      <td><@_ "reproductionStandardOption.materialType" "Material type"/></td>
+      <td><@_ "reproductionStandardOption.customNote" "Custom reproduction note"/></td>
+    </tr>
+    </thead>
+
+    <tbody>
+      <#assign idx = 0>
+      <#list standardOptions.customNotes as customNote>
+      <tr class="standard_option">
+        <td>
+          <input type="hidden" name="customNotes[${idx}].id" value="${standardOptions.customNotes[idx].id?c}" class="id"/>
+          <input type="hidden" name="customNotes[${idx}].materialType" value="${standardOptions.customNotes[idx].materialType}"/>
+          <@_ "record.externalInfo.materialType." + materialTypes[standardOptions.customNotes[idx].materialType] ""/>
+        </td>
+        <td>
+          <label>
+            <span>NL:</span>
+            <@textarea_nolabel "standardOptions.customNotes[${idx}].noteNL"/>
+          </label>
+        </td>
+        <td>
+          <label>
+            <span>EN:</span>
+            <@textarea_nolabel "standardOptions.customNotes[${idx}].noteEN"/>
+          </label>
+        </td>
+      </tr>
+        <#assign idx = idx + 1>
+      </#list>
+    </tbody>
+  </table>
+
     <@buttons>
       <@submit "reproduction" />
-      <button type="button" onclick="addNewStandardOption();">Add new option</button>
+      <button type="button" onclick="addNewStandardOption();">
+        <@_ "reproductionStandardOption.addNew" "Add new standard option"/>
+      </button>
     </@buttons>
   </@form>
 </@body>

@@ -666,8 +666,9 @@ public class ReproductionController extends AbstractRequestController {
             return "reproduction_error";
         }
 
-        // Obtain all the standard reproduction options
+        // Obtain all the standard reproduction options and custom notes
         model.addAttribute("reproductionStandardOptions", obtainStandardReproductionOptions());
+        model.addAttribute("reproductionCustomNotes", reproductions.getAllReproductionCustomNotesAsMap());
 
         try {
             if (commit) {
@@ -1286,8 +1287,8 @@ public class ReproductionController extends AbstractRequestController {
     @RequestMapping(value = "/standardoptions", method = RequestMethod.GET)
     @Secured("ROLE_REPRODUCTION_MODIFY")
     public String showStandardOptions(Model model) {
-        ReproductionStandardOptions standardOptions =
-                new ReproductionStandardOptions(reproductions.getAllReproductionStandardOptions());
+        ReproductionStandardOptions standardOptions = new ReproductionStandardOptions(
+                reproductions.getAllReproductionStandardOptions(), reproductions.getAllReproductionCustomNotes());
         model.addAttribute("standardOptions", standardOptions);
         return "reproduction_standard_options_edit";
     }

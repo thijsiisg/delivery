@@ -44,7 +44,7 @@ public class ReproductionStandardOption {
     /**
      * Set the ReproductionStandardOption's id.
      *
-     * @param idthe ReproductionStandardOption's id.
+     * @param id the ReproductionStandardOption's id.
      */
     public void setId(int id) {
         this.id = id;
@@ -179,7 +179,7 @@ public class ReproductionStandardOption {
     }
 
     /**
-     * Set the option description (DutEnglishch).
+     * Set the option description (English).
      *
      * @param optionDescription the option description in English.
      */

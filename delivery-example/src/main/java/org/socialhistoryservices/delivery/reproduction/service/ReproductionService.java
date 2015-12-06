@@ -1,10 +1,7 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
-import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
-import org.socialhistoryservices.delivery.reproduction.entity.Order;
-import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
-import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
+import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
@@ -14,6 +11,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.awt.print.PrinterException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -82,6 +80,20 @@ public interface ReproductionService {
      * @return A list with all standard options for reproductions.
      */
     public List<ReproductionStandardOption> getAllReproductionStandardOptions();
+
+    /**
+     * Returns all custom notes for reproductions.
+     *
+     * @return A list with all custom notes for reproductions.
+     */
+    public List<ReproductionCustomNote> getAllReproductionCustomNotes();
+
+    /**
+     * Returns all custom notes for reproductions.
+     *
+     * @return A map with all custom notes for reproductions by material type name.
+     */
+    public Map<String, ReproductionCustomNote> getAllReproductionCustomNotesAsMap();
 
     /**
      * Get a criteria builder for querying Reproductions.

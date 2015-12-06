@@ -77,7 +77,7 @@
     </ul>
   </section>
 
-  <p><@_html "reproduction.customRequest.message" "Your reproduction request has been successfully received. You will be notified of the total price and estimated delivery time by email." /></p>
+  <p><@_html "reproduction.requestSuccess" "Your reproduction request has been successfully received. You will be notified of the total price and estimated delivery time by email." /></p>
 
   <#if error?? >
     <p><@_ "reproduction.error."+error error /></p>
