@@ -637,14 +637,20 @@ public class ReproductionController extends AbstractRequestController {
      */
     private List<HoldingReproduction> uriPathToHoldingReproductions(String path) {
         List<Holding> holdings = uriPathToHoldings(path, false);
-        if (holdings == null) {
+        if (holdings == null)
             return null;
-        }
 
         List<HoldingReproduction> hrs = new ArrayList<HoldingReproduction>();
+        Map<String, List<ReproductionStandardOption>> standardOptions = obtainStandardReproductionOptions();
         for (Holding holding : holdings) {
             HoldingReproduction hr = new HoldingReproduction();
             hr.setHolding(holding);
+
+            // Already pick the first standard option, if available
+            String materialType = holding.getRecord().getExternalInfo().getMaterialType().toString();
+            if (standardOptions.containsKey(materialType) && !standardOptions.get(materialType).isEmpty())
+                hr.setStandardOption(standardOptions.get(materialType).get(0));
+
             hrs.add(hr);
         }
         return hrs;

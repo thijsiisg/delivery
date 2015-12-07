@@ -1,6 +1,7 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.request.service.RequestMailer;
 import org.springframework.mail.MailException;
@@ -9,6 +10,8 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -69,7 +72,7 @@ public class ReproductionMailer extends RequestMailer {
      */
     public void mailPayed(Reproduction reproduction) throws MailException {
         assert reproduction.getStatus() == Reproduction.Status.PAYED :
-                "Can only mail pending when Reproduction status is PAYED";
+                "Can only mail payed confirmation when Reproduction status is PAYED";
 
         String subject = getMessage("reproductionMail.payedSubject", "Confirmation of payment");
         sendMail(reproduction, subject, "reproduction_payed.mail.ftl", getReproductionModel(reproduction),
@@ -77,17 +80,31 @@ public class ReproductionMailer extends RequestMailer {
     }
 
     /**
-     * Mail the SOR links where the reproduction items are available for download. (For repro only!)
+     * Mail repro which items of an active reproduction have been sent to the printer
+     * and the SOR links where the other items are available for download.
      *
      * @param reproduction The reproduction to extract mail details from.
      * @throws MailException Thrown when sending mail somehow failed.
      */
-    public void mailSorLinks(Reproduction reproduction) throws MailException {
-        assert reproduction.getStatus() == Reproduction.Status.COMPLETED :
-                "Can only mail SOR links when Reproduction status is COMPLETED";
+    public void mailActive(Reproduction reproduction) throws MailException {
+        assert reproduction.getStatus() == Reproduction.Status.ACTIVE :
+                "Can only mail active when Reproduction status is ACTIVE";
 
-        String subject = getMessage("reproductionMail.sorLinksSubject", "Reproduction SOR download links");
-        sendMail(subject, "reproduction_sor_links.mail.ftl", getReproductionModel(reproduction), ENGLISH_LOCALE);
+        List<HoldingReproduction> inSor = new ArrayList<HoldingReproduction>();
+        List<HoldingReproduction> notInSor = new ArrayList<HoldingReproduction>();
+        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
+            if (hr.isInSor())
+                inSor.add(hr);
+            else
+                notInSor.add(hr);
+        }
+
+        Model model = getReproductionModel(reproduction);
+        model.addAttribute("inSor", inSor);
+        model.addAttribute("notInSor", notInSor);
+
+        String subject = getMessage("reproductionMail.activeReproductionSubject", "New active reproduction");
+        sendMail(subject, "reproduction_active.mail.ftl", model, ENGLISH_LOCALE);
     }
 
     /**

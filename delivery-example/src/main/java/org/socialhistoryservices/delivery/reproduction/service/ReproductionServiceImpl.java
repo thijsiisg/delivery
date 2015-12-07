@@ -324,7 +324,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param status       The reproduction which changed status.
      */
     public void updateStatusAndAssociatedHoldingStatus(Reproduction reproduction, Reproduction.Status status) {
-        if (status.ordinal() < reproduction.getStatus().ordinal()) {
+        if (status.ordinal() <= reproduction.getStatus().ordinal()) {
             return;
         }
         reproduction.setStatus(status);
@@ -347,9 +347,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 break;
             case ACTIVE:
                 autoPrintReproduction(reproduction);
+                mailActive(reproduction);
                 break;
-            case COMPLETED:
-                mailSorLinks(reproduction);
             case DELIVERED:
             case CANCELLED:
                 completedStatus = true;
@@ -397,13 +396,13 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
-     * Email repro concerning the addresses in the SOR.
+     * Email repro concerning the active reproduction.
      *
      * @param reproduction The reproduction.
      */
-    private void mailSorLinks(Reproduction reproduction) {
+    private void mailActive(Reproduction reproduction) {
         try {
-            reproductionMailer.mailSorLinks(reproduction);
+            reproductionMailer.mailActive(reproduction);
         } catch (MailException me) {
             // Do nothing
         }

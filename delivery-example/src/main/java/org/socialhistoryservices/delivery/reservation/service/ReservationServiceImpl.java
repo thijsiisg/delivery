@@ -301,7 +301,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * @param status The reservation which changed status.
      */
     public void updateStatusAndAssociatedHoldingStatus(Reservation reservation, Reservation.Status status) {
-        if (status.ordinal() < reservation.getStatus().ordinal()) {
+        if (status.ordinal() <= reservation.getStatus().ordinal()) {
             return;
         }
         reservation.setStatus(status);

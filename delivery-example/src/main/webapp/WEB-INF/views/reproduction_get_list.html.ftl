@@ -28,7 +28,7 @@
   </li>
   <li>
     <a href="${rc.contextPath}/reproduction/?status=completed">
-      <@_ "reproductionList.filterCompleted" "Show reproductions completed (waiting for delivery)"/>
+      <@_ "reproductionList.filterCompleted" "Show reproductions handled by repro (waiting for delivery)"/>
     </a>
   </li>
   <li>

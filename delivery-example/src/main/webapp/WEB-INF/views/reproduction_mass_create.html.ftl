@@ -94,6 +94,7 @@
             <label class="group">
               <strong class="label"><@_ "reproductionStandardOption.price" "Price"/></strong>
               <@input_nolabel "reproduction.holdingReproductions[${i}].price" "price" />
+              EUR
             </label>
           </li>
 
@@ -101,6 +102,7 @@
             <label class="group">
               <strong class="label"><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></strong>
               <@input_nolabel "reproduction.holdingReproductions[${i}].deliveryTime" "deliveryTime" />
+              <@_ "days" "days"/>
             </label>
           </li>
 
