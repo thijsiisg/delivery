@@ -47,7 +47,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import java.awt.print.PrinterException;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * Interface representing the service of the reservation package.
@@ -126,12 +125,11 @@ public interface ReservationService {
     public void changeHoldingStatus(Reservation res, Holding.Status status);
 
     /**
-     * Mark a specific item in a reservation as seen, bumping it to the next status.     *
+     * Mark a specific item in a reservation as seen, bumping it to the next status.
      * @param res Reservation to change status for.
      * @param h Holding to bump.
-     * @return A list of futures for each request after the status update.
      */
-    public List<Future<Boolean>> markItem(Reservation res, Holding h);
+    public void markItem(Reservation res, Holding h);
 
     /**
      * Merge the other reservation's fields into this reservation.

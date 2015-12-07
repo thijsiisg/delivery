@@ -3,14 +3,11 @@ package org.socialhistoryservices.delivery.request.service;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.record.entity.Record;
-import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
-import org.socialhistoryservices.delivery.reproduction.service.ClosedForReproductionException;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.Validator;
@@ -20,7 +17,6 @@ import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * Represents the service of the request package to be used by the implementing services.
@@ -40,10 +36,9 @@ public abstract class AbstractRequestService implements RequestService {
      *
      * @param holding       The holding. (With the status updated)
      * @param activeRequest The request which triggered the holding change.
-     * @return A Future, indicating when the method is finished and whether some updates were performed.
      */
-    public Future<Boolean> onHoldingStatusUpdate(Holding holding, Request activeRequest) {
-        return new AsyncResult<Boolean>(false);
+    public void onHoldingStatusUpdate(Holding holding, Request activeRequest) {
+        return;
     }
 
     /**
@@ -52,10 +47,9 @@ public abstract class AbstractRequestService implements RequestService {
      * @param holding        The holding which has been placed on hold.
      * @param previousActive The request for which the holding was active, before being placed on hold.
      * @param nowActive      The request for which the holding is now active.
-     * @return A Future, indicating when the method is finished and whether some updates were performed.
      */
-    public Future<Boolean> onHoldingOnHold(Holding holding, Request previousActive, Request nowActive) {
-        return new AsyncResult<Boolean>(false);
+    public void onHoldingOnHold(Holding holding, Request previousActive, Request nowActive) {
+        return;
     }
 
     /**

@@ -45,7 +45,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 
@@ -215,20 +214,17 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * Mark a specific item in a reservation as seen, bumping it to the next status.
      * @param res Reservation to change status for.
      * @param h Holding to bump.
-     * @return A list of futures for each request after the status update.
      */
-    public List<Future<Boolean>> markItem(Reservation res, Holding h) {
+    public void markItem(Reservation res, Holding h) {
         // Ignore old reservations
         if (res == null)
-            return Collections.emptyList();
+            return;
 
         Holding.Status newStatus = super.markItem(h);
         markReservation(res);
 
-        List<Future<Boolean>> futureList = requests.updateHoldingStatus(h, newStatus);
+        requests.updateHoldingStatus(h, newStatus);
         saveReservation(res);
-
-        return futureList;
     }
 
     /**

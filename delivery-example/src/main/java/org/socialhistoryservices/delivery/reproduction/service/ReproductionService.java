@@ -238,9 +238,8 @@ public interface ReproductionService {
      *
      * @param r Reproduction to change status for.
      * @param h Holding to bump.
-     * @return A list of futures for each request after the status update.
      */
-    public List<Future<Boolean>> markItem(Reproduction r, Holding h);
+    public void markItem(Reproduction r, Holding h);
 
     /**
      * Merge the other reproduction's fields into this reproduction.

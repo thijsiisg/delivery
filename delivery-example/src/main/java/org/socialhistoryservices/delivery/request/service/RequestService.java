@@ -3,8 +3,6 @@ package org.socialhistoryservices.delivery.request.service;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.Request;
 
-import java.util.concurrent.Future;
-
 /**
  * Represents the service of the request package to be used by the implementing services.
  */
@@ -32,9 +30,8 @@ public interface RequestService {
      *
      * @param holding       The holding. (With the status updated)
      * @param activeRequest The request which triggered the holding change.
-     * @return A Future, indicating when the method is finished and whether some updates were performed.
      */
-    public Future<Boolean> onHoldingStatusUpdate(Holding holding, Request activeRequest);
+    public void onHoldingStatusUpdate(Holding holding, Request activeRequest);
 
     /**
      * What should happen when a holding is placed on hold.
@@ -42,7 +39,6 @@ public interface RequestService {
      * @param holding        The holding which has been placed on hold.
      * @param previousActive The request for which the holding was active, before being placed on hold.
      * @param nowActive      The request for which the holding is now active.
-     * @return A Future, indicating when the method is finished and whether some updates were performed.
      */
-    public Future<Boolean> onHoldingOnHold(Holding holding, Request previousActive, Request nowActive);
+    public void onHoldingOnHold(Holding holding, Request previousActive, Request nowActive);
 }

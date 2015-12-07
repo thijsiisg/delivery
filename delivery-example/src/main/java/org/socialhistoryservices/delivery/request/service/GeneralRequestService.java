@@ -3,10 +3,6 @@ package org.socialhistoryservices.delivery.request.service;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.record.service.OnHoldException;
 import org.socialhistoryservices.delivery.request.entity.Request;
-import org.socialhistoryservices.delivery.reservation.entity.Reservation;
-
-import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * Interface representing the service of the RequestService package.
@@ -25,9 +21,8 @@ public interface GeneralRequestService {
      *
      * @param holding The holding.
      * @param status  The new status.
-     * @return A list of futures for each request after the status update.
      */
-    public List<Future<Boolean>> updateHoldingStatus(Holding holding, Holding.Status status);
+    public void updateHoldingStatus(Holding holding, Holding.Status status);
 
     /**
      * Updates the status of a holding.
@@ -35,18 +30,8 @@ public interface GeneralRequestService {
      * @param holding       The holding.
      * @param status        The new status.
      * @param activeRequest The request which triggered the holding change.
-     * @return A list of futures for each request after the status update.
      */
-    public List<Future<Boolean>> updateHoldingStatus(Holding holding, Holding.Status status, Request activeRequest);
-
-    /**
-     * Go over the holdings of both requests to find differences in holding status.
-     * For the differences, check holdings that are on hold and sent the status updated event.
-     *
-     * @param newRequest The new request.
-     * @param oldRequest The old request.
-     */
-    public void updateHoldingStatusAfterMerge(Request newRequest, Request oldRequest);
+    public void updateHoldingStatus(Holding holding, Holding.Status status, Request activeRequest);
 
     /**
      * Mark a specific item in a request on hold.

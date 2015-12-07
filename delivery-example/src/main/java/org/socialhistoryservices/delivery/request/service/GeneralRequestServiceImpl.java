@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Future;
 
 /**
  * Represents the service of the request package.
@@ -37,10 +34,9 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
      *
      * @param holding The holding.
      * @param status  The new status.
-     * @return A list of futures for each request after the status update.
      */
-    public List<Future<Boolean>> updateHoldingStatus(Holding holding, Holding.Status status) {
-        return updateHoldingStatus(holding, status, null);
+    public void updateHoldingStatus(Holding holding, Holding.Status status) {
+        updateHoldingStatus(holding, status, null);
     }
 
     /**
@@ -49,54 +45,11 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
      * @param holding       The holding.
      * @param status        The new status.
      * @param activeRequest The request which triggered the holding change.
-     * @return A list of futures for each request after the status update.
      */
-    public List<Future<Boolean>> updateHoldingStatus(Holding holding, Holding.Status status, Request activeRequest) {
+    public void updateHoldingStatus(Holding holding, Holding.Status status, Request activeRequest) {
         holding.setStatus(status);
         checkRequestHoldingsOnHold(holding);
-        return sentHoldingStatusUpdateEvent(holding, activeRequest);
-    }
-
-    /**
-     * Go over the holdings of both requests to find differences in holding status.
-     * For the differences, check holdings that are on hold and sent the status updated event.
-     *
-     * @param newRequest The new request.
-     * @param oldRequest The old request.
-     */
-    public void updateHoldingStatusAfterMerge(Request newRequest, Request oldRequest) {
-        List<Holding> newRequestHoldings = newRequest.getHoldings();
-        List<Holding> oldRequestHoldings = oldRequest.getHoldings();
-
-        for (Holding newHolding : newRequestHoldings) {
-            boolean has = false;
-
-            // First try to find if the holding was also present in the old request and had a status update
-            for (Holding oldHolding : oldRequestHoldings) {
-                if (newHolding.getSignature().equals(oldHolding.getSignature())) {
-                    has = true;
-                    if (newHolding.getStatus() != oldHolding.getStatus())
-                        updateHoldingStatus(newHolding, newHolding.getStatus());
-                }
-            }
-
-            // If not found, it is likely the status has changed to 'reserved'
-            if (!has)
-                updateHoldingStatus(newHolding, newHolding.getStatus());
-        }
-
-        // For all holdings in the old request, it is likely the status has changed to 'available'
-        for (Holding oldHolding : oldRequestHoldings) {
-            boolean has = false;
-
-            for (Holding newHolding : newRequestHoldings) {
-                if (newHolding.getSignature().equals(oldHolding.getSignature()))
-                    has = true;
-            }
-
-            if (!has)
-                updateHoldingStatus(oldHolding, oldHolding.getStatus());
-        }
+        sentHoldingStatusUpdateEvent(holding, activeRequest);
     }
 
     /**
@@ -203,15 +156,11 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
      *
      * @param holding       The holding.
      * @param activeRequest The request which triggered the holding change.
-     * @return A list of futures for each request.
      */
-    private List<Future<Boolean>> sentHoldingStatusUpdateEvent(Holding holding, Request activeRequest) {
-        List<Future<Boolean>> futureList = new ArrayList<Future<Boolean>>();
+    private void sentHoldingStatusUpdateEvent(Holding holding, Request activeRequest) {
         for (RequestService requestService : requests) {
-            Future<Boolean> future = requestService.onHoldingStatusUpdate(holding, activeRequest);
-            futureList.add(future);
+            requestService.onHoldingStatusUpdate(holding, activeRequest);
         }
-        return futureList;
     }
 
     /**
@@ -220,15 +169,11 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
      * @param holding        The holding which has been placed on hold.
      * @param previousActive The request for which the holding was active, before being placed on hold.
      * @param nowActive      The request for which the holding is now active.
-     * @return A list of futures for each request.
      */
-    private List<Future<Boolean>> sentHoldingOnHoldEvent(Holding holding, Request previousActive, Request nowActive) {
-        List<Future<Boolean>> futureList = new ArrayList<Future<Boolean>>();
+    private void sentHoldingOnHoldEvent(Holding holding, Request previousActive, Request nowActive) {
         for (RequestService requestService : requests) {
-            Future<Boolean> future = requestService.onHoldingOnHold(holding, previousActive, nowActive);
-            futureList.add(future);
+            requestService.onHoldingOnHold(holding, previousActive, nowActive);
         }
-        return futureList;
     }
 
     /**

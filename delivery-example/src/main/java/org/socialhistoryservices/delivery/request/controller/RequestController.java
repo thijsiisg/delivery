@@ -1,20 +1,16 @@
 package org.socialhistoryservices.delivery.request.controller;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
-import org.socialhistoryservices.delivery.record.service.OnHoldException;
 import org.socialhistoryservices.delivery.record.service.RecordService;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.reproduction.service.ReproductionService;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.GeneralRequestService;
-import org.socialhistoryservices.delivery.request.service.RequestService;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -108,21 +104,11 @@ public class RequestController extends AbstractRequestController {
         if ((reservation != null) || (reproduction != null)) {
             // If the user may modify reservations, mark item for the active reservation
             if (reservation != null)
-                futureList = reservations.markItem(reservation, h);
+                reservations.markItem(reservation, h);
 
             // If the user may modify reproductions, mark item for the active reproduction
             if (reproduction != null)
-                futureList = reproductions.markItem(reproduction, h);
-
-            // Wait until holding status is completly updated
-            boolean finished = false;
-            while (!finished) {
-                finished = true;
-                for (Future<Boolean> future : futureList) {
-                    if (!future.isDone())
-                        finished = false;
-                }
-            }
+                reproductions.markItem(reproduction, h);
 
             // Gather information about the new state
             Request requestActiveAfter = requests.getActiveFor(h);

@@ -248,20 +248,17 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      *
      * @param r Reproduction to change status for.
      * @param h Holding to bump.
-     * @return A list of futures for each request after the status update.
      */
-    public List<Future<Boolean>> markItem(Reproduction r, Holding h) {
+    public void markItem(Reproduction r, Holding h) {
         // Ignore old reproductions
         if (r == null)
-            return Collections.emptyList();
+            return;
 
         Holding.Status newStatus = super.markItem(h);
         markReproduction(r);
 
-        List<Future<Boolean>> futureList = requests.updateHoldingStatus(h, newStatus);
+        requests.updateHoldingStatus(h, newStatus);
         saveReproduction(r);
-
-        return futureList;
     }
 
     /**
@@ -992,13 +989,11 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      *
      * @param holding       The holding. (With the status updated)
      * @param activeRequest The request which triggered the holding change.
-     * @return A Future, indicating when the method is finished and whether some updates were performed.
      */
-    @Async
-    public Future<Boolean> onHoldingStatusUpdate(Holding holding, Request activeRequest) {
+    public void onHoldingStatusUpdate(Holding holding, Request activeRequest) {
         // Only check if there are reproductions to automatically reserve if the holding became available
         if (holding.getStatus() != Holding.Status.AVAILABLE)
-            return new AsyncResult<Boolean>(false);
+            return;
 
         // Build the query
         CriteriaBuilder builder = getReproductionCriteriaBuilder();
@@ -1041,10 +1036,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
 
             saveReproduction(reproduction);
-            return new AsyncResult<Boolean>(true);
         }
-
-        return new AsyncResult<Boolean>(false);
     }
 
     /**
@@ -1053,10 +1045,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param holding        The holding which has been placed on hold.
      * @param previousActive The request for which the holding was active, before being placed on hold.
      * @param nowActive      The request for which the holding is now active.
-     * @return A Future, indicating when the method is finished and whether some updates were performed.
      */
-    @Async
-    public Future<Boolean> onHoldingOnHold(Holding holding, Request previousActive, Request nowActive) {
+    public void onHoldingOnHold(Holding holding, Request previousActive, Request nowActive) {
         if (nowActive instanceof Reproduction) {
             Reproduction reproduction = getReproductionById(((Reproduction) nowActive).getId());
             if ((reproduction.getStatus() == Reproduction.Status.PAYED) &&
@@ -1064,9 +1054,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
 
             saveReproduction(reproduction);
-            return new AsyncResult<Boolean>(true);
         }
-
-        return new AsyncResult<Boolean>(false);
     }
 }
