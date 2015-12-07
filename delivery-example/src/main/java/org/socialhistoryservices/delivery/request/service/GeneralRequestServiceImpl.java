@@ -67,8 +67,10 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
         request = getActiveFor(holding);
         for (HoldingRequest hr : request.getHoldingRequests()) {
             Holding h = hr.getHolding();
-            if ((holding.getId() == h.getId()) && (holding.getStatus() == Holding.Status.IN_USE)) {
+            if ((holding.getId() == h.getId()) && (holding.getStatus() == request.getOnHoldStatus())) {
                 hr.setOnHold(true);
+                if (holding.getStatus() == Holding.Status.RESERVED)
+                    holding.setStatus(Holding.Status.AVAILABLE);
                 sentHoldingOnHoldEvent(h, request, getActiveFor(h));
             }
         }
@@ -88,6 +90,11 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
         if (requestOnHold == null)
             throw new OnHoldException(holding);
 
+        Holding.Status onHoldStatus = requestOnHold.getOnHoldStatus();
+        if (!(onHoldStatus == Holding.Status.RESERVED && holding.getStatus() == Holding.Status.AVAILABLE) &&
+                !(onHoldStatus == Holding.Status.IN_USE && holding.getStatus() == Holding.Status.RETURNED))
+            throw new OnHoldException(holding);
+
         // Make sure to mark the holding complete for the active request
         Request requestActive = getActiveFor(holding);
         if (requestActive != null) {
@@ -103,7 +110,7 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
             Holding h = hr.getHolding();
             if (holding.getId() == h.getId()) {
                 hr.setOnHold(false);
-                h.setStatus(Holding.Status.IN_USE);
+                h.setStatus(onHoldStatus);
             }
         }
 
@@ -185,7 +192,7 @@ public class GeneralRequestServiceImpl implements GeneralRequestService {
     private void checkRequestHoldingsOnHold(Holding holding) {
         try {
             Holding.Status newStatus = holding.getStatus();
-            if (newStatus != Holding.Status.IN_USE)
+            if ((newStatus == Holding.Status.AVAILABLE) || (newStatus == Holding.Status.RETURNED))
                 markItemActive(holding);
         } catch (OnHoldException e) {
             // No problem, we don't expect a holding to be on hold all the time

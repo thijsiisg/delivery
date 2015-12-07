@@ -532,6 +532,18 @@ public class Reproduction extends Request {
         return true;
     }
 
+    /**
+     * Returns the status the holding should have to be placed 'on hold'.
+     *
+     * @return The holding status when the request is placed 'on hold'.
+     */
+    @Override
+    public Holding.Status getOnHoldStatus() {
+        if (status.ordinal() < Status.CONFIRMED.ordinal())
+            return Holding.Status.RESERVED;
+        return Holding.Status.IN_USE;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Reproduction) {
