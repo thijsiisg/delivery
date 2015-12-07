@@ -188,8 +188,8 @@ public abstract class AbstractRequestService implements RequestService {
             }
 
             if (!has) {
-                requests.updateHoldingStatus(h, Holding.Status.AVAILABLE);
                 it.remove();
+                requests.updateHoldingStatus(h, Holding.Status.AVAILABLE);
             }
         }
     }

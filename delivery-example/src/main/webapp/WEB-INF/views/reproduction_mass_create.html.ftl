@@ -34,7 +34,8 @@
 
     <#assign i = 0>
     <#list reproduction.holdingReproductions as hr>
-      <#assign info = hr.holding.record.externalInfo>
+      <#assign record = hr.holding.record>
+      <#assign info = record.externalInfo>
 
       <#assign reproductionOptions = []/>
       <#if !hr.holding.allowOnlyCustomReproduction() && reproductionStandardOptions[info.materialType.name()]??>
@@ -50,8 +51,9 @@
 
         <ul class="inner">
           <li>
-            ${hr.holding.record.title?html} <#if info.author??>/
+            ${record.title?html} <#if info.author??>/
             ${info.author}</#if> - ${hr.holding.signature?html}
+            <#if record.parent??>/ <@_ "editrecord.item" "Item"/> ${record.pid?substring(record.parent.pid?length + 1)?html}</#if>
           </li>
 
           <li>
@@ -180,6 +182,7 @@
           <ul class="inner">
             <li>
               ${h.record.title?html} <#if info.author??>/ ${info.author}</#if> - ${h.signature?html}
+              <#if h.record.parent??>/ <@_ "editrecord.item" "Item"/> ${h.record.pid?substring(h.record.parent.pid?length + 1)?html}</#if>
             </li>
 
             <li class="hidden">
