@@ -76,16 +76,6 @@ public class RequestController extends AbstractRequestController {
             return "request_scan";
         }
 
-        // Determine access rights
-        boolean accessReservation = false;
-        boolean accessReproduction = false;
-        for (GrantedAuthority authority : SecurityContextHolder.getContext().getAuthentication().getAuthorities()) {
-            if (authority.getAuthority().equals("ROLE_RESERVATION_MODIFY"))
-                accessReservation = true;
-            if (authority.getAuthority().equals("ROLE_REPRODUCTION_MODIFY"))
-                accessReproduction = true;
-        }
-
         // Information about the current state
         Holding.Status oldStatus = h.getStatus();
         Request requestActiveBefore = requests.getActiveFor(h);
@@ -94,10 +84,9 @@ public class RequestController extends AbstractRequestController {
         // Determine the active request
         Reservation reservation = null;
         Reproduction reproduction = null;
-        List<Future<Boolean>> futureList = new ArrayList<Future<Boolean>>();
-        if (accessReservation && (requestActiveBefore instanceof Reservation))
+        if (requestActiveBefore instanceof Reservation)
             reservation = (Reservation) requestActiveBefore;
-        if (accessReproduction && (requestActiveBefore instanceof Reproduction))
+        if (requestActiveBefore instanceof Reproduction)
             reproduction = (Reproduction) requestActiveBefore;
 
         // Show the request corresponding to the scanned record
@@ -125,12 +114,27 @@ public class RequestController extends AbstractRequestController {
             model.addAttribute("requestActiveAfter", getRequestAsString(requestActiveAfter));
             model.addAttribute("requestsOnHoldAfter", getRequestAsString(requestsOnHoldAfter));
 
+            // Determine the active request after scanning
+            Reservation reservationAfter = null;
+            Reproduction reproductionAfter = null;
+            if ((requestActiveAfter instanceof Reservation) && !requestActiveAfter.equals(reservation))
+                reservationAfter = (Reservation) requestActiveAfter;
+            if ((requestActiveAfter instanceof Reproduction) && !requestActiveAfter.equals(reproduction))
+                reproductionAfter = (Reproduction) requestActiveAfter;
+
+            model.addAttribute("reservationAfter", reservationAfter);
+            model.addAttribute("reproductionAfter", reproductionAfter);
+
             // Also add information about the state of each of the reservation and/or reproduction holdings
             Set<Holding> holdings = new HashSet<Holding>();
             if ((reservation != null) && (reservation.getHoldings() != null))
                 holdings.addAll(reservation.getHoldings());
             if ((reproduction != null) && (reproduction.getHoldings() != null))
                 holdings.addAll(reproduction.getHoldings());
+            if ((reservationAfter != null) && (reservationAfter.getHoldings() != null))
+                holdings.addAll(reservationAfter.getHoldings());
+            if ((reproductionAfter != null) && (reproductionAfter.getHoldings() != null))
+                holdings.addAll(reproductionAfter.getHoldings());
             model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
             return "request_scan";
