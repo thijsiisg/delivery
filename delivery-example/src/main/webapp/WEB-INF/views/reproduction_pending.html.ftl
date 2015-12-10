@@ -40,7 +40,7 @@
           <#if hr.standardOption??>
             <strong>${hr.standardOption.optionName?html}</strong> <br/>
           <#else>
-            <strong><@_ "reproduction.customReproduction" "Custom reproduction"/></strong> <br/>
+            <strong><@_ "reproduction.customReproduction" "Request offer"/></strong> <br/>
           </#if>
 
           ${h.record.title?html} <#if info.author??>/ ${info.author}</#if>
@@ -77,7 +77,7 @@
     </ul>
   </section>
 
-  <p><@_html "reproduction.requestSuccess" "Your reproduction request has been successfully received. You will be notified of the total price and estimated delivery time by email." /></p>
+  <p><@_html "reproduction.requestSuccess" "Your reproduction request has been successfully received. You will soon receive an offer from us." /></p>
 
   <#if error?? >
     <p><@_ "reproduction.error."+error error /></p>

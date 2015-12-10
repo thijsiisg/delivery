@@ -74,7 +74,7 @@
             <label class="group">
               <input type="radio" name="holdingReproductions[${i}].standardOption"
                      class="standardOption custom" value="0" <#if !hr.standardOption??> checked="checked"</#if>/>
-              <@_ "reproduction.customReproduction" "Custom reproduction"/>
+              <@_ "reproduction.customReproduction.backend" "Custom reproduction"/>
             </label>
           </li>
 
@@ -201,7 +201,7 @@
 
               <label class="group">
                 <input type="radio" class="standardOption custom" value="0" checked="checked"/>
-                <@_ "reproduction.customReproduction" "Custom reproduction"/>
+                <@_ "reproduction.customReproduction.backend" "Custom reproduction"/>
               </label>
             </li>
 

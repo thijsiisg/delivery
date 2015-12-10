@@ -202,7 +202,7 @@
 
         <ul class="reproductionDetails">
           <li>
-            <label for="${id}"><@_ "reproduction.customReproduction" "Custom reproduction"/></label>
+            <label for="${id}"><@_ "reproduction.customReproduction" "Request offer"/></label>
           </li>
 
           <li>

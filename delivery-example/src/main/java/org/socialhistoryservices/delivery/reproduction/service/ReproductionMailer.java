@@ -38,13 +38,14 @@ public class ReproductionMailer extends RequestMailer {
         model.addAttribute("holdingsNotInSor", holdingsNotInSor);
 
         // Send an email to the customer
-        String subjectCustomer = getMessage("reproductionMail.pendingSubjectCustomer", "Confirmation of reproduction");
+        String subjectCustomer = getMessage("reproductionMail.pendingSubjectCustomer", "Confirmation of reproduction",
+                reproduction.getRequestLocale());
         sendMail(reproduction, subjectCustomer, "reproduction_pending_customer.mail.ftl",
                 model, reproduction.getRequestLocale());
 
         // Send an email to the reading room
         String subjectReadingRoom = getMessage("reproductionMail.pendingSubjectReadingRoom",
-                "New reproduction waiting for offer");
+                "New reproduction waiting for offer", ENGLISH_LOCALE);
         sendMail(subjectReadingRoom, "reproduction_pending_readingroom.mail.ftl", model, ENGLISH_LOCALE);
     }
 
@@ -59,7 +60,7 @@ public class ReproductionMailer extends RequestMailer {
                 "Can only mail order ready when Reproduction status is HAS_ORDER_DETAILS";
 
         String subject = getMessage("reproductionMail.offerReadySubject",
-                "Confirmation of reproduction - Your offer is ready");
+                "Confirmation of reproduction - Your offer is ready", reproduction.getRequestLocale());
         sendMail(reproduction, subject, "reproduction_offer_ready.mail.ftl", getReproductionModel(reproduction),
                 reproduction.getRequestLocale());
     }
@@ -74,7 +75,8 @@ public class ReproductionMailer extends RequestMailer {
         assert reproduction.getStatus() == Reproduction.Status.PAYED :
                 "Can only mail payed confirmation when Reproduction status is PAYED";
 
-        String subject = getMessage("reproductionMail.payedSubject", "Confirmation of payment");
+        String subject = getMessage("reproductionMail.payedSubject", "Confirmation of payment",
+                reproduction.getRequestLocale());
         sendMail(reproduction, subject, "reproduction_payed.mail.ftl", getReproductionModel(reproduction),
                 reproduction.getRequestLocale());
     }
@@ -103,7 +105,8 @@ public class ReproductionMailer extends RequestMailer {
         model.addAttribute("inSor", inSor);
         model.addAttribute("notInSor", notInSor);
 
-        String subject = getMessage("reproductionMail.activeReproductionSubject", "New active reproduction");
+        String subject = getMessage("reproductionMail.activeReproductionSubject", "New active reproduction",
+                ENGLISH_LOCALE);
         sendMail(subject, "reproduction_active.mail.ftl", model, ENGLISH_LOCALE);
     }
 

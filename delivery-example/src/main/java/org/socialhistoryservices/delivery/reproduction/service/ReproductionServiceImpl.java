@@ -439,9 +439,11 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         try {
             List<RequestPrintable> requestPrintables = new ArrayList<RequestPrintable>();
             for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-                ReproductionPrintable rp = new ReproductionPrintable(
-                        hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
-                requestPrintables.add(rp);
+                if (!hr.isInSor()) {
+                    ReproductionPrintable rp = new ReproductionPrintable(
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
+                    requestPrintables.add(rp);
+                }
             }
 
             printRequest(reproduction, requestPrintables, alwaysPrint);

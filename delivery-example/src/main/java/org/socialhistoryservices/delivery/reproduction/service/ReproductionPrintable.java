@@ -86,7 +86,7 @@ public class ReproductionPrintable extends RequestPrintable {
             drawKeyValue(drawInfo, null, standardOption.getOptionName(), boldFont, false);
             drawKeyValue(drawInfo, null, standardOption.getOptionDescription(), italicFont, false);
         } else {
-            drawKeyValue(drawInfo, null, getMessage("reproduction.customReproduction", "Custom reproduction"),
+            drawKeyValue(drawInfo, null, getMessage("reproduction.customReproduction.backend", "Custom reproduction"),
                     boldFont, false);
             drawKeyValue(drawInfo, null, hr.getCustomReproductionCustomer(), italicFont, false);
             drawInfo.setOffsetY(drawInfo.getOffsetY() + MIN_LINE_HEIGHT);

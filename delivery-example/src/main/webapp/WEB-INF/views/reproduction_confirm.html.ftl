@@ -113,7 +113,7 @@
                 </li>
               <#else>
                 <li>
-                  <span><@_ "reproduction.customReproduction" "Custom reproduction"/></span>
+                  <span><@_ "reproduction.customReproduction" "Request offer"/></span>
                   &nbsp;
                 </li>
 
@@ -206,7 +206,7 @@
 
           <label>
             <input type="checkbox" id="accept_terms_conditions" name="accept_terms_conditions" value="accept"/>
-            I accept the terms and conditions
+            <@_ "termsAndConditions" "I accept the terms and conditions"/>
           </label>
 
           <#if acceptError??>
