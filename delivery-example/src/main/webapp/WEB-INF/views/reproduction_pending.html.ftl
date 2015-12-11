@@ -3,7 +3,7 @@
 <#include "localization.ftl">
 
 <#assign title>
-  <@_ "reproduction.customRequest" "Your reproduction request has been received."/>
+  <@_ "reproduction.success" "Your reproduction request has been received."/>
 </#assign>
 
 <@userbase title>

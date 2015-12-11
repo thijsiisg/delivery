@@ -3,7 +3,7 @@
 
 <#-- Build the title -->
 <#assign title>
-  <@_ "reproduction.confirm" "Confirm Reproduction"/>
+  <@_ "reproduction.confirm" "Confirm reproduction"/>
 </#assign>
 
 <#-- Build the page -->
