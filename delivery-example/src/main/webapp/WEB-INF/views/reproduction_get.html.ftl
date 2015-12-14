@@ -58,6 +58,13 @@
     </li>
   </#if>
 
+  <#if reproduction.order??>
+    <li>
+      <span><@_ "reproduction.order" "Order id (PayWay)"/></span>
+      ${reproduction.order.id?html}
+    </li>
+  </#if>
+
   <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_CREATE")>
     <li><br/><a href="${rc.contextPath}/reproduction/masscreateform?fromReproductionId=${reproduction.id?c}">
       <@_ "reproductionSingle.newReproduction"/></a></li>

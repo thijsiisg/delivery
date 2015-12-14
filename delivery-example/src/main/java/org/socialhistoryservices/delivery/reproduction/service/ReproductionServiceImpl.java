@@ -698,7 +698,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     @Scheduled(cron = "0 0 * * * MON-FRI")
     public void checkPayedReproductions() {
         // Determine the number of days
-        Integer nrOfDays = Integer.parseInt(properties.getProperty("prop_reproductionMaxDaysPayment", "5"));
+        Integer nrOfDays = Integer.parseInt(properties.getProperty("prop_reproductionMaxDaysPayment", "14"));
 
         // Determine the date that many days ago
         Calendar calendar = GregorianCalendar.getInstance();
