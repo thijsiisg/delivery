@@ -371,11 +371,11 @@ public class ReservationController extends AbstractRequestController {
             Date fromDate = getFromDateFilter(p);
             Date toDate = getToDateFilter(p);
             if (fromDate != null) {
-                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(resRoot.<Date>get(Reservation_.date), date);
+                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(resRoot.<Date>get(Reservation_.date), fromDate);
                 where = where != null ? cb.and(where, exDate) : exDate;
             }
             if (toDate != null) {
-                Expression<Boolean> exDate = cb.lessThanOrEqualTo(resRoot.<Date>get(Reservation_.date), date);
+                Expression<Boolean> exDate = cb.lessThanOrEqualTo(resRoot.<Date>get(Reservation_.date), toDate);
                 where = where != null ? cb.and(where, exDate) : exDate;
             }
         }
