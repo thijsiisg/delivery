@@ -363,16 +363,6 @@ public class Reservation extends Request {
         comment = val;
     }
 
-    /**
-     * Returns the status the holding should have to be placed 'on hold'.
-     *
-     * @return The holding status when the request is placed 'on hold'.
-     */
-    @Override
-    public Holding.Status getOnHoldStatus() {
-        return Holding.Status.IN_USE;
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Reservation) {

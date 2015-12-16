@@ -6,6 +6,10 @@
   <@_ "reproduction.create" "Create Reproduction"/>
 </#assign>
 
+<#assign email>
+  <@_ "iisg.email" ""/>
+</#assign>
+
 <#-- Build the page -->
 <@preamble title />
 <@userHeading />
@@ -62,12 +66,6 @@
             <h3>${info.title?html}</h3>
 
             <ul class="holdingDetails">
-              <#if h.status != "AVAILABLE">
-                <li class="warning">
-                  <@_ "reproduction.holdingReserverdMsg" "This item is currently reserved, which may impact the time of delivery. You will be notified of the expected delivery time by email."/>
-                </li>
-              </#if>
-
               <li>
                 <span><@_ "record.externalInfo.materialType" "Material Type"/></span>
                 <@_ "record.externalInfo.materialType.${info.materialType}" ""/>
@@ -105,11 +103,16 @@
             </ul>
 
             <#assign reproductionOptions = []/>
-            <#if !h.allowOnlyCustomReproduction() && reproductionStandardOptions[info.materialType.name()]??>
-              <#assign reproductionOptions = reproductionStandardOptions[info.materialType.name()]/>
+            <#if reproductionStandardOptions[h.signature]??>
+              <#assign reproductionOptions = reproductionStandardOptions[h.signature]/>
             </#if>
 
-            <@reproductionHoldingOptions "reproduction.holdingReproductions[${idx}].standardOption" reproductionOptions h/>
+            <#assign unavailable = []/>
+            <#if unavailableStandardOptions[h.signature]??>
+              <#assign unavailable = unavailableStandardOptions[h.signature]/>
+            </#if>
+
+            <@reproductionHoldingOptions "reproduction.holdingReproductions[${idx}].standardOption" reproductionOptions unavailable h/>
 
             <#assign idx = idx + 1>
           </#list>
@@ -152,53 +155,66 @@
 </section>
 </@body>
 
-<#macro reproductionHoldingOptions path options holding>
+<#macro reproductionHoldingOptions path options unavailable holding>
   <@spring.bind path/>
 
   <ul class="holdingDetails">
     <#list options as value>
-      <#if holding.acceptsReproductionOption(value)>
-        <li>
-          <#assign id="${spring.status.expression}.${value_index}">
-          <input type="radio" id="${id}" name="${spring.status.expression}"
-                 value="${value.id?c}"<#if spring.stringStatusValue == value> checked="checked" </#if>/>
+      <#assign available = true/>
+      <#list unavailable as unavailableStandardOption>
+        <#if value.id == unavailableStandardOption.id>
+          <#assign available = false/>
+        </#if>
+      </#list>
 
-          <ul class="reproductionDetails create">
+      <li>
+        <#assign id="${spring.status.expression}.${value_index}">
+        <input type="radio" id="${id}" name="${spring.status.expression}"
+               value="${value.id?c}"
+               <#if !available> disabled="disabled" </#if>/>
+
+        <ul class="reproductionDetails create">
+          <li>
+            <#assign label=path + "." + value.optionName?html />
+            <label for="${id}"><@spring.messageText label value.optionName?html/></label>
+          </li>
+
+          <li>
+            <em>${value.optionDescription?html}</em>
+          </li>
+
+          <#if !available>
+            <li class="warning spacing">
+              <@_ "reproduction.reservedNotInSorMsg:" "Unfortunately, you cannot select this option. This item is already reserved and not yet digitally available. For more information, please contact the information desk:"/>
+              <a href="mailto:${email}">${email}</a>
+            </li>
+          </#if>
+
+          <li class="spacing">
+            <span><@_ "reproductionStandardOption.price" "Price"/></span>
+            &euro; ${value.price?string("0.00")}
+          </li>
+
+          <#if ((value.copyrightPrice gt 0) && holding.record.isCopyrightIISH())>
             <li>
-              <#assign label=path + "." + value.optionName?html />
-              <label for="${id}"><@spring.messageText label value.optionName?html/></label>
+              <span><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/></span>
+              &euro; ${value.copyrightPrice?string('0.00')}
             </li>
+          </#if>
 
-            <li>
-              <em>${value.optionDescription?html}</em>
-            </li>
-
-            <li class="spacing">
-              <span><@_ "reproductionStandardOption.price" "Price"/></span>
-              &euro; ${value.price?string("0.00")}
-            </li>
-
-            <#if ((value.copyrightPrice gt 0) && holding.record.isCopyrightIISH())>
-              <li>
-                <span><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/></span>
-                &euro; ${value.copyrightPrice?string('0.00')}
-              </li>
-            </#if>
-
-            <li>
-              <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
-              ${value.deliveryTime?html} <@_ "days" "days"/>
-            </li>
-          </ul>
-        </li>
-      </#if>
+          <li>
+            <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
+            ${value.deliveryTime?html} <@_ "days" "days"/>
+          </li>
+        </ul>
+      </li>
     </#list>
 
     <li>
       <#assign id="${spring.status.expression}.null">
       <#assign materialType = holding.record.externalInfo.materialType>
-        <input type="radio" id="${id}" name="${spring.status.expression}" class="custom"
-               value="0"<#if spring.stringStatusValue == ""> checked="checked"</#if>/>
+        <input type="radio" id="${id}" name="${spring.status.expression}" class="custom" value="0"
+               <#if holding.status != "AVAILABLE"> disabled="disabled" </#if>/>
 
         <ul class="reproductionDetails">
           <li>
@@ -214,6 +230,13 @@
             </em>
           </li>
 
+          <#if holding.status != "AVAILABLE">
+            <li class="warning spacing">
+              Unfortunatly you cannot select this option, as it is currently reserved. <br/>
+              For more information, please consult the information desk or email ask@iisg.nl
+            </li>
+          </#if>
+
           <li class="spacing">
             <span><@_ "reproductionStandardOption.price" "Price"/></span>
             <@_ "tbd" "To be determined"/>
@@ -224,9 +247,11 @@
             <@_ "tbd" "To be determined"/>
           </li>
 
-          <li class="spacing">
-            <@textarea_nolabel "reproduction.holdingReproductions[${idx}].customReproductionCustomer"/>
-          </li>
+          <#if holding.status == "AVAILABLE">
+            <li class="spacing">
+              <@textarea_nolabel "reproduction.holdingReproductions[${idx}].customReproductionCustomer"/>
+            </li>
+          </#if>
         </ul>
     </li>
   </ul>

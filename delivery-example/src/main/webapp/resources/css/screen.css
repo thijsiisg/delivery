@@ -441,6 +441,10 @@ li.edit_item {
     padding: 2px;
 }
 
+.actions li:first-child {
+    padding-top: 0;
+}
+
 .actions ul.horizontal li{
     float: left;
 }

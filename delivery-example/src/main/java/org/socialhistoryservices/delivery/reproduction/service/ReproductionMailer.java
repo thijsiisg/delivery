@@ -1,6 +1,5 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
-import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.request.service.RequestMailer;
@@ -13,7 +12,6 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * Mailer to send information/confirmation mails dealing with reproductions.
@@ -27,15 +25,13 @@ public class ReproductionMailer extends RequestMailer {
      * Also mail an email to the reading room for filling out the blanks in the offer.
      *
      * @param reproduction     The reproduction to extract mail details from.
-     * @param holdingsNotInSor The holdings which are not found in the SOR yet.
      * @throws MailException Thrown when sending mail somehow failed.
      */
-    public void mailPending(Reproduction reproduction, Set<Holding> holdingsNotInSor) throws MailException {
+    public void mailPending(Reproduction reproduction) throws MailException {
         assert reproduction.getStatus() == Reproduction.Status.WAITING_FOR_ORDER_DETAILS :
                 "Can only mail pending when Reproduction status is WAITING_FOR_ORDER_DETAILS";
 
         Model model = getReproductionModel(reproduction);
-        model.addAttribute("holdingsNotInSor", holdingsNotInSor);
 
         // Send an email to the customer
         String subjectCustomer = getMessage("reproductionMail.pendingSubjectCustomer", "Confirmation of reproduction",
@@ -72,8 +68,8 @@ public class ReproductionMailer extends RequestMailer {
      * @throws MailException Thrown when sending mail somehow failed.
      */
     public void mailPayed(Reproduction reproduction) throws MailException {
-        assert reproduction.getStatus() == Reproduction.Status.PAYED :
-                "Can only mail payed confirmation when Reproduction status is PAYED";
+        assert reproduction.getStatus() == Reproduction.Status.ACTIVE :
+                "Can only mail payed confirmation when Reproduction status is ACTIVE";
 
         String subject = getMessage("reproductionMail.payedSubject", "Confirmation of payment",
                 reproduction.getRequestLocale());

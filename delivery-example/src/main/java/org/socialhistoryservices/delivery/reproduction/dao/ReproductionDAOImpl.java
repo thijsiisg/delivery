@@ -138,11 +138,9 @@ public class ReproductionDAOImpl implements ReproductionDAO {
      * Get an active reproduction relating to a specific Holding.
      *
      * @param h      Holding to find a reproduction for.
-     * @param getAll Whether to return all active requests (0)
-     *               or only those that are on hold (< 0) or those that are NOT on hold (> 0).
      * @return The active reproduction, null if none exist.
      */
-    public Reproduction getActiveFor(Holding h, int getAll) {
+    public Reproduction getActiveFor(Holding h) {
         CriteriaBuilder cb = getCriteriaBuilder();
         CriteriaQuery<Reproduction> cq = cb.createQuery(Reproduction.class);
         Root<Reproduction> rRoot = cq.from(Reproduction.class);
@@ -151,11 +149,7 @@ public class ReproductionDAOImpl implements ReproductionDAO {
         Join<Reproduction, HoldingReproduction> hrRoot = rRoot.join(Reproduction_.holdingReproductions);
         Join<HoldingReproduction, Holding> hRoot = hrRoot.join(HoldingReproduction_.holding);
         Expression<Boolean> where = cb.equal(hRoot.get(Holding_.id), h.getId());
-
         where = cb.and(where, cb.equal(hrRoot.get(HoldingReproduction_.completed), false));
-        if (getAll != 0) {
-            where = cb.and(where, cb.equal(hrRoot.get(HoldingReproduction_.onHold), (getAll < 0)));
-        }
 
         cq.where(where);
         cq.orderBy(cb.asc(rRoot.<Date>get(Reproduction_.creationDate)));

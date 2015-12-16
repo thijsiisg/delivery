@@ -31,7 +31,6 @@ public class Reproduction extends Request {
         WAITING_FOR_ORDER_DETAILS,
         HAS_ORDER_DETAILS,
         CONFIRMED,
-        PAYED,
         ACTIVE,
         COMPLETED,
         DELIVERED,
@@ -311,30 +310,6 @@ public class Reproduction extends Request {
     }
 
     /**
-     * Extra comments about the expected delivery time of the reproduction.
-     */
-    @Column(name = "deliveryTimeComment", columnDefinition = "TEXT")
-    private String deliveryTimeComment;
-
-    /**
-     * Returns extra comments about the expected delivery time of the reproduction.
-     *
-     * @return Extra comments about the expected delivery time of the reproduction.
-     */
-    public String getDeliveryTimeComment() {
-        return deliveryTimeComment;
-    }
-
-    /**
-     * Sets extra comments about the expected delivery time of the reproduction.
-     *
-     * @param deliveryTimeComment Extra comments about the expected delivery time of the reproduction.
-     */
-    public void setDeliveryTimeComment(String deliveryTimeComment) {
-        this.deliveryTimeComment = deliveryTimeComment;
-    }
-
-    /**
      * The Reproductions's comment.
      */
     @Size(max = 255)
@@ -530,18 +505,6 @@ public class Reproduction extends Request {
                 return false;
         }
         return true;
-    }
-
-    /**
-     * Returns the status the holding should have to be placed 'on hold'.
-     *
-     * @return The holding status when the request is placed 'on hold'.
-     */
-    @Override
-    public Holding.Status getOnHoldStatus() {
-        if (status.ordinal() < Status.CONFIRMED.ordinal())
-            return Holding.Status.RESERVED;
-        return Holding.Status.IN_USE;
     }
 
     @Override

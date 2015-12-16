@@ -2,8 +2,6 @@ package org.socialhistoryservices.delivery.api;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -28,6 +26,16 @@ public class SharedObjectRepositoryService {
     }
 
     /**
+     * Find out if the given PID has metadata in the SOR.
+     *
+     * @param pid The pid.
+     * @return The SOR has metadata, if found, for both the master and the first derivative.
+     */
+    public SorMetadata[] getAllMetadataForPid(String pid) {
+        return getMetadataForPid(pid);
+    }
+
+    /**
      * Find out if the given PID has metadata for the master file in the SOR.
      *
      * @param pid The pid.
@@ -45,6 +53,42 @@ public class SharedObjectRepositoryService {
      */
     public SorMetadata getFirstLevelMetadataForPid(String pid) {
         return getMetadataForPid(pid, false);
+    }
+
+    /**
+     * Find out if the given PID has metadata in the SOR, for both the master and the first derivative.
+     *
+     * @param pid The pid.
+     * @return The SOR has metadata, if found, for both the master and the first derivative.
+     */
+    private SorMetadata[] getMetadataForPid(String pid) {
+        try {
+            URL req = new URL(url + "/metadata/" + pid + "?accept=text/xml&format=xml");
+
+            LOGGER.debug(String.format("hasMetadata(): Querying SOR API: %s", req.toString()));
+            HttpURLConnection conn = (HttpURLConnection) req.openConnection();
+            conn.connect();
+
+            // Try to parse the received XML
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setIgnoringComments(true);
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document document = db.parse(conn.getInputStream());
+
+            return new SorMetadata[]{
+                    getMetadataFromDocument(document, pid, true),
+                    getMetadataFromDocument(document, pid, false)
+            };
+        } catch (IOException ioe) {
+            LOGGER.debug("hasMetadata(): SOR API connection failed", ioe);
+            return null;
+        } catch (ParserConfigurationException pce) {
+            LOGGER.debug("hasMetadata(): Could not build document builder", pce);
+            return null;
+        } catch (SAXException saxe) {
+            LOGGER.debug("hasMetadata(): Could not parse received metadata", saxe);
+            return null;
+        }
     }
 
     /**

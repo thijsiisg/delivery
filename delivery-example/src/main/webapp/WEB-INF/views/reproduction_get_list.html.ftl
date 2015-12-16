@@ -188,7 +188,6 @@
         <th><@sortLink "customerName"><@_ "reproduction.customerName" "Name"/></@sortLink></th>
         <th><@sortLink "date"><@_ "reproduction.date" "Date"/></@sortLink></th>
         <th><@sortLink "printed"><@_ "reproduction.printed" "Printed"/></@sortLink></th>
-        <th><@sortLink "onHold"><@_ "reproduction.onHold" "On hold"/></@sortLink></th>
         <th><@sortLink "status"><@_ "reproduction.extended.status.status" "Reproduction status"/></@sortLink></th>
         <th><@sortLink "holdingStatus"><@_ "holding.extended.status" "Item status"/></@sortLink></th>
       </tr>
@@ -228,7 +227,6 @@
               </#assign>
 
               <td>${reproduction.printed?string(yes, no)}</td>
-              <td>${holdingReproduction.onHold?string(yes, no)}</td>
               <td><@_ "reproduction.statusType.${reproduction.status?string}" "${reproduction.status?string}" /></td>
               <td><@holdingStatus holdingActiveRequests reproduction holding/></td>
             </tr>
@@ -308,18 +306,11 @@
         <fieldset class="actions">
           <legend><@_ "reproductionList.withSelectedHoldings" "With selected holdings"/>:</legend>
 
-          <#assign onHoldLabel>
-            <@_ "reproductionList.onHold" "Place on hold"/>
-          </#assign>
           <#assign statusLabel>
             <@_ "reproductionList.toStatus" "Change Status"/>
           </#assign>
 
           <ul>
-            <li>
-              <input type="submit" name="onHold" value="${onHoldLabel}"/>
-            </li>
-
             <li>
               <select name="newHoldingStatus">
                 <#list holding_status_types?keys as k>

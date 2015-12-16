@@ -62,9 +62,13 @@
     </#if>
 </#macro>
 
-<#macro input_nolabel path class="">
+<#macro input_nolabel path class="" helptext="">
   <@spring.bind path/>
     <@spring.formInput path "class='${class}'"/>
+
+    <#if helptext?length gt 0>
+      <@spring.messageText helptext helptext/>
+    </#if>
 
     <#if spring.status.errorMessages?size != 0>
     <ul class="errors">

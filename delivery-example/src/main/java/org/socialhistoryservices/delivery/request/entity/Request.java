@@ -63,11 +63,4 @@ public abstract class Request {
      * @return A list of HoldingRequests.
      */
     public abstract List<? extends HoldingRequest> getHoldingRequests();
-
-    /**
-     * Returns the status the holding should have to be placed 'on hold'.
-     *
-     * @return The holding status when the request is placed 'on hold'.
-     */
-    public abstract Holding.Status getOnHoldStatus();
 }

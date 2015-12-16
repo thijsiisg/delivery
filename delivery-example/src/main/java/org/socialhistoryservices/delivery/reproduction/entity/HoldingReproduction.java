@@ -134,31 +134,6 @@ public class HoldingReproduction extends HoldingRequest {
     }
 
     /**
-     * Is the holding on hold for this reproduction?
-     */
-    @Column(name = "on_hold", nullable = false)
-    @Index(name = "holding_reproductions_on_hold_idx")
-    private boolean onHold = false;
-
-    /**
-     * Is the holding on hold for this reproduction?
-     *
-     * @return Whether this holding is on hold for this reproduction.
-     */
-    public boolean isOnHold() {
-        return onHold;
-    }
-
-    /**
-     * Set the holding on hold for this reproduction?
-     *
-     * @param onHold Whether the holding must be placed on hold for this reproduction.
-     */
-    public void setOnHold(boolean onHold) {
-        this.onHold = onHold;
-    }
-
-    /**
      * Is the holding completed for this reproduction?
      */
     @Column(name = "completed", nullable = false)

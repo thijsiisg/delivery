@@ -75,7 +75,7 @@
         <td>
           <label>
             <@spring.formInput "standardOptions.options[${idx}].deliveryTime" "class='small'"/>
-            <span><@_ "days" "days"/></span>
+            <span><@_ "days.short" "days"/></span>
             <#if spring.status.errorMessages?size != 0>
               <ul class="errors">
                 <li>

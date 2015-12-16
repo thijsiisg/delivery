@@ -47,27 +47,6 @@ public class HoldingReservation extends HoldingRequest {
         return id;
     }
 
-    /** Is the holding on hold for this reservation? */
-    @Column(name="on_hold", nullable=false)
-    @Index(name="holding_reservations_on_hold_idx")
-    private boolean onHold = false;
-
-    /**
-     * Is the holding on hold for this reservation?
-     * @return Whether this holding is on hold for this reservation.
-     */
-    public boolean isOnHold() {
-        return onHold;
-    }
-
-    /**
-     * Set the holding on hold for this reservation?
-     * @param onHold Whether the holding must be placed on hold for this reservation.
-     */
-    public void setOnHold(boolean onHold) {
-        this.onHold = onHold;
-    }
-
     /** Is the holding completed for this reservation? */
     @Column(name="completed", nullable=false)
     @Index(name="holding_reservations_completed_idx")

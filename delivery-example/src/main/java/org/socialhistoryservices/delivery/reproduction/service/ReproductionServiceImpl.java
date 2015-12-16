@@ -131,9 +131,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 }
             }
 
-            if (!has) {
+            if (!has)
                 reproductionStandardOptionDAO.add(option1);
-            }
         }
 
         for (ReproductionCustomNote customNote : standardOptions.getCustomNotes()) {
@@ -297,7 +296,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         reproduction.setDiscount(other.getDiscount());
         reproduction.setRequestLocale(other.getRequestLocale());
         reproduction.setDateHasOrderDetails(other.getDateHasOrderDetails());
-        reproduction.setDeliveryTimeComment(other.getDeliveryTimeComment());
         reproduction.setComment(other.getComment());
 
         if (other.getHoldingReproductions() == null) {
@@ -336,18 +334,10 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             case HAS_ORDER_DETAILS:
                 reproduction.setDateHasOrderDetails(new Date());
                 break;
-            case PAYED:
-                mailPayed(reproduction);
-                // If all holdings that are required by repro are active for repro,
-                // then immediatly move the status to 'active'
-                if (isActiveForAllRequiredHoldings(reproduction)) {
-                    updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
-                    return;
-                }
-                break;
             case ACTIVE:
-                autoPrintReproduction(reproduction);
+                mailPayed(reproduction);
                 mailActive(reproduction);
+                autoPrintReproduction(reproduction);
                 break;
             case DELIVERED:
             case CANCELLED:
@@ -358,16 +348,16 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
         // Update the holdings of the reproduction
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            if ((hStatus != null) && !hr.isCompleted() && !hr.isOnHold()) {
+            if ((hStatus != null) && !hr.isCompleted()) {
                 hr.setCompleted(completedStatus);
-                requests.updateHoldingStatus(hr.getHolding(), hStatus, reproduction);
+                requests.updateHoldingStatus(hr.getHolding(), hStatus);
             }
         }
     }
 
     /**
      * Auto print all holdings of the given reproduction, if possible.
-     *
+     * <p/>
      * Run this in a separate thread, we do nothing on failure so in this case this is perfectly possible.
      *
      * @param reproduction The reproduction.
@@ -483,45 +473,54 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     public void createOrEdit(Reproduction newReproduction, Reproduction oldReproduction, BindingResult result,
                              boolean isCustomer, boolean forFree)
             throws ClosedException, NoHoldingsException, ClosedForReproductionException {
-        // Determine for all the item whether it is already available in the SOR
-        for (HoldingReproduction hr : newReproduction.getHoldingReproductions()) {
-            hr.setInSor(isHoldingReproductionInSor(hr));
+        // Only check for availability on new reproduction requests
+        if (oldReproduction == null) {
+            // Determine for all the item whether it is already available in the SOR
+            for (HoldingReproduction hr : newReproduction.getHoldingReproductions()) {
+                hr.setInSor(isHoldingReproductionInSor(hr));
+            }
+
+            // Now remove unavailable holdings from the request
+            removeUnavailbleHoldings(newReproduction);
         }
 
-        // Validate the reproduction.
-        validateRequest(newReproduction, result);
-        validateReproductionHoldings(newReproduction, oldReproduction);
+        // Only continue if there are any holdings left, otherwise simply remove the reproduction request
+        if (!newReproduction.getHoldingReproductions().isEmpty()) {
+            // Validate the reproduction
+            validateRequest(newReproduction, result);
+            validateReproductionHoldings(newReproduction, oldReproduction);
 
-        if (!isCustomer) {
-            validateReproductionNotCustomer(newReproduction, result);
-        }
+            if (!isCustomer)
+                validateReproductionNotCustomer(newReproduction, result);
 
-        // Initialize the holdings of this reproduction.
-        initHoldingReproductions(newReproduction, forFree);
+            // Initialize the holdings of this reproduction
+            initHoldingReproductions(newReproduction, forFree);
 
-        // Add or save the record when no errors are present.
-        if (!result.hasErrors()) {
-            // Move status forward if all order details are known
-            if (hasOrderDetails(newReproduction)) {
-                // If created by a customer, then also check availability
-                if (!isCustomer || hasOnlyAvailableRequiredHoldings(newReproduction)) {
+            // Add or save the record when no errors are present
+            if (!result.hasErrors()) {
+                // Move status forward if all order details are known
+                if (hasOrderDetails(newReproduction)) {
                     newReproduction.setOfferReadyImmediatly(true);
                     updateStatusAndAssociatedHoldingStatus(newReproduction, Reproduction.Status.HAS_ORDER_DETAILS);
                 }
-            }
 
-            // Reserve all holdings that are currently available, but not yet in the SOR
-            reserveAvailableRequiredHoldings(newReproduction);
+                // Reserve all holdings that are not yet in the SOR
+                reserveAvailableRequiredHoldings(newReproduction);
 
-            // Now add or save the record
-            if (oldReproduction == null) {
-                newReproduction.setCreationDate(new Date());
-                addReproduction(newReproduction);
+                // Now add or save the record
+                if (oldReproduction == null) {
+                    newReproduction.setCreationDate(new Date());
+                    addReproduction(newReproduction);
+                }
+                else {
+                    merge(oldReproduction, newReproduction);
+                    saveReproduction(oldReproduction);
+                }
             }
-            else {
-                merge(oldReproduction, newReproduction);
-                saveReproduction(oldReproduction);
-            }
+        }
+        else if (oldReproduction != null) {
+            merge(oldReproduction, newReproduction);
+            removeReproduction(oldReproduction);
         }
     }
 
@@ -584,66 +583,59 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
-     * Whether all required holdings of the reproduction are currently available.
+     * If the holding is not in the SOR and is not available either, remove from request.
      *
      * @param reproduction The reproduction.
-     * @return Whether all holdings of the reproduction are currently available.
      */
-    private boolean hasOnlyAvailableRequiredHoldings(Reproduction reproduction) {
+    private void removeUnavailbleHoldings(Reproduction reproduction) {
+        List<HoldingReproduction> hrToRemove = new ArrayList<HoldingReproduction>();
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             Holding h = hr.getHolding();
             if (!hr.isInSor() && (h.getStatus() != Holding.Status.AVAILABLE))
-                return false;
+                hrToRemove.add(hr);
         }
-
-        return true;
+        reproduction.getHoldingReproductions().removeAll(hrToRemove);
     }
 
     /**
-     * Reserve all the required holdings of the given reproduction that are currently available.
+     * Reserve all the required holdings of the given reproduction that are currently not in the SOR.
      *
      * @param reproduction The reproduction.
      */
     private void reserveAvailableRequiredHoldings(Reproduction reproduction) {
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            Holding h = hr.getHolding();
-
-            // If the holding is not in the SOR and available, then reserve for repro
-            if (!hr.isInSor() && (h.getStatus() == Holding.Status.AVAILABLE))
-                requests.updateHoldingStatus(h, Holding.Status.RESERVED, reproduction);
-
-            // Also make sure that holdings that no longer required by repro are made available again
-            if (hr.isInSor() && reproduction.equals(requests.getActiveFor(h)))
-                requests.updateHoldingStatus(h, Holding.Status.AVAILABLE, reproduction);
+            if (!hr.isInSor())
+                requests.updateHoldingStatus(hr.getHolding(), Holding.Status.RESERVED);
         }
     }
 
     /**
-     * Check if all the holdings that are required by repro are active for the given reproduction.
+     * Returns standard options for the given holding which are NOT available in the SOR.
      *
-     * @param reproduction The reproduction.
-     * @return Whether all required holdings are active for repro.
+     * @param holding                     The holding.
+     * @param reproductionStandardOptions The standard options to choose from.
+     * @return A list of options that are currently not available online in the SOR.
      */
-    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction) {
-        return isActiveForAllRequiredHoldings(reproduction, null);
-    }
+    public List<ReproductionStandardOption> getStandardOptionsNotInSor(Holding holding,
+                                                                       List<ReproductionStandardOption> reproductionStandardOptions) {
+        SorMetadata[] allSorMetadata = sorService.getAllMetadataForPid(holding.determinePid());
 
-    /**
-     * Check if all the holdings that are required by repro are active for the given reproduction.
-     *
-     * @param reproduction The reproduction.
-     * @param holding      The holding to ignore. (As it is being updated)
-     * @return Whether all required holdings are active for repro.
-     */
-    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction, Holding holding) {
-        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            Holding h = hr.getHolding();
-            if ((holding == null) || (holding.getId() != h.getId())) {
-                if (!hr.isInSor() && !requests.getActiveFor(h).equals(reproduction))
-                    return false;
-            }
+        // No metadata means no digital object found in the SOR
+        if (allSorMetadata == null)
+            return reproductionStandardOptions;
+
+        List<ReproductionStandardOption> notInSor = new ArrayList<ReproductionStandardOption>();
+        for (ReproductionStandardOption standardOption : reproductionStandardOptions) {
+            SorMetadata sorMetadata = null;
+            if (standardOption.getLevel() == ReproductionStandardOption.Level.MASTER)
+                sorMetadata = allSorMetadata[0];
+            else
+                sorMetadata = allSorMetadata[1];
+
+            if (!sorMetadataMatchesStandardOption(sorMetadata, standardOption))
+                notInSor.add(standardOption);
         }
-        return true;
+        return notInSor;
     }
 
     /**
@@ -664,31 +656,45 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             else
                 sorMetadata = sorService.getFirstLevelMetadataForPid(holding.determinePid());
 
-            // No metadata means no digital object found in the SOR
-            if (sorMetadata == null)
-                return false;
-
-            // Determine whether the content in the SOR matches the expected content
-            switch (standardOption.getMaterialType()) {
-                case BOOK:
-                    return ((sorMetadata.getContentType() != null) &&
-                            sorMetadata.getContentType().equals("application/pdf"));
-                case SOUND:
-                    return ((sorMetadata.getContentType() != null) &&
-                            sorMetadata.getContentType().startsWith("audio"));
-                case MOVING_VISUAL:
-                    return ((sorMetadata.getContentType() != null) &&
-                            sorMetadata.getContentType().startsWith("video"));
-                case VISUAL:
-                    if (sorMetadata.isMaster())
-                        // Make sure the TIFFs are >= 300 dpi
-                        // Due to high possibility of lower resolution TIFFs in the SOR
-                        return ((sorMetadata.getContentType() != null) && sorMetadata.isTiff());
-                    else
-                        return ((sorMetadata.getContentType() != null) &&
-                                sorMetadata.getContentType().equals("image/jpeg"));
-            }
+            return sorMetadataMatchesStandardOption(sorMetadata, standardOption);
         }
+        return false;
+    }
+
+    /**
+     * Does the metadata from the SOR match the standard options requirements?
+     *
+     * @param sorMetadata    The SOR metadata.
+     * @param standardOption The standard option to compare against.
+     * @return Whether it matches.
+     */
+    private boolean sorMetadataMatchesStandardOption(SorMetadata sorMetadata,
+                                                     ReproductionStandardOption standardOption) {
+        // No metadata means no digital object found in the SOR
+        if (sorMetadata == null)
+            return false;
+
+        // Determine whether the content in the SOR matches the expected content
+        switch (standardOption.getMaterialType()) {
+            case BOOK:
+                return ((sorMetadata.getContentType() != null) &&
+                        sorMetadata.getContentType().equals("application/pdf"));
+            case SOUND:
+                return ((sorMetadata.getContentType() != null) &&
+                        sorMetadata.getContentType().startsWith("audio"));
+            case MOVING_VISUAL:
+                return ((sorMetadata.getContentType() != null) &&
+                        sorMetadata.getContentType().startsWith("video"));
+            case VISUAL:
+                if (sorMetadata.isMaster())
+                    // Make sure the TIFFs are >= 300 dpi
+                    // Due to high possibility of lower resolution TIFFs in the SOR
+                    return ((sorMetadata.getContentType() != null) && sorMetadata.isTiff());
+                else
+                    return ((sorMetadata.getContentType() != null) &&
+                            sorMetadata.getContentType().equals("image/jpeg"));
+        }
+
         return false;
     }
 
@@ -747,9 +753,11 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         if (order != null)
             return order;
 
-        // If the order is for free, already update the status of the reproduction to 'payed'
-        if (r.isForFree())
-            updateStatusAndAssociatedHoldingStatus(r, Reproduction.Status.PAYED);
+        if (r.isForFree()) {
+            updateStatusAndAssociatedHoldingStatus(r, Reproduction.Status.ACTIVE);
+            if (r.isCompletelyInSor())
+                updateStatusAndAssociatedHoldingStatus(r, Reproduction.Status.COMPLETED);
+        }
 
         // First attempt to create and register a new order in PayWay
         try {
@@ -976,85 +984,10 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     /**
      * Returns the active reproduction with which this holding is associated.
      *
-     * @param h      The Holding to get the active reproduction of
-     * @param getAll Whether to return all active reproductions (0)
-     *               or only those that are on hold (< 0) or those that are NOT on hold (> 0).
-     * @return The active reproduction, or null if no active reproduction exists
+     * @param h The Holding to get the active reproduction of.
+     * @return The active reproduction, or null if no active reproduction exists.
      */
-    public Reproduction getActiveFor(Holding h, int getAll) {
-        return reproductionDAO.getActiveFor(h, getAll);
-    }
-
-    /**
-     * What should happen when the status of a holding is updated.
-     *
-     * @param holding       The holding. (With the status updated)
-     * @param activeRequest The request which triggered the holding change.
-     */
-    public void onHoldingStatusUpdate(Holding holding, Request activeRequest) {
-        // Only check if there are reproductions to automatically reserve if the holding became available
-        if (holding.getStatus() != Holding.Status.AVAILABLE)
-            return;
-
-        // Build the query
-        CriteriaBuilder builder = getReproductionCriteriaBuilder();
-
-        CriteriaQuery<Reproduction> query = builder.createQuery(Reproduction.class);
-        Root<Reproduction> reproductionRoot = query.from(Reproduction.class);
-        query.select(reproductionRoot);
-
-        Join<Reproduction, HoldingReproduction> hrRoot = reproductionRoot.join(Reproduction_.holdingReproductions);
-        Join<HoldingReproduction, Holding> hRoot = hrRoot.join(HoldingReproduction_.holding);
-
-        // We only want to update reproductions that are not yet active or finished
-        Predicate statusIn = builder.in(reproductionRoot.get(Reproduction_.status))
-                .value(Reproduction.Status.WAITING_FOR_ORDER_DETAILS)
-                .value(Reproduction.Status.HAS_ORDER_DETAILS)
-                .value(Reproduction.Status.CONFIRMED)
-                .value(Reproduction.Status.PAYED);
-
-        // And only the reproductions that contain the same holding, not in SOR and not completed
-        Predicate holdingEqual = builder.equal(hRoot.get(Holding_.id), holding.getId());
-        Predicate inSor = builder.equal(hrRoot.get(HoldingReproduction_.inSor), false);
-        Predicate notCompleted = builder.equal(hrRoot.get(HoldingReproduction_.completed), false);
-
-        query.where(builder.and(statusIn, holdingEqual, inSor, notCompleted));
-        query.orderBy(builder.asc(reproductionRoot.<Date>get(Reproduction_.creationDate)));
-
-        // Check the first found reproduction
-        Reproduction reproduction = getReproduction(query);
-        if ((reproduction != null) && ((activeRequest == null) || !reproduction.equals(activeRequest))) {
-            // Find the holding, and reserve for this reproduction
-            for (Holding h : reproduction.getHoldings()) {
-                if (h.getId() == holding.getId())
-                    holding.setStatus(Holding.Status.RESERVED);
-            }
-
-            // If the customer has already payed,
-            // then move to 'active' if all holdings that are required by repro are active for repro
-            if ((reproduction.getStatus() == Reproduction.Status.PAYED) &&
-                    isActiveForAllRequiredHoldings(reproduction, holding))
-                updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
-
-            saveReproduction(reproduction);
-        }
-    }
-
-    /**
-     * What should happen when a holding is placed on hold.
-     *
-     * @param holding        The holding which has been placed on hold.
-     * @param previousActive The request for which the holding was active, before being placed on hold.
-     * @param nowActive      The request for which the holding is now active.
-     */
-    public void onHoldingOnHold(Holding holding, Request previousActive, Request nowActive) {
-        if (nowActive instanceof Reproduction) {
-            Reproduction reproduction = getReproductionById(((Reproduction) nowActive).getId());
-            if ((reproduction.getStatus() == Reproduction.Status.PAYED) &&
-                    isActiveForAllRequiredHoldings(reproduction, holding))
-                updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
-
-            saveReproduction(reproduction);
-        }
+    public Reproduction getActiveFor(Holding h) {
+        return reproductionDAO.getActiveFor(h);
     }
 }

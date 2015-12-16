@@ -20,7 +20,6 @@ import org.codehaus.jackson.JsonNode;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
-import org.socialhistoryservices.delivery.record.service.OnHoldException;
 import org.socialhistoryservices.delivery.record.service.RecordService;
 import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
 import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
@@ -200,8 +199,6 @@ public class ReservationController extends AbstractRequestController {
 		        e = hRoot.get(Holding_.signature);
             } else if (sort.equals("holdingStatus")) {
 	            e = hRoot.get(Holding_.status);
-            } else if (sort.equals("onHold")) {
-                e = hrRoot.get(HoldingReservation_.onHold);
             }
         }
         if (containsSortDir &&
@@ -876,46 +873,6 @@ public class ReservationController extends AbstractRequestController {
                 // Set the new status
                 requests.updateHoldingStatus(h, newHoldingStatus);
                 records.saveHolding(h);
-            }
-        }
-
-        return "redirect:/reservation/" + qs;
-    }
-
-    /**
-     * Place marked holdings on hold.
-     * @param req The HTTP request object.
-     * @param checked The holdings marked.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "onHold")
-    @Secured("ROLE_RESERVATION_MODIFY")
-    public String batchProcessOnHold(HttpServletRequest req, @RequestParam(required = false) List<String> checked) {
-        String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
-
-        // Simply redirect to previous page if no holdings were selected
-        if (checked == null) {
-            return "redirect:/reservation/" + qs;
-        }
-
-        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
-            Holding h = records.getHoldingById(bulkActionIds.getHoldingId());
-            if (h == null) {
-                continue;
-            }
-
-            // Only update the status if the holding is active for the same reservation
-            Request request = requests.getActiveFor(h);
-            if ((request instanceof Reservation) &&
-                    (((Reservation) request).getId() == bulkActionIds.getRequestId())) {
-                // Place on hold
-                try {
-                    requests.markItemOnHold(h);
-                    records.saveHolding(h);
-                }
-                catch (OnHoldException ohe) {
-                    // Its a batch update, so ignore
-                }
             }
         }
 

@@ -9,9 +9,6 @@
   <#assign h = hr.holding>
   <#assign info = h.record.externalInfo>
 * ${h.record.title} - ${h.signature} <#if info.author??>/ ${info.author} </#if><#if hr.comment??>- ${hr.comment}</#if>
-  <#if holdingsNotInSor?seq_contains(h)>
-<@_ "reproduction.holdingReserverdMail" "Currently reserved item."/>
-  </#if>
   <#if hr.standardOption??>
 <@_ "reproductionStandardOption.price" "Price"/>: ${hr.price?string("0.00")} EUR
 <#if hr.copyrightPrice?? && hr.copyrightPrice gt 0><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/>: ${hr.copyrightPrice?string("0.00")} EUR</#if>

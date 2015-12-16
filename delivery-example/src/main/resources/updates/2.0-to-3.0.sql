@@ -8,7 +8,6 @@ ALTER TABLE external_record_info ADD COLUMN copyright character varying(255) NUL
 ALTER TABLE external_record_info ADD COLUMN publication_status character varying(255) NOT NULL DEFAULT 'CLOSED';
 
 ALTER TABLE holding_reservations ADD COLUMN completed boolean NOT NULL DEFAULT 'f';
-ALTER TABLE holding_reservations ADD COLUMN on_hold boolean NOT NULL DEFAULT 'f';
 
 ALTER TABLE records ADD COLUMN external_info_updated timestamp NULL;
 
@@ -35,6 +34,19 @@ AND holding_reservations.id = hr.id;
 
 /* NEW TABLES */
 
+CREATE TABLE reproduction_custom_notes
+(
+  id integer NOT NULL,
+  material_type character varying(255) NOT NULL,
+  note_en character varying(255),
+  note_nl character varying(255),
+  CONSTRAINT reproduction_custom_notes_pkey PRIMARY KEY (id),
+  CONSTRAINT reproduction_custom_notes_material_type_key UNIQUE (material_type)
+)
+WITH (
+  OIDS=FALSE
+);
+
 CREATE TABLE reproduction_standard_options
 (
   id integer NOT NULL,
@@ -43,13 +55,18 @@ CREATE TABLE reproduction_standard_options
   enabled boolean NOT NULL,
   level character varying(255) NOT NULL,
   material_type character varying(255) NOT NULL,
+  maxnumberofpages integer,
+  minnumberofpages integer,
   optiondescription_en character varying(255) NOT NULL,
   optiondescription_nl character varying(255) NOT NULL,
   optionname_en character varying(50) NOT NULL,
   optionname_nl character varying(50) NOT NULL,
   price numeric(7,2) NOT NULL,
   CONSTRAINT reproduction_standard_options_pkey PRIMARY KEY (id),
+  CONSTRAINT reproduction_standard_options_copyrightprice_check CHECK (copyrightprice >= 0::numeric),
   CONSTRAINT reproduction_standard_options_deliverytime_check CHECK (deliverytime >= 0),
+  CONSTRAINT reproduction_standard_options_maxnumberofpages_check CHECK (maxnumberofpages >= 0),
+  CONSTRAINT reproduction_standard_options_minnumberofpages_check CHECK (minnumberofpages >= 0),
   CONSTRAINT reproduction_standard_options_price_check CHECK (price >= 0::numeric)
 )
 WITH (
@@ -80,13 +97,12 @@ WITH (
 CREATE TABLE reproductions
 (
   id integer NOT NULL,
-  comment character varying(255), 
+  comment character varying(255),
   creation_date timestamp without time zone NOT NULL,
   customeremail character varying(255) NOT NULL,
   customername character varying(255) NOT NULL,
   date date NOT NULL,
   date_has_order_details date,
-  deliverytimecomment text,
   discount numeric(7,2) NOT NULL,
   offer_ready_immediatly boolean,
   printed boolean,
@@ -98,7 +114,6 @@ CREATE TABLE reproductions
   CONSTRAINT fke6904ac73d5b738a FOREIGN KEY (order_id)
       REFERENCES orders (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT reproductions_copyright_price_check CHECK (copyright_price >= 0::numeric),
   CONSTRAINT reproductions_discount_check CHECK (discount >= 0::numeric)
 )
 WITH (
@@ -115,7 +130,6 @@ CREATE TABLE holding_reproductions
   customreproductionreply text,
   deliverytime integer,
   insor boolean NOT NULL,
-  on_hold boolean NOT NULL,
   price numeric(7,2),
   holding_id integer,
   reproduction_id integer,
@@ -151,11 +165,8 @@ CREATE INDEX holding_reproductions_reproduction_fk ON holding_reproductions (rep
 
 /* OTHER INDEXES ON BOTH OLD AND NEW TABLES */
 
-CREATE INDEX holding_reproductions_on_hold_idx ON holding_reproductions (on_hold);
-CREATE INDEX holding_reproductions_completed_idx ON holding_reproductions (completed);
-
-CREATE INDEX holding_reservations_on_hold_idx ON holding_reservations (on_hold);
 CREATE INDEX holding_reservations_completed_idx ON holding_reservations (completed);
+CREATE INDEX holding_reproductions_completed_idx ON holding_reproductions (completed);
 
 /* NEW INSERTS FROM initial-data.sql */
 

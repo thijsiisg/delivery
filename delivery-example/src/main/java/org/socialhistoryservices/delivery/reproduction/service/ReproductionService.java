@@ -149,21 +149,14 @@ public interface ReproductionService {
     public boolean hasOrderDetails(Reproduction reproduction);
 
     /**
-     * Check if all the holdings that are required by repro are active for the given reproduction.
+     * Returns standard options for the given holding which are NOT available in the SOR.
      *
-     * @param reproduction The reproduction.
-     * @return Whether all required holdings are active for repro.
+     * @param holding                     The holding.
+     * @param reproductionStandardOptions The standard options to choose from.
+     * @return A list of options that are currently not available online in the SOR.
      */
-    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction);
-
-    /**
-     * Check if all the holdings that are required by repro are active for the given reproduction.
-     *
-     * @param reproduction The reproduction.
-     * @param holding      The holding to ignore. (As it is being updated)
-     * @return Whether all required holdings are active for repro.
-     */
-    public boolean isActiveForAllRequiredHoldings(Reproduction reproduction, Holding holding);
+    public List<ReproductionStandardOption> getStandardOptionsNotInSor(Holding holding,
+                                                                       List<ReproductionStandardOption> reproductionStandardOptions);
 
     /**
      * Scheduled task to cancel all reproductions not payed within 5 days after the offer was ready.
@@ -261,10 +254,8 @@ public interface ReproductionService {
     /**
      * Returns the active reproduction with which this holding is associated.
      *
-     * @param h      The Holding to get the active reproduction of
-     * @param getAll Whether to return all active reproductions (0)
-     *               or only those that are on hold (< 0) or those that are NOT on hold (> 0).
-     * @return The active reproduction, or null if no active reproduction exists
+     * @param h The Holding to get the active reproduction of.
+     * @return The active reproduction, or null if no active reproduction exists.
      */
-    public Reproduction getActiveFor(Holding h, int getAll);
+    public Reproduction getActiveFor(Holding h);
 }

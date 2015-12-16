@@ -212,10 +212,8 @@ public interface ReservationService {
 
     /**
      * Returns the active reservation with which this holding is associated.
-     * @param h The Holding to get the active reservation of
-     * @param getAll Whether to return all active reservations (0)
-     * or only those that are on hold (< 0) or those that are NOT on hold (> 0).
-     * @return The active reservation, or null if no active reservation exists
+     * @param h The Holding to get the active reservation of.
+     * @return The active reservation, or null if no active reservation exists.
      */
-    public Reservation getActiveFor(Holding holding, int getAll);
+    public Reservation getActiveFor(Holding holding);
 }

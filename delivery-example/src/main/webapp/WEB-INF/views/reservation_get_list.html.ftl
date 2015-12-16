@@ -196,7 +196,6 @@
     <#--<th><@sortLink "returnDate"><@_ "reservation.returnDate" "Return
     Date"/></@sortLink></th>-->
     <th><@sortLink "printed"><@_ "reservation.printed" "Printed"/></@sortLink></th>
-    <th><@sortLink "onHold"><@_ "reservation.onHold" "On hold"/></@sortLink></th>
     <th><@sortLink "status"><@_ "reservation.extended.status" "Reservation status"/></@sortLink></th>
     <th><@sortLink "holdingStatus"><@_ "holding.extended.status" "Item status"/></@sortLink></th>
   </tr>
@@ -229,7 +228,6 @@
     <@_ "no" "No"/>
     </#assign>
     <td>${reservation.printed?string(yes, no)}</td>
-    <td>${holdingReservation.onHold?string(yes, no)}</td>
     <td><@_ "reservation.statusType.${reservation.status?string}" "${reservation.status?string}" /></td>
     <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! reservation/>
     <td><@holdingStatus holdingActiveRequests reservation holding/></td>
@@ -300,18 +298,11 @@
   <fieldset class="actions">
     <legend><@_ "reservationList.withSelectedHoldings" "With selected holdings"/>:</legend>
 
-    <#assign onHoldLabel>
-      <@_ "reservationList.onHold" "Place on hold"/>
-    </#assign>
     <#assign statusLabel>
       <@_ "reservationList.toStatus" "Change Status"/>
     </#assign>
 
     <ul>
-      <li>
-        <input type="submit" name="onHold" value="${onHoldLabel}"/>
-      </li>
-
       <li>
         <select name="newHoldingStatus">
           <#list holding_status_types?keys as k>

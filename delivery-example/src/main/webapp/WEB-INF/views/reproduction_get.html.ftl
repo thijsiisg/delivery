@@ -121,11 +121,6 @@
         </li>
 
         <li>
-          <span><@_ "reproduction.onHold" "On hold"/></span>
-          ${hr.onHold?string(yes, no)}
-        </li>
-
-        <li>
           <span><@_ "holding.status" "Status"/></span>
           <@holdingStatus holdingActiveRequests reproduction h/>
         </li>

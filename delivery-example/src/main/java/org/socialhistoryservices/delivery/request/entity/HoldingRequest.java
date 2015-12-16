@@ -47,20 +47,6 @@ public abstract class HoldingRequest {
     public abstract void setComment(String val);
 
     /**
-     * Is the holding on hold for this request?
-     *
-     * @return Whether this holding is on hold for this request.
-     */
-    public abstract boolean isOnHold();
-
-    /**
-     * Set the holding on hold for this request?
-     *
-     * @param onHold Whether the holding must be placed on hold for this request.
-     */
-    public abstract void setOnHold(boolean onHold);
-
-    /**
      * Is the holding completed for this request?
      *
      * @return Whether this holding is completed for this request.
@@ -81,7 +67,6 @@ public abstract class HoldingRequest {
      */
     public void mergeWith(HoldingRequest other) {
         setComment(other.getComment());
-        setOnHold(other.isOnHold());
         setCompleted(other.isCompleted());
     }
 }

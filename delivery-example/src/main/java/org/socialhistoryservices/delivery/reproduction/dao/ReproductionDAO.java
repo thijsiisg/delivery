@@ -76,11 +76,9 @@ public interface ReproductionDAO {
      * Get an active reproduction relating to a specific Holding.
      *
      * @param h      Holding to find a reproduction for.
-     * @param getAll Whether to return all active requests (0)
-     *               or only those that are on hold (< 0) or those that are NOT on hold (> 0).
      * @return The active reproduction, null if none exist.
      */
-    public Reproduction getActiveFor(Holding h, int getAll);
+    public Reproduction getActiveFor(Holding h);
 
     /**
      * Check whether there are any reproductions made on the holding.

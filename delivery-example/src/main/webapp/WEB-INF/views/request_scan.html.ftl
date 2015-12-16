@@ -34,29 +34,6 @@
           <@_ "scan.changedTo" "to" />
           &quot;<@_ "holding.statusType.${holding.status?string}" holding.status?string/>&quot;.
         </li>
-
-        <#if requestActiveAfter?? && (requestActiveBefore != requestActiveAfter)>
-          <li>
-            <@_ "scan.activeBefore" "The item was active for" /> ${requestActiveBefore?html}
-            <#if requestActiveAfter??>
-              <@_ "scan.activeAfter" "and is now active for" /> ${requestActiveAfter?html}.
-            <#else>
-              <@_ "scan.notActive" "and is now no langer active." />
-            </#if>
-          </li>
-        </#if>
-
-        <#if requestsOnHoldBefore??>
-          <li>
-            <@_ "scan.wasOnHold" "The item was on hold for" /> ${requestsOnHoldBefore?html}.
-          </li>
-        </#if>
-
-        <#if requestsOnHoldAfter??>
-          <li>
-            <@_ "scan.isOnHold" "The item is on hold for " /> ${requestsOnHoldAfter?html}.
-          </li>
-        </#if>
       </ul>
 
       <#if reservation??>
@@ -64,15 +41,6 @@
       </#if>
       <#if reproduction??>
         <@reproductionDetails reproduction/>
-      </#if>
-
-      <#if reservationAfter??>
-        <hr/>
-        <@reservationDetails reservationAfter/>
-      </#if>
-      <#if reproductionAfter??>
-        <hr/>
-        <@reproductionDetails reproductionAfter/>
       </#if>
     </#if>
   </@form_plain>
@@ -100,7 +68,6 @@
     <tr>
       <th>ID</th>
       <th><@_ "record.title" "Titel"/></th>
-      <th><@_ "reservation.onHold" "On hold"/></th>
       <th><@_ "holding.status" "Status"/></th>
     </tr>
     </thead>
@@ -110,7 +77,6 @@
       <tr>
         <td>${h.id?c}</td>
         <td>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></td>
-        <td>${hr.onHold?string(yes, no)}</td>
         <td><@holdingStatus holdingActiveRequests reservation h/></td>
       </tr>
       </#list>
@@ -208,11 +174,6 @@
           <#else>
           ${h.record.pid?html}
           </#if>
-        </li>
-
-        <li>
-          <span><@_ "reproduction.onHold" "On hold"/></span>
-        ${hr.onHold?string(yes, no)}
         </li>
 
         <li>
