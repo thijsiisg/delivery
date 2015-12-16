@@ -21,6 +21,7 @@ import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction_;
 import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
 import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
 import org.socialhistoryservices.delivery.request.entity.Request;
@@ -136,7 +137,7 @@ public class ReservationController extends AbstractRequestController {
         where = addEmailFilter(p, cb, resRoot, where);
         where = addStatusFilter(p, cb, resRoot, where);
         where = addSpecialFilter(p, cb, resRoot, where);
-        where = addPrintedFilter(p, cb, resRoot, where);
+        where = addPrintedFilter(p, cb, hrRoot, where);
         where = addSearchFilter(p, cb, hrRoot, resRoot, where);
 
         // Set the where clause
@@ -192,7 +193,7 @@ public class ReservationController extends AbstractRequestController {
             } else if (sort.equals("status")) {
                 e = resRoot.get(Reservation_.status);
             } else if (sort.equals("printed")) {
-                e = resRoot.get(Reservation_.printed);
+                e = hrRoot.get(HoldingReservation_.printed);
             } else if (sort.equals("special")) {
                 e = resRoot.get(Reservation_.special);
 	        } else if (sort.equals("signature")) {
@@ -212,6 +213,7 @@ public class ReservationController extends AbstractRequestController {
      * Add the search filter to the where clause, if present.
      * @param p The parameter list to search the given filter value in.
      * @param cb The criteria builder.
+     * @param hrRoot The holding reservation root.
      * @param resRoot The reservation root.
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
@@ -262,19 +264,19 @@ public class ReservationController extends AbstractRequestController {
      * Add the printed filter to the where clause, if present.
      * @param p The parameter list to search the given filter value in.
      * @param cb The criteria builder.
-     * @param resRoot The reservation root.
+     * @param hrRoot The holding reservation root.
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
     private Expression<Boolean> addPrintedFilter(Map<String, String[]> p,
-                                  CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Expression<Boolean> where) {
+                                  CriteriaBuilder cb, Root<HoldingReservation> hrRoot, Expression<Boolean> where) {
         if (p.containsKey("printed")) {
             String printed = p.get("printed")[0].trim().toLowerCase();
             if (printed.isEmpty()) {
                 return where;
             }
             Expression<Boolean> exPrinted = cb.equal(
-                    resRoot.<Boolean>get(Reservation_.printed),
+                    hrRoot.<Boolean>get(HoldingReservation_.printed),
                     Boolean.parseBoolean(p.get("printed")[0]));
             where = where != null ? cb.and(where, exPrinted) : exPrinted;
         }
@@ -477,9 +479,6 @@ public class ReservationController extends AbstractRequestController {
         }
         if (n.path("items").isMissingNode()) {
             newRes.setHoldingReservations(oldRes.getHoldingReservations());
-        }
-        if (n.path("printed").isMissingNode()) {
-            newRes.setPrinted(oldRes.isPrinted());
         }
         if (n.path("special").isMissingNode()) {
             newRes.setSpecial(oldRes.getSpecial());
@@ -732,7 +731,7 @@ public class ReservationController extends AbstractRequestController {
     }
 
     /**
-     * Show print marked reservations (except already printed).
+     * Show print marked holdings (except already printed).
      *
      * @param req The HTTP request object.
      * @param checked The marked reservations.
@@ -752,11 +751,17 @@ public class ReservationController extends AbstractRequestController {
             return "redirect:/reservation/" + qs;
         }
 
-        for(BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+        List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
             Reservation r = reservations.getReservationById(bulkActionIds.getRequestId());
-            if (r != null) {
+            for (HoldingReservation hr : r.getHoldingReservations()) {
+                if (hr.getHolding().getId() == bulkActionIds.getHoldingId())
+                    hrs.add(hr);
+            }
+
+            if (!hrs.isEmpty()) {
                 try {
-                    reservations.printReservation(r);
+                    reservations.printItems(hrs, false);
                 } catch (PrinterException e) {
                     return "reservation_print_failure";
                 }
@@ -767,7 +772,7 @@ public class ReservationController extends AbstractRequestController {
     }
 
     /**
-     * Show print marked reservations (including already printed).
+     * Show print marked holdings (including already printed).
      *
      * @param req The HTTP request object.
      * @param checked The marked reservations.
@@ -787,11 +792,17 @@ public class ReservationController extends AbstractRequestController {
             return "redirect:/reservation/" + qs;
         }
 
-        for(BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+        List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
             Reservation r = reservations.getReservationById(bulkActionIds.getRequestId());
-            if (r != null) {
+            for (HoldingReservation hr : r.getHoldingReservations()) {
+                if (hr.getHolding().getId() == bulkActionIds.getHoldingId())
+                    hrs.add(hr);
+            }
+
+            if (!hrs.isEmpty()) {
                 try {
-                    reservations.printReservation(r, true);
+                    reservations.printItems(hrs, true);
                 } catch (PrinterException e) {
                     return "reservation_print_failure";
                 }

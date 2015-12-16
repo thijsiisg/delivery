@@ -227,7 +227,7 @@
     <#assign no>
     <@_ "no" "No"/>
     </#assign>
-    <td>${reservation.printed?string(yes, no)}</td>
+    <td>${holdingReservation.printed?string(yes, no)}</td>
     <td><@_ "reservation.statusType.${reservation.status?string}" "${reservation.status?string}" /></td>
     <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! reservation/>
     <td><@holdingStatus holdingActiveRequests reservation holding/></td>
@@ -248,12 +248,6 @@
 <#if _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY,ROLE_RESERVATION_DELETE")>
 <fieldset class="actions">
   <legend><@_ "reservationList.withSelectedReservations" "With Selected Reservations"/>:</legend>
-  <#assign printLabel>
-  <@_ "reservationList.print" "Print"/>
-  </#assign>
-  <#assign printForceLabel>
-  <@_ "reservationList.printForce" "Print (Including already printed)"/>
-  </#assign>
   <#assign deleteLabel>
   <@_ "reservationList.delete" "Delete"/>
   </#assign>
@@ -268,8 +262,6 @@
     </#assign>
   <ul>
   <#if _sec.ifAllGranted("ROLE_RESERVATION_MODIFY")>
-  <li><input type="submit" name="print" value="${printLabel}" /> <input type="submit" name="printForce" value="${printForceLabel}" onClick="return confirm('${printForceConfirm}');" /></li>
-
   <li>
     <select name="newStatus">
       <#list status_types?keys  as k>
@@ -298,11 +290,19 @@
   <fieldset class="actions">
     <legend><@_ "reservationList.withSelectedHoldings" "With selected holdings"/>:</legend>
 
+    <#assign printLabel>
+      <@_ "reservationList.print" "Print"/>
+    </#assign>
+    <#assign printForceLabel>
+      <@_ "reservationList.printForce" "Print (Including already printed)"/>
+    </#assign>
     <#assign statusLabel>
       <@_ "reservationList.toStatus" "Change Status"/>
     </#assign>
 
     <ul>
+      <li><input type="submit" name="print" value="${printLabel}" /> <input type="submit" name="printForce" value="${printForceLabel}" onClick="return confirm('${printForceConfirm}');" /></li>
+
       <li>
         <select name="newHoldingStatus">
           <#list holding_status_types?keys as k>

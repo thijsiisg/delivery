@@ -226,7 +226,16 @@
                 <@_ "no" "No"/>
               </#assign>
 
-              <td>${reproduction.printed?string(yes, no)}</td>
+              <td>
+                ${holdingReproduction.printed?string(yes, no)}
+                <#if !holdingReproduction.printed && (reproduction.getStatus() != "CANCELLED")>
+                  <#if holdingReproduction.isInSor()>
+                    <em class="info">(<@_ "reproduction.print.inSor" "in SOR"/>)</em>
+                  <#elseif holdingReproduction.hasOrderDetails() && (reproduction.getStatus() != "ACTIVE")>
+                    <em class="info">(<@_ "reproduction.print.notYetPayed" "not yet payed"/>)</em>
+                  </#if>
+                </#if>
+              </td>
               <td><@_ "reproduction.statusType.${reproduction.status?string}" "${reproduction.status?string}" /></td>
               <td><@holdingStatus holdingActiveRequests reproduction holding/></td>
             </tr>
@@ -247,12 +256,6 @@
       <fieldset class="actions">
         <legend><@_ "reproductionList.withSelectedReproductions" "With selected reproductions"/>:</legend>
 
-        <#assign printLabel>
-          <@_ "reproductionList.print" "Print"/>
-        </#assign>
-        <#assign printForceLabel>
-          <@_ "reproductionList.printForce" "Print (Including already printed)"/>
-        </#assign>
         <#assign deleteLabel>
           <@_ "reproductionList.delete" "Delete"/>
         </#assign>
@@ -268,12 +271,6 @@
 
         <ul>
           <#if _sec.ifAllGranted("ROLE_REPRODUCTION_MODIFY")>
-            <li>
-              <input type="submit" name="print" value="${printLabel}"/>
-              <input type="submit" name="printForce" value="${printForceLabel}"
-                     onClick="return confirm('${printForceConfirm}');"/>
-            </li>
-
             <li>
               <select name="newStatus">
                 <#list status_types?keys as k>
@@ -306,11 +303,23 @@
         <fieldset class="actions">
           <legend><@_ "reproductionList.withSelectedHoldings" "With selected holdings"/>:</legend>
 
+          <#assign printLabel>
+            <@_ "reproductionList.print" "Print"/>
+          </#assign>
+          <#assign printForceLabel>
+            <@_ "reproductionList.printForce" "Print (Including already printed)"/>
+          </#assign>
           <#assign statusLabel>
             <@_ "reproductionList.toStatus" "Change Status"/>
           </#assign>
 
           <ul>
+            <li>
+              <input type="submit" name="print" value="${printLabel}"/>
+              <input type="submit" name="printForce" value="${printForceLabel}"
+                     onClick="return confirm('${printForceConfirm}');"/>
+            </li>
+
             <li>
               <select name="newHoldingStatus">
                 <#list holding_status_types?keys as k>

@@ -47,6 +47,30 @@ public class HoldingReservation extends HoldingRequest {
         return id;
     }
 
+    /** Whether the reservation holding has been printed or not. */
+    @Column(name="printed")
+    private boolean printed = false;
+
+    /**
+     * Set whether the reservation holding was printed or not.
+     * @param b True to consider the reservation holding to be printed at least once,
+     * false otherwise.
+     */
+    @Override
+    public void setPrinted(boolean b) {
+        printed = b;
+    }
+
+    /**
+     * Check if the reservation holding (is considered) to be printed at least once.
+     * @return True if the reservation holding was printed at least once,
+     * false otherwise.
+     */
+    @Override
+    public boolean isPrinted() {
+        return printed;
+    }
+
     /** Is the holding completed for this reservation? */
     @Column(name="completed", nullable=false)
     @Index(name="holding_reservations_completed_idx")

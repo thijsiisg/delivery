@@ -68,6 +68,7 @@
     <tr>
       <th>ID</th>
       <th><@_ "record.title" "Titel"/></th>
+      <th><@_ "reservation.printed" "Printed"/></th>
       <th><@_ "holding.status" "Status"/></th>
     </tr>
     </thead>
@@ -99,15 +100,17 @@
     <span><@_ "reproduction.status" "Status"/></span> <@_ "reproduction.statusType.${reproduction.status}" reproduction.status?string />
   </li>
 
-  <li>
-    <span><@_ "reproduction.printed" "Printed"/></span>
-  ${reproduction.printed?string(yes, no)}
-  </li>
-
   <#if reproduction.comment??>
     <li>
       <span><@_ "reproduction.comment" "Comment"/></span>
     ${reproduction.comment?html}
+    </li>
+  </#if>
+
+  <#if reproduction.order??>
+    <li>
+      <span><@_ "reproduction.order" "Order id (PayWay)"/></span>
+    ${reproduction.order.id?html}
     </li>
   </#if>
 
@@ -163,7 +166,12 @@
 
         <li>
           <span><@_ "holding.signature" "Signature"/></span>
-        ${h.signature?html}
+          ${h.signature?html}
+        </li>
+
+        <li>
+          <span><@_ "holding.pid" "Item PID"/></span>
+          ${h.determinePid()?html}
         </li>
 
         <li>
@@ -173,6 +181,18 @@
                href="${rc.contextPath}/record/editform/${h.record.pid?url}">${h.record.pid?html}</a>
           <#else>
           ${h.record.pid?html}
+          </#if>
+        </li>
+
+        <li class="spacing">
+          <span><@_ "reproduction.printed" "Printed"/></span>
+          ${hr.printed?string(yes, no)}
+          <#if !hr.printed && (reproduction.getStatus() != "CANCELLED")>
+            <#if hr.isInSor()>
+              <em class="info">(<@_ "reproduction.print.inSor" "in SOR"/>)</em>
+            <#elseif hr.hasOrderDetails() && (reproduction.getStatus() != "ACTIVE")>
+              <em class="info">(<@_ "reproduction.print.notYetPayed" "not yet payed"/>)</em>
+            </#if>
           </#if>
         </li>
 

@@ -163,16 +163,15 @@ public interface ReservationService {
     public void printReservation(Reservation res) throws PrinterException;
 
     /**
-     * Prints a reservation by using the default printer.
-     * @param res The reservation to print.
-     * @param alwaysPrint If set to true, already printed reservations will
+     * Prints holding reservations by using the default printer.
+     * @param hr The holding reservations to print.
+     * @param alwaysPrint If set to true, already printed holdings will
      * also be printed.
      * @throws PrinterException Thrown when delivering the print job to the
      * printer failed. Does not say anything if the printer actually printed
      * (or ran out of paper for example).
      */
-    public void printReservation(Reservation res, boolean alwaysPrint) throws
-            PrinterException;
+    public void printItems(List<HoldingReservation> hrs, boolean alwaysPrint) throws PrinterException;
 
     /**
      * Edit reservations.

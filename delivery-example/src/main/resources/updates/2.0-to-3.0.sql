@@ -7,6 +7,7 @@ ALTER TABLE external_holding_info ADD CONSTRAINT external_holding_info_barcode U
 ALTER TABLE external_record_info ADD COLUMN copyright character varying(255) NULL;
 ALTER TABLE external_record_info ADD COLUMN publication_status character varying(255) NOT NULL DEFAULT 'CLOSED';
 
+ALTER TABLE holding_reservations ADD COLUMN printed boolean NOT NULL DEFAULT 'f';
 ALTER TABLE holding_reservations ADD COLUMN completed boolean NOT NULL DEFAULT 'f';
 
 ALTER TABLE records ADD COLUMN external_info_updated timestamp NULL;
@@ -31,6 +32,18 @@ ON hr.holding_id = h.id
 WHERE r.status = 'ACTIVE'
 AND h.status = 'AVAILABLE'
 AND holding_reservations.id = hr.id;
+
+UPDATE holding_reservations
+SET printed = 't'
+FROM holding_reservations AS hr
+INNER JOIN reservations AS r
+ON hr.reservation_id = r.id
+WHERE r.printed = 't'
+AND holding_reservations.id = hr.id;
+
+/* REMOVE OLD COLUMNS */
+
+ALTER TABLE reservations DROP COLUMN printed;
 
 /* NEW TABLES */
 
@@ -105,7 +118,6 @@ CREATE TABLE reproductions
   date_has_order_details date,
   discount numeric(7,2) NOT NULL,
   offer_ready_immediatly boolean,
-  printed boolean,
   requestlocale character varying(255) NOT NULL,
   status character varying(255) NOT NULL,
   token character varying(36) NOT NULL,
@@ -131,6 +143,7 @@ CREATE TABLE holding_reproductions
   deliverytime integer,
   insor boolean NOT NULL,
   price numeric(7,2),
+  printed boolean,
   holding_id integer,
   reproduction_id integer,
   reproduction_standard_option_id integer,

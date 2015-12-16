@@ -5,6 +5,7 @@ import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.validation.BindingResult;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -206,15 +207,15 @@ public interface ReproductionService {
     public void saveReproduction(Reproduction obj);
 
     /**
-     * Prints a reproduction by using the default printer.
+     * Prints holding reproductions by using the default printer.
      *
-     * @param reproduction The reproduction to print.
-     * @param alwaysPrint  If set to true, already printed reproductions will also be printed.
+     * @param hrs         The holding reproductions to print.
+     * @param alwaysPrint If set to true, already printed reproductions will also be printed.
      * @throws PrinterException Thrown when delivering the print job to the printer failed.
      *                          Does not say anything if the printer actually printed
      *                          (or ran out of paper for example).
      */
-    public abstract void printReproduction(Reproduction reproduction, boolean alwaysPrint) throws PrinterException;
+    public void printItems(List<HoldingReproduction> hrs, boolean alwaysPrint) throws PrinterException;
 
     /**
      * Print a reproduction if it was not printed yet.
@@ -250,6 +251,14 @@ public interface ReproductionService {
      * @param status       The reproduction which changed status.
      */
     public void updateStatusAndAssociatedHoldingStatus(Reproduction reproduction, Reproduction.Status status);
+
+    /**
+     * Auto print all holdings of the given reproduction, if possible.
+     * Run this in a separate thread, we do nothing on failure so in this case this is perfectly possible.
+     *
+     * @param reproduction The reproduction.
+     */
+    public void autoPrintReproduction(final Reproduction reproduction);
 
     /**
      * Returns the active reproduction with which this holding is associated.

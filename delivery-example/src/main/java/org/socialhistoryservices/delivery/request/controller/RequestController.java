@@ -95,9 +95,6 @@ public class RequestController extends AbstractRequestController {
             if (reproduction != null)
                 reproductions.markItem(reproduction, h);
 
-            // Gather information about the new state
-            Request requestActiveAfter = requests.getActiveFor(h);
-
             model.addAttribute("holding", h);
             model.addAttribute("oldStatus", oldStatus);
 

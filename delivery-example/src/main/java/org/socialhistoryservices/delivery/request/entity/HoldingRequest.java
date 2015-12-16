@@ -47,6 +47,20 @@ public abstract class HoldingRequest {
     public abstract void setComment(String val);
 
     /**
+     * Set whether the request was printed or not.
+     *
+     * @param b True to consider the request to be printed at least once, false otherwise.
+     */
+    public abstract void setPrinted(boolean b);
+
+    /**
+     * Check if the Request (is considered) to be printed at least once.
+     *
+     * @return True if the Request was printed at least once, false otherwise.
+     */
+    public abstract boolean isPrinted();
+
+    /**
      * Is the holding completed for this request?
      *
      * @return Whether this holding is completed for this request.
@@ -67,6 +81,5 @@ public abstract class HoldingRequest {
      */
     public void mergeWith(HoldingRequest other) {
         setComment(other.getComment());
-        setCompleted(other.isCompleted());
     }
 }

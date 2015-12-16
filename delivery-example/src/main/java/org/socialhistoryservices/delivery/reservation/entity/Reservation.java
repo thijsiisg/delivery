@@ -318,30 +318,6 @@ public class Reservation extends Request {
         this.queueNo = queueNo;
     }
 
-    /** Whether the reservation has been printed or not. */
-    @Column(name="printed")
-    private boolean printed;
-
-    /**
-     * Set whether the reservation was printed or not.
-     * @param b True to consider the reservation to be printed at least once,
-     * false otherwise.
-     */
-    @Override
-    public void setPrinted(boolean b) {
-        printed = b;
-    }
-
-    /**
-     * Check if the reservation (is considered) to be printed at least once.
-     * @return True if the reservation was printed at least once,
-     * false otherwise.
-     */
-    @Override
-    public boolean isPrinted() {
-        return printed;
-    }
-
     /** The Reservation's comment. */
     @Size(max=255)
     @Column(name="comment", nullable=true)
@@ -380,7 +356,6 @@ public class Reservation extends Request {
         setSpecial(false);
         setStatus(Status.PENDING);
         setCreationDate(new Date());
-        setPrinted(false);
         holdingReservations = new ArrayList<HoldingReservation>();
     }
 }

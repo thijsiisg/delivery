@@ -17,6 +17,8 @@ import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.request.util.BulkActionIds;
+import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
+import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -175,7 +177,7 @@ public class ReproductionController extends AbstractRequestController {
         where = addNameFilter(p, cb, rRoot, where);
         where = addEmailFilter(p, cb, rRoot, where);
         where = addStatusFilter(p, cb, rRoot, where);
-        where = addPrintedFilter(p, cb, rRoot, where);
+        where = addPrintedFilter(p, cb, hrRoot, where);
         where = addSearchFilter(p, cb, hrRoot, rRoot, where);
 
         // Set the where clause
@@ -303,12 +305,12 @@ public class ReproductionController extends AbstractRequestController {
      *
      * @param p     The parameter list to search the given filter value in.
      * @param cb    The criteria builder.
-     * @param rRoot The reproduction root.
+     * @param hrRoot The holding reproduction root.
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
     private Expression<Boolean> addPrintedFilter(Map<String, String[]> p, CriteriaBuilder cb,
-                                                 Join<HoldingReproduction, Reproduction> rRoot,
+                                                 Root<HoldingReproduction> hrRoot,
                                                  Expression<Boolean> where) {
         if (p.containsKey("printed")) {
             String printed = p.get("printed")[0].trim().toLowerCase();
@@ -316,7 +318,7 @@ public class ReproductionController extends AbstractRequestController {
                 return where;
             }
 
-            Expression<Boolean> exPrinted = cb.equal(rRoot.<Boolean>get(Reproduction_.printed),
+            Expression<Boolean> exPrinted = cb.equal(hrRoot.<Boolean>get(HoldingReproduction_.printed),
                     Boolean.parseBoolean(p.get("printed")[0]));
             where = (where != null) ? cb.and(where, exPrinted) : exPrinted;
         }
@@ -383,7 +385,7 @@ public class ReproductionController extends AbstractRequestController {
             else if (sort.equals("status"))
                 e = rRoot.get(Reproduction_.status);
             else if (sort.equals("printed"))
-                e = rRoot.get(Reproduction_.printed);
+                e = hrRoot.get(HoldingReproduction_.printed);
             else if (sort.equals("signature"))
                 e = hRoot.get(Holding_.signature);
             else if (sort.equals("holdingStatus"))
@@ -420,7 +422,7 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     /**
-     * Show print marked reproductions (except already printed).
+     * Show print marked holdings (except already printed).
      *
      * @param req     The HTTP request object.
      * @param checked The marked reproductions.
@@ -435,11 +437,17 @@ public class ReproductionController extends AbstractRequestController {
             return "redirect:/reproduction/" + qs;
         }
 
+        List<HoldingReproduction> hrs = new ArrayList<HoldingReproduction>();
         for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
             Reproduction r = reproductions.getReproductionById(bulkActionIds.getRequestId());
-            if (r != null) {
+            for (HoldingReproduction hr : r.getHoldingReproductions()) {
+                if (hr.getHolding().getId() == bulkActionIds.getHoldingId())
+                    hrs.add(hr);
+            }
+
+            if (!hrs.isEmpty()) {
                 try {
-                    reproductions.printReproduction(r);
+                    reproductions.printItems(hrs, false);
                 } catch (PrinterException e) {
                     return "reproduction_print_failure";
                 }
@@ -450,7 +458,7 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     /**
-     * Show print marked reproductions (including already printed).
+     * Show print marked holdings (including already printed).
      *
      * @param req     The HTTP request object.
      * @param checked The marked reproductions.
@@ -465,11 +473,17 @@ public class ReproductionController extends AbstractRequestController {
             return "redirect:/reproduction/" + qs;
         }
 
+        List<HoldingReproduction> hrs = new ArrayList<HoldingReproduction>();
         for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
             Reproduction r = reproductions.getReproductionById(bulkActionIds.getRequestId());
-            if (r != null) {
+            for (HoldingReproduction hr : r.getHoldingReproductions()) {
+                if (hr.getHolding().getId() == bulkActionIds.getHoldingId())
+                    hrs.add(hr);
+            }
+
+            if (!hrs.isEmpty()) {
                 try {
-                    reproductions.printReproduction(r, true);
+                    reproductions.printItems(hrs, true);
                 } catch (PrinterException e) {
                     return "reproduction_print_failure";
                 }
@@ -631,8 +645,10 @@ public class ReproductionController extends AbstractRequestController {
             if (commit) {
                 checkCaptcha(req, result, model); // Make sure a Captcha was entered correctly
                 reproductions.createOrEdit(reproduction, null, result, true, false);
-                if (!result.hasErrors() && !reproduction.getHoldingReproductions().isEmpty())
+                if (!result.hasErrors() && !reproduction.getHoldingReproductions().isEmpty()) {
+                    reproductions.autoPrintReproduction(reproduction);
                     return determineNextStep(reproduction, model);
+                }
             }
             else {
                 reproductions.validateReproductionHoldings(reproduction, null);
@@ -1214,6 +1230,8 @@ public class ReproductionController extends AbstractRequestController {
         try {
             reproductions.createOrEdit(newReproduction, null, result, false, free);
             if (!result.hasErrors()) {
+                reproductions.autoPrintReproduction(newReproduction);
+
                 // Mail the confirmation (offer is ready) to the customer
                 boolean mailSuccess = true;
                 if (mail) {

@@ -270,7 +270,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
     public void merge(Reservation reservation, Reservation other) {
         reservation.setDate(other.getDate());
         reservation.setReturnDate(other.getReturnDate());
-        reservation.setPrinted(other.isPrinted());
         reservation.setSpecial(other.getSpecial());
         reservation.setVisitorName(other.getVisitorName());
         reservation.setVisitorEmail(other.getVisitorEmail());
@@ -349,30 +348,34 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
     }
 
     /**
-     * Prints a reservation by using the default printer.
-     * @param res The reservation to print.
-     * @param alwaysPrint If set to true, already printed reservations will
+     * Prints holding reservations by using the default printer.
+     * @param hr The holding reservations to print.
+     * @param alwaysPrint If set to true, already printed holdings will
      * also be printed.
      * @throws PrinterException Thrown when delivering the print job to the
      * printer failed. Does not say anything if the printer actually printed
      * (or ran out of paper for example).
      */
-    public void printReservation(Reservation res, boolean alwaysPrint) throws PrinterException {
+    public void printItems(List<HoldingReservation> hrs, boolean alwaysPrint) throws PrinterException {
         try {
+            Set<Reservation> reservations = new HashSet<Reservation>();
             List<RequestPrintable> requestPrintables = new ArrayList<RequestPrintable>();
-            for (HoldingReservation hr : res.getHoldingReservations()) {
+            for (HoldingReservation hr : hrs) {
                 ReservationPrintable rp = new ReservationPrintable(
                         hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
                 requestPrintables.add(rp);
+                reservations.add(hr.getReservation());
             }
 
-            printRequest(res, requestPrintables, alwaysPrint);
+            printRequest(requestPrintables, alwaysPrint);
+
+            for (Reservation r : reservations) {
+                saveReservation(r);
+            }
         } catch (PrinterException e) {
             log.warn("Printing reservation failed", e);
             throw e;
         }
-
-        saveReservation(res);
     }
 
     /**
@@ -383,7 +386,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * (or ran out of paper for example).
      */
     public void printReservation(Reservation res) throws PrinterException {
-        printReservation(res, false);
+        printItems(res.getHoldingReservations(), false);
     }
 
     /**

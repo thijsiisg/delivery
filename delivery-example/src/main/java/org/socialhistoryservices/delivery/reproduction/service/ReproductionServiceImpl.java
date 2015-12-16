@@ -11,6 +11,7 @@ import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandard
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.*;
+import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -279,8 +280,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
         if (complete)
             updateStatusAndAssociatedHoldingStatus(r, Reproduction.Status.COMPLETED);
-        else
-            updateStatusAndAssociatedHoldingStatus(r, Reproduction.Status.ACTIVE);
     }
 
     /**
@@ -292,7 +291,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     public void merge(Reproduction reproduction, Reproduction other) {
         reproduction.setCustomerName(other.getName());
         reproduction.setCustomerEmail(other.getEmail());
-        reproduction.setPrinted(other.isPrinted());
         reproduction.setDiscount(other.getDiscount());
         reproduction.setRequestLocale(other.getRequestLocale());
         reproduction.setDateHasOrderDetails(other.getDateHasOrderDetails());
@@ -363,7 +361,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param reproduction The reproduction.
      */
     @Async
-    private void autoPrintReproduction(final Reproduction reproduction) {
+    public void autoPrintReproduction(final Reproduction reproduction) {
         try {
             if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date()))
                 printReproduction(reproduction);
@@ -413,36 +411,39 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
-     * Prints a (active) reproduction by using the default printer.
+     * Prints holding reproductions by using the default printer.
      *
-     * @param reproduction The reproduction to print.
-     * @param alwaysPrint  If set to true, already printed reproductions will also be printed.
+     * @param hrs         The holding reproductions to print.
+     * @param alwaysPrint If set to true, already printed reproductions will also be printed.
      * @throws PrinterException Thrown when delivering the print job to the printer failed.
      *                          Does not say anything if the printer actually printed
      *                          (or ran out of paper for example).
      */
-    public void printReproduction(Reproduction reproduction, boolean alwaysPrint) throws PrinterException {
-        // Only active reproductions can be printed
-        if (reproduction.getStatus() != Reproduction.Status.ACTIVE)
-            return;
-
+    public void printItems(List<HoldingReproduction> hrs, boolean alwaysPrint) throws PrinterException {
         try {
+            Set<Reproduction> reproductions = new HashSet<Reproduction>();
             List<RequestPrintable> requestPrintables = new ArrayList<RequestPrintable>();
-            for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-                if (!hr.isInSor()) {
+            for (HoldingReproduction hr : hrs) {
+                // Only print a reproduction if an offer has to be prepared
+                // or when the status has changed to ACTIVE and the item is not yet digitally available
+                Reproduction.Status status = hr.getReproduction().getStatus();
+                if (!hr.hasOrderDetails() || (!hr.isInSor() && (status == Reproduction.Status.ACTIVE))) {
                     ReproductionPrintable rp = new ReproductionPrintable(
                             hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
                     requestPrintables.add(rp);
+                    reproductions.add(hr.getReproduction());
                 }
             }
 
-            printRequest(reproduction, requestPrintables, alwaysPrint);
+            printRequest(requestPrintables, alwaysPrint);
+
+            for (Reproduction r : reproductions) {
+                saveReproduction(r);
+            }
         } catch (PrinterException e) {
             log.warn("Printing reproduction failed", e);
             throw e;
         }
-
-        saveReproduction(reproduction);
     }
 
     /**
@@ -454,7 +455,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      *                          (or ran out of paper for example).
      */
     public void printReproduction(Reproduction reproduction) throws PrinterException {
-        printReproduction(reproduction, false);
+        printItems(reproduction.getHoldingReproductions(), false);
     }
 
     /**
@@ -604,7 +605,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      */
     private void reserveAvailableRequiredHoldings(Reproduction reproduction) {
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            if (!hr.isInSor())
+            if (!hr.isInSor() && (hr.getHolding().getStatus() == Holding.Status.AVAILABLE))
                 requests.updateHoldingStatus(hr.getHolding(), Holding.Status.RESERVED);
         }
     }

@@ -219,37 +219,34 @@ public abstract class AbstractRequestService implements RequestService {
     /**
      * Prints printables by using the default printer.
      *
-     * @param request           The request to print.
      * @param requestPrintables The printables to print.
      * @param alwaysPrint       If set to true, already printed requests will also be printed.
      * @throws PrinterException Thrown when delivering the print job to the printer failed.
      *                          Does not say anything if the printer actually printed (or ran out of paper for example).
      */
-    protected void printRequest(Request request, List<RequestPrintable> requestPrintables, boolean alwaysPrint)
+    protected void printRequest(List<RequestPrintable> requestPrintables, boolean alwaysPrint)
             throws PrinterException {
-        // Check if the request should be printed or not.
-        if (request.isPrinted() && !alwaysPrint) {
-            return;
-        }
-
         // TODO This is a hack, because it create multiple jobs printing one
         // page each instead of a job printing multiple pages.
         for (RequestPrintable requestPrintable : requestPrintables) {
-            PrinterJob job = PrinterJob.getPrinterJob();
-            job.setJobName("delivery");
-            // Autowiring does not seem to work in POJOs ?
+            // Check if the request should be printed or not.
+            if (!requestPrintable.getHoldingRequest().isPrinted() || alwaysPrint) {
+                PrinterJob job = PrinterJob.getPrinterJob();
+                job.setJobName("delivery");
+                // Autowiring does not seem to work in POJOs ?
 
-            // Note: Use Book to make sure margins are correct.
-            Book pBook = new Book();
-            pBook.append(requestPrintable, new IISHPageFormat());
+                // Note: Use Book to make sure margins are correct.
+                Book pBook = new Book();
+                pBook.append(requestPrintable, new IISHPageFormat());
 
-            job.setPageable(pBook);
+                job.setPageable(pBook);
 
-            // Print the print job, throws PrinterException when something was wrong.
-            job.print();
+                // Print the print job, throws PrinterException when something was wrong.
+                job.print();
+
+                requestPrintable.getHoldingRequest().setPrinted(true);
+            }
         }
-
-        request.setPrinted(true);
     }
 
     /**

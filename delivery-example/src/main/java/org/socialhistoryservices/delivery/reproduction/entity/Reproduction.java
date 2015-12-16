@@ -257,32 +257,6 @@ public class Reproduction extends Request {
     }
 
     /**
-     * Whether the Reproduction has been printed or not.
-     */
-    @Column(name = "printed")
-    private boolean printed;
-
-    /**
-     * Set whether the Reproduction was printed or not.
-     *
-     * @param b True to consider the Reproduction to be printed at least once, false otherwise.
-     */
-    @Override
-    public void setPrinted(boolean b) {
-        printed = b;
-    }
-
-    /**
-     * Check if the Reproduction (is considered) to be printed at least once.
-     *
-     * @return True if the Reproduction was printed at least once, false otherwise.
-     */
-    @Override
-    public boolean isPrinted() {
-        return printed;
-    }
-
-    /**
      * The discount specified for this reproduction.
      */
     @NotNull
@@ -524,7 +498,6 @@ public class Reproduction extends Request {
         setStatus(Status.WAITING_FOR_ORDER_DETAILS);
         setDate(new Date());
         setCreationDate(new Date());
-        setPrinted(false);
         setDiscount(BigDecimal.ZERO);
         setRequestLocale(LocaleContextHolder.getLocale());
         holdingReproductions = new ArrayList<HoldingReproduction>();

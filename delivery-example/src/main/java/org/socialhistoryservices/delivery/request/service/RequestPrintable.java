@@ -122,6 +122,15 @@ public abstract class RequestPrintable implements Printable {
     }
 
     /**
+     * Returns the holding request to be printed.
+     *
+     * @return The holding request.
+     */
+    public HoldingRequest getHoldingRequest() {
+        return holdingRequest;
+    }
+
+    /**
      * Prints one page for a reservation (one record per page).
      *
      * @param g    The graphics object to draw on.

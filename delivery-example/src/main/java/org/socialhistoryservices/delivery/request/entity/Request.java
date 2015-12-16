@@ -3,7 +3,6 @@ package org.socialhistoryservices.delivery.request.entity;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 public abstract class Request {
@@ -21,20 +20,6 @@ public abstract class Request {
      * @return The email address of the person.
      */
     public abstract String getEmail();
-
-    /**
-     * Set whether the request was printed or not.
-     *
-     * @param b True to consider the request to be printed at least once, false otherwise.
-     */
-    public abstract void setPrinted(boolean b);
-
-    /**
-     * Check if the Request (is considered) to be printed at least once.
-     *
-     * @return True if the Request was printed at least once, false otherwise.
-     */
-    public abstract boolean isPrinted();
 
     /**
      * Get the Request's creation date.

@@ -134,6 +134,32 @@ public class HoldingReproduction extends HoldingRequest {
     }
 
     /**
+     * Whether the print for this holding has been printed or not.
+     */
+    @Column(name = "printed")
+    private boolean printed = false;
+
+    /**
+     * Set whether the HoldingReproduction was printed or not.
+     *
+     * @param b True to consider the HoldingReproduction to be printed at least once, false otherwise.
+     */
+    @Override
+    public void setPrinted(boolean b) {
+        printed = b;
+    }
+
+    /**
+     * Check if the HoldingReproduction (is considered) to be printed at least once.
+     *
+     * @return True if the HoldingReproduction was printed at least once, false otherwise.
+     */
+    @Override
+    public boolean isPrinted() {
+        return printed;
+    }
+
+    /**
      * Is the holding completed for this reproduction?
      */
     @Column(name = "completed", nullable = false)
