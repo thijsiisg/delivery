@@ -79,7 +79,7 @@ function toggleCustomReproduction(elem) {
         }
     }
 
-    if (($(':radio.custom:checked').length > 0) || ($('.warning').length > 0)) {
+    if ($(':radio.custom:checked').length > 0) {
         anyNonCustom.hide();
         allCustom.show();
     }
