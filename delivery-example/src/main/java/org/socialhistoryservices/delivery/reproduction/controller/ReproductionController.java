@@ -623,6 +623,10 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("unavailableStandardOptions", unavailableStandardOptions);
         model.addAttribute("reproductionCustomNotes", reproductions.getAllReproductionCustomNotesAsMap());
 
+        // For new reproduction requests, select the first available option for each holding in the request
+        if (!commit)
+            autoSelectFirstAvailableOption(reproduction, reproductionStandardOptions, unavailableStandardOptions);
+
         try {
             if (commit) {
                 checkCaptcha(req, result, model); // Make sure a Captcha was entered correctly
@@ -724,6 +728,26 @@ public class ReproductionController extends AbstractRequestController {
         }
 
         return availableStandardOptions;
+    }
+
+    /**
+     * Auto select the first available standard option for each holding, if any standard options are available.
+     *
+     * @param reproduction               The reproduction request.
+     * @param standardOptions            The standard options.
+     * @param unavailableStandardOptions The standard options which are not available.
+     */
+    private void autoSelectFirstAvailableOption(Reproduction reproduction,
+                                                Map<String, List<ReproductionStandardOption>> standardOptions,
+                                                Map<String, List<ReproductionStandardOption>> unavailableStandardOptions) {
+        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
+            List<ReproductionStandardOption> availableOptions = new ArrayList<ReproductionStandardOption>();
+            availableOptions.addAll(standardOptions.get(hr.getHolding().getSignature()));
+            availableOptions.removeAll(unavailableStandardOptions.get(hr.getHolding().getSignature()));
+
+            if (!availableOptions.isEmpty())
+                hr.setStandardOption(availableOptions.get(0));
+        }
     }
 
     /**

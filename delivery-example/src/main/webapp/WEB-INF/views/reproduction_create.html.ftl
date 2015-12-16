@@ -171,7 +171,8 @@
         <#assign id="${spring.status.expression}.${value_index}">
         <input type="radio" id="${id}" name="${spring.status.expression}"
                value="${value.id?c}"
-               <#if !available> disabled="disabled" </#if>/>
+               <#if !available> disabled="disabled"</#if>
+               <#if spring.stringStatusValue == value> checked="checked"</#if>/>
 
         <ul class="reproductionDetails create">
           <li>
@@ -185,7 +186,8 @@
 
           <#if !available>
             <li class="warning spacing">
-              <@_ "reproduction.reservedNotInSorMsg:" "Unfortunately, you cannot select this option. This item is already reserved and not yet digitally available. For more information, please contact the information desk:"/>
+              <@_ "reproduction.reservedNotInSorMsg" "Unfortunately, you cannot select this option. This item is already reserved and not yet digitally available."/> <br/>
+              <@_ "reproduction.reservedMoreInfoMsg" "For more information, please contact the information desk:"/>
               <a href="mailto:${email}">${email}</a>
             </li>
           </#if>
@@ -214,7 +216,8 @@
       <#assign id="${spring.status.expression}.null">
       <#assign materialType = holding.record.externalInfo.materialType>
         <input type="radio" id="${id}" name="${spring.status.expression}" class="custom" value="0"
-               <#if holding.status != "AVAILABLE"> disabled="disabled" </#if>/>
+               <#if holding.status != "AVAILABLE"> disabled="disabled"</#if>
+               <#if (holding.status == "AVAILABLE") && spring.stringStatusValue == ""> checked="checked"</#if>/>
 
         <ul class="reproductionDetails">
           <li>
@@ -232,8 +235,9 @@
 
           <#if holding.status != "AVAILABLE">
             <li class="warning spacing">
-              Unfortunatly you cannot select this option, as it is currently reserved. <br/>
-              For more information, please consult the information desk or email ask@iisg.nl
+              <@_ "reproduction.reservedNotInSorMsg" "Unfortunately, you cannot select this option. This item is already reserved and not yet digitally available."/> <br/>
+              <@_ "reproduction.reservedMoreInfoMsg" "For more information, please contact the information desk:"/>
+              <a href="mailto:${email}">${email}</a>
             </li>
           </#if>
 
