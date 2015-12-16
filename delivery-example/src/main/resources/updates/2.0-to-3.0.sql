@@ -41,6 +41,10 @@ ON hr.reservation_id = r.id
 WHERE r.printed = 't'
 AND holding_reservations.id = hr.id;
 
+UPDATE holdings
+SET usage_restriction = 'CLOSED'
+WHERE signature ILIKE '%(missing)';
+
 /* REMOVE OLD COLUMNS */
 
 ALTER TABLE reservations DROP COLUMN printed;
