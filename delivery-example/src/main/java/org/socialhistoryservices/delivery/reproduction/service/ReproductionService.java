@@ -5,9 +5,9 @@ import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.validation.BindingResult;
 
+import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import java.awt.print.PrinterException;
@@ -66,6 +66,14 @@ public interface ReproductionService {
      * @return A list of matching Reproductions.
      */
     public List<Reproduction> listReproductions(CriteriaQuery<Reproduction> q);
+
+    /**
+     * List all Tuples matching a built query.
+     *
+     * @param q The criteria query to execute
+     * @return A list of matching Tuples.
+     */
+    public List<Tuple> listTuples(CriteriaQuery<Tuple> q);
 
     /**
      * List all HoldingReproduction matching a built query.

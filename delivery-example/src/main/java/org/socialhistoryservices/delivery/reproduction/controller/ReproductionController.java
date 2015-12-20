@@ -17,8 +17,6 @@ import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.request.util.BulkActionIds;
-import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
-import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -33,6 +31,7 @@ import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.print.PrinterException;
@@ -469,9 +468,8 @@ public class ReproductionController extends AbstractRequestController {
         String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
 
         // Simply redirect to previous page if no reservations were selected
-        if (checked == null) {
+        if (checked == null)
             return "redirect:/reproduction/" + qs;
-        }
 
         List<HoldingReproduction> hrs = new ArrayList<HoldingReproduction>();
         for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
@@ -480,13 +478,13 @@ public class ReproductionController extends AbstractRequestController {
                 if (hr.getHolding().getId() == bulkActionIds.getHoldingId())
                     hrs.add(hr);
             }
+        }
 
-            if (!hrs.isEmpty()) {
-                try {
-                    reproductions.printItems(hrs, true);
-                } catch (PrinterException e) {
-                    return "reproduction_print_failure";
-                }
+        if (!hrs.isEmpty()) {
+            try {
+                reproductions.printItems(hrs, true);
+            } catch (PrinterException e) {
+                return "reproduction_print_failure";
             }
         }
 
@@ -1304,6 +1302,104 @@ public class ReproductionController extends AbstractRequestController {
         reproductions.editStandardOptions(standardOptions, result);
         model.addAttribute("standardOptions", standardOptions);
         return "reproduction_standard_options_edit";
+    }
+
+    /**
+     * Get a list with the amount payed for reproductions per day.
+     *
+     * @param req   The HTTP request object.
+     * @param model Passed view model.
+     * @return The name of the view to use.
+     */
+    @RequestMapping(value = "/materials", method = RequestMethod.GET)
+    @Secured("ROLE_REPRODUCTION_VIEW")
+    public String reproductionMaterials(HttpServletRequest req, Model model) {
+        Map<String, String[]> p = req.getParameterMap();
+
+        Date from = getFromDateFilter(p);
+        from = (from != null) ? from : new Date();
+        Date to = getToDateFilter(p);
+        to = (to != null) ? to : new Date();
+
+        model.addAttribute("tuplesMaterials", countMaterials(from, to));
+        model.addAttribute("tuplePayedAmounts", countPayedAmounts(from, to));
+
+        return "reproduction_materials";
+    }
+
+    /**
+     * Counts the number of materials in reproduction requests in a given period.
+     *
+     * @param from From date.
+     * @param to   To date.
+     * @return A list of materials and the counts.
+     */
+    private List<Tuple> countMaterials(Date from, Date to) {
+        CriteriaBuilder cb = reproductions.getHoldingReproductionCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createTupleQuery();
+
+        // Join all required tables
+        Root<HoldingReproduction> hrRoot = cq.from(HoldingReproduction.class);
+        Join<HoldingReproduction, Reproduction> repRoot = hrRoot.join(HoldingReproduction_.reproduction);
+        Join<HoldingReproduction, Holding> hRoot = hrRoot.join(HoldingReproduction_.holding);
+        Join<Holding, Record> rRoot = hRoot.join(Holding_.record);
+        Join<Record, ExternalRecordInfo> eriRoot = rRoot.join(Record_.externalInfo);
+
+        // Within the selected date range
+        Expression<Date> reproductionDate = repRoot.<Date>get(Reproduction_.date);
+        Expression<Boolean> fromExpr = cb.greaterThanOrEqualTo(reproductionDate, from);
+        Expression<Boolean> toExpr = cb.lessThanOrEqualTo(reproductionDate, to);
+
+        // Count the materials
+        Expression<ExternalRecordInfo.MaterialType> materialType =
+                eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType);
+        Expression<Long> numberOfRequests = cb.count(materialType);
+
+        cq.multiselect(materialType.alias("material"), numberOfRequests.alias("noRequests"));
+        cq.where(cb.and(fromExpr, toExpr));
+        cq.groupBy(eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType));
+        cq.orderBy(cb.desc(numberOfRequests));
+
+        return reproductions.listTuples(cq);
+    }
+
+    /**
+     * Counts the payed amounts in reproduction requests for a given period.
+     *
+     * @param from From date.
+     * @param to   To date.
+     * @return The payed amounts.
+     */
+    private Tuple countPayedAmounts(Date from, Date to) {
+        CriteriaBuilder cb = reproductions.getHoldingReproductionCriteriaBuilder();
+        CriteriaQuery<Tuple> cq = cb.createTupleQuery();
+
+        // Join all required tables
+        Root<Reproduction> rRoot = cq.from(Reproduction.class);
+        Join<Reproduction, Order> oRoot = rRoot.join(Reproduction_.order);
+
+        // Within the selected date range
+        Expression<Date> reproductionDate = rRoot.<Date>get(Reproduction_.date);
+        Expression<Boolean> fromExpr = cb.greaterThanOrEqualTo(reproductionDate, from);
+        Expression<Boolean> toExpr = cb.lessThanOrEqualTo(reproductionDate, to);
+
+        // And only active or completed reproductions
+        Expression<Reproduction.Status> status = rRoot.<Reproduction.Status>get(Reproduction_.status);
+        Expression<Boolean> statusExpr = cb.in(status)
+                .value(Reproduction.Status.ACTIVE)
+                .value(Reproduction.Status.COMPLETED)
+                .value(Reproduction.Status.DELIVERED);
+
+        // Count the amounts
+        Expression<Long> amount = oRoot.<Long>get(Order_.amount);
+        Expression<Long> refundedAmount = oRoot.<Long>get(Order_.refundedAmount);
+        Expression<Long> totalAmount = cb.sum(amount);
+        Expression<Long> totalRefundedAmount = cb.sum(refundedAmount);
+
+        cq.multiselect(totalAmount.alias("totalAmount"), totalRefundedAmount.alias("totalRefundedAmount"));
+        cq.where(cb.and(statusExpr, cb.and(fromExpr, toExpr)));
+
+        return reproductions.listTuples(cq).get(0);
     }
 
     /**

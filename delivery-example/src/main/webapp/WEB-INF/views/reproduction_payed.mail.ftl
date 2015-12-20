@@ -7,6 +7,7 @@
 </#if>
 
 <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
+<#if reproduction.order??><@_ "reproductionMail.orderId" "Order number" />: ${reproduction.order.id?c}</#if>
 
 --- <@_ "reproduction.records" "Items"/> ---
 <#list reproduction.holdingReproductions as hr>

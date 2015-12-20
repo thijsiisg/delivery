@@ -11,7 +11,6 @@ import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandard
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.*;
-import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
+import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import java.awt.print.PrinterException;
 import java.math.BigDecimal;
@@ -185,6 +185,16 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
+     * List all Tuples matching a built query.
+     *
+     * @param q The criteria query to execute
+     * @return A list of matching Tuples.
+     */
+    public List<Tuple> listTuples(CriteriaQuery<Tuple> q) {
+        return reproductionDAO.listForTuple(q);
+    }
+
+    /**
      * List all HoldingReproduction matching a built query.
      *
      * @param q The criteria query to execute
@@ -320,35 +330,37 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param status       The reproduction which changed status.
      */
     public void updateStatusAndAssociatedHoldingStatus(Reproduction reproduction, Reproduction.Status status) {
-        if (status.ordinal() <= reproduction.getStatus().ordinal()) {
+        if (status.ordinal() <= reproduction.getStatus().ordinal())
             return;
-        }
+
         reproduction.setStatus(status);
 
         // Determine actions and specific holding status for the new reproduction status
-        Holding.Status hStatus = null;
-        boolean completedStatus = false;
+        boolean completed = false;
         switch (status) {
             case HAS_ORDER_DETAILS:
                 reproduction.setDateHasOrderDetails(new Date());
                 break;
             case ACTIVE:
-                mailPayed(reproduction);
-                mailActive(reproduction);
+                mailPayedAndActive(reproduction);
                 autoPrintReproduction(reproduction);
                 break;
             case DELIVERED:
+                completed = true;
+                break;
             case CANCELLED:
-                completedStatus = true;
-                hStatus = Holding.Status.AVAILABLE;
+                completed = true;
+                mailCancelled(reproduction);
                 break;
         }
 
         // Update the holdings of the reproduction
-        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            if ((hStatus != null) && !hr.isCompleted()) {
-                hr.setCompleted(completedStatus);
-                requests.updateHoldingStatus(hr.getHolding(), hStatus);
+        if (completed) {
+            for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
+                if (hr.getHolding().getStatus() == Holding.Status.RESERVED) {
+                    hr.setCompleted(true);
+                    requests.updateHoldingStatus(hr.getHolding(), Holding.Status.AVAILABLE);
+                }
             }
         }
     }
@@ -371,13 +383,13 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
-     * Email the customer a payment confirmation.
+     * Email the customer a payment confirmation and email repro concerning the active reproduction.
      *
      * @param reproduction The reproduction.
      */
-    private void mailPayed(Reproduction reproduction) {
+    private void mailPayedAndActive(Reproduction reproduction) {
         try {
-            reproductionMailer.mailPayed(reproduction);
+            reproductionMailer.mailPayedAndActive(reproduction);
         } catch (MailException me) {
             // Do nothing
         }
@@ -388,9 +400,9 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      *
      * @param reproduction The reproduction.
      */
-    private void mailActive(Reproduction reproduction) {
+    private void mailCancelled(Reproduction reproduction) {
         try {
-            reproductionMailer.mailActive(reproduction);
+            reproductionMailer.mailCancelled(reproduction);
         } catch (MailException me) {
             // Do nothing
         }

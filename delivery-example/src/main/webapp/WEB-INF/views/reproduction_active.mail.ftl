@@ -1,6 +1,10 @@
 <#include "mail.ftl">
 <@mailRaedingRoom>
+<@_ "reproductionMail.activeReproductionMessage" "A reproduction has been confirmed and payed." />
+
+
 <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
+<#if reproduction.order??><@_ "reproductionMail.orderId" "Order number" />: ${reproduction.order.id?c}</#if>
 <@_ "reproductionMail.customerName" "Customer" />: ${reproduction.customerName}
 <@_ "reproductionMail.customerEmail" "E-mail" />: ${reproduction.customerEmail}
 

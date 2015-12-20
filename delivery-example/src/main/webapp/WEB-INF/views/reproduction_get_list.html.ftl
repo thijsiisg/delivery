@@ -36,6 +36,11 @@
       <@_ "reproductionList.filterEverything" "Show All Reproductions"/>
     </a>
   </li>
+  <li>
+    <a href="${rc.contextPath}/reproduction/materials">
+      <@_ "reproductionMaterials.noRequestsAndTotalAmount" " Number of requests and total amount payed"/>
+    </a>
+  </li>
 </ul>
 
 <fieldset class="actions">

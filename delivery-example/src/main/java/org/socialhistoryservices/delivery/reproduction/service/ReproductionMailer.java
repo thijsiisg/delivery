@@ -24,7 +24,7 @@ public class ReproductionMailer extends RequestMailer {
      * Mail a pending confirmation message to a customer who has just created a reproduction.
      * Also mail an email to the reading room for filling out the blanks in the offer.
      *
-     * @param reproduction     The reproduction to extract mail details from.
+     * @param reproduction The reproduction to extract mail details from.
      * @throws MailException Thrown when sending mail somehow failed.
      */
     public void mailPending(Reproduction reproduction) throws MailException {
@@ -63,30 +63,16 @@ public class ReproductionMailer extends RequestMailer {
 
     /**
      * Mail payment confirmation message for a reproduction to the customer.
-     *
-     * @param reproduction The reproduction to extract mail details from.
-     * @throws MailException Thrown when sending mail somehow failed.
-     */
-    public void mailPayed(Reproduction reproduction) throws MailException {
-        assert reproduction.getStatus() == Reproduction.Status.ACTIVE :
-                "Can only mail payed confirmation when Reproduction status is ACTIVE";
-
-        String subject = getMessage("reproductionMail.payedSubject", "Confirmation of payment",
-                reproduction.getRequestLocale());
-        sendMail(reproduction, subject, "reproduction_payed.mail.ftl", getReproductionModel(reproduction),
-                reproduction.getRequestLocale());
-    }
-
-    /**
+     * <p/>
      * Mail repro which items of an active reproduction have been sent to the printer
      * and the SOR links where the other items are available for download.
      *
      * @param reproduction The reproduction to extract mail details from.
      * @throws MailException Thrown when sending mail somehow failed.
      */
-    public void mailActive(Reproduction reproduction) throws MailException {
+    public void mailPayedAndActive(Reproduction reproduction) throws MailException {
         assert reproduction.getStatus() == Reproduction.Status.ACTIVE :
-                "Can only mail active when Reproduction status is ACTIVE";
+                "Can only mail active and payed confirmation when Reproduction status is ACTIVE";
 
         List<HoldingReproduction> inSor = new ArrayList<HoldingReproduction>();
         List<HoldingReproduction> notInSor = new ArrayList<HoldingReproduction>();
@@ -101,9 +87,30 @@ public class ReproductionMailer extends RequestMailer {
         model.addAttribute("inSor", inSor);
         model.addAttribute("notInSor", notInSor);
 
-        String subject = getMessage("reproductionMail.activeReproductionSubject", "New active reproduction",
+        // First sent the customer a confirmation email
+        String subjectCustomer = getMessage("reproductionMail.payedSubject", "Confirmation of payment",
+                reproduction.getRequestLocale());
+        sendMail(reproduction, subjectCustomer, "reproduction_payed.mail.ftl", model, reproduction.getRequestLocale());
+
+        // Then sent the reading room / repro the confirmation
+        String subjectRepro = getMessage("reproductionMail.activeReproductionSubject", "New active reproduction",
                 ENGLISH_LOCALE);
-        sendMail(subject, "reproduction_active.mail.ftl", model, ENGLISH_LOCALE);
+        sendMail(subjectRepro, "reproduction_active.mail.ftl", model, ENGLISH_LOCALE);
+    }
+
+    /**
+     * Mail the study room when a reproduction is cancelled.
+     *
+     * @param reproduction The reproduction to extract mail details from.
+     * @throws MailException Thrown when sending mail somehow failed.
+     */
+    public void mailCancelled(Reproduction reproduction) throws MailException {
+        assert reproduction.getStatus() == Reproduction.Status.CANCELLED :
+                "Can only mail active when Reproduction status is CANCELLED";
+
+        String subject = getMessage("reproductionMail.cancelledReproductionSubject", "Reproduction cancelled",
+                ENGLISH_LOCALE);
+        sendMail(subject, "reproduction_cancelled.mail.ftl", getReproductionModel(reproduction), ENGLISH_LOCALE);
     }
 
     /**

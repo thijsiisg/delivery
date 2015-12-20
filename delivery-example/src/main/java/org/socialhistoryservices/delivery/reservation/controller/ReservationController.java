@@ -799,13 +799,13 @@ public class ReservationController extends AbstractRequestController {
                 if (hr.getHolding().getId() == bulkActionIds.getHoldingId())
                     hrs.add(hr);
             }
+        }
 
-            if (!hrs.isEmpty()) {
-                try {
-                    reservations.printItems(hrs, true);
-                } catch (PrinterException e) {
-                    return "reservation_print_failure";
-                }
+        if (!hrs.isEmpty()) {
+            try {
+                reservations.printItems(hrs, true);
+            } catch (PrinterException e) {
+                return "reservation_print_failure";
             }
         }
 
@@ -1077,27 +1077,10 @@ public class ReservationController extends AbstractRequestController {
 	public String reservationMaterials(HttpServletRequest req, Model model) {
 		Map<String, String[]> p = req.getParameterMap();
 
-		Date from = new Date();
-		if (p.containsKey("from_date")) {
-			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-			try {
-				from = df.parse(p.get("from_date")[0]);
-			}
-			catch (ParseException ex) {
-				throw new InvalidRequestException("Invalid date: " + p.get("from_date")[0]);
-			}
-		}
-
-        Date to = new Date();
-        if (p.containsKey("to_date")) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            try {
-                to = df.parse(p.get("to_date")[0]);
-            }
-            catch (ParseException ex) {
-                throw new InvalidRequestException("Invalid date: " + p.get("to_date")[0]);
-            }
-        }
+        Date from = getFromDateFilter(p);
+        from = (from != null) ? from : new Date();
+        Date to = getToDateFilter(p);
+        to = (to != null) ? to : new Date();
 
 		CriteriaBuilder cb = reservations.getHoldingReservationCriteriaBuilder();
 		CriteriaQuery<Tuple> cq = cb.createTupleQuery();
@@ -1118,10 +1101,10 @@ public class ReservationController extends AbstractRequestController {
 		Expression<Long> numberOfRequests = cb.count(materialType);
 
 	    Expression<Boolean> fromExpr = cb.greaterThanOrEqualTo(reservationDate, from);
-        Expression<Boolean> toExpor = cb.lessThanOrEqualTo(reservationDate, to);
+        Expression<Boolean> toExpr = cb.lessThanOrEqualTo(reservationDate, to);
 
         cq.multiselect(materialType.alias("material"), numberOfRequests.alias("noRequests"));
-        cq.where(cb.and(fromExpr, toExpor));
+        cq.where(cb.and(fromExpr, toExpr));
 		cq.groupBy(eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType));
 		cq.orderBy(cb.desc(numberOfRequests));
 
