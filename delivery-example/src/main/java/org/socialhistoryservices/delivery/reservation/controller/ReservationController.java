@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.reservation.controller;
 
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
 import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
@@ -73,6 +74,8 @@ public class ReservationController extends ErrorHandlingController {
 
     @Autowired
     private RecordService records;
+
+    private Logger log = Logger.getLogger(getClass());
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -700,6 +703,7 @@ public class ReservationController extends ErrorHandlingController {
 	                    resMailer.mailConfirmation(newRes);
                     }
                     catch (MailException e) {
+                        log.error("Failed to send email", e);
 	                    model.addAttribute("error", "mail");
                     }
                     // Automatically print the reservation.
