@@ -46,6 +46,8 @@
           <value>prop_mailEnabled</value>
           <value>prop_mailHost</value>
           <value>prop_mailPort</value>
+          <value>prop_mailUsername</value>
+          <value>prop_mailPassword</value>
           <value>prop_mailSystemAddress</value>
           <value>prop_urlSelf</value>
           <value>prop_urlSearch</value>
