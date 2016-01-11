@@ -49,7 +49,7 @@
   </#if>
 
   <#if error?? >
-      <p><@_ "reservation.error."+error error /></p>
+      <p class="error"><@_ "reservation.error."+error error /></p>
   </#if>
 
   <p><@_ "reservation.backToSearch" "Close this tab and return to Search for new requests" /></p>

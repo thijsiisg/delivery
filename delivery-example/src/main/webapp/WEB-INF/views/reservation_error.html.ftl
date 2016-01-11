@@ -21,7 +21,7 @@
 
 <@userbase "Error">
 <h1><@_ "reservation.error" "An error has occurred creating a reservation:"/></h1>
-<p><@_ "reservation.error."+error error /></p>
+<p class="error"><@_ "reservation.error."+error error /></p>
 
 <#if error == "availability">
 <#assign email>

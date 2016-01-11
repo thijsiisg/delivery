@@ -675,6 +675,10 @@ table.holdings td {
     color: red;
 }
 
+.error {
+    color: red;
+}
+
 .orange {
     color: orange;
 }
