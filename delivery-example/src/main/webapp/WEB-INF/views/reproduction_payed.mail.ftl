@@ -19,14 +19,17 @@
 <@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: ${hr.deliveryTime} <@_ "days" "days"/>
 
 </#list>
-<#if (reproduction.getCopyrightPrice() gt 0) || (reproduction.discount gt 0)>
+<#if (reproduction.getAdminstrationCosts() gt 0) ||(reproduction.getCopyrightPrice() gt 0) || (reproduction.discount gt 0)>
 --- <@_ "including" "Including" /> ---
-  <#if reproduction.getCopyrightPrice() gt 0>
+<#if reproduction.getAdminstrationCosts() gt 0>
+<@_ "reproduction.adminstrationCosts" "Adminstration cost"/>: ${reproduction.getAdminstrationCosts()?string("0.00")} EUR
+</#if>
+<#if reproduction.getCopyrightPrice() gt 0>
 <@_ "reproduction.copyright" "Copyright"/>: ${reproduction.getCopyrightPrice()?string("0.00")} EUR
-  </#if>
-  <#if reproduction.discount gt 0>
+</#if>
+<#if reproduction.discount gt 0>
 <@_ "reproduction.discount" "Discount"/>: ${reproduction.discount?string("0.00")} EUR
-  </#if>
+</#if>
 
 </#if>
 --- <@_ "total" "Total" /> ---

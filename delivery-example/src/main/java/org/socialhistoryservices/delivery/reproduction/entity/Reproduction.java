@@ -257,6 +257,33 @@ public class Reproduction extends Request {
     }
 
     /**
+     * The adminstration costs specified for this reproduction.
+     */
+    @NotNull
+    @Min(0)
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "adminstrationCosts", nullable = false)
+    private BigDecimal adminstrationCosts;
+
+    /**
+     * Get the adminstration costs specified.
+     *
+     * @return The adminstration costs specified.
+     */
+    public BigDecimal getAdminstrationCosts() {
+        return adminstrationCosts;
+    }
+
+    /**
+     * Set the adminstration costs specified.
+     *
+     * @param discount The adminstration costs specified.
+     */
+    public void setAdminstrationCosts(BigDecimal adminstrationCosts) {
+        this.adminstrationCosts = adminstrationCosts.setScale(2);
+    }
+
+    /**
      * The discount specified for this reproduction.
      */
     @NotNull
@@ -405,7 +432,7 @@ public class Reproduction extends Request {
      * @return The total price for this reproduction.
      */
     public BigDecimal getTotalPrice() {
-        BigDecimal price = BigDecimal.ZERO;
+        BigDecimal price = getAdminstrationCosts();
 
         // First add the price and copyright price of each holding in this reproduction
         for (HoldingReproduction hr : getHoldingReproductions()) {
@@ -499,6 +526,7 @@ public class Reproduction extends Request {
         setDate(new Date());
         setCreationDate(new Date());
         setDiscount(BigDecimal.ZERO);
+        setAdminstrationCosts(BigDecimal.ZERO);
         setRequestLocale(LocaleContextHolder.getLocale());
         holdingReproductions = new ArrayList<HoldingReproduction>();
         token = UUID.randomUUID().toString();

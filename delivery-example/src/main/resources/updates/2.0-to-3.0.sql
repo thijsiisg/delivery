@@ -114,6 +114,7 @@ WITH (
 CREATE TABLE reproductions
 (
   id integer NOT NULL,
+  adminstrationcosts numeric(7,2) NOT NULL,
   comment character varying(255),
   creation_date timestamp without time zone NOT NULL,
   customeremail character varying(255) NOT NULL,

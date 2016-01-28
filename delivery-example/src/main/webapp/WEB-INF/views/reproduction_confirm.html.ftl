@@ -177,6 +177,14 @@
               </tr>
             </#list>
 
+            <#if reproduction.getAdminstrationCosts() gt 0>
+              <tr class="additional">
+                <td class="label"><@_ "reproduction.adminstrationCosts" "Adminstration costs"/>:</td>
+                <td class="price_column">&euro; ${reproduction.getAdminstrationCosts()?string("0.00")}</td>
+                <td>&nbsp;</td>
+              </tr>
+            </#if>
+
             <#if reproduction.getCopyrightPrice() gt 0>
               <tr class="additional">
                 <td class="label"><@_ "reproduction.copyright" "Copyright"/>:</td>

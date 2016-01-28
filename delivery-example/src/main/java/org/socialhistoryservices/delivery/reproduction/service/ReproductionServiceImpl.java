@@ -302,6 +302,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         reproduction.setCustomerName(other.getName());
         reproduction.setCustomerEmail(other.getEmail());
         reproduction.setDiscount(other.getDiscount());
+        reproduction.setAdminstrationCosts(other.getAdminstrationCosts());
         reproduction.setRequestLocale(other.getRequestLocale());
         reproduction.setDateHasOrderDetails(other.getDateHasOrderDetails());
         reproduction.setComment(other.getComment());
@@ -506,8 +507,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             if (!isCustomer)
                 validateReproductionNotCustomer(newReproduction, result);
 
-            // Initialize the holdings of this reproduction
-            initHoldingReproductions(newReproduction, forFree);
+            // Initialize reproduction and its holdings
+            initReproduction(newReproduction, forFree);
 
             // Add or save the record when no errors are present
             if (!result.hasErrors()) {
@@ -907,13 +908,20 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
-     * Initializes the holding reproductions.
+     * Initializes the reproduction and its holdings.
      * Determines if we can already state the price and delivery time for one or more chosen holdings.
      *
      * @param reproduction The reproduction.
      * @param forFree      Whether the reproduction is for free.
      */
-    private void initHoldingReproductions(Reproduction reproduction, boolean forFree) {
+    private void initReproduction(Reproduction reproduction, boolean forFree) {
+        if (forFree)
+            reproduction.setAdminstrationCosts(BigDecimal.ZERO);
+        else
+            reproduction.setAdminstrationCosts(
+                    new BigDecimal(properties.getProperty("prop_reproductionAdministrationCosts"))
+            );
+
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             ReproductionStandardOption standardOption = hr.getStandardOption();
 
