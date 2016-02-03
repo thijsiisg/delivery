@@ -7,6 +7,7 @@ import org.socialhistoryservices.delivery.reproduction.dao.*;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
+import org.socialhistoryservices.delivery.reproduction.util.Pages;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
@@ -856,6 +857,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             // If a standard option is chosen, then ignore the provided values
             if (standardOption != null) {
                 hr.setPrice(null);
+                hr.setNumberOfPages(null);
                 hr.setCopyrightPrice(null);
                 hr.setDeliveryTime(null);
                 hr.setCustomReproductionCustomer(null);
@@ -936,6 +938,13 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                         hr.setCopyrightPrice(standardOption.getCopyrightPrice());
                     else
                         hr.setCopyrightPrice(BigDecimal.ZERO);
+
+                    // Determine the number of pages, if possible
+                    Pages pages = hr.getHolding().getRecord().getPages();
+                    if (pages.containsNumberOfPages())
+                        hr.setNumberOfPages(pages.getNumberOfPages());
+                    else
+                        hr.setNumberOfPages(null);
                 }
                 hr.setDeliveryTime(standardOption.getDeliveryTime());
             }

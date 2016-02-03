@@ -46,3 +46,7 @@
 ----
     <@_ "mail.auto" "This is an email automatically sent by Delivery."/>
 </#macro>
+
+<#macro holdingPrice price completePrice noPages=0>
+${completePrice?string("0.00")} EUR <#if noPages gt 0>(<@_ "price.page" "Price per page"/>: ${price?string("0.00")} EUR, <@_ "no.pages" "Number of pages"/>: ${noPages?html})</#if>
+</#macro>

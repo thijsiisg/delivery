@@ -344,19 +344,9 @@ public class Holding {
         if (record.getExternalInfo().getMaterialType() != standardOption.getMaterialType())
             return false;
 
-        // In case of books, there can be different options for different page numbers
-        if (record.getExternalInfo().getMaterialType() == ExternalRecordInfo.MaterialType.BOOK) {
-            Pages pages = new Pages(record);
-            Integer min = standardOption.getMinNumberOfPages();
-            Integer max = standardOption.getMaxNumberOfPages();
-
-            if (pages.containsNumberOfPages()) {
-                int nrPages = pages.getNumberOfPages();
-                return ((min == null || min <= nrPages) && (max == null || max >= nrPages));
-            }
-
-            return (min == null && max == null);
-        }
+        // In case of books, the reproduction option is based on the number of pages
+        if (record.getExternalInfo().getMaterialType() == ExternalRecordInfo.MaterialType.BOOK)
+            return record.getPages().containsNumberOfPages();
 
         return true;
     }

@@ -130,7 +130,7 @@
 
               <li class="spacing">
                 <span><@_ "reproductionStandardOption.price" "Price"/></span>
-                &euro; ${hr.price?string("0.00")}
+                <@holdingPrice hr.price hr.completePrice hr.numberOfPages/>
               </li>
 
               <#if hr.copyrightPrice?? && hr.copyrightPrice gt 0>
@@ -172,7 +172,7 @@
               <#assign h = hr.holding/>
               <tr>
                 <td>${h.record.externalInfo.title?html} - ${h.signature?html}</td>
-                <td class="price_column">&euro; ${hr.price?string("0.00")}</td>
+                <td class="price_column">&euro; ${hr.completePrice?string("0.00")}</td>
                 <td>${hr.deliveryTime?html} <@_ "days" "days"/></td>
               </tr>
             </#list>

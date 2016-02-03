@@ -436,7 +436,7 @@ public class Reproduction extends Request {
 
         // First add the price and copyright price of each holding in this reproduction
         for (HoldingReproduction hr : getHoldingReproductions()) {
-            price = price.add(hr.getPrice());
+            price = price.add(hr.getCompletePrice());
             if (hr.getCopyrightPrice() != null)
                 price = price.add(hr.getCopyrightPrice());
         }

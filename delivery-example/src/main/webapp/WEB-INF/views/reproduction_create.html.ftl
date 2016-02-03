@@ -194,7 +194,7 @@
 
           <li class="spacing">
             <span><@_ "reproductionStandardOption.price" "Price"/></span>
-            &euro; ${value.price?string("0.00")}
+            <@holdingPrice value.price holding.record.determinePriceByPages(value.price) holding.record.pages.numberOfPages/>
           </li>
 
           <#if ((value.copyrightPrice gt 0) && holding.record.isCopyrightIISH())>

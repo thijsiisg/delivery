@@ -86,34 +86,6 @@
           </label>
         </td>
         <td>
-          <#if standardOptions.options[idx].materialType == "BOOK">
-            <label>
-              <@_ "reproductionStandardOption.minNumberOfPages" "Min pages"/>
-              <@spring.formInput "standardOptions.options[${idx}].minNumberOfPages" "class='small'"/>
-              <#if spring.status.errorMessages?size != 0>
-                <ul class="errors">
-                  <li>
-                    <@spring.showErrors "</li><li>"/>
-                  </li>
-                </ul>
-              </#if>
-            </label>
-          </#if>
-
-          <#if standardOptions.options[idx].materialType == "BOOK">
-            <label>
-              <@_ "reproductionStandardOption.maxNumberOfPages" "Max pages"/>
-              <@spring.formInput "standardOptions.options[${idx}].maxNumberOfPages" "class='small'"/>
-              <#if spring.status.errorMessages?size != 0>
-                <ul class="errors">
-                  <li>
-                    <@spring.showErrors "</li><li>"/>
-                  </li>
-                </ul>
-              </#if>
-            </label>
-          </#if>
-
           <#if standardOptions.options[idx].materialType == "VISUAL">
             <label>
               <@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/>

@@ -1,5 +1,6 @@
 package org.socialhistoryservices.delivery.reproduction.util;
 
+import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Record;
 
 import java.util.regex.Matcher;
@@ -52,6 +53,10 @@ public class Pages {
     private int determineNumberOfPages() {
         String left = "";
         String pages = "";
+
+        // Is the record actually a book or brochure?
+        if (record.getExternalInfo().getMaterialType() != ExternalRecordInfo.MaterialType.BOOK)
+            return NO_NUMBER_OF_PAGES;
 
         // Do we have a physical description?
         String physicalDescription = record.getPhysicalDescription();

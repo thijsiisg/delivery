@@ -140,7 +140,7 @@
         <li class="spacing">
           <span><@_ "reproductionStandardOption.price" "Price"/></span>
           <#if hr.price??>
-            &euro; ${hr.price?string("0.00")}
+            <@holdingPrice hr.price hr.completePrice hr.numberOfPages/>
           <#else>
             <@_ "tbd" "To be determined"/>
           </#if>

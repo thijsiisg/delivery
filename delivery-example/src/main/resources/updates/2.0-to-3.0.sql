@@ -72,8 +72,6 @@ CREATE TABLE reproduction_standard_options
   enabled boolean NOT NULL,
   level character varying(255) NOT NULL,
   material_type character varying(255) NOT NULL,
-  maxnumberofpages integer,
-  minnumberofpages integer,
   optiondescription_en character varying(255) NOT NULL,
   optiondescription_nl character varying(255) NOT NULL,
   optionname_en character varying(50) NOT NULL,
@@ -82,8 +80,6 @@ CREATE TABLE reproduction_standard_options
   CONSTRAINT reproduction_standard_options_pkey PRIMARY KEY (id),
   CONSTRAINT reproduction_standard_options_copyrightprice_check CHECK (copyrightprice >= 0::numeric),
   CONSTRAINT reproduction_standard_options_deliverytime_check CHECK (deliverytime >= 0),
-  CONSTRAINT reproduction_standard_options_maxnumberofpages_check CHECK (maxnumberofpages >= 0),
-  CONSTRAINT reproduction_standard_options_minnumberofpages_check CHECK (minnumberofpages >= 0),
   CONSTRAINT reproduction_standard_options_price_check CHECK (price >= 0::numeric)
 )
 WITH (
@@ -147,6 +143,7 @@ CREATE TABLE holding_reproductions
   customreproductionreply text,
   deliverytime integer,
   insor boolean NOT NULL,
+  numberofpages integer,
   price numeric(7,2),
   printed boolean,
   holding_id integer,
@@ -162,7 +159,8 @@ CREATE TABLE holding_reproductions
   CONSTRAINT fkfbac824b6a2b63aa FOREIGN KEY (reproduction_id)
       REFERENCES reproductions (id) MATCH SIMPLE
       ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT holding_reproductions_deliverytime_check CHECK (deliverytime >= 0)
+  CONSTRAINT holding_reproductions_deliverytime_check CHECK (deliverytime >= 0),
+  CONSTRAINT holding_reproductions_numberofpages_check CHECK (numberofpages >= 1)
 )
 WITH (
   OIDS=FALSE

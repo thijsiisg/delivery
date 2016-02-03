@@ -21,6 +21,7 @@ import org.apache.commons.collections.list.LazyList;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Index;
 import org.hibernate.validator.constraints.NotBlank;
+import org.socialhistoryservices.delivery.reproduction.util.Pages;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -45,6 +46,10 @@ public class Record {
         CLOSED,
         INHERIT,
     }
+
+    /** Stores information about the number of pages. */
+    @Transient
+    private Pages pages;
 
     /** The Record's id. */
     @Id
@@ -539,6 +544,28 @@ public class Record {
             return (copyright.contains("iish") || copyright.contains("iisg"));
         }
         return false;
+    }
+
+    /**
+     * Returns the Pages object for this record.
+     * @return The Pages object.
+     */
+    public Pages getPages() {
+        if (pages == null)
+            pages = new Pages(this);
+        return pages;
+    }
+
+    /**
+     * Helper method to determine the price on the number of pages for this reocrd.
+     * @param price The price per page.
+     * @return The total price for this record based on the given price per page.
+     */
+    public BigDecimal determinePriceByPages(BigDecimal price) {
+        Pages pages = getPages();
+        if (pages.containsNumberOfPages())
+            price = price.multiply(new BigDecimal(pages.getNumberOfPages()));
+        return price;
     }
 
     /**

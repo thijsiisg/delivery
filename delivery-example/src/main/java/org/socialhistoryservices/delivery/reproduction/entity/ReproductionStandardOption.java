@@ -257,50 +257,6 @@ public class ReproductionStandardOption {
         this.deliveryTime = deliveryTime;
     }
 
-    @Min(0)
-    @Column(name = "minNumberOfPages")
-    private Integer minNumberOfPages;
-
-    /**
-     * Get the min number of pages for which this option is valid.
-     *
-     * @return the min number of pages for which this option is valid.
-     */
-    public Integer getMinNumberOfPages() {
-        return minNumberOfPages;
-    }
-
-    /**
-     * Set the min number of pages for which this option is valid.
-     *
-     * @param minNumberOfPages the min number of pages for which this option is valid.
-     */
-    public void setMinNumberOfPages(Integer minNumberOfPages) {
-        this.minNumberOfPages = minNumberOfPages;
-    }
-
-    @Min(0)
-    @Column(name = "maxNumberOfPages")
-    private Integer maxNumberOfPages;
-
-    /**
-     * Get the max number of pages for which this option is valid.
-     *
-     * @return the max number of pages for which this option is valid.
-     */
-    public Integer getMaxNumberOfPages() {
-        return maxNumberOfPages;
-    }
-
-    /**
-     * Set the max number of pages for which this option is valid.
-     *
-     * @param maxNumberOfPages the max number of pages for which this option is valid.
-     */
-    public void setMaxNumberOfPages(Integer maxNumberOfPages) {
-        this.maxNumberOfPages = maxNumberOfPages;
-    }
-
     @NotNull
     @Min(0)
     @Digits(integer = 5, fraction = 2)
@@ -359,8 +315,6 @@ public class ReproductionStandardOption {
         setOptionDescriptionEN(other.getOptionDescriptionEN());
         setPrice(other.getPrice());
         setDeliveryTime(other.getDeliveryTime());
-        setMinNumberOfPages(other.getMinNumberOfPages());
-        setMaxNumberOfPages(other.getMaxNumberOfPages());
         setCopyrightPrice(other.getCopyrightPrice());
         setEnabled(other.isEnabled());
     }

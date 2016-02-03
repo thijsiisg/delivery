@@ -1,7 +1,9 @@
 package org.socialhistoryservices.delivery.reproduction.entity;
 
 import org.hibernate.annotations.Index;
+import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.reproduction.util.Pages;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 
@@ -50,14 +52,48 @@ public class HoldingReproduction extends HoldingRequest {
     }
 
     /**
-     * Set the copyright price.
+     * Returns the complete price.
+     * In case pages are known, the price per page is multiplied with the number of pages.
      *
-     * @param price the copyright price.
+     * @return the complete price.
+     */
+    public BigDecimal getCompletePrice() {
+        if (this.getNumberOfPages() != null)
+            return getPrice().multiply(new BigDecimal(this.getNumberOfPages()));
+        return getPrice();
+    }
+
+    /**
+     * Set the price.
+     *
+     * @param price the price.
      */
     public void setPrice(BigDecimal price) {
         if (price != null)
             price = price.setScale(2);
         this.price = price;
+    }
+
+    @Min(1)
+    @Column(name = "numberOfPages")
+    private Integer numberOfPages;
+
+    /**
+     * Get the number of pages (in case of books and brochures).
+     *
+     * @return the number of pages (in case of books and brochures).
+     */
+    public Integer getNumberOfPages() {
+        return numberOfPages;
+    }
+
+    /**
+     * Set the number of pages (in case of books and brochures).
+     *
+     * @param numberOfPages the number of pages (in case of books and brochures).
+     */
+    public void setNumberOfPages(Integer numberOfPages) {
+        this.numberOfPages = numberOfPages;
     }
 
     @Digits(integer = 5, fraction = 2)
@@ -373,6 +409,7 @@ public class HoldingReproduction extends HoldingRequest {
             if ((getStandardOption() != otherHr.getStandardOption()) || (otherHr.getStandardOption() == null)) {
                 setStandardOption(otherHr.getStandardOption());
                 setPrice(otherHr.getPrice());
+                setNumberOfPages(otherHr.getNumberOfPages());
                 setCopyrightPrice(otherHr.getCopyrightPrice());
                 setDeliveryTime(otherHr.getDeliveryTime());
             }

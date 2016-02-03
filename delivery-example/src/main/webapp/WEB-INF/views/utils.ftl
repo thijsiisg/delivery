@@ -143,3 +143,12 @@ ${totalPages}
     <em class="info">(<@_ "anotherRequest" "by another request"/>)</em>
   </#if>
 </#macro>
+
+<#macro holdingPrice price completePrice noPages=0>
+    &euro; ${completePrice?string("0.00")}
+
+    <#if noPages gt 0>
+        <em class="info">(<@_ "price.page" "Price per page"/>: &euro; ${price?string("0.00")},
+            <@_ "no.pages" "Number of pages"/>: ${noPages?html})</em>
+    </#if>
+</#macro>

@@ -69,7 +69,7 @@
                 </label>
 
                 <span>
-                  (&euro; ${hr.price?string("0.00")} - ${hr.deliveryTime?html} <@_ "days" "days"/>)
+                  (&euro; ${hr.completePrice?string("0.00")} - ${hr.deliveryTime?html} <@_ "days" "days"/>)
                 </span>
               <#else>
                 <#list reproductionOptions as value>
@@ -80,7 +80,7 @@
                   </label>
 
                   <span>
-                    (&euro; ${value.price?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
+                    (&euro; ${record.determinePriceByPages(value.price)?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
                   </span>
                 </#list>
 
@@ -211,7 +211,7 @@
                     </label>
 
                     <span>
-                      (&euro; ${value.price?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
+                      (&euro; ${h.record.determinePriceByPages(value.price)?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
                     </span>
                   </#list>
 
