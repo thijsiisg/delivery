@@ -353,6 +353,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             case CANCELLED:
                 completed = true;
                 mailCancelled(reproduction);
+                if (reproduction.getOrder() != null)
+                    refundOrder(reproduction.getOrder());
                 break;
         }
 
@@ -833,7 +835,32 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
             return new AsyncResult<Order>(order);
         } catch (InvalidPayWayMessageException ivwme) {
-            log.debug(String.format("refreshOrder() : Failed to refresh the order with id %d", order.getId()));
+            log.error(String.format("refreshOrder() : Failed to refresh the order with id %d", order.getId()));
+            return new AsyncResult<Order>(null);
+        }
+    }
+
+    /**
+     * Will refund everything for the given order. (NOTE: Only marked as such in PayWay)
+     * The API call is performed in a seperate thread and
+     * a Future object is returned to see when and whether the refund was succesful.
+     *
+     * @param order The order to refund. The id must be set.
+     * @return A Future object that will return the order when succesful.
+     */
+    @Async
+    private Future<Order> refundOrder(Order order) {
+        try {
+            if ((order.getPayed() == Order.ORDER_PAYED) && (order.getAmount() > 0)) {
+                PayWayMessage message = payWayService.getMessageForOrderId(order.getId());
+                message.put("amount", order.getAmount());
+                payWayService.send("refundPayment", message);
+                refreshOrder(order);
+            }
+
+            return new AsyncResult<Order>(order);
+        } catch (InvalidPayWayMessageException ivwme) {
+            log.error(String.format("refundOrder() : Failed to refund the order with id %d", order.getId()));
             return new AsyncResult<Order>(null);
         }
     }

@@ -146,11 +146,6 @@ public interface RecordService {
     public void checkEmbargoDates();
 
     /**
-     * Scheduled task to update the external info from all records in the database.
-     */
-    public void updateExternalInfo();
-
-    /**
      * Updates the external info of the given record, if necessary.
      * @param record      The record of which to update the external info.
      * @param hardRefresh Always update the external info.

@@ -247,39 +247,6 @@ public class RecordServiceImpl implements RecordService {
     }
 
     /**
-     * TODO: Right now it is just for testing.
-     * Scheduled task to update the external info from all records in the database.
-     * Runs at midnight at the first day of every new month.
-     * No automatic transactions, the method will manage the transactions.
-     */
-    //@Scheduled(cron="0 0 1 * *")
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-    public void updateExternalInfo() {
-        int offset = 0;
-        List<Record> records;
-        TransactionTemplate transactionTemplate = new TransactionTemplate(platformTransactionManager);
-
-        // Perform batch updates with max 100 records at a time
-        // Each batch of 100 records runs in its own transaction
-        LOGGER.debug("updateExternalInfo : Start batch update");
-        while ((records = listIterable(offset, 100)).size() > 0) {
-            LOGGER.debug("updateExternalInfo : Start with " + offset + " - " + offset+records.size());
-            final List<Record> curBatch = records;
-            transactionTemplate.execute(new TransactionCallback<Object>() {
-                public Object doInTransaction(TransactionStatus status) {
-                    for (Record record : curBatch) {
-                        updateExternalInfo(record, false);
-                        saveRecord(record);
-                    }
-                    return null;
-                }
-            });
-            offset += records.size();
-        }
-        LOGGER.debug("updateExternalInfo : End batch update");
-    }
-
-    /**
      * Updates the external info of the given record, if necessary.
      * @param record      The record of which to update the external info.
      * @param hardRefresh Always update the external info.

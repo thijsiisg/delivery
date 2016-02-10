@@ -80,7 +80,7 @@ public class SharedObjectRepositoryService {
                     getMetadataFromDocument(document, pid, false)
             };
         } catch (IOException ioe) {
-            LOGGER.debug("hasMetadata(): SOR API connection failed", ioe);
+            LOGGER.error("hasMetadata(): SOR API connection failed", ioe);
             return null;
         } catch (ParserConfigurationException pce) {
             LOGGER.debug("hasMetadata(): Could not build document builder", pce);
@@ -114,7 +114,7 @@ public class SharedObjectRepositoryService {
 
             return getMetadataFromDocument(document, pid, master);
         } catch (IOException ioe) {
-            LOGGER.debug("hasMetadata(): SOR API connection failed", ioe);
+            LOGGER.error("hasMetadata(): SOR API connection failed", ioe);
             return null;
         } catch (ParserConfigurationException pce) {
             LOGGER.debug("hasMetadata(): Could not build document builder", pce);

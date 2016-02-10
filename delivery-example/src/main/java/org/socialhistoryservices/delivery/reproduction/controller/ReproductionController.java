@@ -980,7 +980,7 @@ public class ReproductionController extends AbstractRequestController {
 
         // Make sure the message is valid
         if (!payWayService.isValid(payWayMessage)) {
-            LOGGER.debug(String.format(
+            LOGGER.error(String.format(
                     "/reproduction/order/accept : Invalid signature for message %s", payWayMessage));
             return HttpStatus.BAD_REQUEST;
         }
@@ -989,7 +989,7 @@ public class ReproductionController extends AbstractRequestController {
         Integer reproductionId = payWayMessage.getInteger("userid");
         Reproduction reproduction = reproductions.getReproductionById(reproductionId);
         if (reproduction == null) {
-            LOGGER.debug(String.format(
+            LOGGER.error(String.format(
                     "/reproduction/order/accept : Reproduction not found for message %s", payWayMessage));
             return HttpStatus.BAD_REQUEST;
         }
@@ -998,7 +998,7 @@ public class ReproductionController extends AbstractRequestController {
         Integer orderId = payWayMessage.getInteger("orderid");
         Order order = reproduction.getOrder();
         if (order.getId() != orderId) {
-            LOGGER.debug(String.format(
+            LOGGER.error(String.format(
                     "/reproduction/order/accept : Reproduction order id does not match order id in message %s",
                     payWayMessage));
             return HttpStatus.BAD_REQUEST;
