@@ -348,6 +348,12 @@ public class Holding {
         if (record.getExternalInfo().getMaterialType() == ExternalRecordInfo.MaterialType.BOOK)
             return record.getPages().containsNumberOfPages();
 
+        // In case of visuals, it matters whether it is a poster or not
+        if (record.getExternalInfo().getMaterialType() == ExternalRecordInfo.MaterialType.VISUAL) {
+            boolean genresContainsPoster = record.getExternalInfo().getGenresSet().contains("poster");
+            return standardOption.isPoster() ? genresContainsPoster : !genresContainsPoster;
+        }
+
         return true;
     }
 

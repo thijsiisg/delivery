@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -31,10 +32,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Represents the api.socialhistoryservices.nl lookup service.
@@ -48,7 +46,7 @@ public class IISHRecordLookupService implements RecordLookupService {
     private XPathExpression xpSearchIdent;
     private XPathExpression xpSearchMeta, xpAuthor, xpAltAuthor, xpAlt2Author, xpAlt3Author;
     private XPathExpression xp245aTitle, xp500aTitle, xp600aTitle, xp610aTitle, xp650aTitle, xp651aTitle, xp245kTitle;
-    private XPathExpression xp245bSubTitle, xpYear, xpPhysicalDescription, xpShelvingLocations, xpSerialNumbers, xpSignatures, xpBarcodes, xpLeader;
+    private XPathExpression xp245bSubTitle, xpYear, xpPhysicalDescription, xpGenres, xpShelvingLocations, xpSerialNumbers, xpSignatures, xpBarcodes, xpLeader;
 	private XPathExpression xp540bCopyright, xp542mAccess;
     private XPathExpression xpNumberOfRecords;
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
@@ -156,6 +154,8 @@ public class IISHRecordLookupService implements RecordLookupService {
             xpYear = xpath.compile("marc:datafield[@tag=260]" +
                     "/marc:subfield[@code=\"c\"]");
             xpPhysicalDescription = xpath.compile("marc:datafield[@tag=300]" +
+                    "/marc:subfield[@code=\"a\"]");
+            xpGenres = xpath.compile("marc:datafield[@tag=655]" +
                     "/marc:subfield[@code=\"a\"]");
             xpShelvingLocations = xpath.compile("marc:datafield[@tag=852]" +
                     "/marc:subfield[@code=\"c\"]");
@@ -361,6 +361,7 @@ public class IISHRecordLookupService implements RecordLookupService {
         externalInfo.setCopyright(evaluateCopyright(node));
 	    externalInfo.setPublicationStatus(evaluatePublicationStatus(node));
         externalInfo.setPhysicalDescription(evaluatePhysicalDescription(node));
+        externalInfo.setGenres(evaluateGenres(node));
 
         return externalInfo;
     }
@@ -556,6 +557,22 @@ public class IISHRecordLookupService implements RecordLookupService {
         }
     }
 
+    private String evaluateGenres(Node node) {
+        try {
+            Set<String> genres = new HashSet<String>();
+            NodeList nodeList = (NodeList) xpGenres.evaluate(node, XPathConstants.NODESET);
+            for (int i=0; i<nodeList.getLength(); i++) {
+                String genre = nodeList.item(i).getTextContent();
+                genre = genre.toLowerCase().trim();
+                if (genre.endsWith("."))
+                    genre = genre.substring(0, genre.length() - 1).trim();
+                genres.add(genre);
+            }
+            return (!genres.isEmpty()) ? StringUtils.collectionToDelimitedString(genres, ",") : null;
+        } catch (XPathExpressionException e) {
+            return null;
+        }
+    }
 
     private String evaluateTitle(Node node) {
         try {

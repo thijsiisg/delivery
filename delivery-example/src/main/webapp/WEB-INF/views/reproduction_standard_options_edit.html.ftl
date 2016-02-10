@@ -74,8 +74,8 @@
         </td>
         <td>
           <label>
-            <@spring.formInput "standardOptions.options[${idx}].deliveryTime" "class='small'"/>
-            <span><@_ "days.short" "days"/></span>
+            <@spring.formInput "standardOptions.options[${idx}].deliveryTime" "class='smaller'"/>
+            <span><@_ "days" "days"/></span>
             <#if spring.status.errorMessages?size != 0>
               <ul class="errors">
                 <li>
@@ -87,6 +87,11 @@
         </td>
         <td>
           <#if standardOptions.options[idx].materialType == "VISUAL">
+            <label>
+              <@spring.formCheckbox "standardOptions.options[${idx}].poster"/>
+              <@_ "reproductionStandardOption.isPoster" "Is poster?"/>
+            </label>
+
             <label>
               <@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/>
               <@spring.formInput "standardOptions.options[${idx}].copyrightPrice" "class='small'"/>

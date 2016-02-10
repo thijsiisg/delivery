@@ -948,10 +948,15 @@ table.reproduction_options label {
 table.reproduction_options label span {
     display: inline-block;
     width: 30px;
+    vertical-align: middle;
 }
 
 table.reproduction_options .small {
     width: 6em;
+}
+
+table.reproduction_options .smaller {
+    width: 2em;
 }
 
 table.reproduction_options select {

@@ -4,6 +4,7 @@ ALTER TABLE external_holding_info ADD COLUMN barcode character varying(255) NULL
 ALTER TABLE external_holding_info ADD COLUMN shelvinglocation character varying(255) NULL;
 ALTER TABLE external_holding_info ADD CONSTRAINT external_holding_info_barcode UNIQUE (barcode);
 
+ALTER TABLE external_record_info ADD COLUMN genres character varying(255) NULL;
 ALTER TABLE external_record_info ADD COLUMN copyright character varying(255) NULL;
 ALTER TABLE external_record_info ADD COLUMN publication_status character varying(255) NOT NULL DEFAULT 'CLOSED';
 
@@ -70,6 +71,7 @@ CREATE TABLE reproduction_standard_options
   copyrightprice numeric(7,2) NOT NULL,
   deliverytime integer NOT NULL,
   enabled boolean NOT NULL,
+  isposter boolean NOT NULL,
   level character varying(255) NOT NULL,
   material_type character varying(255) NOT NULL,
   optiondescription_en character varying(255) NOT NULL,
