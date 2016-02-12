@@ -260,30 +260,6 @@ public class ReproductionStandardOption {
     /* The following are fields that are only entered for certain material types */
 
     @NotNull
-    @Min(0)
-    @Digits(integer = 5, fraction = 2)
-    @Column(name = "copyrightPrice", nullable = false)
-    private BigDecimal copyrightPrice = BigDecimal.ZERO; // Material type: Visual
-
-    /**
-     * Get the additional copyright price.
-     *
-     * @return the additional copyright price.
-     */
-    public BigDecimal getCopyrightPrice() {
-        return copyrightPrice;
-    }
-
-    /**
-     * Set the additional copyright price.
-     *
-     * @param copyrightPrice the additional copyright price.
-     */
-    public void setCopyrightPrice(BigDecimal copyrightPrice) {
-        this.copyrightPrice = copyrightPrice;
-    }
-
-    @NotNull
     @Column(name = "isPoster", nullable = false)
     private boolean poster = false; // Material type: Visual
 
@@ -341,7 +317,6 @@ public class ReproductionStandardOption {
         setOptionDescriptionEN(other.getOptionDescriptionEN());
         setPrice(other.getPrice());
         setDeliveryTime(other.getDeliveryTime());
-        setCopyrightPrice(other.getCopyrightPrice());
         setPoster(other.isPoster());
         setEnabled(other.isEnabled());
     }

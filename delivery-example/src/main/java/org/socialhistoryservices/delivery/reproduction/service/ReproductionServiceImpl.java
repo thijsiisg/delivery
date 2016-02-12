@@ -885,7 +885,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             if (standardOption != null) {
                 hr.setPrice(null);
                 hr.setNumberOfPages(null);
-                hr.setCopyrightPrice(null);
                 hr.setDeliveryTime(null);
                 hr.setCustomReproductionCustomer(null);
                 hr.setCustomReproductionReply(null);
@@ -955,16 +954,9 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             ReproductionStandardOption standardOption = hr.getStandardOption();
 
             // Determine if we can specify the price, copyright price and delivery time, but have not done so yet
-            if ((standardOption != null) &&
-                    ((hr.getPrice() == null) || (hr.getCopyrightPrice() == null) || (hr.getDeliveryTime() == null))) {
+            if ((standardOption != null) && ((hr.getPrice() == null) || (hr.getDeliveryTime() == null))) {
                 if (!forFree) {
                     hr.setPrice(standardOption.getPrice());
-
-                    // Only set the copyright price when the IISH has the copyright for this record
-                    if (hr.getHolding().getRecord().isCopyrightIISH())
-                        hr.setCopyrightPrice(standardOption.getCopyrightPrice());
-                    else
-                        hr.setCopyrightPrice(BigDecimal.ZERO);
 
                     // Determine the number of pages, if possible
                     Pages pages = hr.getHolding().getRecord().getPages();
@@ -977,10 +969,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             }
 
             // Make sure the price is for free
-            if (forFree) {
+            if (forFree)
                 hr.setPrice(BigDecimal.ZERO);
-                hr.setCopyrightPrice(BigDecimal.ZERO);
-            }
         }
     }
 

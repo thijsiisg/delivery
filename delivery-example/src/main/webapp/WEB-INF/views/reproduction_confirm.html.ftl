@@ -133,13 +133,6 @@
                 <@holdingPrice hr.price hr.completePrice hr.numberOfPages/>
               </li>
 
-              <#if hr.copyrightPrice?? && hr.copyrightPrice gt 0>
-                <li>
-                  <span><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/></span>
-                  &euro; ${hr.copyrightPrice?string("0.00")}
-                </li>
-              </#if>
-
               <li>
                 <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
                 ${hr.deliveryTime?html} <@_ "days" "days"/>
@@ -181,14 +174,6 @@
               <tr class="additional">
                 <td class="label"><@_ "reproduction.adminstrationCosts" "Adminstration costs"/>:</td>
                 <td class="price_column">&euro; ${reproduction.getAdminstrationCosts()?string("0.00")}</td>
-                <td>&nbsp;</td>
-              </tr>
-            </#if>
-
-            <#if reproduction.getCopyrightPrice() gt 0>
-              <tr class="additional">
-                <td class="label"><@_ "reproduction.copyright" "Copyright"/>:</td>
-                <td class="price_column">&euro; ${reproduction.getCopyrightPrice()?string("0.00")}</td>
                 <td>&nbsp;</td>
               </tr>
             </#if>

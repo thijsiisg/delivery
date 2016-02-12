@@ -96,30 +96,6 @@ public class HoldingReproduction extends HoldingRequest {
         this.numberOfPages = numberOfPages;
     }
 
-    @Digits(integer = 5, fraction = 2)
-    @Column(name = "copyrightPrice")
-    private BigDecimal copyrightPrice;
-
-    /**
-     * Get the copyright price.
-     *
-     * @return the copyright price.
-     */
-    public BigDecimal getCopyrightPrice() {
-        return copyrightPrice;
-    }
-
-    /**
-     * Set the copyright price.
-     *
-     * @param copyrightPrice the copyright price.
-     */
-    public void setCopyrightPrice(BigDecimal copyrightPrice) {
-        if (copyrightPrice != null)
-            copyrightPrice = copyrightPrice.setScale(2);
-        this.copyrightPrice = copyrightPrice;
-    }
-
     @Min(0)
     @Column(name = "deliveryTime")
     private Integer deliveryTime;
@@ -410,7 +386,6 @@ public class HoldingReproduction extends HoldingRequest {
                 setStandardOption(otherHr.getStandardOption());
                 setPrice(otherHr.getPrice());
                 setNumberOfPages(otherHr.getNumberOfPages());
-                setCopyrightPrice(otherHr.getCopyrightPrice());
                 setDeliveryTime(otherHr.getDeliveryTime());
             }
 

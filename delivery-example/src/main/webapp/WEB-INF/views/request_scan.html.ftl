@@ -210,13 +210,6 @@
           </#if>
         </li>
 
-        <#if hr.copyrightPrice?? && hr.copyrightPrice gt 0>
-          <li>
-            <span><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/></span>
-            &euro; ${hr.copyrightPrice?string("0.00")}
-          </li>
-        </#if>
-
         <li>
           <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
           <#if hr.deliveryTime??>

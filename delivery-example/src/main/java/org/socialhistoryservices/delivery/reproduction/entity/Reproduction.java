@@ -434,12 +434,9 @@ public class Reproduction extends Request {
     public BigDecimal getTotalPrice() {
         BigDecimal price = getAdminstrationCosts();
 
-        // First add the price and copyright price of each holding in this reproduction
-        for (HoldingReproduction hr : getHoldingReproductions()) {
+        // First add the price of each holding in this reproduction
+        for (HoldingReproduction hr : getHoldingReproductions())
             price = price.add(hr.getCompletePrice());
-            if (hr.getCopyrightPrice() != null)
-                price = price.add(hr.getCopyrightPrice());
-        }
 
         // Then substract the discount
         price = price.subtract(getDiscount());
@@ -458,20 +455,6 @@ public class Reproduction extends Request {
      */
     public boolean isForFree() {
         return (getTotalPrice().compareTo(BigDecimal.ZERO) == 0);
-    }
-
-    /**
-     * Determine the copyright price only.
-     *
-     * @return the copyright price.
-     */
-    public BigDecimal getCopyrightPrice() {
-        BigDecimal copyrightPrice = BigDecimal.ZERO;
-        for (HoldingReproduction hr : getHoldingReproductions()) {
-            if (hr.getCopyrightPrice() != null)
-                copyrightPrice = copyrightPrice.add(hr.getCopyrightPrice());
-        }
-        return copyrightPrice.setScale(2);
     }
 
     /**

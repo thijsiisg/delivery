@@ -68,7 +68,6 @@ WITH (
 CREATE TABLE reproduction_standard_options
 (
   id integer NOT NULL,
-  copyrightprice numeric(7,2) NOT NULL,
   deliverytime integer NOT NULL,
   enabled boolean NOT NULL,
   isposter boolean NOT NULL,
@@ -80,7 +79,6 @@ CREATE TABLE reproduction_standard_options
   optionname_nl character varying(50) NOT NULL,
   price numeric(7,2) NOT NULL,
   CONSTRAINT reproduction_standard_options_pkey PRIMARY KEY (id),
-  CONSTRAINT reproduction_standard_options_copyrightprice_check CHECK (copyrightprice >= 0::numeric),
   CONSTRAINT reproduction_standard_options_deliverytime_check CHECK (deliverytime >= 0),
   CONSTRAINT reproduction_standard_options_price_check CHECK (price >= 0::numeric)
 )
@@ -140,7 +138,6 @@ CREATE TABLE holding_reproductions
   id integer NOT NULL,
   comment character varying(255),
   completed boolean NOT NULL,
-  copyrightprice numeric(7,2),
   customreproductioncustomer text,
   customreproductionreply text,
   deliverytime integer,

@@ -197,13 +197,6 @@
             <@holdingPrice value.price holding.record.determinePriceByPages(value.price) holding.record.pages.numberOfPages/>
           </li>
 
-          <#if ((value.copyrightPrice gt 0) && holding.record.isCopyrightIISH())>
-            <li>
-              <span><@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/></span>
-              &euro; ${value.copyrightPrice?string('0.00')}
-            </li>
-          </#if>
-
           <li>
             <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
             ${value.deliveryTime?html} <@_ "days" "days"/>

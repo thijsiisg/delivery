@@ -91,18 +91,6 @@
               <@spring.formCheckbox "standardOptions.options[${idx}].poster"/>
               <@_ "reproductionStandardOption.isPoster" "Is poster?"/>
             </label>
-
-            <label>
-              <@_ "reproductionStandardOption.copyrightPrice" "Copyright price"/>
-              <@spring.formInput "standardOptions.options[${idx}].copyrightPrice" "class='small'"/>
-              <#if spring.status.errorMessages?size != 0>
-                <ul class="errors">
-                  <li>
-                    <@spring.showErrors "</li><li>"/>
-                  </li>
-                </ul>
-              </#if>
-            </label>
           </#if>
         </td>
         <td>
