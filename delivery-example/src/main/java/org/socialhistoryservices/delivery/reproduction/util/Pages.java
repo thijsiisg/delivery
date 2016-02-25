@@ -60,7 +60,7 @@ public class Pages {
 
         // Do we have a physical description?
         String physicalDescription = record.getPhysicalDescription();
-        if (physicalDescription == null)
+        if ((physicalDescription == null) || physicalDescription.isEmpty())
             return NO_NUMBER_OF_PAGES;
 
         // First count the number of pages found

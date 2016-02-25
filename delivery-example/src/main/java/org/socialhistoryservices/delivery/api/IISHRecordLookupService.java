@@ -551,7 +551,8 @@ public class IISHRecordLookupService implements RecordLookupService {
 
     private String evaluatePhysicalDescription(Node node) {
         try {
-            return xpPhysicalDescription.evaluate(node);
+            String physicalDescription = xpPhysicalDescription.evaluate(node);
+            return (!physicalDescription.isEmpty()) ? physicalDescription : null;
         } catch (XPathExpressionException e) {
             return null;
         }
