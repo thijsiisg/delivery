@@ -11,7 +11,7 @@ ${prop_urlSelf}/reproduction/confirm/${reproduction.id?c}/${reproduction.token}?
  <#assign h = hr.holding>
  <#assign info = h.record.externalInfo>
 * ${h.record.title} - ${h.signature} <#if info.author??>/ ${info.author} </#if><#if hr.comment??>- ${hr.comment}</#if>
-<@_ "reproductionStandardOption.price" "Price"/>: <@holdingPrice hr.price hr.completePrice hr.numberOfPages/>
+<@_ "reproductionStandardOption.price" "Price"/>: EUR ${hr.completePriceWithDiscount?string("0.00")}
 <@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: ${hr.deliveryTime} <@_ "days" "days"/>
 <#if hr.standardOption??>
 <#if locale == 'nl'>${hr.standardOption.optionDescriptionNL}<#else>${hr.standardOption.optionDescriptionEN}</#if>
@@ -27,22 +27,12 @@ ${hr.customReproductionReply}
 </#if>
 </#if>
 </#list>
-<#if (reproduction.getAdminstrationCosts() gt 0) ||(reproduction.getCopyrightPrice() gt 0) || (reproduction.discount gt 0)>
---- <@_ "including" "Including" /> ---
 <#if reproduction.getAdminstrationCosts() gt 0>
-<@_ "reproduction.adminstrationCosts" "Adminstration cost"/>: ${reproduction.getAdminstrationCosts()?string("0.00")} EUR
-</#if>
-<#if reproduction.discount gt 0>
-<@_ "reproduction.discount" "Discount"/>: ${reproduction.discount?string("0.00")} EUR
-</#if>
+--- <@_ "including" "Including" /> ---
+<@_ "reproduction.adminstrationCosts" "Adminstration cost"/>: ${reproduction.adminstrationCostsWithDiscount?string("0.00")} EUR
 
 </#if>
 --- <@_ "total" "Total" /> ---
-<@_ "reproductionStandardOption.price" "Price"/>: ${reproduction.getTotalPrice()?string("0.00")} EUR
-<@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: ${reproduction.getEstimatedDeliveryTime()} <@_ "days" "days"/>
-
-<#if reproduction.deliveryTimeComment??>
-<@_ "reproduction.deliveryTimeComment" "Expected delivery time"/>:
-${reproduction.deliveryTimeComment}
-</#if>
+<@_ "reproductionStandardOption.price" "Price"/>: ${reproduction.totalPriceWithDiscount?string("0.00")} EUR
+<@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: ${reproduction.estimatedDeliveryTime} <@_ "days" "days"/>
 </@mail>

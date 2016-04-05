@@ -156,7 +156,7 @@
       </td>
       <td>
         <label>
-          <input type="text" id="new.deliveryTime" name="new.deliveryTime" value="0" class="small">
+          <input type="text" id="new.deliveryTime" name="new.deliveryTime" value="0" class="smaller">
           <span><@_ "days" "days"/></span>
         </label>
       </td>

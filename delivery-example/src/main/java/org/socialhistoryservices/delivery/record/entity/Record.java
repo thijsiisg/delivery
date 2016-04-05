@@ -197,6 +197,19 @@ public class Record {
     }
 
     /**
+     * Returns whether IISH is (one of) the copyright holder.
+     *
+     * @return Whether IISH is (one of) the copyright holder.
+     */
+    public boolean isCopyrightIISH() {
+        if (externalInfo.getCopyright() != null) {
+            String copyright = externalInfo.getCopyright().toLowerCase();
+            return (copyright.contains("iish") || copyright.contains("iisg"));
+        }
+        return false;
+    }
+
+    /**
      * Get the publication status.
      * @return the publication status.
      */

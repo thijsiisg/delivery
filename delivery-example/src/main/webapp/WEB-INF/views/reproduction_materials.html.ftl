@@ -75,28 +75,37 @@
   </table>
 </#if>
 
-<table class="overview">
-  <thead>
-  <tr>
-    <th><@_ "reproductionMaterials.sumAmount" "Total amount payed"/></th>
-    <th><@_ "reproductionMaterials.sumRefundedAmount" "Total amount refunded"/></th>
-    <th><@_ "reproductionMaterials.sumNotRefundedAmount" "Total amount not refunded"/></th>
-  </tr>
-  </thead>
-  <tbody>
-    <#if tuplePayedAmounts.get("totalAmount")??>
-    <tr>
-      <td>&euro; ${(tuplePayedAmounts.get('totalAmount') / 100)?string("0.00")}</td>
-      <td>&euro; ${(tuplePayedAmounts.get('totalRefundedAmount') / 100)?string("0.00")}</td>
-      <td>&euro; ${((tuplePayedAmounts.get('totalAmount') - tuplePayedAmounts.get('totalRefundedAmount')) / 100)?string("0.00")}</td>
-    </tr>
-    <#else>
-    <tr>
-      <td>&euro; ${0?string("0.00")}</td>
-      <td>&euro; ${0?string("0.00")}</td>
-      <td>&euro; ${0?string("0.00")}</td>
-    </tr>
-    </#if>
-  </tbody>
-</table>
+<#if tuplePayedAmounts?size gt 0>
+  <ul class="reproduction_totals">
+  <#list tuplePayedAmounts as tuple>
+    <li>
+      <strong>
+        ${tuple.get('totalItems')?html} <@_ "items" "items"/>
+        <@_ "inclusive" "incl."/> ${tuple.get('btwPercentage')?c}&percnt; <@_ "btw" "BTW"/>:
+      </strong>
+
+      <ul>
+        <li>
+          <strong><@_ "total" "Total"/>:</strong>
+          &euro; ${tuple.get('sumTotalAmount')?string("0.00")}
+        </li>
+
+        <li>
+          <strong><@_ "holdingReproductions.discount" "Computed discount"/>:</strong>
+          &euro; ${tuple.get('sumDiscount')?string("0.00")}
+        </li>
+
+        <li>
+          <strong><@_ "holdingReproductions.btw" "Computed BTW"/>:</strong>
+          &euro; ${tuple.get('sumBtwPrice')?string("0.00")}
+        </li>
+      </ul>
+    </li>
+  </#list>
+  </ul>
+</#if>
+
+<a href="${rc.contextPath}/reproduction/excel?from_date=${from_date_value?trim}&to_date=${to_date_value?trim}">
+  <@_ "reproductionList.downloadPayedXls" "Download an overview of payed reproductions for this period (XLS)"/>
+</a>
 </@base>

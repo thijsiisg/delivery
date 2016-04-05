@@ -291,7 +291,7 @@ public class Order {
         this.description = description;
     }
 
-    @OneToOne(mappedBy = "order")
+    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
     private Reproduction reproduction;
 
     public Reproduction getReproduction() {

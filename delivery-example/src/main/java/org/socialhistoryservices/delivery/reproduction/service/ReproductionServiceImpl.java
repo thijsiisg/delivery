@@ -6,6 +6,7 @@ import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.reproduction.dao.*;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
+import org.socialhistoryservices.delivery.reproduction.util.BigDecimalUtils;
 import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
 import org.socialhistoryservices.delivery.reproduction.util.Pages;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
@@ -302,8 +303,9 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     public void merge(Reproduction reproduction, Reproduction other) {
         reproduction.setCustomerName(other.getName());
         reproduction.setCustomerEmail(other.getEmail());
-        reproduction.setDiscount(other.getDiscount());
+        reproduction.setDiscountPercentage(other.getDiscountPercentage());
         reproduction.setAdminstrationCosts(other.getAdminstrationCosts());
+        reproduction.setAdminstrationCostsDiscount(other.getAdminstrationCostsDiscount());
         reproduction.setRequestLocale(other.getRequestLocale());
         reproduction.setDateHasOrderDetails(other.getDateHasOrderDetails());
         reproduction.setComment(other.getComment());
@@ -480,7 +482,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param newRes     The new reproduction to put in the database.
      * @param oldRes     The old reproduction in the database (if present).
      * @param result     The binding result object to put the validation errors in.
-     * @param forFree    Whether the reproduction is for free.
      * @param isCustomer Whether the customer is creating the reproduction.
      * @throws ClosedException                Thrown when a holding is provided which
      *                                        references a record which is restrictionType=CLOSED.
@@ -488,7 +489,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @throws ClosedForReproductionException Thrown when a holding is provided which is closed for reproductions.
      */
     public void createOrEdit(Reproduction newReproduction, Reproduction oldReproduction, BindingResult result,
-                             boolean isCustomer, boolean forFree)
+                             boolean isCustomer)
             throws ClosedException, NoHoldingsException, ClosedForReproductionException {
         // Only check for availability on new reproduction requests
         if (oldReproduction == null) {
@@ -511,7 +512,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 validateReproductionNotCustomer(newReproduction, result);
 
             // Initialize reproduction and its holdings
-            initReproduction(newReproduction, forFree);
+            initReproduction(newReproduction);
 
             // Add or save the record when no errors are present
             if (!result.hasErrors()) {
@@ -779,7 +780,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         // First attempt to create and register a new order in PayWay
         try {
             // PayWay wants the amounts in number of cents
-            BigDecimal price = r.getTotalPrice();
+            BigDecimal price = r.getTotalPriceWithDiscount();
             long amount = price.movePointRight(2).longValue();
 
             PayWayMessage message = new PayWayMessage();
@@ -884,7 +885,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             // If a standard option is chosen, then ignore the provided values
             if (standardOption != null) {
                 hr.setPrice(null);
-                hr.setNumberOfPages(null);
+                hr.setNumberOfPages(1);
                 hr.setDeliveryTime(null);
                 hr.setCustomReproductionCustomer(null);
                 hr.setCustomReproductionReply(null);
@@ -940,37 +941,53 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * Determines if we can already state the price and delivery time for one or more chosen holdings.
      *
      * @param reproduction The reproduction.
-     * @param forFree      Whether the reproduction is for free.
      */
-    private void initReproduction(Reproduction reproduction, boolean forFree) {
-        if (forFree)
-            reproduction.setAdminstrationCosts(BigDecimal.ZERO);
-        else
-            reproduction.setAdminstrationCosts(
-                    new BigDecimal(properties.getProperty("prop_reproductionAdministrationCosts"))
-            );
+    private void initReproduction(Reproduction reproduction) {
+        // Already obtain the BTW percentage and the discount percentage, may we need it
+        String btwPercentageProp = properties.getProperty("prop_reproductionBtwPercentage", "21");
+        int btwPercentage = Integer.parseInt(btwPercentageProp);
+        int discountPercentage = reproduction.getDiscountPercentage();
 
+        // First set the administration costs
+        BigDecimal adminstrationCosts = new BigDecimal(properties.getProperty("prop_reproductionAdministrationCosts"));
+        reproduction.setAdminstrationCosts(adminstrationCosts);
+        reproduction.setAdminstrationCostsDiscount(
+                BigDecimalUtils.getPercentageOfAmount(adminstrationCosts, discountPercentage)
+        );
+
+        // Set the price and delivery time for each item
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
             ReproductionStandardOption standardOption = hr.getStandardOption();
 
             // Determine if we can specify the price, copyright price and delivery time, but have not done so yet
-            if ((standardOption != null) && ((hr.getPrice() == null) || (hr.getDeliveryTime() == null))) {
-                if (!forFree) {
-                    hr.setPrice(standardOption.getPrice());
+            if ((standardOption != null) && !hr.hasOrderDetails()) {
+                hr.setPrice(standardOption.getPrice());
 
-                    // Determine the number of pages, if possible
-                    Pages pages = hr.getHolding().getRecord().getPages();
-                    if (pages.containsNumberOfPages())
-                        hr.setNumberOfPages(pages.getNumberOfPages());
-                    else
-                        hr.setNumberOfPages(null);
-                }
+                // Determine the number of pages, if possible
+                Pages pages = hr.getHolding().getRecord().getPages();
+                if (pages.containsNumberOfPages())
+                    hr.setNumberOfPages(pages.getNumberOfPages());
+                else
+                    hr.setNumberOfPages(1);
+
                 hr.setDeliveryTime(standardOption.getDeliveryTime());
             }
 
-            // Make sure the price is for free
-            if (forFree)
-                hr.setPrice(BigDecimal.ZERO);
+            // If we have the order details, we can compute the discount and BTW
+            if (hr.hasOrderDetails()) {
+                // Compute the discount price
+                hr.setDiscount(BigDecimalUtils.getPercentageOfAmount(hr.getCompletePrice(), discountPercentage));
+
+                // Compute the BTW, only if the IISH owns the copyright
+                if (hr.getHolding().getRecord().isCopyrightIISH()) {
+                    hr.setBtwPercentage(btwPercentage);
+                    hr.setBtwPrice(BigDecimalUtils.getBtwAmount(hr.getCompletePriceWithDiscount(), btwPercentage));
+                }
+                else {
+                    hr.setBtwPercentage(0);
+                    hr.setBtwPrice(BigDecimal.ZERO);
+                }
+            }
         }
     }
 

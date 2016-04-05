@@ -1,14 +1,18 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
+import org.socialhistoryservices.delivery.TemplatePreparationException;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.request.service.RequestMailer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
+import org.springframework.mail.MailPreparationException;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 
+import javax.mail.MessagingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -18,6 +22,9 @@ import java.util.Locale;
  */
 @Service
 public class ReproductionMailer extends RequestMailer {
+    @Autowired
+    private ReproductionPDF reproductionPDF;
+
     private static final Locale ENGLISH_LOCALE = StringUtils.parseLocaleString("en");
 
     /**
@@ -62,7 +69,7 @@ public class ReproductionMailer extends RequestMailer {
     }
 
     /**
-     * Mail payment confirmation message for a reproduction to the customer.
+     * Mail payment confirmation message for a reproduction (with invoice PDF attachment) to the customer.
      * <p/>
      * Mail repro which items of an active reproduction have been sent to the printer
      * and the SOR links where the other items are available for download.
@@ -71,31 +78,45 @@ public class ReproductionMailer extends RequestMailer {
      * @throws MailException Thrown when sending mail somehow failed.
      */
     public void mailPayedAndActive(Reproduction reproduction) throws MailException {
-        assert reproduction.getStatus() == Reproduction.Status.ACTIVE :
-                "Can only mail active and payed confirmation when Reproduction status is ACTIVE";
+        try {
+            assert reproduction.getStatus() == Reproduction.Status.ACTIVE :
+                    "Can only mail active and payed confirmation when Reproduction status is ACTIVE";
 
-        List<HoldingReproduction> inSor = new ArrayList<HoldingReproduction>();
-        List<HoldingReproduction> notInSor = new ArrayList<HoldingReproduction>();
-        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
-            if (hr.isInSor())
-                inSor.add(hr);
-            else
-                notInSor.add(hr);
+            List<HoldingReproduction> inSor = new ArrayList<HoldingReproduction>();
+            List<HoldingReproduction> notInSor = new ArrayList<HoldingReproduction>();
+            for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
+                if (hr.isInSor())
+                    inSor.add(hr);
+                else
+                    notInSor.add(hr);
+            }
+
+            Model model = getReproductionModel(reproduction);
+            model.addAttribute("inSor", inSor);
+            model.addAttribute("notInSor", notInSor);
+
+            // Create the invoice PDF to attach
+            byte[] pdf = reproductionPDF.getInvoice(reproduction, reproduction.getRequestLocale());
+
+            // First sent the customer a confirmation email
+            String subjectCustomer = getMessage("reproductionMail.payedSubject", "Confirmation of payment",
+                    reproduction.getRequestLocale());
+            String invoiceFileName = getMessage("reproductionMail.invoice", "Invoice",
+                    reproduction.getRequestLocale());
+            sendMailWithPdf(reproduction, subjectCustomer, "reproduction_payed.mail.ftl", pdf,
+                    invoiceFileName + ".pdf", model, reproduction.getRequestLocale());
+
+            // Then sent the reading room / repro the confirmation
+            String subjectRepro = getMessage("reproductionMail.activeReproductionSubject", "New active reproduction",
+                    ENGLISH_LOCALE);
+            sendMail(subjectRepro, "reproduction_active.mail.ftl", model, ENGLISH_LOCALE);
         }
-
-        Model model = getReproductionModel(reproduction);
-        model.addAttribute("inSor", inSor);
-        model.addAttribute("notInSor", notInSor);
-
-        // First sent the customer a confirmation email
-        String subjectCustomer = getMessage("reproductionMail.payedSubject", "Confirmation of payment",
-                reproduction.getRequestLocale());
-        sendMail(reproduction, subjectCustomer, "reproduction_payed.mail.ftl", model, reproduction.getRequestLocale());
-
-        // Then sent the reading room / repro the confirmation
-        String subjectRepro = getMessage("reproductionMail.activeReproductionSubject", "New active reproduction",
-                ENGLISH_LOCALE);
-        sendMail(subjectRepro, "reproduction_active.mail.ftl", model, ENGLISH_LOCALE);
+        catch (TemplatePreparationException tpe) {
+            throw new MailPreparationException(tpe);
+        }
+        catch (MessagingException me) {
+            throw new MailPreparationException(me);
+        }
     }
 
     /**

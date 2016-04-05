@@ -144,10 +144,10 @@ ${totalPages}
   </#if>
 </#macro>
 
-<#macro holdingPrice price completePrice noPages=0>
+<#macro holdingPrice price completePrice noPages=1>
     &euro; ${completePrice?string("0.00")}
 
-    <#if noPages gt 0>
+    <#if noPages gt 1>
         <em class="info">(<@_ "price.page" "Price per page"/>: &euro; ${price?string("0.00")},
             <@_ "no.pages" "Number of pages"/>: ${noPages?html})</em>
     </#if>

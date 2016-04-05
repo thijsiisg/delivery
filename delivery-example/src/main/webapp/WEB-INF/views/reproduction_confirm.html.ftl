@@ -145,19 +145,15 @@
 
     <div class="reproduction_confirm_form">
       <fieldset>
-        <#if reproduction.deliveryTimeComment??>
-          <div class="deliveryComment">
-            <label><@_ "reproduction.deliveryTimeComment" "Expected delivery time"/>:</label>
-            <em>${reproduction.deliveryTimeComment?html}</em>
-          </div>
-        </#if>
-
         <table>
           <thead>
             <tr>
-              <td><@_ "reproduction.record" "Item"/></td>
-              <td class="price_column"><@_ "reproductionStandardOption.price" "Price"/></td>
-              <td><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></td>
+              <td><@_ "reproduction.confirm.item" "Item"/></td>
+              <td class="price_column"><@_ "reproduction.confirm.price" "Price"/></td>
+              <td class="price_column"><@_ "reproduction.confirm.discount" "Discount"/></td>
+              <td class="price_column"><@_ "reproduction.confirm.price.total" "Total price"/></td>
+              <td class="price_column"><@_ "reproduction.confirm.btw" "BTW included"/></td>
+              <td><@_ "reproduction.confirm.delivery.time" "Estimated delivery time"/></td>
             </tr>
           </thead>
           <tbody>
@@ -166,6 +162,9 @@
               <tr>
                 <td>${h.record.externalInfo.title?html} - ${h.signature?html}</td>
                 <td class="price_column">&euro; ${hr.completePrice?string("0.00")}</td>
+                <td class="price_column">&euro; -${hr.discount?string("0.00")}</td>
+                <td class="price_column">&euro; ${hr.completePriceWithDiscount?string("0.00")}</td>
+                <td class="price_column">&euro; ${hr.btwPrice?string("0.00")} (${hr.btwPercentage}&percnt;)</td>
                 <td>${hr.deliveryTime?html} <@_ "days" "days"/></td>
               </tr>
             </#list>
@@ -173,24 +172,31 @@
             <#if reproduction.getAdminstrationCosts() gt 0>
               <tr class="additional">
                 <td class="label"><@_ "reproduction.adminstrationCosts" "Adminstration costs"/>:</td>
-                <td class="price_column">&euro; ${reproduction.getAdminstrationCosts()?string("0.00")}</td>
+                <td class="price_column">&euro; ${reproduction.adminstrationCosts?string("0.00")}</td>
+                <td class="price_column">&euro; -${reproduction.adminstrationCostsDiscount?string("0.00")}</td>
+                <td class="price_column">&euro; ${reproduction.adminstrationCostsWithDiscount?string("0.00")}</td>
+                <td class="price_column">&euro; ${0?string("0.00")} (0&percnt;)</td>
                 <td>&nbsp;</td>
               </tr>
             </#if>
 
-            <#if reproduction.discount gt 0>
-              <tr class="additional">
-                <td class="label"><@_ "reproduction.discount" "Discount"/>:</td>
-                <td class="price_column">&euro; ${reproduction.discount?string("0.00")}</td>
-                <td>&nbsp;</td>
-              </tr>
-            </#if>
-
-            <tr class="total">
-              <td class="label"><@_ "total" "Total"/>:</td>
-              <td class="price_column">&euro; ${reproduction.getTotalPrice()?string("0.00")}</td>
-              <td>${reproduction.getEstimatedDeliveryTime()?html} <@_ "days" "days"/></td>
-            </tr>
+            <#assign btwPrices = reproduction.totalBTW/>
+            <#list btwPrices?keys as btwPercentage>
+              <#if btwPercentage?is_first>
+                <tr class="total first">
+                  <td class="label" rowspan="${btwPrices?size}"><@_ "total" "Total"/>:</td>
+                  <td class="price_column" rowspan="${btwPrices?size}">&euro; ${reproduction.totalPrice?string("0.00")}</td>
+                  <td class="price_column" rowspan="${btwPrices?size}">&euro; -${reproduction.totalDiscount?string("0.00")}</td>
+                  <td class="price_column" rowspan="${btwPrices?size}">&euro; ${reproduction.totalPriceWithDiscount?string("0.00")}</td>
+                  <td class="price_column">&euro; ${btwPrices[btwPercentage]?string("0.00")} (${btwPercentage}&percnt;)</td>
+                  <td rowspan="${btwPrices?size}">${reproduction.getEstimatedDeliveryTime()?html} <@_ "days" "days"/></td>
+                </tr>
+              <#else>
+                <tr class="total">
+                  <td class="price_column">&euro; ${btwPrices[btwPercentage]?string("0.00")} (${btwPercentage}&percnt;)</td>
+                </tr>
+              </#if>
+            </#list>
           </tbody>
         </table>
 

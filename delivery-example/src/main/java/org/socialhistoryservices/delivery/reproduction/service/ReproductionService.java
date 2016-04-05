@@ -125,14 +125,13 @@ public interface ReproductionService {
      * @param oldRes     The old reproduction in the database (if present).
      * @param result     The binding result object to put the validation errors in.
      * @param isCustomer Whether the customer is creating the reproduction.
-     * @param forFree    Whether the reproduction is for free.
      * @throws ClosedException                Thrown when a holding is provided which
      *                                        references a record which is restrictionType=CLOSED.
      * @throws NoHoldingsException            Thrown when no holdings are provided.
      * @throws ClosedForReproductionException Thrown when a holding is provided which is closed for reproductions.
      */
     public void createOrEdit(Reproduction newReproduction, Reproduction oldReproduction, BindingResult result,
-                             boolean isCustomer, boolean forFree)
+                             boolean isCustomer)
             throws ClosedException, NoHoldingsException, ClosedForReproductionException;
 
     /**

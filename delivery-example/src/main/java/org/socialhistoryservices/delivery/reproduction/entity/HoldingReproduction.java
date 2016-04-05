@@ -1,17 +1,12 @@
 package org.socialhistoryservices.delivery.reproduction.entity;
 
 import org.hibernate.annotations.Index;
-import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
-import org.socialhistoryservices.delivery.reproduction.util.Pages;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 
 import javax.persistence.*;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 
 /**
@@ -58,9 +53,22 @@ public class HoldingReproduction extends HoldingRequest {
      * @return the complete price.
      */
     public BigDecimal getCompletePrice() {
-        if (this.getNumberOfPages() != null)
-            return getPrice().multiply(new BigDecimal(this.getNumberOfPages()));
-        return getPrice();
+        return getPrice().multiply(new BigDecimal(this.getNumberOfPages()));
+    }
+
+    /**
+     * Returns the complete price, including the discount.
+     *
+     * @return the complete price, including the discount.
+     */
+    public BigDecimal getCompletePriceWithDiscount() {
+        BigDecimal price = getCompletePrice().subtract(getDiscount());
+
+        // We cannot have a negative price
+        if (price.compareTo(BigDecimal.ZERO) < 0)
+            price = BigDecimal.ZERO;
+
+        return price;
     }
 
     /**
@@ -74,16 +82,17 @@ public class HoldingReproduction extends HoldingRequest {
         this.price = price;
     }
 
+    @NotNull
     @Min(1)
-    @Column(name = "numberOfPages")
-    private Integer numberOfPages;
+    @Column(name = "numberOfPages", nullable = false)
+    private int numberOfPages = 1;
 
     /**
      * Get the number of pages (in case of books and brochures).
      *
      * @return the number of pages (in case of books and brochures).
      */
-    public Integer getNumberOfPages() {
+    public int getNumberOfPages() {
         return numberOfPages;
     }
 
@@ -92,7 +101,7 @@ public class HoldingReproduction extends HoldingRequest {
      *
      * @param numberOfPages the number of pages (in case of books and brochures).
      */
-    public void setNumberOfPages(Integer numberOfPages) {
+    public void setNumberOfPages(int numberOfPages) {
         this.numberOfPages = numberOfPages;
     }
 
@@ -116,6 +125,77 @@ public class HoldingReproduction extends HoldingRequest {
      */
     public void setDeliveryTime(Integer deliveryTime) {
         this.deliveryTime = deliveryTime;
+    }
+
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "discount")
+    private BigDecimal discount;
+
+    /**
+     * Get the computated discount for this item.
+     *
+     * @return the computated discount for this item.
+     */
+    public BigDecimal getDiscount() {
+        return discount;
+    }
+
+    /**
+     * Set the computated discount for this item.
+     *
+     * @param discount the computated discount for this item.
+     */
+    public void setDiscount(BigDecimal discount) {
+        if (discount != null)
+            discount = discount.setScale(2);
+        this.discount = discount;
+    }
+
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "btw_price")
+    private BigDecimal btwPrice;
+
+    /**
+     * Get the price for BTW.
+     *
+     * @return the price for BTW.
+     */
+    public BigDecimal getBtwPrice() {
+        return btwPrice;
+    }
+
+    /**
+     * Set the price for BTW.
+     *
+     * @param btwPrice the price for BTW.
+     */
+    public void setBtwPrice(BigDecimal btwPrice) {
+        if (btwPrice != null)
+            btwPrice = btwPrice.setScale(2);
+        this.btwPrice = btwPrice;
+    }
+
+    @Min(0)
+    @Max(100)
+    @Column(name = "btw_percentage")
+    private Integer btwPercentage;
+
+    /**
+     * Get the BTW percentage.
+     *
+     * @return the BTW percentage.
+     */
+    public Integer getBtwPercentage() {
+        return btwPercentage;
+    }
+
+    /**
+     * Set the BTW percentage.
+     *
+     * @param btwPercentage the BTW percentage.
+     */
+    public void setBtwPercentage(Integer btwPercentage) {
+        this.btwPercentage = btwPercentage;
     }
 
     /**
@@ -378,21 +458,25 @@ public class HoldingReproduction extends HoldingRequest {
         if (other instanceof HoldingReproduction) {
             HoldingReproduction otherHr = (HoldingReproduction) other;
 
-            if (getStandardOption() != otherHr.getStandardOption()) {
-                setInSor(otherHr.isInSor());
-            }
+            setBtwPrice(otherHr.getBtwPrice());
+            setBtwPercentage(otherHr.getBtwPercentage());
+            setDiscount(otherHr.getDiscount());
 
-            if ((getStandardOption() != otherHr.getStandardOption()) || (otherHr.getStandardOption() == null)) {
+            //if (getStandardOption() != otherHr.getStandardOption()) {
+                setInSor(otherHr.isInSor());
+            //}
+
+            //if ((getStandardOption() != otherHr.getStandardOption()) || (otherHr.getStandardOption() == null)) {
                 setStandardOption(otherHr.getStandardOption());
                 setPrice(otherHr.getPrice());
                 setNumberOfPages(otherHr.getNumberOfPages());
                 setDeliveryTime(otherHr.getDeliveryTime());
-            }
+            //}
 
-            if (otherHr.getStandardOption() == null) {
+            //if (otherHr.getStandardOption() == null) {
                 setCustomReproductionCustomer(otherHr.getCustomReproductionCustomer());
                 setCustomReproductionReply(otherHr.getCustomReproductionReply());
-            }
+            //}
         }
     }
 }

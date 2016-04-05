@@ -736,7 +736,7 @@ table.holdings td {
     color: orange;
 }
 
-ul li input[type="text"].price {
+ul li input[type="text"].price, ul li input[type="text"].percentage {
     width: 8em;
 }
 
@@ -863,16 +863,24 @@ a.refreshCaptcha {
 }
 
 .reproduction_confirm_form table {
-    width: 70%;
+    width: 90%;
     border-collapse: collapse;
 }
 
 .reproduction_confirm_form table tr td {
-    padding-bottom: 5px;
+    padding: 3px 0;
 }
 
 .reproduction_confirm_form table thead, .reproduction_confirm_form table tr.total {
     font-weight: bold;
+}
+
+.reproduction_confirm_form table tr.total.first {
+    border-top: 1px solid black;
+}
+
+.reproduction_confirm_form table tbody {
+    border-top: 1px solid black;
     border-bottom: 1px solid black;
 }
 
@@ -900,7 +908,6 @@ a.refreshCaptcha {
 table.reproduction_options {
     margin-bottom: 10px;
 }
-
 
 table.reproduction_options, table.reproduction_options tr, table.reproduction_options td {
     vertical-align: top;
@@ -963,7 +970,7 @@ table.reproduction_options select {
     width: 12em;
 }
 
-table.reproduction_options textarea, .deliveryTimeComment {
+table.reproduction_options textarea {
     height: 60px;
     width: 300px;
 }
@@ -971,4 +978,13 @@ table.reproduction_options textarea, .deliveryTimeComment {
 table.reproduction_options ul.errors {
     margin-left: 0;
     padding-left: 0;
+}
+
+ul.reproduction_totals {
+    list-style: none;
+    padding: 0;
+}
+
+ul.reproduction_totals > li {
+    margin-bottom: 10px;
 }

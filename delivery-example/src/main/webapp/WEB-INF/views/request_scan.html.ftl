@@ -114,17 +114,10 @@
     </li>
   </#if>
 
-  <#if reproduction.discount gt 0>
+  <#if reproduction.discountPercentage gt 0>
     <li class="spacing">
-      <span><@_ "reproduction.discount" "Discount"/></span>
-      &euro; ${reproduction.discount?string("0.00")}
-    </li>
-  </#if>
-
-  <#if reproduction.deliveryTimeComment??>
-    <li <#if reproduction.discount lte 0>class="spacing"</#if>>
-      <span><@_ "reproduction.deliveryTimeComment" "Estimated time of delivery"/></span>
-    ${reproduction.deliveryTimeComment?html}
+      <span><@_ "reproduction.discountPercentage" "Discount"/></span>
+     ${reproduction.discountPercentage} &percnt;
     </li>
   </#if>
 
@@ -210,7 +203,19 @@
           </#if>
         </li>
 
-        <li>
+        <#if hr.price??>
+          <li>
+            <span><@_ "holdingReproductions.discount" "Computed discount"/></span>
+            &euro; ${hr.discount?string("0.00")}
+          </li>
+
+          <li>
+            <span><@_ "holdingReproductions.btw" "Computed BTW"/></span>
+            &euro; ${hr.btwPrice?string("0.00")} (${hr.btwPercentage}&percnt;)
+          </li>
+        </#if>
+
+        <li class="spacing">
           <span><@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/></span>
           <#if hr.deliveryTime??>
           ${hr.deliveryTime?html} <@_ "days" "days"/>

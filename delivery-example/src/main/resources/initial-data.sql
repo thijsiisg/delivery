@@ -72,7 +72,12 @@ INSERT INTO group_permissions VALUES (3, 5);
 INSERT INTO group_permissions VALUES (4, 2);
 INSERT INTO group_permissions VALUES (4, 3);
 
+INSERT INTO group_permissions VALUES (1, 13);
+INSERT INTO group_permissions VALUES (1, 14);
 
+INSERT INTO group_permissions VALUES (3, 12);
+INSERT INTO group_permissions VALUES (3, 13);
+INSERT INTO group_permissions VALUES (3, 14);
 
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres

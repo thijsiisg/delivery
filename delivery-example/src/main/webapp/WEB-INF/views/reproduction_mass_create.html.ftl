@@ -144,11 +144,8 @@
   </ul>
 
   <ul class="form">
-    <li><@input "reproduction.discount" "" "" "price"/></li>
-    <li>
-      <label for="free" class="field"><@_ "reproductionMassCreate.free" "Free"/></label>
-      <input type="checkbox" name="free" id="free" class="field"/>
-    </li>
+    <li><@input "reproduction.discountPercentage" "" "" "percentage"/></li>
+
     <li>
       <label for="mail" class="field"><@_ "reproductionMassCreate.mail" "Mail"/></label>
       <input type="checkbox" name="mail" id="mail" class="field" checked="checked"/>

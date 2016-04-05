@@ -111,23 +111,27 @@ CREATE TABLE reproductions
 (
   id integer NOT NULL,
   adminstrationcosts numeric(7,2) NOT NULL,
+  adminstrationcostsdiscount numeric(7,2) NOT NULL,
   comment character varying(255),
   creation_date timestamp without time zone NOT NULL,
   customeremail character varying(255) NOT NULL,
   customername character varying(255) NOT NULL,
   date date NOT NULL,
   date_has_order_details date,
-  discount numeric(7,2) NOT NULL,
+  date_payment_accepted date,
+  discount_percentage integer NOT NULL,
   offer_ready_immediatly boolean,
+  order_id bigint,
   requestlocale character varying(255) NOT NULL,
   status character varying(255) NOT NULL,
   token character varying(36) NOT NULL,
-  order_id bigint,
   CONSTRAINT reproductions_pkey PRIMARY KEY (id),
   CONSTRAINT fke6904ac73d5b738a FOREIGN KEY (order_id)
-      REFERENCES orders (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT reproductions_discount_check CHECK (discount >= 0::numeric)
+  REFERENCES orders (id) MATCH SIMPLE
+  ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT reproductions_adminstrationcosts_check CHECK (adminstrationcosts >= 0::numeric),
+  CONSTRAINT reproductions_adminstrationcostsdiscount_check CHECK (adminstrationcostsdiscount >= 0::numeric),
+  CONSTRAINT reproductions_discount_percentage_check CHECK (discount_percentage <= 100)
 )
 WITH (
   OIDS=FALSE
@@ -136,11 +140,14 @@ WITH (
 CREATE TABLE holding_reproductions
 (
   id integer NOT NULL,
+  btw_percentage integer,
+  btw_price numeric(7,2),
   comment character varying(255),
   completed boolean NOT NULL,
   customreproductioncustomer text,
   customreproductionreply text,
   deliverytime integer,
+  discount numeric(7,2),
   insor boolean NOT NULL,
   numberofpages integer,
   price numeric(7,2),
@@ -150,14 +157,15 @@ CREATE TABLE holding_reproductions
   reproduction_standard_option_id integer,
   CONSTRAINT holding_reproductions_pkey PRIMARY KEY (id),
   CONSTRAINT fkfbac824b1d683e65 FOREIGN KEY (holding_id)
-      REFERENCES holdings (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  REFERENCES holdings (id) MATCH SIMPLE
+  ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT fkfbac824b4f851764 FOREIGN KEY (reproduction_standard_option_id)
-      REFERENCES reproduction_standard_options (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  REFERENCES reproduction_standard_options (id) MATCH SIMPLE
+  ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT fkfbac824b6a2b63aa FOREIGN KEY (reproduction_id)
-      REFERENCES reproductions (id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  REFERENCES reproductions (id) MATCH SIMPLE
+  ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT holding_reproductions_btw_percentage_check CHECK (btw_percentage <= 100),
   CONSTRAINT holding_reproductions_deliverytime_check CHECK (deliverytime >= 0),
   CONSTRAINT holding_reproductions_numberofpages_check CHECK (numberofpages >= 1)
 )

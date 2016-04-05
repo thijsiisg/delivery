@@ -34,8 +34,11 @@ import org.springframework.web.bind.annotation.*;
 import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.print.PrinterException;
 import java.beans.PropertyEditorSupport;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -642,7 +645,7 @@ public class ReproductionController extends AbstractRequestController {
         try {
             if (commit) {
                 checkCaptcha(req, result, model); // Make sure a Captcha was entered correctly
-                reproductions.createOrEdit(reproduction, null, result, true, false);
+                reproductions.createOrEdit(reproduction, null, result, true);
                 if (!result.hasErrors() && !reproduction.getHoldingReproductions().isEmpty()) {
                     reproductions.autoPrintReproduction(reproduction);
                     return determineNextStep(reproduction, model);
@@ -1048,6 +1051,7 @@ public class ReproductionController extends AbstractRequestController {
      * @param reproduction The reproduction.
      */
     private void changeStatusAfterPayment(Reproduction reproduction) {
+        reproduction.setDatePaymentAccepted(new Date());
         reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
         if (reproduction.isCompletelyInSor())
             reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.COMPLETED);
@@ -1086,7 +1090,6 @@ public class ReproductionController extends AbstractRequestController {
      * @param id           ID of the reproduction to fetch.
      * @param reproduction The reproduction.
      * @param result       The object to save the validation errors.
-     * @param free         Whether this reproduction is for free.
      * @param mail         Whether or not to mail a reproduction confirmation.
      * @param model        The model to add attributes to.
      * @return The view to resolve.
@@ -1094,7 +1097,7 @@ public class ReproductionController extends AbstractRequestController {
     @RequestMapping(value = "/{id:[\\d]+}/edit", method = RequestMethod.POST)
     @Secured("ROLE_REPRODUCTION_MODIFY")
     public String processEditForm(@PathVariable int id, @ModelAttribute("reproduction") Reproduction reproduction,
-                                  BindingResult result, boolean free, boolean mail, Model model) {
+                                  BindingResult result, boolean mail, Model model) {
         Reproduction originalReproduction = reproductions.getReproductionById(id);
         if (originalReproduction == null)
             throw new ResourceNotFoundException();
@@ -1106,7 +1109,7 @@ public class ReproductionController extends AbstractRequestController {
         }
 
         try {
-            reproductions.createOrEdit(reproduction, originalReproduction, result, false, free);
+            reproductions.createOrEdit(reproduction, originalReproduction, result, false);
             if (!result.hasErrors()) {
                 // Mail the confirmation (offer is ready) to the customer
                 boolean mailSuccess = true;
@@ -1222,11 +1225,11 @@ public class ReproductionController extends AbstractRequestController {
     public String processMassCreateForm(@ModelAttribute("reproduction") Reproduction newReproduction,
                                         BindingResult result, @RequestParam String searchTitle,
                                         @RequestParam(required = false) String searchSignature,
-                                        boolean free, boolean mail, Model model) {
+                                        boolean mail, Model model) {
         List<Holding> holdingList = searchMassCreate(newReproduction, searchTitle, searchSignature);
 
         try {
-            reproductions.createOrEdit(newReproduction, null, result, false, free);
+            reproductions.createOrEdit(newReproduction, null, result, false);
             if (!result.hasErrors()) {
                 reproductions.autoPrintReproduction(newReproduction);
 
@@ -1328,6 +1331,32 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     /**
+     * Get an Excel download with the payed reproductions per for the given time period.
+     *
+     * @param req The HTTP request object.
+     * @param res The HTTP response object.
+     * @return The name of the view to use.
+     */
+    @RequestMapping(value = "/excel", method = RequestMethod.GET)
+    @Secured("ROLE_REPRODUCTION_VIEW")
+    public void reproductionMaterials(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        Map<String, String[]> p = req.getParameterMap();
+
+        Date from = getFromDateFilter(p);
+        from = (from != null) ? from : new Date();
+        Date to = getToDateFilter(p);
+        to = (to != null) ? to : new Date();
+
+        List<Reproduction> payedReproductions = getPayedReproductions(from, to);
+        ReproductionExcel reproductionExcel = new ReproductionExcel(payedReproductions, messageSource);
+
+        res.setContentType("application/vnd.ms-excel");
+        res.setHeader("Content-Disposition", "attachment;filename=reproductions.xls");
+        reproductionExcel.writeToStream(res.getOutputStream());
+        res.flushBuffer();
+    }
+
+    /**
      * Counts the number of materials in reproduction requests in a given period.
      *
      * @param from From date.
@@ -1370,36 +1399,83 @@ public class ReproductionController extends AbstractRequestController {
      * @param to   To date.
      * @return The payed amounts.
      */
-    private Tuple countPayedAmounts(Date from, Date to) {
+    private List<Tuple> countPayedAmounts(Date from, Date to) {
         CriteriaBuilder cb = reproductions.getHoldingReproductionCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createTupleQuery();
 
         // Join all required tables
-        Root<Reproduction> rRoot = cq.from(Reproduction.class);
-        Join<Reproduction, Order> oRoot = rRoot.join(Reproduction_.order);
+        Root<HoldingReproduction> hrRoot = cq.from(HoldingReproduction.class);
+        Join<HoldingReproduction, Reproduction> repRoot = hrRoot.join(HoldingReproduction_.reproduction);
 
         // Within the selected date range
-        Expression<Date> reproductionDate = rRoot.<Date>get(Reproduction_.date);
+        Expression<Date> reproductionDate = repRoot.<Date>get(Reproduction_.datePaymentAccepted);
         Expression<Boolean> fromExpr = cb.greaterThanOrEqualTo(reproductionDate, from);
         Expression<Boolean> toExpr = cb.lessThanOrEqualTo(reproductionDate, to);
 
         // And only active or completed reproductions
-        Expression<Reproduction.Status> status = rRoot.<Reproduction.Status>get(Reproduction_.status);
+        Expression<Reproduction.Status> status = repRoot.<Reproduction.Status>get(Reproduction_.status);
         Expression<Boolean> statusExpr = cb.in(status)
                 .value(Reproduction.Status.ACTIVE)
                 .value(Reproduction.Status.COMPLETED)
                 .value(Reproduction.Status.DELIVERED);
 
         // Count the amounts
-        Expression<Long> amount = oRoot.<Long>get(Order_.amount);
-        Expression<Long> refundedAmount = oRoot.<Long>get(Order_.refundedAmount);
-        Expression<Long> totalAmount = cb.sum(amount);
-        Expression<Long> totalRefundedAmount = cb.sum(refundedAmount);
+        Expression<BigDecimal> amount = hrRoot.get(HoldingReproduction_.price);
+        Expression<Integer> numberOfPages = hrRoot.get(HoldingReproduction_.numberOfPages);
+        Expression<BigDecimal> discount = hrRoot.get(HoldingReproduction_.discount);
+        Expression<BigDecimal> btwPrice = hrRoot.get(HoldingReproduction_.btwPrice);
+        Expression<Integer> btwPercentage = hrRoot.get(HoldingReproduction_.btwPercentage);
 
-        cq.multiselect(totalAmount.alias("totalAmount"), totalRefundedAmount.alias("totalRefundedAmount"));
+        Expression<Number> totalAmount = cb.<Number>prod(amount, numberOfPages);
+
+        Expression<Long> totalItems = cb.count(hrRoot);
+        Expression<Number> sumTotalAmount = cb.sum(totalAmount);
+        Expression<BigDecimal> sumDiscount = cb.sum(discount);
+        Expression<BigDecimal> sumBtwPrice = cb.sum(btwPrice);
+
+        cq.multiselect(
+                totalItems.alias("totalItems"),
+                btwPercentage.alias("btwPercentage"),
+                sumTotalAmount.alias("sumTotalAmount"),
+                sumDiscount.alias("sumDiscount"),
+                sumBtwPrice.alias("sumBtwPrice")
+        );
         cq.where(cb.and(statusExpr, cb.and(fromExpr, toExpr)));
+        cq.groupBy(btwPercentage);
 
-        return reproductions.listTuples(cq).get(0);
+        return reproductions.listTuples(cq);
+    }
+
+    /**
+     * Returns the payed reproductions for a given period.
+     *
+     * @param from From date.
+     * @param to   To date.
+     * @return The payed reproductions.
+     */
+    private List<Reproduction> getPayedReproductions(Date from, Date to) {
+        CriteriaBuilder cb = reproductions.getHoldingReproductionCriteriaBuilder();
+        CriteriaQuery<Reproduction> query = cb.createQuery(Reproduction.class);
+
+        // Join all required tables
+        Root<Reproduction> repRoot = query.from(Reproduction.class);
+        repRoot.fetch(Reproduction_.holdingReproductions, JoinType.LEFT);
+
+        // Within the selected date range
+        Expression<Date> reproductionDate = repRoot.<Date>get(Reproduction_.datePaymentAccepted);
+        Expression<Boolean> fromExpr = cb.greaterThanOrEqualTo(reproductionDate, from);
+        Expression<Boolean> toExpr = cb.lessThanOrEqualTo(reproductionDate, to);
+
+        // And only active or completed reproductions
+        Expression<Reproduction.Status> status = repRoot.<Reproduction.Status>get(Reproduction_.status);
+        Expression<Boolean> statusExpr = cb.in(status)
+                .value(Reproduction.Status.ACTIVE)
+                .value(Reproduction.Status.COMPLETED)
+                .value(Reproduction.Status.DELIVERED);
+
+        query.where(cb.and(statusExpr, cb.and(fromExpr, toExpr)));
+
+        return new ArrayList<Reproduction>(new LinkedHashSet<Reproduction>(reproductions.listReproductions(query)));
     }
 
     /**

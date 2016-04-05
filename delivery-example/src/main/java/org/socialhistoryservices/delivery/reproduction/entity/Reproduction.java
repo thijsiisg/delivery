@@ -10,10 +10,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import javax.persistence.*;
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -203,6 +200,31 @@ public class Reproduction extends Request {
     }
 
     /**
+     * The Reproduction's date when the payment was accepted.
+     */
+    @Temporal(TemporalType.DATE)
+    @Column(name = "date_payment_accepted")
+    private Date datePaymentAccepted;
+
+    /**
+     * Returns the Reproduction's date when the payment was accepted.
+     *
+     * @return The Reproduction's date when the payment was accepted.
+     */
+    public Date getDatePaymentAccepted() {
+        return datePaymentAccepted;
+    }
+
+    /**
+     * Sets the Reproduction's date when the payment was accepted.
+     *
+     * @param datePaymentAccepted The Reproduction's date when the payment was accepted.
+     */
+    public void setDatePaymentAccepted(Date datePaymentAccepted) {
+        this.datePaymentAccepted = datePaymentAccepted;
+    }
+
+    /**
      * The Reproduction's creation date.
      */
     @NotNull
@@ -268,10 +290,25 @@ public class Reproduction extends Request {
     /**
      * Get the adminstration costs specified.
      *
-     * @return The adminstration costs specified.
+     * @return the adminstration costs specified.
      */
     public BigDecimal getAdminstrationCosts() {
         return adminstrationCosts;
+    }
+
+    /**
+     * Get the adminstration costs with the discount.
+     *
+     * @return the adminstration costs with the discount.
+     */
+    public BigDecimal getAdminstrationCostsWithDiscount() {
+        BigDecimal adminstrationCosts = getAdminstrationCosts().subtract(getAdminstrationCostsDiscount());
+
+        // We cannot have a negative price
+        if (adminstrationCosts.compareTo(BigDecimal.ZERO) < 0)
+            adminstrationCosts = BigDecimal.ZERO;
+
+        return adminstrationCosts.setScale(2);
     }
 
     /**
@@ -283,31 +320,55 @@ public class Reproduction extends Request {
         this.adminstrationCosts = adminstrationCosts.setScale(2);
     }
 
+    @NotNull
+    @Min(0)
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "adminstrationCostsDiscount", nullable = false)
+    private BigDecimal adminstrationCostsDiscount;
+
+    /**
+     * Get the computated discount for the adminstration costs.
+     *
+     * @return the computated discount for the adminstration costs.
+     */
+    public BigDecimal getAdminstrationCostsDiscount() {
+        return adminstrationCostsDiscount;
+    }
+
+    /**
+     * Set the computated discount for the adminstration costs.
+     *
+     * @param discount the computated discount for the adminstration costs.
+     */
+    public void setAdminstrationCostsDiscount(BigDecimal discount) {
+        this.adminstrationCostsDiscount = discount.setScale(2);
+    }
+
     /**
      * The discount specified for this reproduction.
      */
     @NotNull
     @Min(0)
-    @Digits(integer = 5, fraction = 2)
-    @Column(name = "discount", nullable = false)
-    private BigDecimal discount;
+    @Max(100)
+    @Column(name = "discount_percentage", nullable = false)
+    private int discountPercentage;
 
     /**
-     * Get the discount specified.
+     * Get the discount percentage specified.
      *
-     * @return The discount specified.
+     * @return The discount percentage specified.
      */
-    public BigDecimal getDiscount() {
-        return discount;
+    public int getDiscountPercentage() {
+        return discountPercentage;
     }
 
     /**
-     * Set the discount specified.
+     * Set the discount percentage specified.
      *
-     * @param discount The discount specified.
+     * @param discount The discount percentage specified.
      */
-    public void setDiscount(BigDecimal discount) {
-        this.discount = discount.setScale(2);
+    public void setDiscountPercentage(int discountPercentage) {
+        this.discountPercentage = discountPercentage;
     }
 
     /**
@@ -413,7 +474,7 @@ public class Reproduction extends Request {
         return holdingReproductions;
     }
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     @JoinColumn(name = "order_id")
     private Order order;
@@ -426,10 +487,18 @@ public class Reproduction extends Request {
         this.order = order;
     }
 
+    // For reading purposes only, to prevent loading the complete order entity
+    @Column(name = "order_id", insertable = false, updatable = false)
+    private Long orderId;
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
     /**
-     * Computes the total price of all holdings together.
+     * Computes the total price of all holdings together (wihout the discount).
      *
-     * @return The total price for this reproduction.
+     * @return The total price for this reproduction (wihout the discount).
      */
     public BigDecimal getTotalPrice() {
         BigDecimal price = getAdminstrationCosts();
@@ -438,14 +507,93 @@ public class Reproduction extends Request {
         for (HoldingReproduction hr : getHoldingReproductions())
             price = price.add(hr.getCompletePrice());
 
-        // Then substract the discount
-        price = price.subtract(getDiscount());
+        // We cannot have a negative price
+        if (price.compareTo(BigDecimal.ZERO) < 0)
+            price = BigDecimal.ZERO;
+
+        return price.setScale(2);
+    }
+
+    /**
+     * Computes the total discount of all holdings together
+     *
+     * @return The total discount for this reproduction.
+     */
+    public BigDecimal getTotalDiscount() {
+        BigDecimal price = getAdminstrationCostsDiscount();
+
+        // First add the discount of each holding in this reproduction
+        for (HoldingReproduction hr : getHoldingReproductions())
+            price = price.add(hr.getDiscount());
+
+        // We cannot have a negative discount
+        if (price.compareTo(BigDecimal.ZERO) < 0)
+            price = BigDecimal.ZERO;
+
+        return price.setScale(2);
+    }
+
+    /**
+     * Computes the total price of all holdings together (with the discount).
+     *
+     * @return The total price for this reproduction (with the discount).
+     */
+    public BigDecimal getTotalPriceWithDiscount() {
+        BigDecimal price = getTotalPrice().subtract(getTotalDiscount());
 
         // We cannot have a negative price
         if (price.compareTo(BigDecimal.ZERO) < 0)
             price = BigDecimal.ZERO;
 
         return price.setScale(2);
+    }
+
+    /**
+     * Computes the total price (excl. BTW) of all holdings together.
+     *
+     * @return The total price (excl. BTW) for this reproduction.
+     */
+    public BigDecimal getTotalPriceExclBTW() {
+        BigDecimal price = getTotalPriceWithDiscount().subtract(getTotalBTWPrice());
+
+        // We cannot have a negative price
+        if (price.compareTo(BigDecimal.ZERO) < 0)
+            price = BigDecimal.ZERO;
+
+        return price.setScale(2);
+    }
+
+    /**
+     * Computes the total BTW for each BTW percentage.
+     *
+     * @return The total BTW for each BTW percentage.
+     */
+    public Map<String, BigDecimal> getTotalBTW() {
+        Map<String, BigDecimal> btwTotals = new TreeMap<String, BigDecimal>();
+        for (HoldingReproduction hr : getHoldingReproductions()) {
+            BigDecimal totalBtwPrice = BigDecimal.ZERO;
+            if (btwTotals.containsKey(hr.getBtwPercentage().toString()))
+                totalBtwPrice = btwTotals.get(hr.getBtwPercentage().toString());
+
+            totalBtwPrice = totalBtwPrice.add(hr.getBtwPrice());
+            btwTotals.put(hr.getBtwPercentage().toString(), totalBtwPrice.setScale(2));
+        }
+
+        return btwTotals;
+    }
+
+    /**
+     * Computes the total BTW price.
+     *
+     * @return The total BTW price.
+     */
+    public BigDecimal getTotalBTWPrice() {
+        BigDecimal totalBtwPrice = BigDecimal.ZERO;
+        for (BigDecimal btwPrice : getTotalBTW().values()) {
+            totalBtwPrice = totalBtwPrice.add(btwPrice);
+        }
+
+        return totalBtwPrice.setScale(2);
     }
 
     /**
@@ -508,8 +656,9 @@ public class Reproduction extends Request {
         setStatus(Status.WAITING_FOR_ORDER_DETAILS);
         setDate(new Date());
         setCreationDate(new Date());
-        setDiscount(BigDecimal.ZERO);
+        setDiscountPercentage(0);
         setAdminstrationCosts(BigDecimal.ZERO);
+        setAdminstrationCostsDiscount(BigDecimal.ZERO);
         setRequestLocale(LocaleContextHolder.getLocale());
         holdingReproductions = new ArrayList<HoldingReproduction>();
         token = UUID.randomUUID().toString();
