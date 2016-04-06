@@ -121,18 +121,23 @@ public abstract class RequestMailer extends Mailer {
         msg.setFrom(new InternetAddress(properties.getProperty("prop_mailSystemAddress")));
         msg.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
         msg.setReplyTo(InternetAddress.parse(getMessage("iisg.email", "")));
-
         msg.setSubject(subject);
-        msg.setText(templateToString(templateName, model, locale));
 
+        // The mail wil consists of multiple parts, the content and the PDF attachment
         MimeMultipart mimeMultipart = new MimeMultipart();
+
+        // First add the content
+        MimeBodyPart content = new MimeBodyPart();
+        content.setText(templateToString(templateName, model, locale));
+        mimeMultipart.addBodyPart(content);
+
+        // Secondly add the attachment
         MimeBodyPart attachment = new MimeBodyPart();
-        ByteArrayDataSource dataSource = new ByteArrayDataSource(pdf, "application/pdf");
-
         attachment.setFileName(pdfName);
-        attachment.setDataHandler(new DataHandler(dataSource));
-
+        attachment.setDataHandler(new DataHandler(new ByteArrayDataSource(pdf, "application/pdf")));
         mimeMultipart.addBodyPart(attachment);
+
+        // Add the multiple parts as content to the email message
         msg.setContent(mimeMultipart);
 
         mailSender.send(msg);
