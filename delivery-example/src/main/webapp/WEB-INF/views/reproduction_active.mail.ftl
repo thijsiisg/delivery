@@ -30,8 +30,9 @@
     <#assign h = hr.holding>
     <#assign info = h.record.externalInfo>
 * ${h.record.title} - ${h.signature} <#if info.author??>/ ${info.author} </#if><#if hr.comment??>- ${hr.comment}</#if>
-${prop_sorAddress}/file/${hr.standardOption.level?lower_case}/10622/${h.externalInfo.barcode?url}?access_token=${prop_sorAccessToken}&contentType=application/save
-
+    <#list sorUrls[h.signature] as url>
+${url}
+    </#list>
 </#list>
 </#if>
 </@mailRaedingRoom>

@@ -1,10 +1,15 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
 import org.socialhistoryservices.delivery.TemplatePreparationException;
+import org.socialhistoryservices.delivery.api.SharedObjectRepositoryService;
+import org.socialhistoryservices.delivery.api.SorMetadata;
+import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
+import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
 import org.socialhistoryservices.delivery.request.service.RequestMailer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailPreparationException;
 import org.springframework.stereotype.Service;
@@ -13,9 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 
 import javax.mail.MessagingException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Mailer to send information/confirmation mails dealing with reproductions.
@@ -24,6 +27,13 @@ import java.util.Locale;
 public class ReproductionMailer extends RequestMailer {
     @Autowired
     private ReproductionPDF reproductionPDF;
+
+    @Autowired
+    private SharedObjectRepositoryService sorService;
+
+    @Autowired
+    @Qualifier("myCustomProperties")
+    private Properties properties;
 
     private static final Locale ENGLISH_LOCALE = StringUtils.parseLocaleString("en");
 
@@ -36,19 +46,19 @@ public class ReproductionMailer extends RequestMailer {
      */
     public void mailPending(Reproduction reproduction) throws MailException {
         assert reproduction.getStatus() == Reproduction.Status.WAITING_FOR_ORDER_DETAILS :
-                "Can only mail pending when Reproduction status is WAITING_FOR_ORDER_DETAILS";
+            "Can only mail pending when Reproduction status is WAITING_FOR_ORDER_DETAILS";
 
         Model model = getReproductionModel(reproduction);
 
         // Send an email to the customer
         String subjectCustomer = getMessage("reproductionMail.pendingSubjectCustomer", "Confirmation of reproduction",
-                reproduction.getRequestLocale());
+            reproduction.getRequestLocale());
         sendMail(reproduction, subjectCustomer, "reproduction_pending_customer.mail.ftl",
-                model, reproduction.getRequestLocale());
+            model, reproduction.getRequestLocale());
 
         // Send an email to the reading room
         String subjectReadingRoom = getMessage("reproductionMail.pendingSubjectReadingRoom",
-                "New reproduction waiting for offer", ENGLISH_LOCALE);
+            "New reproduction waiting for offer", ENGLISH_LOCALE);
         sendMail(subjectReadingRoom, "reproduction_pending_readingroom.mail.ftl", model, ENGLISH_LOCALE);
     }
 
@@ -60,12 +70,12 @@ public class ReproductionMailer extends RequestMailer {
      */
     public void mailOfferReady(Reproduction reproduction) throws MailException {
         assert reproduction.getStatus() == Reproduction.Status.HAS_ORDER_DETAILS :
-                "Can only mail order ready when Reproduction status is HAS_ORDER_DETAILS";
+            "Can only mail order ready when Reproduction status is HAS_ORDER_DETAILS";
 
         String subject = getMessage("reproductionMail.offerReadySubject",
-                "Confirmation of reproduction - Your offer is ready", reproduction.getRequestLocale());
+            "Confirmation of reproduction - Your offer is ready", reproduction.getRequestLocale());
         sendMail(reproduction, subject, "reproduction_offer_ready.mail.ftl", getReproductionModel(reproduction),
-                reproduction.getRequestLocale());
+            reproduction.getRequestLocale());
     }
 
     /**
@@ -80,7 +90,7 @@ public class ReproductionMailer extends RequestMailer {
     public void mailPayedAndActive(Reproduction reproduction) throws MailException {
         try {
             assert reproduction.getStatus() == Reproduction.Status.ACTIVE :
-                    "Can only mail active and payed confirmation when Reproduction status is ACTIVE";
+                "Can only mail active and payed confirmation when Reproduction status is ACTIVE";
 
             List<HoldingReproduction> inSor = new ArrayList<HoldingReproduction>();
             List<HoldingReproduction> notInSor = new ArrayList<HoldingReproduction>();
@@ -100,15 +110,19 @@ public class ReproductionMailer extends RequestMailer {
 
             // First sent the customer a confirmation email
             String subjectCustomer = getMessage("reproductionMail.payedSubject", "Confirmation of payment",
-                    reproduction.getRequestLocale());
+                reproduction.getRequestLocale());
             String invoiceFileName = getMessage("reproductionMail.invoice", "Invoice",
-                    reproduction.getRequestLocale());
+                reproduction.getRequestLocale());
             sendMailWithPdf(reproduction, subjectCustomer, "reproduction_payed.mail.ftl", pdf,
-                    invoiceFileName + ".pdf", model, reproduction.getRequestLocale());
+                invoiceFileName + ".pdf", model, reproduction.getRequestLocale());
+
+            // Obtain all SOR URLs
+            Map<String, List<String>> urlsForHolding = getSorDownloadURLs(inSor);
+            model.addAttribute("sorUrls", urlsForHolding);
 
             // Then sent the reading room / repro the confirmation
             String subjectRepro = getMessage("reproductionMail.activeReproductionSubject", "New active reproduction",
-                    ENGLISH_LOCALE);
+                ENGLISH_LOCALE);
             sendMail(subjectRepro, "reproduction_active.mail.ftl", model, ENGLISH_LOCALE);
         }
         catch (TemplatePreparationException tpe) {
@@ -127,10 +141,10 @@ public class ReproductionMailer extends RequestMailer {
      */
     public void mailCancelled(Reproduction reproduction) throws MailException {
         assert reproduction.getStatus() == Reproduction.Status.CANCELLED :
-                "Can only mail active when Reproduction status is CANCELLED";
+            "Can only mail active when Reproduction status is CANCELLED";
 
         String subject = getMessage("reproductionMail.cancelledReproductionSubject", "Reproduction cancelled",
-                ENGLISH_LOCALE);
+            ENGLISH_LOCALE);
         sendMail(subject, "reproduction_cancelled.mail.ftl", getReproductionModel(reproduction), ENGLISH_LOCALE);
     }
 
@@ -144,5 +158,65 @@ public class ReproductionMailer extends RequestMailer {
         Model model = new ExtendedModelMap();
         model.addAttribute("reproduction", reproduction);
         return model;
+    }
+
+    /**
+     * Determine the SOR download URLs for the given holdings.
+     *
+     * @param hrs The holding reproductions.
+     * @return The SOR download URLs for each holding.
+     */
+    private Map<String, List<String>> getSorDownloadURLs(List<HoldingReproduction> hrs) {
+        String sorAddress = properties.getProperty("prop_sorAddress");
+        String sorAccessToken = properties.getProperty("prop_sorAccessToken");
+        Map<String, List<String>> urlsForHolding = new HashMap<String, List<String>>();
+
+        for (HoldingReproduction hr : hrs) {
+            List<String> urls = new ArrayList<String>();
+            Holding holding = hr.getHolding();
+
+            // Obtain the metadata from the SOR
+            SorMetadata sorMetadata;
+            if (hr.getStandardOption().getLevel() == ReproductionStandardOption.Level.MASTER)
+                sorMetadata = sorService.getMasterMetadataForPid(holding.determinePid());
+            else
+                sorMetadata = sorService.getFirstLevelMetadataForPid(holding.determinePid());
+
+            // Determine the URLs based on their material type and content
+            if (!sorMetadata.isMETS()) {
+                urls.add(sorAddress + "/file/" + hr.getStandardOption().getLevel().name().toLowerCase() + "/"
+                    + holding.determinePid() + "?access_token=" + sorAccessToken + "&contentType=application/save");
+            }
+            else {
+                switch (hr.getStandardOption().getMaterialType()) {
+                    case BOOK:
+                        urls.add(sorAddress + "/pdf/" + holding.determinePid() + "?access_token="
+                            + sorAccessToken + "&contentType=application/save");
+                        break;
+                    case SOUND:
+                        for (String pid : sorMetadata.getFilePids().get("archive audio")) {
+                            urls.add(sorAddress + "/file/master/" + pid + "?access_token="
+                                + sorAccessToken + "&contentType=application/save");
+                        }
+                        break;
+                    case MOVING_VISUAL:
+                        for (String pid : sorMetadata.getFilePids().get("archive video")) {
+                            urls.add(sorAddress + "/file/master/" + pid + "?access_token="
+                                + sorAccessToken + "&contentType=application/save");
+                        }
+                        break;
+                    case VISUAL:
+                        String group = sorMetadata.isMaster() ? "archive image" : "hires reference image";
+                        String pid = sorMetadata.getFilePids().get(group).get(0);
+                        urls.add(sorAddress + "/file/master/" + pid + "?access_token="
+                            + sorAccessToken + "&contentType=application/save");
+                        break;
+                }
+            }
+
+            urlsForHolding.put(holding.getSignature(), urls);
+        }
+
+        return urlsForHolding;
     }
 }

@@ -1,5 +1,6 @@
 package org.socialhistoryservices.delivery.api;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -8,14 +9,28 @@ import java.util.Map;
 public class SorMetadata {
     private static final int TIFF_MASTER_DPI = 300;
 
+    private boolean isMETS;
     private boolean isMaster;
     private String contentType;
     private Map<String, String> content;
+    private Map<String, List<String>> filePids;
 
-    public SorMetadata(boolean isMaster, String contentType, Map<String, String> content) {
+    public SorMetadata(boolean isMETS, boolean isMaster, String contentType,
+                       Map<String, String> content, Map<String, List<String>> filePids) {
+        this.isMETS = isMETS;
         this.isMaster = isMaster;
         this.contentType = contentType;
         this.content = content;
+        this.filePids = filePids;
+    }
+
+    /**
+     * Whether this is a METS document.
+     *
+     * @return Whether this is a METS document.
+     */
+    public boolean isMETS() {
+        return isMETS;
     }
 
     /**
@@ -46,6 +61,15 @@ public class SorMetadata {
     }
 
     /**
+     * The use levels and the PIDS of the files contained in the METS document.
+     *
+     * @return The use levels and the PIDS of the files contained in the METS document.
+     */
+    public  Map<String, List<String>> getFilePids() {
+        return filePids;
+    }
+
+    /**
      * Try to determine if this file is a TIFF with the valid DPI.
      *
      * @return True if we can determine that the file is a TIFF with the valid DPI.
@@ -64,7 +88,8 @@ public class SorMetadata {
                 }
             }
             return false;
-        } catch (NumberFormatException nfe) {
+        }
+        catch (NumberFormatException nfe) {
             return false;
         }
     }

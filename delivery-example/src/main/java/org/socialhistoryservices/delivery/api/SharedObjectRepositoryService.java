@@ -10,14 +10,29 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents the Shared Object Repository (SOR) service.
  */
 public class SharedObjectRepositoryService {
     private static final Log LOGGER = LogFactory.getLog(SharedObjectRepositoryService.class);
+    private static final Pattern HANDLE_PID_PATTERN = Pattern.compile("^http://hdl.handle.net/10622/(.*?)\\?locatt=.*$");
+
+    private static DocumentBuilder documentBuilder;
+
+    static {
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setIgnoringComments(true);
+            documentBuilder = dbf.newDocumentBuilder();
+        }
+        catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private String url;
 
@@ -67,26 +82,19 @@ public class SharedObjectRepositoryService {
 
             LOGGER.debug(String.format("hasMetadata(): Querying SOR API: %s", req.toString()));
             HttpURLConnection conn = (HttpURLConnection) req.openConnection();
-            conn.connect();
-
-            // Try to parse the received XML
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setIgnoringComments(true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document document = db.parse(conn.getInputStream());
+            Document document = documentBuilder.parse(conn.getInputStream());
 
             return new SorMetadata[]{
-                    getMetadataFromDocument(document, pid, true),
-                    getMetadataFromDocument(document, pid, false)
+                getMetadataFromDocument(document, pid, true),
+                getMetadataFromDocument(document, pid, false)
             };
-        } catch (IOException ioe) {
-            LOGGER.error("hasMetadata(): SOR API connection failed", ioe);
+        }
+        catch (IOException ioe) {
+            LOGGER.error("getMetadataForPid(): SOR API connection failed", ioe);
             return null;
-        } catch (ParserConfigurationException pce) {
-            LOGGER.debug("hasMetadata(): Could not build document builder", pce);
-            return null;
-        } catch (SAXException saxe) {
-            LOGGER.debug("hasMetadata(): Could not parse received metadata", saxe);
+        }
+        catch (SAXException saxe) {
+            LOGGER.debug("getMetadataForPid(): Could not parse received metadata", saxe);
             return null;
         }
     }
@@ -104,23 +112,16 @@ public class SharedObjectRepositoryService {
 
             LOGGER.debug(String.format("hasMetadata(): Querying SOR API: %s", req.toString()));
             HttpURLConnection conn = (HttpURLConnection) req.openConnection();
-            conn.connect();
-
-            // Try to parse the received XML
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setIgnoringComments(true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document document = db.parse(conn.getInputStream());
+            Document document = documentBuilder.parse(conn.getInputStream());
 
             return getMetadataFromDocument(document, pid, master);
-        } catch (IOException ioe) {
-            LOGGER.error("hasMetadata(): SOR API connection failed", ioe);
+        }
+        catch (IOException ioe) {
+            LOGGER.error("getMetadataForPid(): SOR API connection failed", ioe);
             return null;
-        } catch (ParserConfigurationException pce) {
-            LOGGER.debug("hasMetadata(): Could not build document builder", pce);
-            return null;
-        } catch (SAXException saxe) {
-            LOGGER.debug("hasMetadata(): Could not parse received metadata", saxe);
+        }
+        catch (SAXException saxe) {
+            LOGGER.debug("getMetadataForPid(): Could not parse received metadata", saxe);
             return null;
         }
     }
@@ -135,42 +136,196 @@ public class SharedObjectRepositoryService {
      */
     private SorMetadata getMetadataFromDocument(Document document, String pid, boolean master) {
         // See if there is an element with the PID and make sure it matches the PID we're requesting
-        Node pidNode = document.getElementsByTagName("pid").item(0);
+        Node pidNode = getElement(document.getElementsByTagName("pid"));
         if (!pidNode.getTextContent().equals(pid))
             return null;
 
         // See if the required level exists
         String levelTagName = master ? "master" : "level1";
-        NodeList levelNodes = document.getElementsByTagName(levelTagName);
-        if ((levelNodes.getLength() != 1) || (levelNodes.item(0).getNodeType() != Node.ELEMENT_NODE))
+        Element levelElement = getElement(document.getElementsByTagName(levelTagName));
+        if (levelElement == null)
             return null;
 
         // Obtain the various metadata
-        Element levelElement = (Element) levelNodes.item(0);
-        NodeList contentTypeNodes = levelElement.getElementsByTagName("contentType");
-        NodeList contentNodes = levelElement.getElementsByTagName("content");
+        Element contentTypeElement = getElement(levelElement.getElementsByTagName("contentType"));
+        Element contentElement = getElement(levelElement.getElementsByTagName("content"));
 
         String contentType = null;
-        if ((contentTypeNodes.getLength() == 1) && (contentTypeNodes.item(0).getNodeType() == Node.ELEMENT_NODE)) {
-            Element contentTypeElement = (Element) contentTypeNodes.item(0);
+        if (contentTypeElement != null) {
             contentType = contentTypeElement.getTextContent();
         }
 
         Map<String, String> contentAttributes = new HashMap<String, String>();
-        if ((contentNodes.getLength() == 1) && (contentNodes.item(0).getNodeType() == Node.ELEMENT_NODE)) {
-            Element contentElement = (Element) contentNodes.item(0);
-            if (contentElement.hasAttributes()) {
-                NamedNodeMap contentElementAttributes = contentElement.getAttributes();
-                for (int i = 0; i < contentElementAttributes.getLength(); i++) {
-                    Node contentElementAttribute = contentElementAttributes.item(i);
-                    contentAttributes.put(
-                            contentElementAttribute.getNodeName(),
-                            contentElementAttribute.getNodeValue()
-                    );
-                }
+        if ((contentElement != null) && contentElement.hasAttributes()) {
+            NamedNodeMap contentElementAttributes = contentElement.getAttributes();
+            for (int i = 0; i < contentElementAttributes.getLength(); i++) {
+                Node contentElementAttribute = contentElementAttributes.item(i);
+                contentAttributes.put(
+                    contentElementAttribute.getNodeName(),
+                    contentElementAttribute.getNodeValue()
+                );
             }
         }
 
-        return new SorMetadata(master, contentType, contentAttributes);
+        // Determine METS
+        boolean isMETS = false;
+        Map<String, List<String>> filePids = null;
+        if (contentType.equalsIgnoreCase("application/xml") || contentType.equalsIgnoreCase("text/xml")) {
+            filePids = getFilesMETS(pid);
+            isMETS = (filePids != null);
+        }
+
+        return new SorMetadata(isMETS, master, contentType, contentAttributes, filePids);
+    }
+
+    /**
+     * Obtains the METS based on the PID and obtains the files and their PIDs from the document.
+     *
+     * @param pid The PID of a METS document.
+     * @return A map with the uses and their file PIDS.
+     */
+    private Map<String, List<String>> getFilesMETS(String pid) {
+        try {
+            URL req = new URL(url + "/file/master/" + pid);
+
+            LOGGER.debug(String.format("getFilesMETS(): Obtain METS document: %s", req.toString()));
+            HttpURLConnection conn = (HttpURLConnection) req.openConnection();
+            Document document = documentBuilder.parse(conn.getInputStream());
+
+            return getFilesMETSFromDocument(document);
+        }
+        catch (IOException ioe) {
+            LOGGER.error("getFilesMETS(): Could not obtain METS document", ioe);
+            return null;
+        }
+        catch (SAXException saxe) {
+            LOGGER.debug("getFilesMETS(): Could not parse received METS", saxe);
+            return null;
+        }
+    }
+
+    /**
+     * Parses the METS document for the files and their PIDs.
+     *
+     * @param document The METS document.
+     * @return A map with the uses and their file PIDs.
+     */
+    private static Map<String, List<String>> getFilesMETSFromDocument(Document document) {
+        Map<String, List<String>> filePids = new HashMap<String, List<String>>();
+
+        Map<String, Set<String>> fptrsPerGroup = gettFptrsPerGroup(document);
+        Map<Integer, Set<String>> fptrsOrdered = getFptrsOrdered(document);
+        for (String fileGrp : fptrsPerGroup.keySet()) {
+            List<String> files = new ArrayList<String>();
+
+            for (Integer order : fptrsOrdered.keySet()) {
+                Set<String> groupFptrs = fptrsPerGroup.get(fileGrp);
+                Set<String> orderedFptrs = fptrsOrdered.get(order);
+
+                for (String fptr : orderedFptrs) {
+                    if (groupFptrs.contains(fptr))
+                        files.add(getFilePidFromFptr(document, fptr));
+                }
+            }
+
+            if (!files.isEmpty())
+                filePids.put(fileGrp, files);
+        }
+
+        return filePids;
+    }
+
+    /**
+     * Obtains all file pointers per group in the METS.
+     *
+     * @param document The METS document.
+     * @return A map with all file pointers per group.
+     */
+    private static Map<String, Set<String>> gettFptrsPerGroup(Document document) {
+        Map<String, Set<String>> fptrsPerGroup = new TreeMap<String, Set<String>>();
+        for (Element fileGrpElement : getElements(document.getElementsByTagName("fileGrp"))) {
+            Set<String> fptrs = new HashSet<String>();
+            for (Element fptrElement : getElements(fileGrpElement.getElementsByTagName("file")))
+                fptrs.add(fptrElement.getAttribute("ID"));
+            String fileGrpId = fileGrpElement.getAttribute("USE");
+            fptrsPerGroup.put(fileGrpId, fptrs);
+        }
+        return fptrsPerGroup;
+    }
+
+    /**
+     * Obtains all file pointers per sequence order in the METS.
+     *
+     * @param document The METS document.
+     * @return A map with all file pointers per sequence order.
+     */
+    private static Map<Integer, Set<String>> getFptrsOrdered(Document document) {
+        Map<Integer, Set<String>> fptrsPerPage = new TreeMap<Integer, Set<String>>();
+        for (Element structMapElement : getElements(document.getElementsByTagName("structMap"))) {
+            if (structMapElement.getAttribute("TYPE").equals("physical")) {
+                for (Element divElement : getElements(structMapElement.getElementsByTagName("div"))) {
+                    if (divElement.getAttribute("TYPE").equals("page")) {
+                        Set<String> fptrs = new HashSet<String>();
+                        for (Element fptrElement : getElements(divElement.getElementsByTagName("fptr")))
+                            fptrs.add(fptrElement.getAttribute("FILEID"));
+                        fptrsPerPage.put(Integer.parseInt(divElement.getAttribute("ORDER")), fptrs);
+                    }
+                }
+            }
+        }
+        return fptrsPerPage;
+    }
+
+    /**
+     * Returns the PID for a file with the given file pointer id.
+     *
+     * @param document The METS document.
+     * @param id       The file pointer id.
+     * @return The PID.
+     */
+    private static String getFilePidFromFptr(Document document, String id) {
+        for (Element fileElement : getElements(document.getElementsByTagName("file"))) {
+            if (fileElement.getAttribute("ID").equals(id)) {
+                Element fLocatElement = getElement(fileElement.getElementsByTagName("FLocat"));
+                if (fLocatElement != null) {
+                    String url = fLocatElement.getAttribute("xlink:href");
+                    Matcher matcher = HANDLE_PID_PATTERN.matcher(url);
+                    if (matcher.find())
+                        return "10622/" + matcher.group(1);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get an element from the node list.
+     *
+     * @param nodeList The node list.
+     * @return The first element, if it exists.
+     */
+    private static Element getElement(NodeList nodeList) {
+        List<Element> elements = getElements(nodeList);
+        if (!elements.isEmpty()) {
+            return elements.get(0);
+        }
+        return null;
+    }
+
+    /**
+     * Obtains a list of elements from a node list.
+     *
+     * @param nodeList The node list.
+     * @return The elements.
+     */
+    private static List<Element> getElements(NodeList nodeList) {
+        List<Element> elements = new ArrayList<Element>();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            if (nodeList.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                Element element = (Element) nodeList.item(i);
+                elements.add(element);
+            }
+        }
+        return elements;
     }
 }

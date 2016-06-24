@@ -695,22 +695,35 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         // Determine whether the content in the SOR matches the expected content
         switch (standardOption.getMaterialType()) {
             case BOOK:
-                return ((sorMetadata.getContentType() != null) &&
-                        sorMetadata.getContentType().equals("application/pdf"));
+                boolean isPdf = ((sorMetadata.getContentType() != null) &&
+                    sorMetadata.getContentType().equals("application/pdf"));
+                return (isPdf || sorMetadata.isMETS());
             case SOUND:
-                return ((sorMetadata.getContentType() != null) &&
-                        sorMetadata.getContentType().startsWith("audio"));
+                boolean isAudio = ((sorMetadata.getContentType() != null) &&
+                    sorMetadata.getContentType().startsWith("audio"));
+                boolean isAudioMets = (sorMetadata.isMETS() && sorMetadata.getFilePids().containsKey("archive audio"));
+                return (isAudio || isAudioMets);
             case MOVING_VISUAL:
-                return ((sorMetadata.getContentType() != null) &&
-                        sorMetadata.getContentType().startsWith("video"));
+                boolean isVideo = ((sorMetadata.getContentType() != null) &&
+                    sorMetadata.getContentType().startsWith("video"));
+                boolean isVideoMets = (sorMetadata.isMETS() && sorMetadata.getFilePids().containsKey("archive video"));
+                return (isVideo || isVideoMets);
             case VISUAL:
-                if (sorMetadata.isMaster())
+                if (sorMetadata.isMaster()) {
                     // Make sure the TIFFs are >= 300 dpi
                     // Due to high possibility of lower resolution TIFFs in the SOR
-                    return ((sorMetadata.getContentType() != null) && sorMetadata.isTiff());
-                else
-                    return ((sorMetadata.getContentType() != null) &&
-                            sorMetadata.getContentType().equals("image/jpeg"));
+                    boolean isTiff = ((sorMetadata.getContentType() != null) && sorMetadata.isTiff());
+                    boolean isTiffMets = (sorMetadata.isMETS() &&
+                        sorMetadata.getFilePids().containsKey("archive image"));
+                    return (isTiff || isTiffMets);
+                }
+                else {
+                    boolean isJpeg = ((sorMetadata.getContentType() != null) &&
+                        sorMetadata.getContentType().equals("image/jpeg"));
+                    boolean isJpegMets = (sorMetadata.isMETS() &&
+                        sorMetadata.getFilePids().containsKey("hires reference image"));
+                    return (isJpeg || isJpegMets);
+                }
         }
 
         return false;
