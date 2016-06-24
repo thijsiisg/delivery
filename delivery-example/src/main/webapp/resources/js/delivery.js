@@ -56,8 +56,10 @@ $(document).ready(function(){
     $(':radio').change(function () {
         var elem = $(this);
         toggleCustomReproduction(elem);
+        toggleReproductionForm();
     });
     toggleCustomReproduction();
+    toggleReproductionForm();
 });
 
 function toggleCustomReproduction(elem) {
@@ -86,6 +88,14 @@ function toggleCustomReproduction(elem) {
     else {
         allCustom.hide();
         anyNonCustom.show();
+    }
+}
+
+function toggleReproductionForm() {
+    var reproductionItemsSelect = $('.reproductionItemsSelect');
+    if (reproductionItemsSelect.length > 0) {
+        var noCheckedItems = (reproductionItemsSelect.find('input[type=radio]:checked').length === 0);
+        $('.reproduction_form input').prop('disabled', noCheckedItems);
     }
 }
 

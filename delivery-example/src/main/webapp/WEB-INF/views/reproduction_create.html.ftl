@@ -53,7 +53,7 @@
   <@form "" "reproduction" "create">
     <heading>
       <hgroup>
-        <fieldset>
+        <fieldset class="reproductionItemsSelect">
           <legend><@_ "reproduction.records" "Items"/></legend>
 
           <#assign idx = 0>

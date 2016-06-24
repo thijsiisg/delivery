@@ -88,9 +88,9 @@ section {
 }
 
 input, textarea, select, button {
-    background: none repeat scroll 0 0 #FFFFFF;
+    /*background: none repeat scroll 0 0 #FFFFFF;*/
     border: 1px solid #CCCCCC;
-    color: #000000;
+    /*color: #000000;*/
 }
 
 input[type="radio"], input[type="checkbox"] {
