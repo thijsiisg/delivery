@@ -190,8 +190,15 @@ public class ReproductionMailer extends RequestMailer {
             else {
                 switch (hr.getStandardOption().getMaterialType()) {
                     case BOOK:
-                        urls.add(sorAddress + "/pdf/" + holding.determinePid() + "?access_token="
-                            + sorAccessToken + "&contentType=application/save");
+                        if (sorMetadata.getFilePids().containsKey("archive pdf")) {
+                            String pid = sorMetadata.getFilePids().get("archive pdf").get(0);
+                            urls.add(sorAddress + "/file/master/" + pid + "?access_token="
+                                + sorAccessToken + "&contentType=application/save");
+                        }
+                        else {
+                            urls.add(sorAddress + "/pdf/" + holding.determinePid() + "?access_token="
+                                + sorAccessToken + "&contentType=application/save");
+                        }
                         break;
                     case SOUND:
                         for (String pid : sorMetadata.getFilePids().get("archive audio")) {

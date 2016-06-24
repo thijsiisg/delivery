@@ -697,7 +697,10 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             case BOOK:
                 boolean isPdf = ((sorMetadata.getContentType() != null) &&
                     sorMetadata.getContentType().equals("application/pdf"));
-                return (isPdf || sorMetadata.isMETS());
+                boolean isPdfMets = (sorMetadata.isMETS() &&
+                    (sorMetadata.getFilePids().containsKey("archive pdf")
+                        || sorMetadata.getFilePids().containsKey("archive image")));
+                return (isPdf || isPdfMets);
             case SOUND:
                 boolean isAudio = ((sorMetadata.getContentType() != null) &&
                     sorMetadata.getContentType().startsWith("audio"));
