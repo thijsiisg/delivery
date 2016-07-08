@@ -26,11 +26,8 @@
 
 ----
 <@_ "mail.signature" "Kind regards"/>,
-
-<@_ "mail.signedBy" "International Institute of Social History"/>
-
 <@_ "mail.signedByDepartment" "Reading Room"/>
-
+<@_ "mail.signedBy" "International Institute of Social History"/>
 
 <@_ "mail.postalAddress" ""/>
 
