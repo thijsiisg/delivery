@@ -1,3 +1,5 @@
+BEGIN;
+
 /* NEW COLUMNS OF EXISTING TABLES */
 
 ALTER TABLE external_holding_info ADD COLUMN barcode character varying(255) NULL;
@@ -198,7 +200,18 @@ INSERT INTO authorities VALUES (13, 'View reproductions.', 'ROLE_REPRODUCTION_VI
 INSERT INTO authorities VALUES (14, 'Modify reproductions.', 'ROLE_REPRODUCTION_MODIFY');
 INSERT INTO authorities VALUES (15, 'Delete reproductions.', 'ROLE_REPRODUCTION_DELETE');
 
+INSERT INTO group_permissions VALUES (1, 13);
+INSERT INTO group_permissions VALUES (1, 14);
+
 INSERT INTO group_permissions VALUES (2, 12);
 INSERT INTO group_permissions VALUES (2, 13);
 INSERT INTO group_permissions VALUES (2, 14);
 INSERT INTO group_permissions VALUES (2, 15);
+
+INSERT INTO group_permissions VALUES (3, 12);
+INSERT INTO group_permissions VALUES (3, 13);
+INSERT INTO group_permissions VALUES (3, 14);
+
+/* END COMMIT */
+
+COMMIT;
