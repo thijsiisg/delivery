@@ -692,6 +692,10 @@ public class ReproductionController extends AbstractRequestController {
                     if (standardOption.isEnabled() && holding.acceptsReproductionOption(standardOption))
                         standardOptionsForHolding.add(standardOption);
                 }
+
+                List<ReproductionStandardOption> inSorOnlyCustomForHolding =
+                        reproductions.getStandardOptionsInSorOnlyCustom(holding, standardOptionsForHolding);
+                standardOptionsForHolding.removeAll(inSorOnlyCustomForHolding);
             }
             reproductionStandardOptions.put(holding.getSignature(), standardOptionsForHolding);
         }
@@ -724,28 +728,6 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     /**
-     * Returns a map of the standard reproduction options which are already available in the SOR,
-     * and thus only accepts custom reproductions, per holding signature from the given holdings.
-     *
-     * @param holdings        The holdings.
-     * @param standardOptions The possible standard reproduction options per holding signature.
-     * @return A map with options per holding.
-     */
-    private Map<String, List<ReproductionStandardOption>> getStandardOptionsInSOROnlyCustom(List<Holding> holdings,
-                                                                                            Map<String, List<ReproductionStandardOption>> standardOptions) {
-        Map<String, List<ReproductionStandardOption>> inSorOnlyCustomStandardOptions =
-                new HashMap<String, List<ReproductionStandardOption>>();
-
-        for (Holding holding : holdings) {
-            List<ReproductionStandardOption> inSorOnlyCustomForHolding = new ArrayList<ReproductionStandardOption>();
-            inSorOnlyCustomForHolding = reproductions.getStandardOptionsInSorOnlyCustom(holding, standardOptions.get(holding.getSignature()));
-            inSorOnlyCustomStandardOptions.put(holding.getSignature(), inSorOnlyCustomForHolding);
-        }
-
-        return inSorOnlyCustomStandardOptions;
-    }
-
-    /**
      * Returns a map of only the available standard reproduction options per holding signature from the given holdings.
      *
      * @param holdings The holdings.
@@ -758,14 +740,11 @@ public class ReproductionController extends AbstractRequestController {
                 getStandardReproductionOptions(holdings);
         Map<String, List<ReproductionStandardOption>> unavailableStandardOptions =
                 getStandardOptionsNotAvailable(holdings, reproductionStandardOptions);
-        Map<String, List<ReproductionStandardOption>> inSOROnlyCustomStandardOptions =
-                getStandardOptionsInSOROnlyCustom(holdings, reproductionStandardOptions);
 
         for (Holding h : holdings) {
             List<ReproductionStandardOption> standardOptions = new ArrayList<ReproductionStandardOption>();
             standardOptions.addAll(reproductionStandardOptions.get(h.getSignature()));
             standardOptions.removeAll(unavailableStandardOptions.get(h.getSignature()));
-            standardOptions.removeAll(inSOROnlyCustomStandardOptions.get(h.getSignature()));
             availableStandardOptions.put(h.getSignature(), standardOptions);
         }
 
