@@ -98,47 +98,48 @@
     </header>
     <nav class="main">
       <ul>
-        <#if  _sec.ifAllGranted("ROLE_RECORD_MODIFY")>
-        <li>
-          <a href="${rc.contextPath}/record/">
-          <@_ "homerecord.title" "Edit Records"/>
-          </a>
-        </li>
-        </#if>
         <#if  _sec.ifAllGranted("ROLE_RESERVATION_VIEW")>
-        <li>
-          <a href="${rc.contextPath}/reservation/?date=${.now?string("yyyy-MM-dd")}&amp;status=PENDING">
-          <@_ "reservationList.title" "Reservation Overview"/>
-          </a>
-        </li>
+          <li>
+            <a href="${rc.contextPath}/reservation/?date=${.now?string("yyyy-MM-dd")}&amp;status=PENDING">
+            <@_ "reservationList.title" "Reservation Overview"/>
+            </a>
+          </li>
         </#if>
+        <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
+          <li>
+            <a href="${rc.contextPath}/reservation/masscreateform">
+              <@_ "reservationMassCreate.title" "New Reservation"/>
+            </a>
+          </li>
+        </#if>
+        <#if  _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY,ROLE_REPRODUCTION_MODIFY")>
+          <li>
+            <a href="${rc.contextPath}/request/scan">
+              <@_ "scan.title" "Scan Items"/>
+            </a>
+          </li>
+        </#if>
+        <#if  _sec.ifAllGranted("ROLE_RECORD_MODIFY")>
+          <li>
+            <a href="${rc.contextPath}/record/">
+              <@_ "homerecord.title" "Edit Records"/>
+            </a>
+          </li>
+        </#if>
+        <#if  _sec.ifAllGranted("ROLE_PERMISSION_VIEW")>
+          <li>
+            <a href="${rc.contextPath}/permission/">
+              <@_ "permissionList.title" "Permission Request Overview"/>
+            </a>
+          </li>
+        </#if>
+        <br>
         <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_VIEW")>
           <li>
             <a href="${rc.contextPath}/reproduction/?date=${.now?string("yyyy-MM-dd")}">
               <@_ "reproductionList.title" "Reproduction Overview"/>
             </a>
           </li>
-        </#if>
-        <#if  _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY,ROLE_REPRODUCTION_MODIFY")>
-        <li>
-          <a href="${rc.contextPath}/request/scan">
-          <@_ "scan.title" "Scan Items"/>
-          </a>
-        </li>
-        </#if>
-        <#if  _sec.ifAllGranted("ROLE_PERMISSION_VIEW")>
-        <li>
-          <a href="${rc.contextPath}/permission/">
-          <@_ "permissionList.title" "Permission Request Overview"/>
-          </a>
-        </li>
-         </#if>
-          <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
-        <li>
-          <a href="${rc.contextPath}/reservation/masscreateform">
-          <@_ "reservationMassCreate.title" "New Reservation"/>
-          </a>
-        </li>
         </#if>
         <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_CREATE")>
           <li>
