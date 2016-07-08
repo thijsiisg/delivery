@@ -41,72 +41,12 @@ public class SharedObjectRepositoryService {
     }
 
     /**
-     * Find out if the given PID has metadata in the SOR.
-     *
-     * @param pid The pid.
-     * @return The SOR has metadata, if found, for both the master and the first derivative.
-     */
-    public SorMetadata[] getAllMetadataForPid(String pid) {
-        return getMetadataForPid(pid);
-    }
-
-    /**
-     * Find out if the given PID has metadata for the master file in the SOR.
-     *
-     * @param pid The pid.
-     * @return The SOR has metadata, if found.
-     */
-    public SorMetadata getMasterMetadataForPid(String pid) {
-        return getMetadataForPid(pid, true);
-    }
-
-    /**
-     * Find out if the given PID has metadata for the first derivative (level 1) file in the SOR.
-     *
-     * @param pid The pid.
-     * @return The SOR has metadata, if found.
-     */
-    public SorMetadata getFirstLevelMetadataForPid(String pid) {
-        return getMetadataForPid(pid, false);
-    }
-
-    /**
      * Find out if the given PID has metadata in the SOR, for both the master and the first derivative.
      *
      * @param pid The pid.
-     * @return The SOR has metadata, if found, for both the master and the first derivative.
-     */
-    private SorMetadata[] getMetadataForPid(String pid) {
-        try {
-            URL req = new URL(url + "/metadata/" + pid + "?accept=text/xml&format=xml");
-
-            LOGGER.debug(String.format("hasMetadata(): Querying SOR API: %s", req.toString()));
-            HttpURLConnection conn = (HttpURLConnection) req.openConnection();
-            Document document = documentBuilder.parse(conn.getInputStream());
-
-            return new SorMetadata[]{
-                getMetadataFromDocument(document, pid, true),
-                getMetadataFromDocument(document, pid, false)
-            };
-        }
-        catch (IOException ioe) {
-            LOGGER.error("getMetadataForPid(): SOR API connection failed", ioe);
-            return null;
-        }
-        catch (SAXException saxe) {
-            LOGGER.debug("getMetadataForPid(): Could not parse received metadata", saxe);
-            return null;
-        }
-    }
-
-    /**
-     * Find out if the given PID has metadata in the SOR.
-     *
-     * @param pid    The pid.
-     * @param master Whether to obtain those of the master, or the first derivative (level 1).
      * @return The SOR has metadata, if found.
      */
-    private SorMetadata getMetadataForPid(String pid, boolean master) {
+    public SorMetadata getMetadataForPid(String pid) {
         try {
             URL req = new URL(url + "/metadata/" + pid + "?accept=text/xml&format=xml");
 
@@ -114,7 +54,7 @@ public class SharedObjectRepositoryService {
             HttpURLConnection conn = (HttpURLConnection) req.openConnection();
             Document document = documentBuilder.parse(conn.getInputStream());
 
-            return getMetadataFromDocument(document, pid, master);
+            return getMetadataFromDocument(document, pid);
         }
         catch (IOException ioe) {
             LOGGER.error("getMetadataForPid(): SOR API connection failed", ioe);
@@ -131,51 +71,64 @@ public class SharedObjectRepositoryService {
      *
      * @param document The document.
      * @param pid      The pid of the item of which we request metadata.
-     * @param master   Whether to obtain metadata of the master, or the first derivative (level 1).
      * @return The metadata from the SOR.
      */
-    private SorMetadata getMetadataFromDocument(Document document, String pid, boolean master) {
+    private SorMetadata getMetadataFromDocument(Document document, String pid) {
         // See if there is an element with the PID and make sure it matches the PID we're requesting
         Node pidNode = getElement(document.getElementsByTagName("pid"));
         if (!pidNode.getTextContent().equals(pid))
             return null;
 
+        String contentTypeMaster = null, contentTypeLevel1 = null;
+        Map<String, String> contentMaster = null, contentLevel1 = null;
+
         // See if the required level exists
-        String levelTagName = master ? "master" : "level1";
-        Element levelElement = getElement(document.getElementsByTagName(levelTagName));
-        if (levelElement == null)
-            return null;
+        for (String levelTagName : new String[]{"master", "level1"}) {
+            Element levelElement = getElement(document.getElementsByTagName(levelTagName));
+            if (levelElement != null) {
+                // Obtain the various metadata
+                Element contentTypeElement = getElement(levelElement.getElementsByTagName("contentType"));
+                Element contentElement = getElement(levelElement.getElementsByTagName("content"));
 
-        // Obtain the various metadata
-        Element contentTypeElement = getElement(levelElement.getElementsByTagName("contentType"));
-        Element contentElement = getElement(levelElement.getElementsByTagName("content"));
+                String contentType = null;
+                if (contentTypeElement != null) {
+                    contentType = contentTypeElement.getTextContent();
+                }
 
-        String contentType = null;
-        if (contentTypeElement != null) {
-            contentType = contentTypeElement.getTextContent();
-        }
+                Map<String, String> contentAttributes = new HashMap<String, String>();
+                if ((contentElement != null) && contentElement.hasAttributes()) {
+                    NamedNodeMap contentElementAttributes = contentElement.getAttributes();
+                    for (int i = 0; i < contentElementAttributes.getLength(); i++) {
+                        Node contentElementAttribute = contentElementAttributes.item(i);
+                        contentAttributes.put(
+                                contentElementAttribute.getNodeName(),
+                                contentElementAttribute.getNodeValue()
+                        );
+                    }
+                }
 
-        Map<String, String> contentAttributes = new HashMap<String, String>();
-        if ((contentElement != null) && contentElement.hasAttributes()) {
-            NamedNodeMap contentElementAttributes = contentElement.getAttributes();
-            for (int i = 0; i < contentElementAttributes.getLength(); i++) {
-                Node contentElementAttribute = contentElementAttributes.item(i);
-                contentAttributes.put(
-                    contentElementAttribute.getNodeName(),
-                    contentElementAttribute.getNodeValue()
-                );
+                if (levelTagName.equals("master")) {
+                    contentTypeMaster = contentType;
+                    contentMaster = contentAttributes;
+                }
+                else {
+                    contentTypeLevel1 = contentType;
+                    contentLevel1 = contentAttributes;
+                }
             }
         }
 
         // Determine METS
         boolean isMETS = false;
         Map<String, List<String>> filePids = null;
-        if (contentType.equalsIgnoreCase("application/xml") || contentType.equalsIgnoreCase("text/xml")) {
+        if ((contentTypeMaster != null) &&
+                (contentTypeMaster.equalsIgnoreCase("application/xml")
+                        || contentTypeMaster.equalsIgnoreCase("text/xml"))) {
             filePids = getFilesMETS(pid);
             isMETS = (filePids != null);
         }
 
-        return new SorMetadata(isMETS, master, contentType, contentAttributes, filePids);
+        return new SorMetadata(contentTypeMaster, contentTypeLevel1, contentMaster, contentLevel1, isMETS, filePids);
     }
 
     /**

@@ -636,24 +636,44 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      */
     public List<ReproductionStandardOption> getStandardOptionsNotInSor(Holding holding,
                                                                        List<ReproductionStandardOption> reproductionStandardOptions) {
-        SorMetadata[] allSorMetadata = sorService.getAllMetadataForPid(holding.determinePid());
+        SorMetadata sorMetadata = sorService.getMetadataForPid(holding.determinePid());
 
         // No metadata means no digital object found in the SOR
-        if (allSorMetadata == null)
+        if (sorMetadata == null)
             return reproductionStandardOptions;
 
         List<ReproductionStandardOption> notInSor = new ArrayList<ReproductionStandardOption>();
         for (ReproductionStandardOption standardOption : reproductionStandardOptions) {
-            SorMetadata sorMetadata = null;
-            if (standardOption.getLevel() == ReproductionStandardOption.Level.MASTER)
-                sorMetadata = allSorMetadata[0];
-            else
-                sorMetadata = allSorMetadata[1];
-
             if (!sorMetadataMatchesStandardOption(sorMetadata, standardOption))
                 notInSor.add(standardOption);
         }
         return notInSor;
+    }
+
+    /**
+     * Returns standard options for the given holding which ARE available in the SOR,
+     * and therefor does not accept the standard options.
+     *
+     * @param holding                     The holding.
+     * @param reproductionStandardOptions The standard options to choose from.
+     * @return A list of options that are currently not available online in the SOR.
+     */
+    public List<ReproductionStandardOption> getStandardOptionsInSorOnlyCustom(Holding holding,
+                                                                              List<ReproductionStandardOption> reproductionStandardOptions) {
+        List<ReproductionStandardOption> inSorOnlyCustom = new ArrayList<ReproductionStandardOption>();
+        if (holding.getRecord().getExternalInfo().getMaterialType() == ExternalRecordInfo.MaterialType.BOOK) {
+            SorMetadata sorMetadata = sorService.getMetadataForPid(holding.determinePid());
+
+            // No metadata means no digital object found in the SOR
+            if (sorMetadata == null)
+                return inSorOnlyCustom;
+
+            for (ReproductionStandardOption standardOption : reproductionStandardOptions) {
+                if (sorMetadataMatchesStandardOption(sorMetadata, standardOption))
+                    inSorOnlyCustom.add(standardOption);
+            }
+        }
+        return inSorOnlyCustom;
     }
 
     /**
@@ -665,15 +685,9 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     private boolean isHoldingReproductionInSor(HoldingReproduction holdingReproduction) {
         ReproductionStandardOption standardOption = holdingReproduction.getStandardOption();
         if (standardOption != null) {
-            Holding holding = holdingReproduction.getHolding();
-
             // Get metadata from the SOR for the specified level
-            SorMetadata sorMetadata;
-            if (standardOption.getLevel() == ReproductionStandardOption.Level.MASTER)
-                sorMetadata = sorService.getMasterMetadataForPid(holding.determinePid());
-            else
-                sorMetadata = sorService.getFirstLevelMetadataForPid(holding.determinePid());
-
+            Holding holding = holdingReproduction.getHolding();
+            SorMetadata sorMetadata = sorService.getMetadataForPid(holding.determinePid());
             return sorMetadataMatchesStandardOption(sorMetadata, standardOption);
         }
         return false;
@@ -693,36 +707,34 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             return false;
 
         // Determine whether the content in the SOR matches the expected content
+        ReproductionStandardOption.Level level = standardOption.getLevel();
+        String contentType = sorMetadata.getContentType(level.name());
         switch (standardOption.getMaterialType()) {
             case BOOK:
-                boolean isPdf = ((sorMetadata.getContentType() != null) &&
-                    sorMetadata.getContentType().equals("application/pdf"));
+                boolean isPdf = ((contentType != null) && contentType.equals("application/pdf"));
                 boolean isPdfMets = (sorMetadata.isMETS() &&
                     (sorMetadata.getFilePids().containsKey("archive pdf")
                         || sorMetadata.getFilePids().containsKey("archive image")));
                 return (isPdf || isPdfMets);
             case SOUND:
-                boolean isAudio = ((sorMetadata.getContentType() != null) &&
-                    sorMetadata.getContentType().startsWith("audio"));
-                boolean isAudioMets = (sorMetadata.isMETS() && sorMetadata.getFilePids().containsKey("archive audio"));
+                String metsAudio = (level == ReproductionStandardOption.Level.MASTER) ? "archive audio" : "reference audio";
+                boolean isAudio = ((contentType != null) && contentType.startsWith("audio"));
+                boolean isAudioMets = (sorMetadata.isMETS() && sorMetadata.getFilePids().containsKey(metsAudio));
                 return (isAudio || isAudioMets);
             case MOVING_VISUAL:
-                boolean isVideo = ((sorMetadata.getContentType() != null) &&
-                    sorMetadata.getContentType().startsWith("video"));
-                boolean isVideoMets = (sorMetadata.isMETS() && sorMetadata.getFilePids().containsKey("archive video"));
+                String metsVideo = (level == ReproductionStandardOption.Level.MASTER) ? "archive video" : "reference video";
+                boolean isVideo = ((contentType != null) && contentType.startsWith("video"));
+                boolean isVideoMets = (sorMetadata.isMETS() && sorMetadata.getFilePids().containsKey(metsVideo));
                 return (isVideo || isVideoMets);
             case VISUAL:
-                if (sorMetadata.isMaster()) {
+                if (standardOption.getLevel() == ReproductionStandardOption.Level.MASTER) {
                     // Make sure the TIFFs are >= 300 dpi
                     // Due to high possibility of lower resolution TIFFs in the SOR
-                    boolean isTiff = ((sorMetadata.getContentType() != null) && sorMetadata.isTiff());
-                    boolean isTiffMets = (sorMetadata.isMETS() &&
-                        sorMetadata.getFilePids().containsKey("archive image"));
-                    return (isTiff || isTiffMets);
+                    boolean isTiffMets = (sorMetadata.isMETS() && sorMetadata.getFilePids().containsKey("archive image"));
+                    return (sorMetadata.isTiff() || isTiffMets);
                 }
                 else {
-                    boolean isJpeg = ((sorMetadata.getContentType() != null) &&
-                        sorMetadata.getContentType().equals("image/jpeg"));
+                    boolean isJpeg = ((contentType != null) && contentType.equals("image/jpeg"));
                     boolean isJpegMets = (sorMetadata.isMETS() &&
                         sorMetadata.getFilePids().containsKey("hires reference image"));
                     return (isJpeg || isJpegMets);

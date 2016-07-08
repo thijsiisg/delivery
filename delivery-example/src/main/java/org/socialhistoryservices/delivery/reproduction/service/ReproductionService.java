@@ -167,6 +167,17 @@ public interface ReproductionService {
                                                                        List<ReproductionStandardOption> reproductionStandardOptions);
 
     /**
+     * Returns standard options for the given holding which ARE available in the SOR,
+     * and therefor does not accept the standard options.
+     *
+     * @param holding                     The holding.
+     * @param reproductionStandardOptions The standard options to choose from.
+     * @return A list of options that are currently not available online in the SOR.
+     */
+    public List<ReproductionStandardOption> getStandardOptionsInSorOnlyCustom(Holding holding,
+                                                                              List<ReproductionStandardOption> reproductionStandardOptions);
+
+    /**
      * Scheduled task to cancel all reproductions not payed within 5 days after the offer was ready.
      */
     public void checkPayedReproductions();
