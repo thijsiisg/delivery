@@ -176,16 +176,13 @@ public class ReproductionMailer extends RequestMailer {
             Holding holding = hr.getHolding();
 
             // Obtain the metadata from the SOR
-            SorMetadata sorMetadata;
-            if (hr.getStandardOption().getLevel() == ReproductionStandardOption.Level.MASTER)
-                sorMetadata = sorService.getMasterMetadataForPid(holding.determinePid());
-            else
-                sorMetadata = sorService.getFirstLevelMetadataForPid(holding.determinePid());
+            SorMetadata sorMetadata = sorService.getMetadataForPid(holding.determinePid());
+            ReproductionStandardOption.Level level = hr.getStandardOption().getLevel();
 
             // Determine the URLs based on their material type and content
             if (!sorMetadata.isMETS()) {
-                urls.add(sorAddress + "/file/" + hr.getStandardOption().getLevel().name().toLowerCase() + "/"
-                    + holding.determinePid() + "?access_token=" + sorAccessToken + "&contentType=application/save");
+                urls.add(sorAddress + "/file/" + level.name().toLowerCase() + "/" + holding.determinePid()
+                        + "?access_token=" + sorAccessToken + "&contentType=application/save");
             }
             else {
                 switch (hr.getStandardOption().getMaterialType()) {
@@ -201,21 +198,23 @@ public class ReproductionMailer extends RequestMailer {
                         }
                         break;
                     case SOUND:
-                        for (String pid : sorMetadata.getFilePids().get("archive audio")) {
-                            urls.add(sorAddress + "/file/master/" + pid + "?access_token="
+                        String metsAudio = (level == ReproductionStandardOption.Level.MASTER) ? "archive audio" : "reference audio";
+                        for (String pid : sorMetadata.getFilePids().get(metsAudio)) {
+                            urls.add(sorAddress + "/file/" + level.name().toLowerCase() + "/" + pid + "?access_token="
                                 + sorAccessToken + "&contentType=application/save");
                         }
                         break;
                     case MOVING_VISUAL:
-                        for (String pid : sorMetadata.getFilePids().get("archive video")) {
-                            urls.add(sorAddress + "/file/master/" + pid + "?access_token="
+                        String metsVideo = (level == ReproductionStandardOption.Level.MASTER) ? "archive video" : "reference video";
+                        for (String pid : sorMetadata.getFilePids().get(metsVideo)) {
+                            urls.add(sorAddress + "/file/" + level.name().toLowerCase() + "/" + pid + "?access_token="
                                 + sorAccessToken + "&contentType=application/save");
                         }
                         break;
                     case VISUAL:
-                        String group = sorMetadata.isMaster() ? "archive image" : "hires reference image";
-                        String pid = sorMetadata.getFilePids().get(group).get(0);
-                        urls.add(sorAddress + "/file/master/" + pid + "?access_token="
+                        String metsVisual = (level == ReproductionStandardOption.Level.MASTER) ? "archive image" : "hires reference image";
+                        String pid = sorMetadata.getFilePids().get(metsVisual).get(0);
+                        urls.add(sorAddress + "/file/" + level.name().toLowerCase() + "/" + pid + "?access_token="
                             + sorAccessToken + "&contentType=application/save");
                         break;
                 }
