@@ -25,18 +25,19 @@
            http://www.springframework.org/schema/security/spring-security-3.1.xsd" default-autowire="byName">
 
   <http auto-config="true" use-expressions="true">
-    <http-basic/>
+    <form-login
+            login-page="/user/login"
+            authentication-failure-url="/user/login?error=true"
+            default-target-url="/"/>
+
+    <logout
+            invalidate-session="true"
+            logout-success-url="/user/logout-success"
+            logout-url="/user/logout"/>
   </http>
 
   <authentication-manager>
-    <authentication-provider>
-            <user-service>
-              <user name="delivery" password="delivery" authorities="ROLE_USER_MODIFY,ROLE_RECORD_MODIFY,ROLE_RECORD_CONTACT_VIEW,
-        ROLE_RESERVATION_VIEW,ROLE_RESERVATION_MODIFY,ROLE_PERMISSION_VIEW,ROLE_PERMISSION_MODIFY,
-        ROLE_PERMISSION_DELETE,ROLE_RESERVATION_DELETE,ROLE_RECORD_DELETE,ROLE_RESERVATION_CREATE,
-        ROLE_REPRODUCTION_CREATE,ROLE_REPRODUCTION_VIEW,ROLE_REPRODUCTION_MODIFY,ROLE_REPRODUCTION_DELETE"/>
-            </user-service>
-          </authentication-provider>
+    <authentication-provider ref='ldapAuthProvider'/>
   </authentication-manager>
 
   <beans:bean id="contextSource" class="org.springframework.security.ldap.DefaultSpringSecurityContextSource">
