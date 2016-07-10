@@ -8,6 +8,7 @@ ALTER TABLE external_holding_info ADD CONSTRAINT external_holding_info_barcode U
 
 ALTER TABLE external_record_info ADD COLUMN genres character varying(255) NULL;
 ALTER TABLE external_record_info ADD COLUMN copyright character varying(255) NULL;
+ALTER TABLE external_record_info ADD COLUMN physical_description character varying(255) NULL;
 ALTER TABLE external_record_info ADD COLUMN publication_status character varying(255) NOT NULL DEFAULT 'CLOSED';
 
 ALTER TABLE holding_reservations ADD COLUMN printed boolean NOT NULL DEFAULT 'f';
@@ -182,6 +183,8 @@ CREATE INDEX records_external_info_fk ON records (external_info_id);
 CREATE INDEX holdings_record_fk ON holdings (record_id);
 CREATE INDEX holdings_external_info_fk ON holdings (external_info_id);
 
+CREATE INDEX reproductions_order_fk ON reproductions (order_id);
+
 CREATE INDEX holding_reservations_holding_fk ON holding_reservations (holding_id);
 CREATE INDEX holding_reservations_reservation_fk ON holding_reservations (reservation_id);
 
@@ -189,6 +192,9 @@ CREATE INDEX holding_reproductions_holding_fk ON holding_reproductions (holding_
 CREATE INDEX holding_reproductions_reproduction_fk ON holding_reproductions (reproduction_id);
 
 /* OTHER INDEXES ON BOTH OLD AND NEW TABLES */
+
+CREATE INDEX reservations_date_idx ON reservations (date);
+CREATE INDEX reproductions_date_idx ON reproductions (date);
 
 CREATE INDEX holding_reservations_completed_idx ON holding_reservations (completed);
 CREATE INDEX holding_reproductions_completed_idx ON holding_reproductions (completed);
