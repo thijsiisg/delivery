@@ -21,6 +21,7 @@ import org.apache.commons.collections.list.LazyList;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Index;
 import org.hibernate.validator.constraints.NotBlank;
+import org.omg.CORBA.UNKNOWN;
 import org.socialhistoryservices.delivery.reproduction.util.Pages;
 
 import javax.persistence.*;
@@ -567,6 +568,20 @@ public class Record {
         if (pages.containsNumberOfPages())
             price = price.multiply(new BigDecimal(pages.getNumberOfPages()));
         return price;
+    }
+
+    /**
+     * Determine whether this record is open for reproductions.
+     * @return True if this record is open for reproduction requests.
+     */
+    public boolean isOpenForReproduction() {
+        if (getPublicationStatus() == ExternalRecordInfo.PublicationStatus.UNKNOWN) {
+            return (getExternalInfo().getMaterialType() != ExternalRecordInfo.MaterialType.VISUAL) &&
+                    (getExternalInfo().getMaterialType() != ExternalRecordInfo.MaterialType.MOVING_VISUAL);
+        }
+
+        return (getPublicationStatus() != ExternalRecordInfo.PublicationStatus.MINIMAL) &&
+                (getPublicationStatus() != ExternalRecordInfo.PublicationStatus.CLOSED);
     }
 
     /**

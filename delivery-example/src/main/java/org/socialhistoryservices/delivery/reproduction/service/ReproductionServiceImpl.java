@@ -570,12 +570,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             }
 
             // Determine whether the record is closed for reproduction
-            Record r = h.getRecord();
-            if (!has && (r.getCopyright() != null) &&
-                    (r.getPublicationStatus() == ExternalRecordInfo.PublicationStatus.MINIMAL ||
-                            r.getPublicationStatus() == ExternalRecordInfo.PublicationStatus.CLOSED)) {
+            if (!has && !h.getRecord().isOpenForReproduction())
                 throw new ClosedForReproductionException();
-            }
         }
     }
 

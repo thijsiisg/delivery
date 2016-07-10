@@ -47,8 +47,12 @@ public class ExternalRecordInfo {
     }
 
 	public enum PublicationStatus {
+        UNKNOWN,
+        IRSH,
+        OPEN,
 		RESTRICTED,
 		MINIMAL,
+        PICTORIGHT,
 		CLOSED
 	}
 
