@@ -642,32 +642,32 @@ public class IISHRecordLookupService implements RecordLookupService {
         }
     }
 
-	/**
-	 * Fetches publication status from MARCXML.
-	 * @param node The XML node to execute the XPath on.
-	 * @return The publication status.
-	 */
-	private ExternalRecordInfo.PublicationStatus evaluatePublicationStatus(Node node) {
-		try {
-			String status = xp542mAccess.evaluate(node);
+    /**
+     * Fetches publication status from MARCXML.
+     * @param node The XML node to execute the XPath on.
+     * @return The publication status.
+     */
+    private ExternalRecordInfo.PublicationStatus evaluatePublicationStatus(Node node) {
+        try {
+            String status = xp542mAccess.evaluate(node);
 
-			ExternalRecordInfo.PublicationStatus publicationStatus = ExternalRecordInfo.PublicationStatus.UNKNOWN;
+            ExternalRecordInfo.PublicationStatus publicationStatus = ExternalRecordInfo.PublicationStatus.UNKNOWN;
             if (status.trim().equalsIgnoreCase("irsh"))
                 publicationStatus = ExternalRecordInfo.PublicationStatus.IRSH;
             if (status.trim().equalsIgnoreCase("open"))
                 publicationStatus = ExternalRecordInfo.PublicationStatus.OPEN;
-			if (status.trim().equalsIgnoreCase("restricted"))
-				publicationStatus = ExternalRecordInfo.PublicationStatus.RESTRICTED;
-			if (status.trim().equalsIgnoreCase("minimal"))
-				publicationStatus = ExternalRecordInfo.PublicationStatus.MINIMAL;
+            if (status.trim().equalsIgnoreCase("restricted"))
+                publicationStatus = ExternalRecordInfo.PublicationStatus.RESTRICTED;
+            if (status.trim().equalsIgnoreCase("minimal"))
+                publicationStatus = ExternalRecordInfo.PublicationStatus.MINIMAL;
             if (status.trim().equalsIgnoreCase("pictoright"))
                 publicationStatus = ExternalRecordInfo.PublicationStatus.PICTORIGHT;
             if (status.trim().equalsIgnoreCase("closed"))
                 publicationStatus = ExternalRecordInfo.PublicationStatus.CLOSED;
 
-			return publicationStatus;
-		} catch (XPathExpressionException ex) {
-			return ExternalRecordInfo.PublicationStatus.UNKNOWN;
-		}
-	}
+            return publicationStatus;
+        } catch (XPathExpressionException ex) {
+            return ExternalRecordInfo.PublicationStatus.UNKNOWN;
+        }
+    }
 }

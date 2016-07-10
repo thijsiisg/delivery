@@ -625,10 +625,8 @@ public class ReproductionController extends AbstractRequestController {
      */
     private String processReproductionCreation(HttpServletRequest req, Reproduction reproduction, BindingResult result,
                                                Model model, boolean commit) {
-        if (!checkHoldings(model, reproduction)) {
-            model.addAttribute("error", "closed");
+        if (!checkHoldings(model, reproduction))
             return "reproduction_error";
-        }
 
         // Add all the standard reproduction options and custom notes to the model
         Map<String, List<ReproductionStandardOption>> reproductionStandardOptions =

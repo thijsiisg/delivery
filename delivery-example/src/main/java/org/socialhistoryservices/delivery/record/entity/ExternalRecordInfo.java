@@ -46,15 +46,15 @@ public class ExternalRecordInfo {
         OTHER
     }
 
-	public enum PublicationStatus {
+    public enum PublicationStatus {
         UNKNOWN,
         IRSH,
         OPEN,
-		RESTRICTED,
-		MINIMAL,
+        RESTRICTED,
+        MINIMAL,
         PICTORIGHT,
-		CLOSED
-	}
+        CLOSED
+    }
 
     /** The id. */
     @Id
