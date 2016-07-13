@@ -201,11 +201,11 @@
         </table>
 
         <div class="accept">
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ac hendrerit purus. Praesent eu consequat nunc, in tincidunt nisl. Donec pretium suscipit nunc id blandit. Duis nec posuere mauris. Maecenas ornare mauris ut mattis eleifend. Praesent elementum magna tellus, sit amet suscipit nulla lacinia id. Vivamus sit amet ante sit amet velit eleifend condimentum vitae a ex. Suspendisse et massa at ante eleifend porta. Nullam et semper arcu. Cras tristique, nulla quis cursus congue, risus eros pulvinar erat, nec efficitur purus ex fringilla urna. Vestibulum porttitor sapien leo, eu efficitur mauris fringilla at. Mauris tincidunt felis vitae neque euismod, aliquam tincidunt magna pretium. Sed massa nisl, interdum sed mollis a, lacinia vitae purus. Morbi tempus efficitur sapien. Praesent sed dolor sed odio euismod aliquam nec quis orci.</p>
+          <p><@_ "terms.text"/></p>
 
           <label>
             <input type="checkbox" id="accept_terms_conditions" name="accept_terms_conditions" value="accept"/>
-            <@_ "termsAndConditions" "I accept the terms and conditions"/>
+            <@_ "terms.accept" "I accept the terms and conditions"/>
           </label>
 
           <#if acceptError??>
