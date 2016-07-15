@@ -48,9 +48,6 @@
 <html>
   <head>
     <title>${title} - Delivery</title>
-    <!--[if lt IE 9]>
-    <script type="text/javascript" src="${rc.contextPath}/resources/js/html5.js"></script>
-    <![endif]-->
     <link rel="stylesheet" media="all" href="${rc.contextPath}/resources/css/screen.css"/>
     <link rel="shortcut icon" type="image/x-icon" href="${rc.contextPath}/resources/logo.ico" />
     <style>
@@ -61,9 +58,9 @@
         }
     </style>
     <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-    <link type="text/css" href="${rc.contextPath}/resources/css/jquery-ui-1.8.13.custom.css" rel="stylesheet" />
-    <script type="text/javascript" src="${rc.contextPath}/resources/js/jquery-1.5.1.min.js"></script>
-    <script type="text/javascript" src="${rc.contextPath}/resources/js/jquery-ui-1.8.13.custom.min.js"></script>
+    <link type="text/css" href="${rc.contextPath}/resources/css/jquery-ui.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="${rc.contextPath}/resources/js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="${rc.contextPath}/resources/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="${rc.contextPath}/resources/js/delivery.js"></script>
     <#-- Locale dependent javascript -->
     <script type="text/javascript" src="${rc.contextPath}/resources/js/delivery.locale.${rc.locale}.js"></script>
@@ -101,40 +98,62 @@
     </header>
     <nav class="main">
       <ul>
-        <#if  _sec.ifAllGranted("ROLE_RECORD_MODIFY")>
-        <li>
-          <a href="${rc.contextPath}/record/">
-          <@_ "homerecord.title" "Edit Records"/>
-          </a>
-        </li>
-        </#if>
         <#if  _sec.ifAllGranted("ROLE_RESERVATION_VIEW")>
-        <li>
-          <a href="${rc.contextPath}/reservation/?date=${.now?string("yyyy-MM-dd")}&amp;status=PENDING">
-          <@_ "reservationList.title" "Reservation Overview"/>
-          </a>
-        </li>
+          <li>
+            <a href="${rc.contextPath}/reservation/?date=${.now?string("yyyy-MM-dd")}&amp;status=PENDING">
+            <@_ "reservationList.title" "Reservation Overview"/>
+            </a>
+          </li>
         </#if>
-        <#if  _sec.ifAllGranted("ROLE_RESERVATION_MODIFY")>
-        <li>
-          <a href="${rc.contextPath}/reservation/scan">
-          <@_ "scan.title" "Scan Items"/>
-          </a>
-        </li>
+        <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
+          <li>
+            <a href="${rc.contextPath}/reservation/masscreateform">
+              <@_ "reservationMassCreate.title" "New Reservation"/>
+            </a>
+          </li>
+        </#if>
+        <#if  _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY,ROLE_REPRODUCTION_MODIFY")>
+          <li>
+            <a href="${rc.contextPath}/request/scan">
+              <@_ "scan.title" "Scan Items"/>
+            </a>
+          </li>
+        </#if>
+        <#if  _sec.ifAllGranted("ROLE_RECORD_MODIFY")>
+          <li>
+            <a href="${rc.contextPath}/record/">
+              <@_ "homerecord.title" "Edit Records"/>
+            </a>
+          </li>
         </#if>
         <#if  _sec.ifAllGranted("ROLE_PERMISSION_VIEW")>
-        <li>
-          <a href="${rc.contextPath}/permission/">
-          <@_ "permissionList.title" "Permission Request Overview"/>
-          </a>
-        </li>
-         </#if>
-          <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
-        <li>
-          <a href="${rc.contextPath}/reservation/masscreateform">
-          <@_ "reservationMassCreate.title" "New Reservation"/>
-          </a>
-        </li>
+          <li>
+            <a href="${rc.contextPath}/permission/">
+              <@_ "permissionList.title" "Permission Request Overview"/>
+            </a>
+          </li>
+        </#if>
+        <br>
+        <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_VIEW")>
+          <li>
+            <a href="${rc.contextPath}/reproduction/?date=${.now?string("yyyy-MM-dd")}">
+              <@_ "reproductionList.title" "Reproduction Overview"/>
+            </a>
+          </li>
+        </#if>
+        <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_CREATE")>
+          <li>
+            <a href="${rc.contextPath}/reproduction/masscreateform">
+              <@_ "reproductionMassCreate.title" "New Reproduction"/>
+            </a>
+          </li>
+        </#if>
+        <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_MODIFY")>
+          <li>
+            <a href="${rc.contextPath}/reproduction/standardoptions">
+              <@_ "reproductionStandardOption.title" "Standard reproduction options"/>
+            </a>
+          </li>
         </#if>
         <#if  _sec.ifAllGranted("ROLE_USER_MODIFY")>
         <li>

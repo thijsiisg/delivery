@@ -17,10 +17,13 @@
 package org.socialhistoryservices.delivery.record.entity;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents external info for a record (title from evergreen,
@@ -38,7 +41,19 @@ public class ExternalRecordInfo {
         DOCUMENTATION,
         ARCHIVE,
         VISUAL,
+        MOVING_VISUAL,
+        ARTICLE,
         OTHER
+    }
+
+    public enum PublicationStatus {
+        UNKNOWN,
+        IRSH,
+        OPEN,
+        RESTRICTED,
+        MINIMAL,
+        PICTORIGHT,
+        CLOSED
     }
 
     /** The id. */
@@ -102,7 +117,51 @@ public class ExternalRecordInfo {
         materialType = type;
     }
 
-    @Size(max=125)
+    /**
+     * Holder of the copyright.
+     */
+    @Size(max=255)
+    @Column(name="copyright")
+    private String copyright;
+
+    /**
+     * Get the holder of the copyright.
+     * @return The holder of the copyright.
+     */
+    public String getCopyright() {
+        return copyright;
+    }
+
+    /**
+     * Set the holder of the copyright.
+     * @param copyright The holder of the copyright.
+     */
+    public void setCopyright(String copyright) {
+        this.copyright = copyright;
+    }
+
+	@NotNull
+	@Enumerated(EnumType.STRING)
+	@Column(name="publication_status", nullable=false)
+	private PublicationStatus publicationStatus;
+
+	/**
+	 * Get the publication status.
+	 * @return the publication status.
+	 */
+	public PublicationStatus getPublicationStatus() {
+		return publicationStatus;
+	}
+
+	/**
+	 * Set the publication status.
+	 * @param publicationStatus the publication status.
+	 */
+	public void setPublicationStatus(PublicationStatus publicationStatus) {
+		this.publicationStatus = publicationStatus;
+	}
+
+	@Size(max=125)
     @Column(name="author", nullable=true)
     private String author;
 
@@ -145,5 +204,66 @@ public class ExternalRecordInfo {
          displayYear = year;
     }
 
+    @Size(max=255)
+    @Column(name="physical_description")
+    private String physicalDescription;
 
+    /**
+     * Get the physical description.
+     * @return the physical description.
+     */
+    public String getPhysicalDescription() {
+        return physicalDescription;
+    }
+
+    /**
+     * Set the physical description.
+     * @param physicalDescription the physical description.
+     */
+    public void setPhysicalDescription(String physicalDescription) {
+        this.physicalDescription = physicalDescription;
+    }
+
+    @Size(max=255)
+    @Column(name="genres")
+    private String genres;
+
+    /**
+     * Get the genres.
+     * @return the genres.
+     */
+    public String getGenres() {
+        return genres;
+    }
+
+    /**
+     * Get the genres as a set.
+     * @return the genres as a set.
+     */
+    public Set<String> getGenresSet() {
+        return new HashSet<String>(StringUtils.commaDelimitedListToSet(genres));
+    }
+
+    /**
+     * Set the genres.
+     * @param genres the genres.
+     */
+    public void setGenres(String genres) {
+        this.genres = genres;
+    }
+
+    /**
+     * Merge other record's data with this record.
+     * @param other The other record.
+     */
+    public void mergeWith(ExternalRecordInfo other) {
+        setTitle(other.getTitle());
+        setMaterialType(other.getMaterialType());
+        setCopyright(other.getCopyright());
+        setPublicationStatus(other.getPublicationStatus());
+        setAuthor(other.getAuthor());
+        setDisplayYear(other.getDisplayYear());
+        setPhysicalDescription(other.getPhysicalDescription());
+        setGenres(other.getGenres());
+    }
 }

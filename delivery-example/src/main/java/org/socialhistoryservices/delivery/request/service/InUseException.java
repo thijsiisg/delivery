@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.delivery.reservation.service;
+package org.socialhistoryservices.delivery.request.service;
 
 /**
- * Indicates no holdings were specified.
+ * Indicates one of the holdings specified is already in use by another
+ * reservation.
  */
-public class NoHoldingsException extends Exception {
+public class InUseException extends Exception {
 
-    public NoHoldingsException() {
-        super("No holdings specified. Must specify at least 1.");
+    public InUseException() {
+        super("One of the specified holdings is already in use by another " +
+                "reservation.");
     }
 }

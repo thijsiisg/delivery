@@ -62,9 +62,13 @@
     </#if>
 </#macro>
 
-<#macro input_nolabel path class="">
+<#macro input_nolabel path class="" helptext="">
   <@spring.bind path/>
     <@spring.formInput path "class='${class}'"/>
+
+    <#if helptext?length gt 0>
+      <@spring.messageText helptext helptext/>
+    </#if>
 
     <#if spring.status.errorMessages?size != 0>
     <ul class="errors">
@@ -109,6 +113,37 @@
       </li>
     </ul>
     </#if>
+</#macro>
+
+<#macro textarea path prefix class="">
+  <@spring.bind path/>
+<label for="${spring.status.expression}" class="field">
+  <#assign msgName = prefix + path/>
+      <@spring.messageText msgName spring.status.expression/>
+</label>
+
+  <@spring.formTextarea path "class='${class} field'"/>
+
+  <#if spring.status.errorMessages?size != 0>
+  <ul class="errors">
+    <li>
+      <@spring.showErrors "</li><li>"/>
+    </li>
+  </ul>
+  </#if>
+</#macro>
+
+<#macro textarea_nolabel path class="">
+  <@spring.bind path/>
+  <@spring.formTextarea path "class='${class} field'"/>
+
+  <#if spring.status.errorMessages?size != 0>
+  <ul class="errors">
+    <li>
+      <@spring.showErrors "</li><li>"/>
+    </li>
+  </ul>
+  </#if>
 </#macro>
 
 <#macro buttons>

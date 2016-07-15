@@ -156,13 +156,13 @@
       <@_ "pageListHolder.nrResultsPerPage" "Amount of Results per Page"/>
       </label>
       <select id="page_len_filter" name="page_len">
-        <#list 1..(prop_reservationMaxPageLen?number/prop_reservationPageStepSize?number)?floor as i>
-        <#assign pageSize = (i*prop_reservationPageStepSize?number)?floor/>
+        <#list 1..(prop_requestMaxPageLen?number/prop_requestPageStepSize?number)?floor as i>
+        <#assign pageSize = (i*prop_requestPageStepSize?number)?floor/>
         <option value="${pageSize}"
         <#if (RequestParameters["page_len"]?? &&
               RequestParameters["page_len"]?number == pageSize) ||
              (!RequestParameters["page_len"]?? &&
-              prop_reservationPageLen?number == pageSize)>
+              prop_requestPageLen?number == pageSize)>
         selected="selected"</#if>>${pageSize}</option>
         </#list>
       </select>
@@ -196,7 +196,7 @@
     <#--<th><@sortLink "returnDate"><@_ "reservation.returnDate" "Return
     Date"/></@sortLink></th>-->
     <th><@sortLink "printed"><@_ "reservation.printed" "Printed"/></@sortLink></th>
-    <th><@sortLink "status"><@_ "reservation.extended.status.status" "Reservation status"/></@sortLink></th>
+    <th><@sortLink "status"><@_ "reservation.extended.status" "Reservation status"/></@sortLink></th>
     <th><@sortLink "holdingStatus"><@_ "holding.extended.status" "Item status"/></@sortLink></th>
   </tr>
   </thead>
@@ -205,7 +205,7 @@
 	 <#assign holding = holdingReservation.holding>
      <#assign reservation = holdingReservation.reservation>
   <tr>
-    <td><input type="checkbox" name="checked" value="${reservation.id?c}"
+    <td><input type="checkbox" name="checked" value="${reservation.id?c}:${holding.id?c}"
                class="checkItem" /></td>
     <td>
       <a href="${rc.contextPath}/reservation/${reservation.id?c}">
@@ -227,9 +227,10 @@
     <#assign no>
     <@_ "no" "No"/>
     </#assign>
-    <td>${reservation.printed?string(yes, no)}</td>
+    <td>${holdingReservation.printed?string(yes, no)}</td>
     <td><@_ "reservation.statusType.${reservation.status?string}" "${reservation.status?string}" /></td>
-    <td><@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" /></td>
+    <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! reservation/>
+    <td><@holdingStatus holdingActiveRequests reservation holding/></td>
   </tr>
   </#list>
   </tbody>
@@ -246,13 +247,7 @@
 
 <#if _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY,ROLE_RESERVATION_DELETE")>
 <fieldset class="actions">
-  <legend><@_ "reservationList.withSelected" "With Selected"/>:</legend>
-  <#assign printLabel>
-  <@_ "reservationList.print" "Print"/>
-  </#assign>
-  <#assign printForceLabel>
-  <@_ "reservationList.printForce" "Print (Including already printed)"/>
-  </#assign>
+  <legend><@_ "reservationList.withSelectedReservations" "With Selected Reservations"/>:</legend>
   <#assign deleteLabel>
   <@_ "reservationList.delete" "Delete"/>
   </#assign>
@@ -267,8 +262,6 @@
     </#assign>
   <ul>
   <#if _sec.ifAllGranted("ROLE_RESERVATION_MODIFY")>
-  <li><input type="submit" name="print" value="${printLabel}" /> <input type="submit" name="printForce" value="${printForceLabel}" onClick="return confirm('${printForceConfirm}');" /></li>
-
   <li>
     <select name="newStatus">
       <#list status_types?keys  as k>
@@ -292,6 +285,38 @@
   </#if>
   </ul>
 </fieldset>
+
+<#if _sec.ifAllGranted("ROLE_RESERVATION_MODIFY")>
+  <fieldset class="actions">
+    <legend><@_ "reservationList.withSelectedHoldings" "With selected holdings"/>:</legend>
+
+    <#assign printLabel>
+      <@_ "reservationList.print" "Print"/>
+    </#assign>
+    <#assign printForceLabel>
+      <@_ "reservationList.printForce" "Print (Including already printed)"/>
+    </#assign>
+    <#assign statusLabel>
+      <@_ "reservationList.toStatus" "Change Status"/>
+    </#assign>
+
+    <ul>
+      <li><input type="submit" name="print" value="${printLabel}" /> <input type="submit" name="printForce" value="${printForceLabel}" onClick="return confirm('${printForceConfirm}');" /></li>
+
+      <li>
+        <select name="newHoldingStatus">
+          <#list holding_status_types?keys as k>
+            <option value="${k}">
+              <@_ "holding.statusType.${k}" "${k}"/>
+            </option>
+          </#list>
+        </select>
+
+        <input type="submit" name="changeHoldingStatus" value="${statusLabel}"/>
+      </li>
+    </ul>
+  </fieldset>
+</#if>
 </#if>
 </#if>
 </form>

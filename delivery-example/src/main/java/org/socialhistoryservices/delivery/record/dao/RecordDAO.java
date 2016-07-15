@@ -87,6 +87,14 @@ public interface RecordDAO {
     public List<Record> list(CriteriaQuery<Record> query);
 
     /**
+     * List all Records.
+     * @param offset The offset.
+     * @param maxResults The max number of records to fetch.
+     * @return A list of Records.
+     */
+    public List<Record> listIterable(int offset, int maxResults);
+
+    /**
      * Get a single Record matching a built query.
      * @param query The query to match by.
      * @return The matching Record.

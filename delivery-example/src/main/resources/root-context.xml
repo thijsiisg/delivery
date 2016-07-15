@@ -47,4 +47,14 @@
     <property name="properties" ref="myCustomProperties"/>
   </bean>
 
+  <bean id="payWayService" class="org.socialhistoryservices.delivery.api.PayWayService">
+    <constructor-arg name="address" value="${prop_payWayAddress}"/>
+    <constructor-arg name="passPhraseIn" value="${prop_payWayPassPhraseIn}"/>
+    <constructor-arg name="passPhraseOut" value="${prop_payWayPassPhraseOut}"/>
+    <constructor-arg name="projectName" value="${prop_payWayProjectName}"/>
+  </bean>
+
+  <bean id="sharedObjectRepositoryService" class="org.socialhistoryservices.delivery.api.SharedObjectRepositoryService">
+    <constructor-arg name="url" value="${prop_sorAddress}"/>
+  </bean>
 </beans>

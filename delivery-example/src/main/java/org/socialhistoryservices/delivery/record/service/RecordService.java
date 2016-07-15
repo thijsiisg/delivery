@@ -64,6 +64,12 @@ public interface RecordService {
     public void saveRecord(Record obj);
 
     /**
+     * Save changes to a Holding in the database.
+     * @param obj Holding to save.
+     */
+    public void saveHolding(Holding obj);
+
+    /**
      * Retrieve the Record matching the given Id.
      * @param id Id of the Record to retrieve.
      * @return The Record matching the Id.
@@ -96,6 +102,14 @@ public interface RecordService {
      * @return A list of matching Records.
      */
     public List<Record> listRecords(CriteriaQuery<Record> query);
+
+    /**
+     * List all Records.
+     * @param offset The offset.
+     * @param maxResults The max number of records to fetch.
+     * @return A list of Records.
+     */
+    public List<Record> listIterable(int offset, int maxResults);
 
     /**
      * Get a single Record matching a built query.
@@ -132,6 +146,13 @@ public interface RecordService {
     public void checkEmbargoDates();
 
     /**
+     * Updates the external info of the given record, if necessary.
+     * @param record      The record of which to update the external info.
+     * @param hardRefresh Always update the external info.
+     */
+    public void updateExternalInfo(Record record, boolean hardRefresh);
+
+    /**
      * Edit records.
      * @param newRecord The new record to put.
      * @param oldRecord The old record (or null if none).
@@ -150,10 +171,11 @@ public interface RecordService {
     /**
      * Get the first available (not closed) holding for a record.
      * @param r The record to get a holding of.
+     * @param mustBeAvailable
      * @return The first free holding found or null if all occupied/no
      * holdings.
      */
-    public Holding getAvailableHoldingForRecord(Record r);
+    public Holding getHoldingForRecord(Record r, boolean mustBeAvailable);
 
     /**
      * Create a record, using the metadata from the IISH API to populate its

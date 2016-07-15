@@ -16,6 +16,8 @@
 
 package org.socialhistoryservices.delivery.record.service;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.api.RecordLookupService;
 import org.socialhistoryservices.delivery.record.dao.HoldingDAO;
@@ -25,8 +27,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 
@@ -56,6 +62,10 @@ public class RecordServiceImpl implements RecordService {
     @Autowired
     private RecordLookupService lookup;
 
+    @Autowired
+    private PlatformTransactionManager platformTransactionManager;
+
+    private static final Log LOGGER = LogFactory.getLog(RecordServiceImpl.class);
 
     /**
      * Add a Record to the database.
@@ -80,6 +90,14 @@ public class RecordServiceImpl implements RecordService {
      */
     public void saveRecord(Record obj) {
         recordDAO.save(obj);
+    }
+
+    /**
+     * Save changes to a Holding in the database.
+     * @param obj Holding to save.
+     */
+    public void saveHolding(Holding obj) {
+        holdingDAO.save(obj);
     }
 
     /**
@@ -115,14 +133,20 @@ public class RecordServiceImpl implements RecordService {
      */
     public Record resolveRecordByPid(String pid) {
         Record root = getRecordByPid(pid);
-        if (root != null)
+        if (root != null) {
+            updateExternalInfo(root, false);
+            saveRecord(root);
             return root;
+        }
         String itemSeparator = properties.getProperty("prop_itemSeparator", ".");
         while (pid.contains(itemSeparator)) {
             pid = pid.substring(0, pid.lastIndexOf(itemSeparator));
             Record rec = getRecordByPid(pid);
-            if (rec != null)
+            if (rec != null) {
+                updateExternalInfo(rec, false);
+                saveRecord(rec);
                 return rec;
+            }
         }
         return null;
     }
@@ -142,6 +166,16 @@ public class RecordServiceImpl implements RecordService {
      */
     public List<Record> listRecords(CriteriaQuery<Record> query) {
         return recordDAO.list(query);
+    }
+
+    /**
+     * List all Records.
+     * @param offset     The offset.
+     * @param maxResults The max number of records to fetch.
+     * @return A list of Records.
+     */
+    public List<Record> listIterable(int offset, int maxResults) {
+        return recordDAO.listIterable(offset, maxResults);
     }
 
     /**
@@ -213,6 +247,61 @@ public class RecordServiceImpl implements RecordService {
     }
 
     /**
+     * Updates the external info of the given record, if necessary.
+     * @param record      The record of which to update the external info.
+     * @param hardRefresh Always update the external info.
+     */
+    public void updateExternalInfo(Record record, boolean hardRefresh) {
+        try {
+            // Do we need to update the external info?
+            Integer days = Integer.parseInt(properties.getProperty("prop_externalInfoMinDaysCache"));
+            Calendar calendar = GregorianCalendar.getInstance();
+            calendar.add(Calendar.DAY_OF_YEAR, -days);
+
+            Date lastUpdated = record.getExternalInfoUpdated();
+            if (!hardRefresh && (lastUpdated != null) && lastUpdated.after(calendar.getTime()))
+                return;
+
+            // We need to update the external info
+            String pid = record.getPid();
+            ExternalRecordInfo eri = lookup.getRecordMetaDataByPid(pid);
+            Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
+
+            if (record.getExternalInfo() != null)
+                record.getExternalInfo().mergeWith(eri);
+            else
+                record.setExternalInfo(eri);
+
+            for (String signature : ehMap.keySet()) {
+                boolean found = false;
+
+                for (Holding h : record.getHoldings()) {
+                    if (signature.equals(h.getSignature())) {
+                        if (h.getExternalInfo() != null)
+                            h.getExternalInfo().mergeWith(ehMap.get(signature));
+                        else
+                            h.setExternalInfo(ehMap.get(signature));
+
+                        found = true;
+                    }
+                }
+
+                if (!found) {
+                    Holding holding = new Holding();
+                    holding.setSignature(signature);
+                    record.addHolding(holding);
+                    holding.setRecord(record);
+                }
+            }
+
+            record.setExternalInfoUpdated(new Date());
+        }
+        catch (NoSuchPidException nspe) {
+            // PID not found, or API down, then just skip the record
+        }
+    }
+
+    /**
      * Edit records.
      * @param newRecord The new record to put.
      * @param oldRecord The old record (or null if none).
@@ -242,26 +331,9 @@ public class RecordServiceImpl implements RecordService {
                 newRecord.setRestrictionType(Record.RestrictionType.OPEN);
             }
         }
-       
+
         // Add holding/other API info if present
-	    newRecord.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
-	    Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
-	    for (String signature : ehMap.keySet()) {
-		    boolean found = false;
-
-		    for (Holding h : newRecord.getHoldings()) {
-			    if (signature.equals(h.getSignature())) {
-				    h.setExternalInfo(ehMap.get(signature));
-				    found = true;
-			    }
-		    }
-
-		    if (!found) {
-			    Holding holding = new Holding();
-			    holding.setSignature(signature);
-			    newRecord.addHolding(holding);
-		    }
-	    }
+	    updateExternalInfo(newRecord, true);
 
         // Validate the record.
         validateRecord(newRecord, result);
@@ -271,7 +343,6 @@ public class RecordServiceImpl implements RecordService {
             if (oldRecord == null) {
                 addRecord(newRecord);
             } else {
-	            cleanupExternalInfo(oldRecord);
                 oldRecord.mergeWith(newRecord);
                 saveRecord(oldRecord);
             }
@@ -308,24 +379,13 @@ public class RecordServiceImpl implements RecordService {
         }
     }
 
-	/**
-	 * Removes all associated external info from the given record.
-	 * @param record The record.
-	 */
-	private void cleanupExternalInfo(Record record) {
-		recordDAO.removeExternalInfo(record);
-		for (Holding holding : record.getHoldings()) {
-			holdingDAO.removeExternalInfo(holding);
-		}
-	}
-
     /**
      * Get the first available (not closed) holding for a record.
      * @param r The record to get a holding of.
-     * @return The first free holding found or null if all occupied/no
-     * holdings.
+     * @param mustBeAvailable Whether the holding must be available.
+     * @return The first free holding found or null if all occupied/no holdings.
      */
-    public Holding getAvailableHoldingForRecord(Record r) {
+    public Holding getHoldingForRecord(Record r, boolean mustBeAvailable) {
         CriteriaBuilder cb = holdingDAO.getCriteriaBuilder();
         CriteriaQuery<Holding> cq = cb.createQuery(Holding.class);
         Root<Holding> hRoot = cq.from(Holding.class);
@@ -336,14 +396,14 @@ public class RecordServiceImpl implements RecordService {
         Expression<Boolean> where = cb.equal(rRoot.get(Record_.id),
                 r.getId());
 
-        // Only get available holdings.
-        where = cb.and(where, cb.equal(hRoot.<Holding.Status>get(Holding_.status),
-                                          Holding.Status.AVAILABLE));
+        // Only get available holdings?
+	    if (mustBeAvailable) {
+		    where = cb.and(where, cb.equal(hRoot.<Holding.Status>get(Holding_.status), Holding.Status.AVAILABLE));
+	    }
 
-        // Only get holdings which may be used without an employee's explicit
-        // permission.
+        // Only get holdings which may be used without an employee's explicit permission.
         where = cb.and(where, cb.equal(hRoot.<Holding.UsageRestriction>get(Holding_.usageRestriction),
-                                          Holding.UsageRestriction.OPEN));
+		        Holding.UsageRestriction.OPEN));
 
         cq.where(where);
 

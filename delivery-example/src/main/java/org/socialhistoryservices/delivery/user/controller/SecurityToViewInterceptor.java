@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.user.controller;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -55,6 +56,14 @@ class SecurityToViewInterceptor extends HandlerInterceptorAdapter {
          */
         public UserExposer() {
             auth = SecurityContextHolder.getContext().getAuthentication();
+        }
+
+        /**
+         * Get whether the user is anonymous.
+         * @return Whether the user is anonymous.
+         */
+        public boolean isAnonymous() {
+            return (auth instanceof AnonymousAuthenticationToken);
         }
 
         /**

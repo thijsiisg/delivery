@@ -33,6 +33,10 @@
 package org.socialhistoryservices.delivery.reservation.service;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.request.entity.Request;
+import org.socialhistoryservices.delivery.request.service.ClosedException;
+import org.socialhistoryservices.delivery.request.service.InUseException;
+import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.validation.BindingResult;
@@ -122,17 +126,25 @@ public interface ReservationService {
 
     /**
      * Mark a specific item in a reservation as seen, bumping it to the next status.
+     * @param res Reservation to change status for.
      * @param h Holding to bump.
-     * @return A reservation in which this item was bumped, or null on failure
      */
-    public Reservation markItem(Holding h);
+    public void markItem(Reservation res, Holding h);
 
     /**
-     * Returns the active reservation with which this holding is associated.
-     * @param h The Holding to get the active reservation of.
-     * @return The active reservation, or null if no active reservation exists.
+     * Merge the other reservation's fields into this reservation.
+     * @param reservation The reservation.
+     * @param other The other reservation to merge with.
      */
-    public Reservation getActiveFor(Holding h);
+    public void merge(Reservation reservation, Reservation other);
+
+    /**
+     * Set the reservation status and update the associated holdings status
+     * accordingly. Only updates status forward.
+     * @param reservation The reservation.
+     * @param status The reservation which changed status.
+     */
+    public void updateStatusAndAssociatedHoldingStatus(Reservation reservation, Reservation.Status status);
 
     /**
      * Check whether there are any reservations made on the holding.
@@ -151,44 +163,43 @@ public interface ReservationService {
     public void printReservation(Reservation res) throws PrinterException;
 
     /**
-     * Prints a reservation by using the default printer.
-     * @param res The reservation to print.
-     * @param alwaysPrint If set to true, already printed reservations will
+     * Prints holding reservations by using the default printer.
+     * @param hr The holding reservations to print.
+     * @param alwaysPrint If set to true, already printed holdings will
      * also be printed.
      * @throws PrinterException Thrown when delivering the print job to the
      * printer failed. Does not say anything if the printer actually printed
      * (or ran out of paper for example).
      */
-    public void printReservation(Reservation res, boolean alwaysPrint) throws
-            PrinterException;
+    public void printItems(List<HoldingReservation> hrs, boolean alwaysPrint) throws PrinterException;
 
     /**
      * Edit reservations.
      * @param newRes The new reservation to put in the database.
      * @param oldRes The old reservation in the database (if present).
      * @param result The binding result object to put the validation errors in.
-     * @throws ClosedException Thrown when a holding is provided which
+     * @throws org.socialhistoryservices.delivery.request.service.ClosedException Thrown when a holding is provided which
      * references a record which is restrictionType=CLOSED.
      * @throws InUseException Thrown when a new holding provided to be added
      * to the reservation is already in use by another reservation.
-     * @throws NoHoldingsException Thrown when no holdings are provided.
+     * @throws org.socialhistoryservices.delivery.request.service.NoHoldingsException Thrown when no holdings are provided.
      */
     public void createOrEdit(Reservation newRes, Reservation oldRes,
-                                      BindingResult result) throws 
+                                      BindingResult result) throws
             InUseException, ClosedException, NoHoldingsException;
 
-     /**
-     * Validate provided holding part of reservation.
-     * @param newRes The new reservation containing holdings.
-     * @param oldRes The old reservation if applicable (or null).
-     * @throws ClosedException Thrown when a holding is provided which
-     * references a record which is restrictionType=CLOSED.
-     * @throws InUseException Thrown when a new holding provided to be added
-     * to the reservation is already in use by another reservation.
+    /**
+     * Validate provided holding part of request.
+     * @param newReq The new request containing holdings.
+     * @param oldReq The old request if applicable (or null).
+     * @throws ClosedException     Thrown when a holding is provided which
+     *                             references a record which is restrictionType=CLOSED.
+     * @throws InUseException      Thrown when a new holding provided to be added
+     *                             to the request is already in use by another request.
      * @throws NoHoldingsException Thrown when no holdings are provided.
      */
-    public void validateHoldings(Reservation newRes,
-                                 Reservation oldRes) throws NoHoldingsException, InUseException, ClosedException;
+    public void validateHoldingsAndAvailability(Request newReq, Request oldReq)
+            throws NoHoldingsException, InUseException, ClosedException;
 
     /**
      * Get the first valid reservation date after or equal to from.
@@ -197,4 +208,11 @@ public interface ReservationService {
      * exceeded.
      */
     public Date getFirstValidReservationDate(Date from);
+
+    /**
+     * Returns the active reservation with which this holding is associated.
+     * @param h The Holding to get the active reservation of.
+     * @return The active reservation, or null if no active reservation exists.
+     */
+    public Reservation getActiveFor(Holding holding);
 }

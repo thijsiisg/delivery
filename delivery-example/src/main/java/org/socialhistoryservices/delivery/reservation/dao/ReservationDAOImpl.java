@@ -139,12 +139,10 @@ public class ReservationDAOImpl implements ReservationDAO {
                 (HoldingReservation_.holding);
         Expression<Boolean> where = cb.equal(hRoot.get(Holding_.id),
                 h.getId());
-
-        where = cb.and(where, cb.notEqual(resRoot.<Reservation.Status>get(Reservation_.status),
-                                          Reservation.Status.COMPLETED));
+        where = cb.and(where, cb.equal(hrRoot.get(HoldingReservation_.completed), false));
 
         cq.where(where);
-        cq.orderBy(cb.desc(resRoot.<Date>get(Reservation_.creationDate)));
+        cq.orderBy(cb.asc(resRoot.<Date>get(Reservation_.creationDate)));
 
         try {
             TypedQuery q = entityManager.createQuery(cq);

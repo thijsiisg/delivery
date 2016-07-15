@@ -45,6 +45,11 @@ public class AuthoritiesPopulator extends DefaultLdapAuthoritiesPopulator {
         if (userEntity != null) {
             authorities.addAll(userEntity.getAuthorities());
         }
+        else {
+            User u = new User();
+            u.setUsername(username);
+            userService.addUser(u);
+        }
         return authorities;
     }
 }

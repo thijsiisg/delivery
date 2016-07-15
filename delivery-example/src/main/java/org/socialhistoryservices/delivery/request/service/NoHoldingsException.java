@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.delivery.reservation.service;
+package org.socialhistoryservices.delivery.request.service;
 
 /**
- * Indicates one of the holdings specified is contained within a record which
- * is either INHERIT and a parent is CLOSED, or its own restrictionType is
- * CLOSED.
+ * Indicates no holdings were specified.
  */
-public class ClosedException extends Exception {
+public class NoHoldingsException extends Exception {
 
-    public ClosedException() {
-        super("One of the specified holdings is contained within a record " +
-                "which is either INHERIT and a parent is CLOSED, " +
-                "or its own restrictionType is CLOSED.");
+    public NoHoldingsException() {
+        super("No holdings specified. Must specify at least 1.");
     }
 }

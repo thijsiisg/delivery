@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.delivery.reservation.service;
+package org.socialhistoryservices.delivery.request.service;
 
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;

@@ -19,11 +19,14 @@ package org.socialhistoryservices.delivery.record.entity;
 import org.apache.commons.collections.functors.InstantiateFactory;
 import org.apache.commons.collections.list.LazyList;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Index;
 import org.hibernate.validator.constraints.NotBlank;
+import org.socialhistoryservices.delivery.reproduction.util.Pages;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -43,6 +46,10 @@ public class Record {
         CLOSED,
         INHERIT,
     }
+
+    /** Stores information about the number of pages. */
+    @Transient
+    private Pages pages;
 
     /** The Record's id. */
     @Id
@@ -80,6 +87,7 @@ public class Record {
         this.pid = pid;
     }
 
+    @Index(name="records_external_info_fk")
     @OneToOne(cascade=CascadeType.ALL)
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     @JoinColumn(name="external_info_id")
@@ -100,6 +108,26 @@ public class Record {
      */
     public void setExternalInfo(ExternalRecordInfo info) {
         this.externalInfo = info;
+    }
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name="external_info_updated")
+    private Date externalInfoUpdated;
+
+    /**
+     * Get the date/time the external info of this record was last updated.
+     * @return The date/time the external info of this record was last updated.
+     */
+    public Date getExternalInfoUpdated() {
+        return externalInfoUpdated;
+    }
+
+    /**
+     * Set the date/time the external info of this record was last updated.
+     * @param externalInfoUpdated The date/time the external info of this record was last updated.
+     */
+    public void setExternalInfoUpdated(Date externalInfoUpdated) {
+        this.externalInfoUpdated = externalInfoUpdated;
     }
 
     /**
@@ -158,6 +186,43 @@ public class Record {
             }
         }
         return restriction;
+    }
+
+    /**
+     * Get the copyright holder.
+     * @return The holder of the copyright.
+     */
+    public String getCopyright() {
+        return externalInfo.getCopyright();
+    }
+
+    /**
+     * Returns whether IISH is (one of) the copyright holder.
+     *
+     * @return Whether IISH is (one of) the copyright holder.
+     */
+    public boolean isCopyrightIISH() {
+        if (externalInfo.getCopyright() != null) {
+            String copyright = externalInfo.getCopyright().toLowerCase();
+            return (copyright.contains("iish") || copyright.contains("iisg"));
+        }
+        return false;
+    }
+
+    /**
+     * Get the publication status.
+     * @return the publication status.
+     */
+    public ExternalRecordInfo.PublicationStatus getPublicationStatus() {
+        return externalInfo.getPublicationStatus();
+    }
+
+    /**
+     * Get the physical description.
+     * @return the physical description.
+     */
+    public String getPhysicalDescription() {
+        return externalInfo.getPhysicalDescription();
     }
 
     /** The Record's comments. */
@@ -410,7 +475,7 @@ public class Record {
         setRestriction(other.getRestriction());
         setComments(other.getComments());
 
-        setExternalInfo(other.getExternalInfo());
+        getExternalInfo().mergeWith(other.getExternalInfo());
 
         // Merge contact.
         Contact c = getContact();
@@ -483,12 +548,49 @@ public class Record {
     }
 
     /**
+     * Returns the Pages object for this record.
+     * @return The Pages object.
+     */
+    public Pages getPages() {
+        if (pages == null)
+            pages = new Pages(this);
+        return pages;
+    }
+
+    /**
+     * Helper method to determine the price on the number of pages for this reocrd.
+     * @param price The price per page.
+     * @return The total price for this record based on the given price per page.
+     */
+    public BigDecimal determinePriceByPages(BigDecimal price) {
+        Pages pages = getPages();
+        if (pages.containsNumberOfPages())
+            price = price.multiply(new BigDecimal(pages.getNumberOfPages()));
+        return price;
+    }
+
+    /**
+     * Determine whether this record is open for reproductions.
+     * @return True if this record is open for reproduction requests.
+     */
+    public boolean isOpenForReproduction() {
+        if (getPublicationStatus() == ExternalRecordInfo.PublicationStatus.UNKNOWN) {
+            return (getExternalInfo().getMaterialType() != ExternalRecordInfo.MaterialType.VISUAL) &&
+                    (getExternalInfo().getMaterialType() != ExternalRecordInfo.MaterialType.MOVING_VISUAL);
+        }
+
+        return (getPublicationStatus() != ExternalRecordInfo.PublicationStatus.MINIMAL) &&
+                (getPublicationStatus() != ExternalRecordInfo.PublicationStatus.CLOSED);
+    }
+
+    /**
      * Initialize defaults.
      */
     public Record() {
         holdings = LazyList.decorate(new ArrayList<Holding>(), new InstantiateFactory(Holding.class));
         children = new ArrayList<Record>();
         externalInfo = new ExternalRecordInfo();
+        setExternalInfoUpdated(new Date());
         setRestrictionType(RestrictionType.OPEN);
     }
 }

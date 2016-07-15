@@ -38,7 +38,7 @@
       <input type='hidden' name="user" value="${user.id?c}"/>
       <select multiple name="groups"
 
-      <#if user.id == _sec.principal.id>
+      <#if user.username == _sec.principal.username>
         disabled="disabled"
       </#if>
         >
@@ -50,7 +50,7 @@
       >${group.name?html}</option>
       </#list>
       </select>
-      <#if user.id != _sec.principal.id>
+      <#if user.username != _sec.principal.username>
       <input type="submit" value="<@_ "user.chgrp" "Change Groups"/>"/>
       </#if>
     </form>

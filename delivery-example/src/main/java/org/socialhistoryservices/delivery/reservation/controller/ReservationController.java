@@ -18,23 +18,30 @@ package org.socialhistoryservices.delivery.reservation.controller;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
-import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction_;
+import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
+import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
+import org.socialhistoryservices.delivery.request.entity.Request;
+import org.socialhistoryservices.delivery.request.service.ClosedException;
+import org.socialhistoryservices.delivery.request.service.InUseException;
+import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
+import org.socialhistoryservices.delivery.request.util.BulkActionIds;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation_;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.socialhistoryservices.delivery.reservation.service.*;
-import org.socialhistoryservices.delivery.ErrorHandlingController;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,14 +49,12 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.Tuple;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.print.PrinterException;
-import java.beans.PropertyEditorSupport;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -61,7 +66,7 @@ import java.util.*;
 @Controller
 @Transactional
 @RequestMapping(value = "/reservation")
-public class ReservationController extends ErrorHandlingController {
+public class ReservationController extends AbstractRequestController {
 
     @Autowired
     private ReservationService reservations;
@@ -76,24 +81,6 @@ public class ReservationController extends ErrorHandlingController {
     private RecordService records;
 
     private Logger log = Logger.getLogger(getClass());
-
-    @InitBinder
-    public void initBinder(WebDataBinder binder) {
-        super.initBinder(binder);
-
-        // This is needed for the reservation_create page passing an holding
-        // ID.
-        binder.registerCustomEditor(Holding.class,
-            new PropertyEditorSupport() {
-                @Override
-                public void setAsText(String text) {
-                    Holding h = records.getHoldingById(Integer.parseInt
-                            (text));
-                    setValue(h);
-                }
-        });
-
-    }
 
     // {{{ Get API
 
@@ -117,6 +104,7 @@ public class ReservationController extends ErrorHandlingController {
         }
         model.addAttribute("callback", callback);
         model.addAttribute("reservation", r);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(r.getHoldings()));
         return "reservation_get";
     }
 
@@ -152,7 +140,7 @@ public class ReservationController extends ErrorHandlingController {
         where = addEmailFilter(p, cb, resRoot, where);
         where = addStatusFilter(p, cb, resRoot, where);
         where = addSpecialFilter(p, cb, resRoot, where);
-        where = addPrintedFilter(p, cb, resRoot, where);
+        where = addPrintedFilter(p, cb, hrRoot, where);
         where = addSearchFilter(p, cb, hrRoot, resRoot, where);
 
         // Set the where clause
@@ -163,34 +151,23 @@ public class ReservationController extends ErrorHandlingController {
         Join<HoldingReservation,Holding> hRoot = hrRoot.join
 		        (HoldingReservation_.holding);
 
-	    cq.orderBy(parseSortFilter(p, cb, resRoot, hRoot));
+	    cq.orderBy(parseSortFilter(p, cb, hrRoot, resRoot, hRoot));
 
         // Fetch result set
         List<HoldingReservation> hList = reservations.listHoldingReservations(cq);
         PagedListHolder<HoldingReservation> pagedListHolder = new
                 PagedListHolder<HoldingReservation>(hList);
-
-        // Set the amount of reservations per page
-        pagedListHolder.setPageSize(parsePageLenFilter(p));
-
-        // Set the current page, internal starts at 0, external at 1
-        pagedListHolder.setPage(parsePageFilter(p));
-
-        // Add result to model
-        model.addAttribute("callback", callback);
-        model.addAttribute("pageListHolder", pagedListHolder);
+        initOverviewModel(p, model, pagedListHolder);
 
         Calendar cal = GregorianCalendar.getInstance();
-        model.addAttribute("today", cal.getTime());
-        cal.add(Calendar.MONTH, -3);
-        model.addAttribute("min3months", cal.getTime());
-        cal.add(Calendar.MONTH, 3);
-        cal.add(Calendar.DAY_OF_MONTH, 1);
-        model.addAttribute("tomorrow",cal.getTime());
-        cal.setTime(new Date());
         cal.add(Calendar.DAY_OF_MONTH, Integer.parseInt(properties.getProperty
                 ("prop_reservationMaxDaysInAdvance")));
         model.addAttribute("maxReserveDate",cal.getTime());
+
+        // Fetch holding active request information
+        List<HoldingReservation> holdingReservations = pagedListHolder.getPageList();
+        Set<Holding> holdings = getHoldings(holdingReservations);
+        model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
         return "reservation_get_list";
     }
@@ -199,11 +176,14 @@ public class ReservationController extends ErrorHandlingController {
      * Parse the sort and sort_dir filters into an Order to be used in a query.
      * @param p The parameter list to search the filter values in.
      * @param cb The criteria builder used to construct the Order.
+     * @param hrRoot The root of the holding reservation used to construct the Order.
      * @param resRoot The root of the reservation used to construct the Order.
+     * @param hRoot The root of the holding used to construct the Order.
      * @return The order the query should be in (asc/desc) sorted on provided
      * column. Defaults to asc on the PK column.
      */
-    private Order parseSortFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Join<HoldingReservation,Holding> hRoot) {
+    private Order parseSortFilter(Map<String, String[]> p, CriteriaBuilder cb, From<?,HoldingReservation> hrRoot,
+                                  From<?,Reservation> resRoot, From<?,Holding> hRoot) {
         boolean containsSort = p.containsKey("sort");
         boolean containsSortDir = p.containsKey("sort_dir");
         Expression e = resRoot.get(Reservation_.date);
@@ -216,7 +196,7 @@ public class ReservationController extends ErrorHandlingController {
             } else if (sort.equals("status")) {
                 e = resRoot.get(Reservation_.status);
             } else if (sort.equals("printed")) {
-                e = resRoot.get(Reservation_.printed);
+                e = hrRoot.get(HoldingReservation_.printed);
             } else if (sort.equals("special")) {
                 e = resRoot.get(Reservation_.special);
 	        } else if (sort.equals("signature")) {
@@ -233,50 +213,10 @@ public class ReservationController extends ErrorHandlingController {
     }
 
     /**
-     * Parse the page filter into an integer.
-     * @param p The parameter map to search the given filter value in.
-     * @return The current page to show, default 0. (external = 1).
-     */
-    private int parsePageFilter(Map<String, String[]> p) {
-        int page = 0;
-        if (p.containsKey("page")) {
-            try {
-               page = Math.max(0, Integer.parseInt(p.get("page")[0]) - 1);
-            } catch (NumberFormatException ex) {
-                throw new InvalidRequestException("Invalid page number: " +
-                        p.get("page")[0]);
-            }
-        }
-        return page;
-    }
-
-    /**
-     * Parse the page length filter.
-     * @param p The parameter map to search the given filter value in.
-     * @return The length of the page (defaults to the length in the config,
-     * can not exceed the maximum length in the config).
-     */
-    private int parsePageLenFilter(Map<String, String[]> p) {
-        int pageLen = Integer.parseInt(properties.getProperty("prop_reservationPageLen"));
-        if (p.containsKey("page_len")) {
-            try {
-                pageLen = Math.max(0,
-                                   Math.min(Integer.parseInt(p.get("page_len")
-                                           [0]), Integer.parseInt(
-                                         properties.getProperty
-                                                 ("prop_reservationMaxPageLen"))));
-            } catch (NumberFormatException ex) {
-                throw new InvalidRequestException("Invalid page length: " +
-                        p.get("page_len")[0]);
-            }
-        }
-        return pageLen;
-    }
-
-    /**
      * Add the search filter to the where clause, if present.
      * @param p The parameter list to search the given filter value in.
      * @param cb The criteria builder.
+     * @param hrRoot The holding reservation root.
      * @param resRoot The reservation root.
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
@@ -327,19 +267,19 @@ public class ReservationController extends ErrorHandlingController {
      * Add the printed filter to the where clause, if present.
      * @param p The parameter list to search the given filter value in.
      * @param cb The criteria builder.
-     * @param resRoot The reservation root.
+     * @param hrRoot The holding reservation root.
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
     private Expression<Boolean> addPrintedFilter(Map<String, String[]> p,
-                                  CriteriaBuilder cb, Join<HoldingReservation,Reservation> resRoot, Expression<Boolean> where) {
+                                  CriteriaBuilder cb, Root<HoldingReservation> hrRoot, Expression<Boolean> where) {
         if (p.containsKey("printed")) {
             String printed = p.get("printed")[0].trim().toLowerCase();
             if (printed.isEmpty()) {
                 return where;
             }
             Expression<Boolean> exPrinted = cb.equal(
-                    resRoot.<Boolean>get(Reservation_.printed),
+                    hrRoot.<Boolean>get(HoldingReservation_.printed),
                     Boolean.parseBoolean(p.get("printed")[0]));
             where = where != null ? cb.and(where, exPrinted) : exPrinted;
         }
@@ -426,49 +366,25 @@ public class ReservationController extends ErrorHandlingController {
                                      CriteriaBuilder cb,
                                      Join<HoldingReservation,Reservation> resRoot,
                                      Expression<Boolean> where) {
-        DateFormat apiDf = new SimpleDateFormat("yyyy-MM-dd");
-        if (p.containsKey("date")) {
-            try {
-                Date d = apiDf.parse(p.get("date")[0]);
-                Expression<Boolean> exDate = cb.equal(resRoot.<Date>get
-                        (Reservation_
-                        .date),
-                                             d);
-                where = where != null ? cb.and(where, exDate) : exDate;
-            } catch (ParseException ex) {
-                throw new InvalidRequestException("Invalid date: " +
-                        p.get("date")[0]);
-            }
+        Date date = getDateFilter(p);
+        if (date != null) {
+            Expression<Boolean> exDate = cb.equal(resRoot.<Date>get(Reservation_.date), date);
+            where = where != null ? cb.and(where, exDate) : exDate;
         } else {
-            boolean containsFrom = p.containsKey("from_date") &&
-                                   !p.get("from_date")[0].trim().equals("");
-            boolean containsTo = p.containsKey("to_date") &&
-                                 !p.get("to_date")[0].trim().equals("");
-            if (containsFrom) {
-                try {
-                    Date d = apiDf.parse(p.get("from_date")[0]);
-                    Expression<Boolean> exDate = cb.greaterThanOrEqualTo(
-                            resRoot.<Date>get(Reservation_.date), d);
-                    where = where != null ? cb.and(where, exDate) : exDate;
-                } catch (ParseException ex) {
-                    throw new InvalidRequestException("Invalid from_date: " +
-                        p.get("from_date")[0]);
-                }
+            Date fromDate = getFromDateFilter(p);
+            Date toDate = getToDateFilter(p);
+            if (fromDate != null) {
+                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(resRoot.<Date>get(Reservation_.date), fromDate);
+                where = where != null ? cb.and(where, exDate) : exDate;
             }
-            if (containsTo) {
-                try {
-                    Date d = apiDf.parse(p.get("to_date")[0]);
-                    Expression<Boolean> exDate = cb.lessThanOrEqualTo(
-                            resRoot.<Date>get(Reservation_.date), d);
-                    where = where != null ? cb.and(where, exDate) : exDate;
-                } catch (ParseException ex) {
-                    throw new InvalidRequestException("Invalid to_date: " +
-                        p.get("to_date")[0]);
-                }
+            if (toDate != null) {
+                Expression<Boolean> exDate = cb.lessThanOrEqualTo(resRoot.<Date>get(Reservation_.date), toDate);
+                where = where != null ? cb.and(where, exDate) : exDate;
             }
         }
         return where;
     }
+
     //}}}
     // {{{ Create/Edit API
 
@@ -567,9 +483,6 @@ public class ReservationController extends ErrorHandlingController {
         if (n.path("items").isMissingNode()) {
             newRes.setHoldingReservations(oldRes.getHoldingReservations());
         }
-        if (n.path("printed").isMissingNode()) {
-            newRes.setPrinted(oldRes.isPrinted());
-        }
         if (n.path("special").isMissingNode()) {
             newRes.setSpecial(oldRes.getSpecial());
         }
@@ -589,7 +502,7 @@ public class ReservationController extends ErrorHandlingController {
                         "invalid PID:" + pid);
             }
             if (n.path(pid).size() == 0) {
-                Holding ah = records.getAvailableHoldingForRecord(r);
+                Holding ah = records.getHoldingForRecord(r, true);
                 if (ah == null) {
                     throw new InvalidRequestException("Items list contains " +
                             "PID with empty list, but no arbitrary holding is" +
@@ -674,7 +587,10 @@ public class ReservationController extends ErrorHandlingController {
 
 
         Permission perm = permissions.getPermissionByCode(permission);
-        if (!checkPermissions(model, perm, newRes)) return "reservation_choice";
+        if (!checkPermissions(model, perm, newRes)) {
+            model.addAttribute("holdingReservations", newRes.getHoldingReservations());
+            return "reservation_choice";
+        }
 
         if (perm != null ) {
             if (!commit) {
@@ -712,7 +628,7 @@ public class ReservationController extends ErrorHandlingController {
                     return "reservation_success";
                 }
             } else {
-                reservations.validateHoldings(newRes, null);
+                reservations.validateHoldingsAndAvailability(newRes, null);
             }
 
         } catch (NoHoldingsException e) {
@@ -729,219 +645,67 @@ public class ReservationController extends ErrorHandlingController {
         return "reservation_create";
     }
 
-    private boolean checkHoldings(Model model, Reservation newRes) {
-        List<HoldingReservation> hrs = newRes.getHoldingReservations();
-        if (hrs == null) {
-            model.addAttribute("error", "availability");
+    /**
+     * Checks the holdings of a request.
+     * @param model   The model to add errors to.
+     * @param request The Request with holdings to check.
+     * @return Whether no errors were found.
+     */
+    @Override
+    protected boolean checkHoldings(Model model, Request request) {
+        if (!super.checkHoldings(model, request))
             return false;
-        }
 
-        if (hrs.size() > Integer.parseInt(properties.getProperty("prop_reservationMaxItems"))) {
+        int maxItems = Integer.parseInt(properties.getProperty("prop_reservationMaxItems"));
+        if (request.getHoldingRequests().size() > maxItems) {
             model.addAttribute("error", "limitItems");
             return false;
         }
 
-        for (HoldingReservation hr : hrs) {
-            Holding h = hr.getHolding();
-            if (h == null) {
-                throw new ResourceNotFoundException();
-            }
-            if (h.getUsageRestriction() == Holding.UsageRestriction.CLOSED) {
-                model.addAttribute("error", "restricted");
-                return false;
-            }
-        }
         return true;
     }
 
-    /**
-     * Checks the permission if applicable (i.e. holdings selected are tied
-     * to one or more restricted records).
-     * @param model The model to add errors to.
-     * @param perm The permission, can be null if not applicable.
-     * @param newRes The Reservation with holdings to check.
-     * @return True iff the given permission (can be null) is allowed to
-     * reserve the provided holdings.
-     */
-    private boolean checkPermissions(Model model, Permission perm,
-                                     Reservation newRes) {
-        if (perm == null) {
-            perm = new Permission();
-        }
+	private List<HoldingReservation> uriPathToHoldingReservations(String path) {
+		List<Holding> holdings = uriPathToHoldings(path, true);
+		if (holdings == null)
+			return null;
 
-        List<HoldingReservation> hrs = newRes.getHoldingReservations();
-        for (HoldingReservation hr : hrs) {
-            Record permRecord = hr.getHolding().getRecord();
-            if (permRecord.getRealRestrictionType() == Record
-                    .RestrictionType.RESTRICTED) {
-                if (!perm.hasGranted(permRecord)) {
-                    model.addAttribute("holdingReservations", hrs);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private List<HoldingReservation> uriPathToHoldingReservations(String path) {
-        List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
-        String[] tuples = getPidsFromURL(path);
-        for (String tuple : tuples) {
-            String[] elements = tuple.split(properties.getProperty("prop_holdingSeparator", ":"));
-            Record r = records.getRecordByPid(elements[0]);
-            if (r == null) {
-                // Try creating the record.
-                try {
-                    r = records.createRecordByPid(elements[0]);
-                    records.addRecord(r);
-                } catch (NoSuchPidException e) {
-                    return null;
-                }
-            }
-            if (elements.length == 1) {
-                Holding h = records.getAvailableHoldingForRecord(r);
-                if (h == null) {
-                    return null;
-                }
-                HoldingReservation hr = new HoldingReservation();
-                hr.setHolding(h);
-                hrs.add(hr);
-            } else {
-                for (int i = 1; i < elements.length; i++) {
-                    boolean has = false;
-                    for (Holding h : r.getHoldings()) {
-                        if (h.getSignature().equals(elements[i])) {
-                            HoldingReservation hr = new HoldingReservation();
-                            hr.setHolding(h);
-                            hrs.add(hr);
-                            has = true;
-                        }
-                    }
-                    if (!has) {
-                        return null;
-                    }
-                }
-            }
-        }
-        return hrs;
-    }
+		List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
+		for (Holding holding : holdings) {
+			HoldingReservation hr = new HoldingReservation();
+			hr.setHolding(holding);
+			hrs.add(hr);
+		}
+		return hrs;
+	}
 
     /**
      * Print a reservation if it has been reserved between the opening and
      * closing times of the readingroom.
+     *
+     * Run this in a separate thread, we do nothing on failure so in this case this is perfectly possible.
+     * This speeds up the processing of the page for the end-user.
+     *
      * @param res The reservation to print.
      */
+    @Async
     private void autoPrint(final Reservation res) {
-        Date create = res.getCreationDate();
-        Date access = res.getDate();
-        // Do not print when not reserved on same day as access.
-        if (access.after(create)) {
-            return;
-        }
-
-        // Print automatically if the creation date of the reservation was between
-        // today->open and today->close of the readingroom.
-        Date open, close;
-        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
-        format.setLenient(false);
         try {
-            open = format.parse(properties.getProperty("prop_reservationAutoPrintStartTime"));
-            close = format.parse(properties.getProperty("prop_reservationLatestTime"));
-        } catch (ParseException e) {
-            throw new RuntimeException("Failed parsing necessary open and " +
-                    "closing dates for auto printing. Are they in the " +
-                    "correct HH:mm format in your properties file?");
-        }
+            Date create = res.getCreationDate();
+            Date access = res.getDate();
 
-        Calendar cal = GregorianCalendar.getInstance();
-        cal.setTime(create);
-        int createH = cal.get(Calendar.HOUR_OF_DAY);
-        int createM = cal.get(Calendar.MINUTE);
-        cal.setTime(open);
-        int openH = cal.get(Calendar.HOUR_OF_DAY);
-        int openM = cal.get(Calendar.MINUTE);
-        cal.setTime(close);
-        int closeH = cal.get(Calendar.HOUR_OF_DAY);
-        int closeM = cal.get(Calendar.MINUTE);
+            // Do not print when not reserved on same day as access.
+            if (access.after(create))
+                return;
 
-        boolean afterOpen = createH > openH || (createH == openH && createM >= openM);
-        boolean beforeClose = createH < closeH || (createH == closeH && createM < closeM);
-        if (afterOpen && beforeClose) {
-
-            // Run this in a separate thread, we do nothing on failure so in
-            // this case this is perfectly possible.
-            // This speeds up the processing of the page for the end-user.
-            new Thread(new Runnable() {
-
-                public void run() {
-                    try {
-                        reservations.printReservation(res);
-                    } catch (PrinterException e) {
-                        // Do nothing, let an employee print it later on.
-                    }
-                }
-            }).start();
-
-
+            if (DateUtils.isBetweenOpeningAndClosingTime(properties, create))
+                reservations.printReservation(res);
+        } catch (PrinterException e) {
+            // Do nothing, let an employee print it later on.
         }
     }
     // }}}
 
-    // {{{ Barcode scanning
-    /**
-     * Get the barcode scan page.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/scan",
-                    method = RequestMethod.GET)
-    @Secured("ROLE_RESERVATION_MODIFY")
-    public String scanBarcode() {
-        return "scan";
-    }
-
-    /**
-     * Process a scanned barcode.
-     *
-     * @param id The scanned Record id.
-     * @param model The model to add response attributes to.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/scan",
-                    method = RequestMethod.POST)
-    @Secured("ROLE_RESERVATION_MODIFY")
-    public String scanBarcode(@RequestParam(required = false) String id,
-                              Model model) {
-
-        Holding h;
-        try {
-            int ID = Integer.parseInt(id);
-            h = records.getHoldingById(ID);
-        }
-        catch (NumberFormatException ex) {
-            h = null;
-        }
-
-        if(h == null) {
-            model.addAttribute("error", "invalid");
-            return "scan";
-        }
-
-        Holding.Status oldStatus = h.getStatus();
-        Reservation res = reservations.markItem(h);
-
-        // Show the reservation corresponding to the scanned record.
-        if (res != null) {
-            model.addAttribute("oldStatus", oldStatus);
-            model.addAttribute("holding", h);
-            model.addAttribute("reservation", res);
-            return "scan";
-        }
-        model.addAttribute("error", "invalid");
-        return "scan";
-
-
-    }
-    // }}}
     // {{{ Batch process reservations
 
     /**
@@ -955,14 +719,14 @@ public class ReservationController extends ErrorHandlingController {
                     params = "delete")
     @Secured("ROLE_RESERVATION_DELETE")
     public String batchProcessDelete(HttpServletRequest req,
-                                     @RequestParam(required=false) Set<Integer>
+                                     @RequestParam(required=false) List<String>
                                              checked) {
 
         // Delete all the provided reservations
         if (checked != null) {
 
-            for (int id : checked) {
-                delete(id);
+            for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+                delete(bulkActionIds.getRequestId());
             }
         }
         String qs = req.getQueryString() != null ?
@@ -971,7 +735,7 @@ public class ReservationController extends ErrorHandlingController {
     }
 
     /**
-     * Show print marked reservations (except already printed).
+     * Show print marked holdings (except already printed).
      *
      * @param req The HTTP request object.
      * @param checked The marked reservations.
@@ -981,7 +745,7 @@ public class ReservationController extends ErrorHandlingController {
                     method = RequestMethod.POST,
                     params = "print")
     public String batchProcessPrint(HttpServletRequest req,
-                                    @RequestParam(required = false) Set<Integer>
+                                    @RequestParam(required = false) List<String>
                                             checked) {
         String qs = req.getQueryString() != null ?
                     "?" + req.getQueryString() : "";
@@ -991,11 +755,17 @@ public class ReservationController extends ErrorHandlingController {
             return "redirect:/reservation/" + qs;
         }
 
-        for(int id : checked) {
-            Reservation r = reservations.getReservationById(id);
-            if (r != null) {
+        List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Reservation r = reservations.getReservationById(bulkActionIds.getRequestId());
+            for (HoldingReservation hr : r.getHoldingReservations()) {
+                if (hr.getHolding().getId() == bulkActionIds.getHoldingId())
+                    hrs.add(hr);
+            }
+
+            if (!hrs.isEmpty()) {
                 try {
-                    reservations.printReservation(r);
+                    reservations.printItems(hrs, false);
                 } catch (PrinterException e) {
                     return "reservation_print_failure";
                 }
@@ -1006,7 +776,7 @@ public class ReservationController extends ErrorHandlingController {
     }
 
     /**
-     * Show print marked reservations (including already printed).
+     * Show print marked holdings (including already printed).
      *
      * @param req The HTTP request object.
      * @param checked The marked reservations.
@@ -1016,7 +786,7 @@ public class ReservationController extends ErrorHandlingController {
                     method = RequestMethod.POST,
                     params = "printForce")
     public String batchProcessPrintForce(HttpServletRequest req,
-                                         @RequestParam(required = false) Set<Integer>
+                                         @RequestParam(required = false) List<String>
                                                  checked) {
         String qs = req.getQueryString() != null ?
                     "?" + req.getQueryString() : "";
@@ -1026,14 +796,20 @@ public class ReservationController extends ErrorHandlingController {
             return "redirect:/reservation/" + qs;
         }
 
-        for(int id : checked) {
-            Reservation r = reservations.getReservationById(id);
-            if (r != null) {
-                try {
-                    reservations.printReservation(r, true);
-                } catch (PrinterException e) {
-                    return "reservation_print_failure";
-                }
+        List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Reservation r = reservations.getReservationById(bulkActionIds.getRequestId());
+            for (HoldingReservation hr : r.getHoldingReservations()) {
+                if (hr.getHolding().getId() == bulkActionIds.getHoldingId())
+                    hrs.add(hr);
+            }
+        }
+
+        if (!hrs.isEmpty()) {
+            try {
+                reservations.printItems(hrs, true);
+            } catch (PrinterException e) {
+                return "reservation_print_failure";
             }
         }
 
@@ -1052,7 +828,7 @@ public class ReservationController extends ErrorHandlingController {
                     params = "changeStatus")
     @Secured("ROLE_RESERVATION_MODIFY")
     public String batchProcessChangeStatus(HttpServletRequest req,
-                                     @RequestParam(required=false) Set<Integer>
+                                     @RequestParam(required=false) List<String>
                                              checked,
                                      @RequestParam Reservation.Status
                                              newStatus) {
@@ -1064,8 +840,8 @@ public class ReservationController extends ErrorHandlingController {
             return "redirect:/reservation/" + qs;
         }
 
-        for (int id : checked) {
-            Reservation r = reservations.getReservationById(id);
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Reservation r = reservations.getReservationById(bulkActionIds.getRequestId());
 
             // Only change reservations which exist.
             if (r == null) {
@@ -1073,12 +849,51 @@ public class ReservationController extends ErrorHandlingController {
             }
 
             // Set the new status and holding statuses.
-            r.updateStatusAndAssociatedHoldingStatus(newStatus);
+            reservations.updateStatusAndAssociatedHoldingStatus(r, newStatus);
             reservations.saveReservation(r);
         }
 
         return "redirect:/reservation/" + qs;
     }
+
+    /**
+     * Change status of marked holdings.
+     * @param req The HTTP request object.
+     * @param checked The holdings marked.
+     * @param newHoldingStatus The status the selected holdings should be set to.
+     * @return The view to resolve.
+     */
+    @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "changeHoldingStatus")
+    @Secured("ROLE_RESERVATION_MODIFY")
+    public String batchProcessChangeHoldingStatus(HttpServletRequest req,
+                                                  @RequestParam(required = false) List<String> checked,
+                                                  @RequestParam Holding.Status newHoldingStatus) {
+        String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
+
+        // Simply redirect to previous page if no holdings were selected
+        if (checked == null) {
+            return "redirect:/reservation/" + qs;
+        }
+
+        for (BulkActionIds bulkActionIds : getIdsFromBulk(checked)) {
+            Holding h = records.getHoldingById(bulkActionIds.getHoldingId());
+            if (h == null) {
+                continue;
+            }
+
+            // Only update the status if the holding is active for the same reservation
+            Request request = requests.getActiveFor(h);
+            if ((request instanceof Reservation) &&
+                    (((Reservation) request).getId() == bulkActionIds.getRequestId())) {
+                // Set the new status
+                requests.updateHoldingStatus(h, newHoldingStatus);
+                records.saveHolding(h);
+            }
+        }
+
+        return "redirect:/reservation/" + qs;
+    }
+
     // }}}
     // {{{ Delete API
     /**
@@ -1129,26 +944,12 @@ public class ReservationController extends ErrorHandlingController {
      */
     @ModelAttribute("status_types")
     public Map<String, Reservation.Status> statusTypes() {
-        Map<String, Reservation.Status> data = new HashMap<String, Reservation.Status>();
+        Map<String, Reservation.Status> data = new LinkedHashMap<String, Reservation.Status>();
         data.put("PENDING", Reservation.Status.PENDING);
         data.put("ACTIVE", Reservation.Status.ACTIVE);
         data.put("COMPLETED", Reservation.Status.COMPLETED);
         return data;
     }
-
-	/**
-	 * Map representation of status types of reservations for use in views.
-	 * @return The map {string status, enum status}.
-	 */
-	@ModelAttribute("holding_status_types")
-	public Map<String, Holding.Status> holdingStatusTypes() {
-		Map<String, Holding.Status> data = new HashMap<String, Holding.Status>();
-		data.put("AVAILABLE", Holding.Status. AVAILABLE);
-		data.put("RESERVED", Holding.Status.RESERVED);
-		data.put("IN_USE", Holding.Status.IN_USE);
-		data.put("RETURNED", Holding.Status.RETURNED);
-		return data;
-	}
     // }}}
 
     // {{{ Mass Create
@@ -1267,71 +1068,6 @@ public class ReservationController extends ErrorHandlingController {
         model.addAttribute("holdingList", holdingList);
         return "reservation_mass_create";
     }
-
-
-
-    private List<Holding> searchMassCreate(Reservation newRes,
-                                           String searchTitle, String searchSignature) {
-
-        if (searchTitle == null && searchSignature == null)
-            return new ArrayList<Holding>();
-
-        CriteriaBuilder cb = records.getRecordCriteriaBuilder();
-        CriteriaQuery<Holding> cq = cb.createQuery(Holding.class);
-        Root<Holding> hRoot = cq.from(Holding.class);
-        cq.select(hRoot);
-        Join<Holding,Record> rRoot = hRoot.join(
-                    Holding_.record);
-        Join<Record,ExternalRecordInfo> eRoot = rRoot.join(Record_.externalInfo);
-
-
-        // Separate all keywords, also remove duplicates spaces so the empty
-        // string is not being searched for.
-        String[] lowSearchTitle = searchTitle != null ? searchTitle.toLowerCase()
-                .replaceAll("\\s+", " ").split(" ") : new String[0];
-        Expression<Boolean> titleWhere = null;
-        for (String s : lowSearchTitle) {
-            Expression<Boolean> titleSearch = cb.like(cb.lower(eRoot.<String>get(ExternalRecordInfo_.title)),"%" + s + "%");
-            titleWhere = titleWhere == null ? titleSearch : cb.and(titleWhere,
-                    titleSearch);
-        }
-
-        String[] lowSearchSignature = searchSignature != null ? searchSignature
-                .toLowerCase()
-                .replaceAll("\\s+", " ").split(" ") : new String[0];
-        Expression<Boolean> sigWhere = null;
-        for (String s : lowSearchSignature) {
-            Expression<Boolean> sigSearch = cb.like(cb.lower(hRoot.<String>get
-                    (Holding_.signature)),"%" + s + "%");
-            sigWhere = sigWhere == null ? sigSearch : cb.and(sigWhere,
-                    sigSearch);
-        }
-
-
-        Expression<Boolean> where = null;
-
-        if (sigWhere == null) {
-            where = titleWhere;
-        } else if (titleWhere == null) {
-            where = sigWhere;
-        } else {
-            where = cb.and(titleWhere, sigWhere);
-        }
-
-        // Exclude already included holdings
-        if (newRes != null && newRes.getHoldingReservations() != null) {
-            for (HoldingReservation hr : newRes.getHoldingReservations()) {
-                where = cb.and(where, cb.notEqual(hRoot.get(Holding_
-                        .id), hr.getHolding().getId()));
-            }
-        }
-        cq.where(where);
-       // cq.orderBy(cb.asc(eRoot.get(ExternalRecordInfo_.title)));
-        cq.distinct(true);
-
-
-        return records.listHoldings(cq);
-    }
     // }}}
 
 	/**
@@ -1345,27 +1081,10 @@ public class ReservationController extends ErrorHandlingController {
 	public String reservationMaterials(HttpServletRequest req, Model model) {
 		Map<String, String[]> p = req.getParameterMap();
 
-		Date from = new Date();
-		if (p.containsKey("from_date")) {
-			DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-			try {
-				from = df.parse(p.get("from_date")[0]);
-			}
-			catch (ParseException ex) {
-				throw new InvalidRequestException("Invalid date: " + p.get("from_date")[0]);
-			}
-		}
-
-        Date to = new Date();
-        if (p.containsKey("to_date")) {
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            try {
-                to = df.parse(p.get("to_date")[0]);
-            }
-            catch (ParseException ex) {
-                throw new InvalidRequestException("Invalid date: " + p.get("to_date")[0]);
-            }
-        }
+        Date from = getFromDateFilter(p);
+        from = (from != null) ? from : new Date();
+        Date to = getToDateFilter(p);
+        to = (to != null) ? to : new Date();
 
 		CriteriaBuilder cb = reservations.getHoldingReservationCriteriaBuilder();
 		CriteriaQuery<Tuple> cq = cb.createTupleQuery();
@@ -1386,10 +1105,10 @@ public class ReservationController extends ErrorHandlingController {
 		Expression<Long> numberOfRequests = cb.count(materialType);
 
 	    Expression<Boolean> fromExpr = cb.greaterThanOrEqualTo(reservationDate, from);
-        Expression<Boolean> toExpor = cb.lessThanOrEqualTo(reservationDate, to);
+        Expression<Boolean> toExpr = cb.lessThanOrEqualTo(reservationDate, to);
 
         cq.multiselect(materialType.alias("material"), numberOfRequests.alias("noRequests"));
-        cq.where(cb.and(fromExpr, toExpor));
+        cq.where(cb.and(fromExpr, toExpr));
 		cq.groupBy(eriRoot.<ExternalRecordInfo.MaterialType>get(ExternalRecordInfo_.materialType));
 		cq.orderBy(cb.desc(numberOfRequests));
 

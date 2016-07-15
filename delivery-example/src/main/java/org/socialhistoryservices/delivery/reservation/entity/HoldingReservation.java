@@ -16,7 +16,10 @@
 
 package org.socialhistoryservices.delivery.reservation.entity;
 
+import org.hibernate.annotations.Index;
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
+import org.socialhistoryservices.delivery.request.entity.Request;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -27,7 +30,7 @@ import javax.validation.constraints.Size;
  */
 @Entity
 @Table(name="holding_reservations")
-public class HoldingReservation {
+public class HoldingReservation extends HoldingRequest {
 
 
     /** The Reservation's id. */
@@ -44,6 +47,51 @@ public class HoldingReservation {
         return id;
     }
 
+    /** Whether the reservation holding has been printed or not. */
+    @Column(name="printed")
+    private boolean printed = false;
+
+    /**
+     * Set whether the reservation holding was printed or not.
+     * @param b True to consider the reservation holding to be printed at least once,
+     * false otherwise.
+     */
+    @Override
+    public void setPrinted(boolean b) {
+        printed = b;
+    }
+
+    /**
+     * Check if the reservation holding (is considered) to be printed at least once.
+     * @return True if the reservation holding was printed at least once,
+     * false otherwise.
+     */
+    @Override
+    public boolean isPrinted() {
+        return printed;
+    }
+
+    /** Is the holding completed for this reservation? */
+    @Column(name="completed", nullable=false)
+    @Index(name="holding_reservations_completed_idx")
+    private boolean completed = false;
+
+    /**
+     * Is the holding completed for this reservation?
+     * @return Whether this holding is completed for this reservation.
+     */
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    /**
+     * Set the holding completed for this reservation?
+     * @param completed Whether the holding has been completed for this reservation.
+     */
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
     /** The Reservation's name. */
     @Size(max=255)
     @Column(name="comment", nullable=true)
@@ -53,6 +101,7 @@ public class HoldingReservation {
      * Get the comment on a specific holding in a reservation.
      * @return The comment.
      */
+    @Override
     public String getComment() {
         return comment;
     }
@@ -61,6 +110,7 @@ public class HoldingReservation {
      * Set the comment on a specific holding in a reservation.
      * @param val The value to set the comment to.
      */
+    @Override
     public void setComment(String val) {
         comment = val;
     }
@@ -68,6 +118,7 @@ public class HoldingReservation {
     /** The RecordPermission's permission. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="reservation_id")
+    @Index(name = "holding_reservations_reservation_fk")
     private Reservation reservation;
 
     /**
@@ -86,15 +137,37 @@ public class HoldingReservation {
         this.reservation = res;
     }
 
+    /**
+     * Get the HoldingRequest's request.
+     *
+     * @return the HoldingRequest's request.
+     */
+    @Override
+    public Request getRequest() {
+        return getReservation();
+    }
+
+    /**
+     * Set the HoldingRequest's request.
+     *
+     * @param request
+     */
+    @Override
+    public void setRequest(Request request) {
+        setReservation((Reservation) request);
+    }
+
     /** The HoldingReservation's holding. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="holding_id")
+    @Index(name = "holding_reservations_holding_fk")
     private Holding holding;
 
     /**
      * Get the HoldingReservation's holding.
      * @return the HoldingReservation's holding.
      */
+    @Override
     public Holding getHolding() {
         return holding;
     }
@@ -103,11 +176,8 @@ public class HoldingReservation {
      * Set the HoldingReservation's holding.
      * @param h the HoldingReservation's holding.
      */
+    @Override
     public void setHolding(Holding h) {
         this.holding = h;
-    }
-
-    public void mergeWith(HoldingReservation other) {
-        setComment(other.getComment());
     }
 }

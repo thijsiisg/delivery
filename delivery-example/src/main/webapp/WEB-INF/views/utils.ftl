@@ -135,3 +135,20 @@ ${totalPages}
       </#list>
     }
 </#macro>
+
+<#macro holdingStatus holdingActiveRequests request holding>
+  <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! request/>
+  <@_ "holding.statusType.${holding.status?string}" "${holding.status?string}" />
+  <#if (holding.status != "AVAILABLE") && !holdingActiveRequest.equals(request)>
+    <em class="info">(<@_ "anotherRequest" "by another request"/>)</em>
+  </#if>
+</#macro>
+
+<#macro holdingPrice price completePrice noPages=1>
+    &euro; ${completePrice?string("0.00")}
+
+    <#if noPages gt 1>
+        <em class="info">(<@_ "price.page" "Price per page"/>: &euro; ${price?string("0.00")},
+            <@_ "no.pages" "Number of pages"/>: ${noPages?html})</em>
+    </#if>
+</#macro>

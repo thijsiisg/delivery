@@ -24,6 +24,12 @@
 <@_ "reservationSingle.title" "Reservation"/> ${reservation.id?c}
 </#assign>
 
+<#assign yes>
+    <@_ "yes" "Yes" />
+</#assign>
+<#assign no>
+    <@_ "no" "No" />
+</#assign>
 
 <#-- Build the page -->
 <@base "${title}">
@@ -42,14 +48,6 @@
     </#if>-->
 
 
-    <#assign yes>
-    <@_ "yes" "Yes" />
-    </#assign>
-    <#assign no>
-    <@_ "no" "No" />
-    </#assign>
-    <li><span><@_ "reservation.printed" "Printed"/></span> ${reservation.printed?string(yes, no)}</li>
-
     <#if reservation.comment??>
     <li><span><@_ "reservation.comment" "Comment"/></span>${reservation.comment?html}</li>
     </#if>
@@ -66,6 +64,7 @@
         <th>ID</th>
         <th><@_ "record.title" "Title"/></th>
         <th>PID</th>
+        <th><@_ "reservation.printed" "Printed"/></th>
         <th><@_ "holding.status" "Status"/></th>
       </tr>
     </thead>
@@ -81,8 +80,8 @@
             ${h.record.pid?html}
             </#if>
         </td>
-
-        <td><@_ "holding.statusType.${h.status?string}" h.status?string/></td>
+        <td>${hr.printed?string(yes, no)}</td>
+        <td><@holdingStatus holdingActiveRequests reservation h/></td>
       </tr>
       </#list>
     </tbody>

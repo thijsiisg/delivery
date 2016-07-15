@@ -17,7 +17,11 @@
 package org.socialhistoryservices.delivery.record.entity;
 
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Index;
 import org.hibernate.validator.constraints.NotBlank;
+import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
+import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
+import org.socialhistoryservices.delivery.reproduction.util.Pages;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import javax.persistence.*;
 import javax.validation.constraints.Min;
@@ -84,8 +88,9 @@ public class Holding {
         signature = sig;
 
 	    // Determine the usage restriction by checking the signature for patterns
-	    String checkSignature =  signature.trim().toLowerCase();
+	    String checkSignature = signature.trim().toLowerCase();
 	    if (    checkSignature.endsWith(".x") ||
+                checkSignature.endsWith("(missing)") ||
 			    checkSignature.startsWith("no circulation") ||
 			    checkSignature.startsWith("niet ter inzage")) {
 			this.setUsageRestriction(UsageRestriction.CLOSED);
@@ -179,6 +184,7 @@ public class Holding {
     /** The Holding's record. */
     @NotNull
     @ManyToOne
+    @Index(name="holdings_record_fk")
     @JoinColumn(name="record_id")
     private Record record;
 
@@ -241,7 +247,7 @@ public class Holding {
         this.status = status;
     }
 
-
+    @Index(name="holdings_external_info_fk")
     @OneToOne(cascade=CascadeType.ALL)
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     @JoinColumn(name="external_info_id")
@@ -276,6 +282,18 @@ public class Holding {
 		return holdingReservations;
 	}
 
+    @OneToMany(mappedBy="holding", cascade=CascadeType.ALL)
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    private List<HoldingReproduction> holdingReproductions;
+
+    public List<HoldingReproduction> getHoldingReproductions() {
+        return holdingReproductions;
+    }
+
+    public void setHoldingReproductions(List<HoldingReproduction> holdingReproductions) {
+        this.holdingReproductions = holdingReproductions;
+    }
+
     /**
      * Merge other's fields with this holding. All fields except ID,
      * signature and status are merged.
@@ -287,7 +305,8 @@ public class Holding {
         setFloor(other.getFloor());
         setShelf(other.getShelf());
         setUsageRestriction(other.getUsageRestriction());
-        setExternalInfo(other.getExternalInfo());
+
+        getExternalInfo().mergeWith(other.getExternalInfo());
     }
 
     /**
@@ -297,6 +316,45 @@ public class Holding {
         setStatus(Status.AVAILABLE);
         setUsageRestriction(UsageRestriction.OPEN);
 	    setExternalInfo(ExternalHoldingInfo.getEmptyExternalInfo());
+    }
+
+    /**
+     * Determines the PID for the holding, based on the barcode.
+     * @return The PID for this holding
+     */
+    public String determinePid() {
+        return "10622/" + externalInfo.getBarcode();
+    }
+
+    /**
+     * Returns whether customers requesting a reproduction of this holding should choose a custom reproduction.
+     * @return Whether this holding only allows a custom reproduction.
+     */
+    public boolean allowOnlyCustomReproduction() {
+        return "KNAW".equals(externalInfo.getShelvingLocation());
+    }
+
+    /**
+     * Returns whether the holding accepts the given standard reproduction option.
+     * @param standardOption The standard reproduction option.
+     * @return Whether the holding accepts the given standard reproduction option.
+     */
+    public boolean acceptsReproductionOption(ReproductionStandardOption standardOption) {
+        // Material types have to match
+        if (record.getExternalInfo().getMaterialType() != standardOption.getMaterialType())
+            return false;
+
+        // In case of books, the reproduction option is based on the number of pages
+        if (record.getExternalInfo().getMaterialType() == ExternalRecordInfo.MaterialType.BOOK)
+            return record.getPages().containsNumberOfPages();
+
+        // In case of visuals, it matters whether it is a poster or not
+        if (record.getExternalInfo().getMaterialType() == ExternalRecordInfo.MaterialType.VISUAL) {
+            boolean genresContainsPoster = record.getExternalInfo().getGenresSet().contains("poster");
+            return standardOption.isPoster() ? genresContainsPoster : !genresContainsPoster;
+        }
+
+        return true;
     }
 
     public String toString() {

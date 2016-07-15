@@ -26,14 +26,14 @@
 
   <http auto-config="true" use-expressions="true">
     <form-login
-        login-page="/user/login"
-        authentication-failure-url="/user/login?error=true"
-        default-target-url="/"/>
+            login-page="/user/login"
+            authentication-failure-url="/user/login?error=true"
+            default-target-url="/"/>
 
     <logout
-        invalidate-session="true"
-        logout-success-url="/user/logout-success"
-        logout-url="/user/logout"/>
+            invalidate-session="true"
+            logout-success-url="/user/logout-success"
+            logout-url="/user/logout"/>
   </http>
 
   <authentication-manager>

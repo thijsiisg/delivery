@@ -18,11 +18,13 @@ package org.socialhistoryservices.delivery.record.dao;
 
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Record;
+import org.socialhistoryservices.delivery.record.entity.Record_;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.util.List;
 
 /**
@@ -104,6 +106,27 @@ public class RecordDAOImpl implements RecordDAO {
      */
     public List<Record> list(CriteriaQuery<Record> query) {
         return entityManager.createQuery(query).getResultList();
+    }
+
+    /**
+     * List all Records.
+     * @param offset The offset.
+     * @param maxResults The max number of records to fetch.
+     * @return A list of Records.
+     */
+    public List<Record> listIterable(int offset, int maxResults) {
+        CriteriaBuilder cb = getCriteriaBuilder();
+        CriteriaQuery<Record> query = cb.createQuery(Record.class);
+
+        Root<Record> rRoot = query.from(Record.class);
+        query.select(rRoot);
+        query.orderBy(cb.asc(rRoot.get(Record_.id)));
+
+        return entityManager
+                .createQuery(query)
+                .setFirstResult(offset)
+                .setMaxResults(maxResults)
+                .getResultList();
     }
 
     /**
