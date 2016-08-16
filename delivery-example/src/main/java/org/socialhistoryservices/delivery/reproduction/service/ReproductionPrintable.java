@@ -34,6 +34,11 @@ public class ReproductionPrintable extends RequestPrintable {
         drawRepro(drawInfo);
         drawId(drawInfo);
         drawCreationDate(drawInfo);
+
+        drawInfo.setOffsetY(drawInfo.getOffsetY() + MIN_LINE_HEIGHT);
+        drawName(drawInfo);
+        drawEmail(drawInfo);
+
         drawReproductionInformation(drawInfo);
     }
 
@@ -70,6 +75,16 @@ public class ReproductionPrintable extends RequestPrintable {
         HoldingReproduction hr = (HoldingReproduction) holdingRequest;
         String idLabel = getMessage("reproduction.id", "Reproduction");
         drawKeyValue(drawInfo, idLabel, String.valueOf(hr.getReproduction().getId()));
+    }
+
+    /**
+     * Draws the email address of the person making the request.
+     *
+     * @param drawInfo Draw offsets.
+     */
+    private void drawEmail(DrawInfo drawInfo) {
+        String nameLabel = getMessage("request.email", "Email");
+        drawKeyValue(drawInfo, nameLabel, holdingRequest.getRequest().getEmail(), italicFont, true);
     }
 
     /**
