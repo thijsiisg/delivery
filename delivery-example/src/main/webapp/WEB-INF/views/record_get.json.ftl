@@ -30,6 +30,7 @@ ${callback}([
     </#if>
     "restrictionType": "${record.realRestrictionType}",
     "publicationStatus": "${record.publicationStatus}",
+    "openForReproduction": ${record.openForReproduction?c},
      <#if record.copyright??>
       "copyright": "${record.copyright?js_string}",
      </#if>
