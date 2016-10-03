@@ -99,7 +99,7 @@ public class PayWayService {
             }
         } catch (IOException ioe) {
             logger.debug("send(): PayWay connection failed", ioe);
-            throw new InvalidPayWayMessageException(returnMessage);
+            throw new InvalidPayWayMessageException(returnMessage, ioe);
         } finally {
             try {
                 httpClient.close();
