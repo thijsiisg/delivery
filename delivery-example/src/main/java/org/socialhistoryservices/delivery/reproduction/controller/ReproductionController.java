@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
@@ -974,7 +975,7 @@ public class ReproductionController extends AbstractRequestController {
      * A one time PayWay response after the payment has been made, in our case, to send an email.
      */
     @RequestMapping(value = "/order/accept", method = RequestMethod.GET, params = "POST")
-    public HttpStatus accept(@RequestParam Map<String, String> requestParams) {
+    public ResponseEntity<String> accept(@RequestParam Map<String, String> requestParams) {
         PayWayMessage payWayMessage = new PayWayMessage(requestParams);
 
         LOGGER.debug(String.format(
@@ -984,7 +985,7 @@ public class ReproductionController extends AbstractRequestController {
         if (!payWayService.isValid(payWayMessage)) {
             LOGGER.error(String.format(
                     "/reproduction/order/accept : Invalid signature for message %s", payWayMessage));
-            return HttpStatus.BAD_REQUEST;
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
 
         // Check the reproduction ...
@@ -993,7 +994,7 @@ public class ReproductionController extends AbstractRequestController {
         if (reproduction == null) {
             LOGGER.error(String.format(
                     "/reproduction/order/accept : Reproduction not found for message %s", payWayMessage));
-            return HttpStatus.BAD_REQUEST;
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
 
         // ... and the order
@@ -1003,7 +1004,7 @@ public class ReproductionController extends AbstractRequestController {
             LOGGER.error(String.format(
                     "/reproduction/order/accept : Reproduction order id does not match order id in message %s",
                     payWayMessage));
-            return HttpStatus.BAD_REQUEST;
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
 
         // Everything is fine, change status and send email to customer
@@ -1011,7 +1012,7 @@ public class ReproductionController extends AbstractRequestController {
         changeStatusAfterPayment(reproduction);
 
         reproductions.saveReproduction(reproduction);
-        return HttpStatus.OK;
+        return new ResponseEntity<String>(HttpStatus.OK);
     }
 
     /**
