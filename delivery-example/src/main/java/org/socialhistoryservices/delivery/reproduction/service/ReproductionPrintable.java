@@ -38,8 +38,6 @@ public class ReproductionPrintable extends RequestPrintable {
         drawInfo.setOffsetY(drawInfo.getOffsetY() + MIN_LINE_HEIGHT);
         drawName(drawInfo);
         drawEmail(drawInfo);
-
-        drawReproductionInformation(drawInfo);
     }
 
     /**
@@ -54,6 +52,8 @@ public class ReproductionPrintable extends RequestPrintable {
         drawHoldingPid(drawInfo, holdingRequest.getHolding().determinePid());
         drawType(drawInfo, holdingRequest.getHolding().getSignature());
         drawLocationInfo(drawInfo);
+
+        drawReproductionInformation(drawInfo);
     }
 
     /**
@@ -104,8 +104,6 @@ public class ReproductionPrintable extends RequestPrintable {
             drawKeyValue(drawInfo, null, getMessage("reproduction.customReproduction.backend", "Custom reproduction"),
                     boldFont, false);
             drawKeyValue(drawInfo, null, hr.getCustomReproductionCustomer(), italicFont, false);
-            drawInfo.setOffsetY(drawInfo.getOffsetY() + MIN_LINE_HEIGHT);
-            drawKeyValue(drawInfo, null, hr.getCustomReproductionReply(), italicFont, false);
         }
     }
 

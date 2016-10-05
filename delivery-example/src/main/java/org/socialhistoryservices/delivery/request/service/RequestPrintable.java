@@ -402,7 +402,7 @@ public abstract class RequestPrintable implements Printable {
      * @param value    The value to draw.
      */
     private void drawMaterialType(DrawInfo drawInfo, ExternalRecordInfo.MaterialType value) {
-        String typeLabel = getMessage("record.externalInfo.materialType", "Material Type");
+        String typeLabel = getMessage("record.externalInfo.materialType", "Material");
         String val = getMessage("record.externalInfo.materialType." + value, "");
         drawKeyValue(drawInfo, typeLabel, val);
     }
