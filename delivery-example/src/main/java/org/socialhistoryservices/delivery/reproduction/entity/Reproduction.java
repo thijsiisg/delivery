@@ -602,7 +602,7 @@ public class Reproduction extends Request {
      * @return If this reproduction is for free.
      */
     public boolean isForFree() {
-        return (getTotalPrice().compareTo(BigDecimal.ZERO) == 0);
+        return (getTotalPriceWithDiscount().compareTo(BigDecimal.ZERO) == 0);
     }
 
     /**
