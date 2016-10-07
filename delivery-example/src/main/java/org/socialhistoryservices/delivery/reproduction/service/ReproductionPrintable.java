@@ -67,13 +67,13 @@ public class ReproductionPrintable extends RequestPrintable {
     }
 
     /**
-     * Draws the name of the person making the request.
+     * Draws the number (id) of the reproduction.
      *
      * @param drawInfo Draw offsets.
      */
     private void drawId(DrawInfo drawInfo) {
         HoldingReproduction hr = (HoldingReproduction) holdingRequest;
-        String idLabel = getMessage("reproduction.id", "Reproduction");
+        String idLabel = getMessage("reproduction.short.id", "Repr. nr");
         drawKeyValue(drawInfo, idLabel, String.valueOf(hr.getReproduction().getId()));
     }
 
