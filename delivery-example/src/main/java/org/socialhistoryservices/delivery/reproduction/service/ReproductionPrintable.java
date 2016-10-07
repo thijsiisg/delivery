@@ -1,6 +1,9 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
+import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
+import org.socialhistoryservices.delivery.reproduction.entity.Order;
+import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
 import org.socialhistoryservices.delivery.request.service.RequestPrintable;
 import org.springframework.context.MessageSource;
@@ -34,6 +37,7 @@ public class ReproductionPrintable extends RequestPrintable {
         drawRepro(drawInfo);
         drawId(drawInfo);
         drawCreationDate(drawInfo);
+        drawPayed(drawInfo);
 
         drawInfo.setOffsetY(drawInfo.getOffsetY() + MIN_LINE_HEIGHT);
         drawName(drawInfo);
@@ -67,14 +71,32 @@ public class ReproductionPrintable extends RequestPrintable {
     }
 
     /**
-     * Draws the name of the person making the request.
+     * Draws the number (id) of the reproduction.
      *
      * @param drawInfo Draw offsets.
      */
     private void drawId(DrawInfo drawInfo) {
         HoldingReproduction hr = (HoldingReproduction) holdingRequest;
-        String idLabel = getMessage("reproduction.id", "Reproduction");
+        String idLabel = getMessage("reproduction.short.id", "Repr. nr");
         drawKeyValue(drawInfo, idLabel, String.valueOf(hr.getReproduction().getId()));
+    }
+
+    /**
+     * Draws the number (id) of the reproduction.
+     *
+     * @param drawInfo Draw offsets.
+     */
+    private void drawPayed(DrawInfo drawInfo) {
+        HoldingReproduction hr = (HoldingReproduction) holdingRequest;
+        Order order = hr.getReproduction().getOrder();
+        String idLabel = getMessage("reproduction.payed", "Payed?");
+
+        if ((order != null) && (hr.getReproduction().getStatus().ordinal() >= Reproduction.Status.ACTIVE.ordinal())) {
+            drawKeyValue(drawInfo, idLabel, getMessage("yes", "Yes") + " (#" + String.valueOf(order.getId()) + ")");
+        }
+        else {
+            drawKeyValue(drawInfo, idLabel, getMessage("no", "No"));
+        }
     }
 
     /**
