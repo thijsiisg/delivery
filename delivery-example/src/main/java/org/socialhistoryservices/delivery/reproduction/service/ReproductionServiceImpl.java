@@ -78,6 +78,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param obj Reproduction to add.
      */
     public void addReproduction(Reproduction obj) {
+        log.warn("Adding reproduction for name " + obj.getName() + " and id " + obj.getId());
+
         // Make sure the holdings get set to the correct status.
         updateStatusAndAssociatedHoldingStatus(obj, obj.getStatus());
 
@@ -115,6 +117,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param obj Reproduction to save.
      */
     public void saveReproduction(Reproduction obj) {
+        log.warn("Saving reproduction for name " + obj.getName() + " and id " + obj.getId());
         reproductionDAO.save(obj);
     }
 
