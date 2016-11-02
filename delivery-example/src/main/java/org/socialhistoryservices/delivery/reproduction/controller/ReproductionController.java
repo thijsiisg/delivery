@@ -1080,6 +1080,7 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("original", r);
         model.addAttribute("reproduction", r);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(r.getHoldings()));
+        model.addAttribute("emailResponses", createEmailResponse(r));
 
         return "reproduction_mass_create";
     }
@@ -1141,6 +1142,7 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("original", originalReproduction);
         model.addAttribute("reproduction", reproduction);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(reproduction.getHoldings()));
+        model.addAttribute("emailResponses", createEmailResponse(reproduction));
 
         return "reproduction_mass_create";
     }
@@ -1273,6 +1275,32 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
         return "reproduction_mass_create";
+    }
+
+    /**
+     * Creates an email response for custom reproductions.
+     *
+     * @param reproduction The reproduction.
+     * @return A map with the email responses for the custom reproductions.
+     */
+    private Map<String, String> createEmailResponse(Reproduction reproduction) {
+        Map<String, String> emailResponses = new HashMap<String, String>();
+        for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {
+            if ((hr.getCustomReproductionCustomer() != null) && !hr.getCustomReproductionCustomer().isEmpty()) {
+                String response = reproduction.getCustomerName() + "\n";
+                response += msgSource.getMessage("reproductionMail.reproductionId", null, "", reproduction.getRequestLocale());
+                response += ": " + reproduction.getId() + "\n\n";
+                response += msgSource.getMessage("record.title", null, "", reproduction.getRequestLocale());
+                response += ": " + hr.getHolding().getRecord().getTitle() + "\n";
+                response += msgSource.getMessage("record.externalInfo.author", null, "", reproduction.getRequestLocale());
+                response += ": " + hr.getHolding().getRecord().getExternalInfo().getAuthor() + "\n\n";
+                response += msgSource.getMessage("reproduction.customReproductionCustomer", null, "", reproduction.getRequestLocale());
+                response += ":\n" + hr.getCustomReproductionCustomer();
+
+                emailResponses.put(String.valueOf(hr.getId()), response.trim());
+            }
+        }
+        return emailResponses;
     }
 
     /**
