@@ -3,6 +3,9 @@
 <@_ "reproductionMail.pendingSubjectReadingRoomMessage" "A customer has requested a new reproduction and is waiting for an offer from the reading room." />
 
 <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
+<@_ "reproductionMail.customerName" "Customer" />: ${reproduction.customerName}
+<@_ "reproductionMail.customerEmail" "E-mail" />: ${reproduction.customerEmail}
+URL: ${prop_urlSelf}/reproduction/${reproduction.id?c}/edit
 
 --- <@_ "reproduction.records" "All items"/> ---
 <#list reproduction.holdingReproductions as hr>

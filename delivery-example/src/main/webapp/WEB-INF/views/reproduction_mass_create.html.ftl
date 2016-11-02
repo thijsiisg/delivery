@@ -136,6 +136,14 @@
               <@textarea_nolabel "reproduction.holdingReproductions[${i}].customReproductionReply" "customReproductionReply" />
             </label>
           </li>
+
+          <#if emailResponses?? && emailResponses[hr.id?c]??>
+            <li>
+              <a href="mailto:${reproduction.customerEmail}?SUBJECT=<@_ "reproduction.customReproductionReplySubject" "Reply on your wish"/>&BODY=${emailResponses[hr.id?c]?url}">
+                <em><@_ "reproduction.customReproductionReplyByEmail" "Reply on wish through email"/></em>
+              </a>
+            </li>
+          </#if>
         </ul>
       </li>
 
