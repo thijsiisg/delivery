@@ -384,6 +384,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     @Async
     public void autoPrintReproduction(final Reproduction reproduction) {
         try {
+            log.warn("Auto print reproduction for name " + reproduction.getName() + " and id " + reproduction.getId());
+
             if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date()))
                 printReproduction(reproduction);
         } catch (PrinterException e) {
