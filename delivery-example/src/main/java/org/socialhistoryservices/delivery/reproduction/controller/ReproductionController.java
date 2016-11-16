@@ -10,6 +10,7 @@ import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.service.*;
+import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
@@ -23,6 +24,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -648,7 +650,7 @@ public class ReproductionController extends AbstractRequestController {
                 checkCaptcha(req, result, model); // Make sure a Captcha was entered correctly
                 reproductions.createOrEdit(reproduction, null, result, true);
                 if (!result.hasErrors() && !reproduction.getHoldingReproductions().isEmpty()) {
-                    reproductions.autoPrintReproduction(reproduction);
+                    autoPrintReproduction(reproduction);
                     return determineNextStep(reproduction, model);
                 }
             }
@@ -769,6 +771,25 @@ public class ReproductionController extends AbstractRequestController {
 
             if (!availableOptions.isEmpty())
                 hr.setStandardOption(availableOptions.get(0));
+        }
+    }
+
+    /**
+     * Auto print all holdings of the given reproduction, if possible.
+     * <p/>
+     * Run this in a separate thread, we do nothing on failure so in this case this is perfectly possible.
+     *
+     * @param reproduction The reproduction.
+     */
+    @Async
+    private void autoPrintReproduction(final Reproduction reproduction) {
+        try {
+            LOGGER.warn("Auto print reproduction for name " + reproduction.getName() + " and id " + reproduction.getId());
+
+            if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date()))
+                reproductions.printReproduction(reproduction);
+        } catch (PrinterException e) {
+            // Do nothing, let an employee print it later on
         }
     }
 
