@@ -52,7 +52,7 @@ public class ReproductionDAOImpl implements ReproductionDAO {
      *
      * @param obj Reproduction to add.
      */
-    public void add(Reproduction obj) {
+    public synchronized void add(Reproduction obj) {
         entityManager.persist(obj);
     }
 

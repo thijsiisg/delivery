@@ -49,7 +49,7 @@ public class ReservationDAOImpl implements ReservationDAO {
      * Add a Reservation to the database.
      * @param obj Reservation to add.
      */
-    public void add(Reservation obj) {
+    public synchronized void add(Reservation obj) {
         entityManager.persist(obj);
     }
 
