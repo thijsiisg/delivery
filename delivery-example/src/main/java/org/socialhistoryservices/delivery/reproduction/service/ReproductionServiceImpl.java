@@ -78,8 +78,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param obj Reproduction to add.
      */
     public void addReproduction(Reproduction obj) {
-        log.warn("Adding reproduction for name " + obj.getName() + " and id " + obj.getId());
-
         // Make sure the holdings get set to the correct status.
         updateStatusAndAssociatedHoldingStatus(obj, obj.getStatus());
 
@@ -117,7 +115,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param obj Reproduction to save.
      */
     public void saveReproduction(Reproduction obj) {
-        log.warn("Saving reproduction for name " + obj.getName() + " and id " + obj.getId());
         reproductionDAO.save(obj);
     }
 
@@ -384,9 +381,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     @Async
     public void autoPrintReproduction(final Reproduction reproduction) {
         try {
-            log.warn("Auto print reproduction for name " + reproduction.getName() + " and id " + reproduction.getId());
-
-            if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date()))
+            // TODO (Disabled for now) if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date()))
                 printReproduction(reproduction);
         } catch (PrinterException e) {
             // Do nothing, let an employee print it later on
@@ -505,6 +500,16 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
             // Now remove unavailable holdings from the request
             removeUnavailbleHoldings(newReproduction);
+        }
+        else {
+            // Otherwise merge the SOR availability information
+            for (HoldingReproduction hrNew : newReproduction.getHoldingReproductions()) {
+                for (HoldingReproduction hrOld : oldReproduction.getHoldingReproductions()) {
+                    if (hrNew.getHolding().getId() == hrOld.getHolding().getId()) {
+                        hrNew.setInSor(hrOld.isInSor());
+                    }
+                }
+            }
         }
 
         // Only continue if there are any holdings left, otherwise simply remove the reproduction request

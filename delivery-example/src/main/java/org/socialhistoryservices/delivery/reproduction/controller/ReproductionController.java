@@ -784,9 +784,7 @@ public class ReproductionController extends AbstractRequestController {
     @Async
     private void autoPrintReproduction(final Reproduction reproduction) {
         try {
-            LOGGER.warn("Auto print reproduction for name " + reproduction.getName() + " and id " + reproduction.getId());
-
-            if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date()))
+            // TODO (Disabled for now) if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date()))
                 reproductions.printReproduction(reproduction);
         } catch (PrinterException e) {
             // Do nothing, let an employee print it later on
