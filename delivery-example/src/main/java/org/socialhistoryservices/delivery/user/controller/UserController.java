@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -108,9 +109,10 @@ public class UserController extends ErrorHandlingController {
             throw new InvalidRequestException("Invalid user id specified.");
         }
 
-        User currentUser = (User)SecurityContextHolder.getContext()
+        UserDetails currentUserDetails = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
+        User currentUser = users.getUserByName(currentUserDetails.getUsername());
 
         if (userObj.getId() == currentUser.getId()) {
             throw new InvalidRequestException("Cannot modify own user groups.");
