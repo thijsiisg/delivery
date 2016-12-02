@@ -175,7 +175,7 @@
                 <td class="price_column">&euro; ${reproduction.adminstrationCosts?string("0.00")}</td>
                 <td class="price_column">&euro; -${reproduction.adminstrationCostsDiscount?string("0.00")}</td>
                 <td class="price_column">&euro; ${reproduction.adminstrationCostsWithDiscount?string("0.00")}</td>
-                <td class="price_column">&euro; ${0?string("0.00")} (0&percnt;)</td>
+                <td class="price_column">&euro; ${reproduction.adminstrationCostsBtwPrice?string("0.00")} (${reproduction.adminstrationCostsBtwPercentage}&percnt;)</td>
                 <td>&nbsp;</td>
               </tr>
             </#if>
