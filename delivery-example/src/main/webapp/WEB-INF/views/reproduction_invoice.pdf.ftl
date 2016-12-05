@@ -168,7 +168,7 @@
             </fo:table-cell>
             <fo:table-cell padding="1mm">
               <fo:block>
-                &#8364; ${0?string("0.00")} (0&#37;)
+                &#8364; ${reproduction.adminstrationCostsBtwPrice?string("0.00")} (${reproduction.adminstrationCostsBtwPercentage}&#37;)
               </fo:block>
             </fo:table-cell>
             <fo:table-cell padding="1mm">

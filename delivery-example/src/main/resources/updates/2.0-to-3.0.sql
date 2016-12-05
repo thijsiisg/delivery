@@ -115,6 +115,8 @@ CREATE TABLE reproductions
   id integer NOT NULL,
   adminstrationcosts numeric(7,2) NOT NULL,
   adminstrationcostsdiscount numeric(7,2) NOT NULL,
+  adminstrationcostsbtwpercentage integer,
+  adminstrationcostsbtwprice numeric(7,2),
   comment character varying(255),
   creation_date timestamp without time zone NOT NULL,
   customeremail character varying(255) NOT NULL,
@@ -133,6 +135,7 @@ CREATE TABLE reproductions
   REFERENCES orders (id) MATCH SIMPLE
   ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT reproductions_adminstrationcosts_check CHECK (adminstrationcosts >= 0::numeric),
+  CONSTRAINT reproductions_adminstrationcostsbtwpercentage_check CHECK (adminstrationcostsbtwpercentage <= 100),
   CONSTRAINT reproductions_adminstrationcostsdiscount_check CHECK (adminstrationcostsdiscount >= 0::numeric),
   CONSTRAINT reproductions_discount_percentage_check CHECK (discount_percentage <= 100)
 )

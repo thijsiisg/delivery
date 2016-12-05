@@ -306,6 +306,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         reproduction.setDiscountPercentage(other.getDiscountPercentage());
         reproduction.setAdminstrationCosts(other.getAdminstrationCosts());
         reproduction.setAdminstrationCostsDiscount(other.getAdminstrationCostsDiscount());
+        reproduction.setAdminstrationCostsBtwPercentage(other.getAdminstrationCostsBtwPercentage());
+        reproduction.setAdminstrationCostsBtwPrice(other.getAdminstrationCostsBtwPrice());
         reproduction.setRequestLocale(other.getRequestLocale());
         reproduction.setDateHasOrderDetails(other.getDateHasOrderDetails());
         reproduction.setComment(other.getComment());
@@ -988,6 +990,9 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         reproduction.setAdminstrationCostsDiscount(
                 BigDecimalUtils.getPercentageOfAmount(adminstrationCosts, discountPercentage)
         );
+        reproduction.setAdminstrationCostsBtwPercentage(btwPercentage);
+        reproduction.setAdminstrationCostsBtwPrice(
+            BigDecimalUtils.getBtwAmount(reproduction.getAdminstrationCostsWithDiscount(), btwPercentage));
 
         // Set the price and delivery time for each item
         for (HoldingReproduction hr : reproduction.getHoldingReproductions()) {

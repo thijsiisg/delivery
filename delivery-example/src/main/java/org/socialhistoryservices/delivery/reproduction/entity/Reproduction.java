@@ -4,6 +4,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.reproduction.util.BigDecimalUtils;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -344,6 +345,53 @@ public class Reproduction extends Request {
         this.adminstrationCostsDiscount = discount.setScale(2);
     }
 
+    @Min(0)
+    @Max(100)
+    @Column(name = "adminstrationCostsBtwPercentage")
+    private Integer adminstrationCostsBtwPercentage;
+
+    /**
+     * Get the BTW percentage of the administration costs.
+     *
+     * @return the BTW percentage of the administration costs.
+     */
+    public Integer getAdminstrationCostsBtwPercentage() {
+        return adminstrationCostsBtwPercentage;
+    }
+
+    /**
+     * Set the BTW percentage of the administration costs.
+     *
+     * @param adminstrationCostsBtwPercentage the BTW percentage of the administration costs.
+     */
+    public void setAdminstrationCostsBtwPercentage(Integer adminstrationCostsBtwPercentage) {
+        this.adminstrationCostsBtwPercentage = adminstrationCostsBtwPercentage;
+    }
+
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "adminstrationCostsBtwPrice")
+    private BigDecimal adminstrationCostsBtwPrice;
+
+    /**
+     * Get the administration costs price for BTW.
+     *
+     * @return the administration costs price for BTW.
+     */
+    public BigDecimal getAdminstrationCostsBtwPrice() {
+        return adminstrationCostsBtwPrice;
+    }
+
+    /**
+     * Set the administration costs price for BTW.
+     *
+     * @param adminstrationCostsBtwPrice the administration costs price for BTW.
+     */
+    public void setAdminstrationCostsBtwPrice(BigDecimal adminstrationCostsBtwPrice) {
+        if (adminstrationCostsBtwPrice != null)
+            adminstrationCostsBtwPrice = adminstrationCostsBtwPrice.setScale(2);
+        this.adminstrationCostsBtwPrice = adminstrationCostsBtwPrice;
+    }
+
     /**
      * The discount specified for this reproduction.
      */
@@ -579,6 +627,14 @@ public class Reproduction extends Request {
             btwTotals.put(hr.getBtwPercentage().toString(), totalBtwPrice.setScale(2));
         }
 
+        // Administration costs includes BTW as well
+        BigDecimal totalBtwPrice = BigDecimal.ZERO;
+        if (btwTotals.containsKey(getAdminstrationCostsBtwPercentage().toString()))
+            totalBtwPrice = btwTotals.get(getAdminstrationCostsBtwPercentage().toString());
+
+        totalBtwPrice = totalBtwPrice.add(getAdminstrationCostsBtwPrice());
+        btwTotals.put(getAdminstrationCostsBtwPercentage().toString(), totalBtwPrice.setScale(2));
+
         return btwTotals;
     }
 
@@ -659,6 +715,8 @@ public class Reproduction extends Request {
         setDiscountPercentage(0);
         setAdminstrationCosts(BigDecimal.ZERO);
         setAdminstrationCostsDiscount(BigDecimal.ZERO);
+        setAdminstrationCostsBtwPercentage(0);
+        setAdminstrationCostsBtwPrice(BigDecimal.ZERO);
         setRequestLocale(LocaleContextHolder.getLocale());
         holdingReproductions = new ArrayList<HoldingReproduction>();
         token = UUID.randomUUID().toString();
