@@ -49,6 +49,8 @@
   </li>
 </ol>
 
+<div class="errors"><@_html "holidays.message" "" /></div>
+
 <section>
   <@form "" "reproduction" "create">
     <heading>
