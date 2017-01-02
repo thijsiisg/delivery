@@ -50,8 +50,6 @@ $(document).ready(function(){
 <@body>
 <h1>${title}</h1>
 
-<div class="errors"><@_html "holidays.message" "" /></div>
-
 <section>
     <@form "" "reservation" "create">
   <heading>
