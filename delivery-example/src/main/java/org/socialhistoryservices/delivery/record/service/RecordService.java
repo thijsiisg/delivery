@@ -77,13 +77,6 @@ public interface RecordService {
     public Record getRecordById(int id);
 
     /**
-     * Resolve the most specific matching the given Pid.
-     * @param pid Fully qualified Pid to retrieve.
-     * @return The Record most specifically matching the Pid. Null if none exist.
-     */
-    public Record resolveRecordByPid(String pid);
-
-    /**
      * Retrieve the Record matching the given pid.
      * @param pid Pid of the Record to retrieve.
      * @return The Record matching the pid. Null if none exist.

@@ -498,9 +498,7 @@ public class Record {
         }
 
         setEmbargo(other.getEmbargo());
-        setRestrictionType(other.getRestrictionType());
-        
-    }
+        setRestrictionType(other.getRestrictionType());  }
 
     /**
      * Add/Update the holdings provided by the provided record.

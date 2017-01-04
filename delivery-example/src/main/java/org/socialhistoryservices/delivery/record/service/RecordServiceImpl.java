@@ -27,12 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 
@@ -62,16 +57,12 @@ public class RecordServiceImpl implements RecordService {
     @Autowired
     private RecordLookupService lookup;
 
-    @Autowired
-    private PlatformTransactionManager platformTransactionManager;
-
     private static final Log LOGGER = LogFactory.getLog(RecordServiceImpl.class);
 
     /**
      * Add a Record to the database.
      * @param obj Record to add.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void addRecord(Record obj) {
         recordDAO.add(obj);
     }
@@ -124,31 +115,6 @@ public class RecordServiceImpl implements RecordService {
         query.where(builder.equal(recRoot.get(Record_.pid), pid));
 
         return getRecord(query);
-    }
-
-    /**
-     * Resolve the most specific matching the given Pid.
-     * @param pid Fully qualified Pid to retrieve.
-     * @return The Record most specifically matching the Pid.
-     */
-    public Record resolveRecordByPid(String pid) {
-        Record root = getRecordByPid(pid);
-        if (root != null) {
-            updateExternalInfo(root, false);
-            saveRecord(root);
-            return root;
-        }
-        String itemSeparator = properties.getProperty("prop_itemSeparator", ".");
-        while (pid.contains(itemSeparator)) {
-            pid = pid.substring(0, pid.lastIndexOf(itemSeparator));
-            Record rec = getRecordByPid(pid);
-            if (rec != null) {
-                updateExternalInfo(rec, false);
-                saveRecord(rec);
-                return rec;
-            }
-        }
-        return null;
     }
 
     /**
@@ -419,13 +385,23 @@ public class RecordServiceImpl implements RecordService {
      * in the API.
      */
     public Record createRecordByPid(String pid) throws NoSuchPidException {
-        // 1). Assumed is provided pid is not yet in the system's local
-        // database.
+        Record parent = null;
+        String itemSeparator = properties.getProperty("prop_itemSeparator");
+        if (pid.contains(itemSeparator)) {
+            int idx = pid.lastIndexOf(itemSeparator);
+            String parentPid = pid.substring(0, idx);
+
+            parent = getRecordByPid(parentPid);
+            if (parent == null) {
+                parent = createRecordByPid(parentPid);
+                addRecord(parent);
+            }
+        }
 
         Record r = new Record();
         r.setPid(pid);
         r.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
-        r.setParent(this.resolveRecordByPid(pid)); // Works because of 1).
+        r.setParent(parent);
         if (r.getParent() != null) {
             r.setRestrictionType(Record.RestrictionType.INHERIT);
         }

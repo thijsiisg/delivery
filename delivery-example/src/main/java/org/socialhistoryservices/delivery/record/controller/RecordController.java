@@ -95,7 +95,7 @@ public class RecordController extends ErrorHandlingController {
         List<Record> recs = new ArrayList<Record>();
         for (String pid : pids) {
             synchronized (this) { // Issue #139: Make sure that when A enters, B has to wait, and will detect the insert into the database by B when entering.
-                Record rec = records.resolveRecordByPid(pid);
+                Record rec = records.getRecordByPid(pid);
                 if (rec == null) { // Issue #108
                     // Try creating the record.
                     try {
@@ -106,6 +106,11 @@ public class RecordController extends ErrorHandlingController {
                         // below.
                     }
                 }
+                else {
+                    records.updateExternalInfo(rec, false);
+                    records.saveRecord(rec);
+                }
+
                 if (rec != null) {
                     recs.add(rec);
                 }
@@ -258,7 +263,7 @@ public class RecordController extends ErrorHandlingController {
         return "";
     }
     // }}}
-    
+
     // {{{ Model data
     /**
      * Restriction type enumeration in Map format for use in views.
