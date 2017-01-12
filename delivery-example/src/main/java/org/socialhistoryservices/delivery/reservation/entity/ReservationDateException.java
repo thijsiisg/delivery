@@ -1,0 +1,89 @@
+package org.socialhistoryservices.delivery.reservation.entity;
+
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.hibernate.validator.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Configurable;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.Date;
+
+/**
+ * Created by Igor on 1/9/2017.
+ */
+@Entity
+@Table(name="reservation_date_exceptions")
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Configurable
+public class ReservationDateException{
+
+    /** The ReservationDateException's id. */
+    @Id
+    @GeneratedValue
+    @Column(name="id")
+    private int id;
+
+    /**
+     * Get the ReservationDateException's id
+     * @return the ReservationDateException's id
+     */
+    public int getId(){return id;}
+
+    /** The ReservationDateException's startDate */
+    @NotNull
+    @Temporal(TemporalType.DATE)
+    @Column(name = "exception_startDate", nullable = false)
+    private Date startDate;
+
+    /**
+     * Get the ReservationDateException's startDate
+     * @return the ReservationDateException's startDate
+     */
+    public Date getStartDate() { return startDate; }
+
+    /**
+     * Set the ReservationDateException's startDate
+     * @param startDate the ReservationDateException's startDate
+     */
+    public void setStartDate(Date startDate) { this.startDate = startDate; }
+
+    /** The ReservationDateException's endDate */
+    @Temporal(TemporalType.DATE)
+    @Column(name = "exception_endDate")
+    private Date endDate;
+
+    /**
+     * Get the ReservationDateException's endDate.
+     * @return the ReservationDateException's endDate.
+     */
+    public Date getEndDate() { return endDate; }
+
+    /**
+     * Set the ReservationDateException's endDate.
+     * @param endDate the ReservationDateException's endDate.
+     */
+    public void setEndDate(Date endDate) { this.endDate = endDate; }
+
+    /** The ReservationDateException's description */
+    @NotBlank
+    @Size(max=255)
+    @Column(name="description", nullable=false)
+    private String description;
+
+    /**
+     * Get the ReservationDateException's description
+     * @return the ReservationDateException's description
+     */
+    public String getdescription() { return description; }
+
+    /**
+     * Set the ReservationDateException's description
+     * @param exception_description the ReservationDateException's description
+     */
+    public void setdescription(String description) { this.description = description; }
+
+    @Override
+    public String toString(){
+        return "Id: " + id + " Start date: " + startDate + " End date: " + endDate;
+    }
+}

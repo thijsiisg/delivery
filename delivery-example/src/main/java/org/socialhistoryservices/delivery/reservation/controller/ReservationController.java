@@ -30,14 +30,12 @@ import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.request.util.BulkActionIds;
-import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
-import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation_;
-import org.socialhistoryservices.delivery.reservation.entity.Reservation;
-import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
+import org.socialhistoryservices.delivery.reservation.entity.*;
 import org.socialhistoryservices.delivery.reservation.service.*;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
@@ -51,7 +49,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityManager;
 import javax.persistence.Tuple;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.print.PrinterException;
@@ -70,6 +70,9 @@ public class ReservationController extends AbstractRequestController {
 
     @Autowired
     private ReservationService reservations;
+
+    @Autowired
+    private ReservationDateExceptionService reservationDateExceptions; // = new ReservationDateExceptionServiceImpl();
 
     @Autowired
     private PermissionService permissions;
@@ -976,6 +979,60 @@ public class ReservationController extends AbstractRequestController {
         }
         model.addAttribute("reservation", newRes);
         return "reservation_mass_create";
+    }
+
+    /**
+     * Show the date exception form for reservation date exceptions.
+     * @param model The model to add attributes to.
+     * @return The view to resolve.
+     */
+    @RequestMapping(value = "/date_exception",
+                    method = RequestMethod.GET)
+    public String showDateExceptionForm(Model model){
+        ReservationDateException reservationDateException = new ReservationDateException();
+        model.addAttribute("reservationDateException", reservationDateException);
+        return "reservation_date_exception";
+    }
+
+    /**
+     * Process the adding of a date where no reservations can be placed
+     * @param req
+     * @param newResDate The ReservationDateException class
+     * @param result
+     * @param code
+     * @param model The model to add attributes to
+     * @return The view to resolve
+     */
+    @RequestMapping(value = "/date_exception",
+                    method = RequestMethod.POST)
+    public String processDateExceptionForm(HttpServletRequest req, @ModelAttribute("reservationDateException")
+                                           ReservationDateException newResDate,
+                                           @RequestParam(required = false) String code,
+                                           Model model){
+//        CriteriaBuilder cb = reservationDateExceptions.getReservationDateExceptionCriteriaBuilder();
+//        CriteriaQuery<ReservationDateException> cq = cb.createQuery(ReservationDateException.class);
+//        Root<ReservationDateException> rRoot = cq.from(ReservationDateException.class);
+//        cq.select(rRoot);
+//
+//        List<ReservationDateException> result = reservationDateExceptions.listReservationDateExceptions(cq);
+//        for(ReservationDateException res : result){
+//            System.out.println("DateException is: " + res.toString());
+//        }
+
+//        CriteriaQuery<ReservationDateException> all = cq.select(rRoot);
+//        EntityManager em = null;
+//        TypedQuery<ReservationDateException> allQuery = em.createQuery(all);
+//        System.out.println(cq.getOrderList());
+
+        try{
+            reservationDateExceptions.addReservationDateException(newResDate);
+            System.out.println(newResDate.toString());
+//            model.addAttribute("reservationDateException", newResDate);
+        }catch(Exception e){
+            System.out.println("OEPS!");
+            model.addAttribute("error", e.getMessage());
+        }
+        return "reservation_date_exception";
     }
 
     /**

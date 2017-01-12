@@ -162,6 +162,13 @@
           </a>
         </li>
         </#if>
+        <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
+        <li>
+          <a href="${rc.contextPath}/reservation/date_exception">
+          <@_ "reservationDateException.title" "New date exception"/>
+          </a>
+        </li>
+        </#if>
         <#if  _sec.ifNotGranted("ROLE_ANONYMOUS")>
         <li>
           <a href="${rc.contextPath}/user/logout">
