@@ -39,6 +39,7 @@ import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
+import org.socialhistoryservices.delivery.reservation.entity.ReservationDateException;
 import org.springframework.validation.BindingResult;
 
 import javax.persistence.Tuple;
@@ -215,4 +216,7 @@ public interface ReservationService {
      * @return The active reservation, or null if no active reservation exists.
      */
     public Reservation getActiveFor(Holding holding);
+
+    public Boolean exceptionDateExists(ReservationDateException resExcept, BindingResult result);
+    public Boolean isEndDateBeforeBeginDate(ReservationDateException resExcept, BindingResult result);
 }

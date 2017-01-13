@@ -609,6 +609,60 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
     }
 
     /**
+     *
+     * @param resExcept
+     * @param result
+     * @return
+     */
+    public Boolean exceptionDateExists(ReservationDateException resExcept, BindingResult result){
+        if(resExcept.getDatesOfReservationDateException().size() > 1){
+            for(int i = 0; i < resExcept.getDatesOfReservationDateException().size(); i++){
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(resExcept.getDatesOfReservationDateException().get(i));
+                if(getExceptionDates().contains(cal)){
+                    String msg = "One or more dates are already set as an exception date!";
+                    result.addError(new FieldError(result.getObjectName(), "endDate",
+                        resExcept.getEndDate(), false,
+                        null, null, msg));
+                    return true;
+                }
+            }
+        }
+        else{
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(resExcept.getStartDate());
+            if(getExceptionDates().contains(cal)){
+                String msg = "Date is already set as an exception date!";
+                result.addError(new FieldError(result.getObjectName(), "endDate",
+                    null, false,
+                    null, null, msg));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     *
+     * @param resExcept
+     * @param result
+     * @return
+     */
+    public Boolean isEndDateBeforeBeginDate(ReservationDateException resExcept, BindingResult result){
+        if(resExcept.getEndDate() != null) {
+            if (resExcept.getEndDate().before(resExcept.getStartDate())) {
+                String msg = "End date is before begin date!";
+                result.addError(new FieldError(result.getObjectName(), "endDate",
+                    null, false,
+                    null, null, msg));
+                return false;
+            }
+            else return true;
+        }
+        return false;
+    }
+
+    /**
      * Mark a request, bumping it to the next status.
      * @param r Request to change status for.
      */

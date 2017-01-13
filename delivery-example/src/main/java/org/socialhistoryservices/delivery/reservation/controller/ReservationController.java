@@ -1007,6 +1007,7 @@ public class ReservationController extends AbstractRequestController {
                     method = RequestMethod.POST)
     public String processDateExceptionForm(HttpServletRequest req, @ModelAttribute("reservationDateException")
                                            ReservationDateException newResDate,
+                                           BindingResult result,
                                            @RequestParam(required = false) String code,
                                            Model model){
 //        CriteriaBuilder cb = reservationDateExceptions.getReservationDateExceptionCriteriaBuilder();
@@ -1024,15 +1025,20 @@ public class ReservationController extends AbstractRequestController {
 //        TypedQuery<ReservationDateException> allQuery = em.createQuery(all);
 //        System.out.println(cq.getOrderList());
 
-        try{
-            reservationDateExceptions.addReservationDateException(newResDate);
-            System.out.println(newResDate.toString());
+        if(!reservations.exceptionDateExists(newResDate, result) && !reservations.isEndDateBeforeBeginDate(newResDate, result)){
+            try{
+                reservationDateExceptions.addReservationDateException(newResDate);
 //            model.addAttribute("reservationDateException", newResDate);
-        }catch(Exception e){
-            System.out.println("OEPS!");
-            model.addAttribute("error", e.getMessage());
+            }catch(Exception e){
+                model.addAttribute("error", e.getMessage());
+            }
         }
-        return "reservation_date_exception";
+
+        model.addAttribute("reservationDateException", newResDate);
+        if(!result.hasErrors())
+            return "redirect:/reservation/date_exception";
+        else
+            return "reservation_date_exception";
     }
 
     /**
