@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Configurable;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Igor on 1/9/2017.
@@ -82,6 +85,29 @@ public class ReservationDateException{
      */
     public void setdescription(String description) { this.description = description; }
 
+    /**
+     * Get the ReservationDateException's dates
+     * @return the ReservationDateException's dates
+     */
+    public List<Date> getDatesOfReservationDateException(){
+        List<Date> dates = new ArrayList<Date>();
+        if(this.endDate != null){
+            Calendar startCal = Calendar.getInstance();
+            startCal.setTime(startDate);
+            while(startCal.getTime().before(endDate)){
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(startCal.getTime());
+                dates.add(calendar.getTime());
+                startCal.add(Calendar.DAY_OF_YEAR, 1);
+            }
+        }
+        return dates;
+    }
+
+    /**
+     * Get the ReservationDateException's data as a string
+     * @return the ReservationDateException's data as a string
+     */
     @Override
     public String toString(){
         return "Id: " + id + " Start date: " + startDate + " End date: " + endDate;

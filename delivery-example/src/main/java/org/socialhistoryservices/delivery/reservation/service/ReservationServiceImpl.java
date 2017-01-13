@@ -575,7 +575,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                 exceptionDates.add(endCal);
             }
         }
-
         return exceptionDates;
     }
 
