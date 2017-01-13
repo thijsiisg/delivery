@@ -550,8 +550,8 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
     }
 
     /**
-     *
-     * @return
+     * Get all the ReservationDateException's dates known in the database.
+     * @return all ReservationDateException's dates from the database.
      */
     public List<Calendar> getExceptionDates(){
         List<ReservationDateException> result = getReservationDateExceptions();
@@ -578,6 +578,10 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
         return exceptionDates;
     }
 
+    /**
+     * Get all the ReservationDateExceptions from the database.
+     * @return all ReservationDateExceptions from the database.
+     */
     public List<ReservationDateException> getReservationDateExceptions(){
         CriteriaBuilder builder = dateExceptionService.getReservationDateExceptionCriteriaBuilder();
         CriteriaQuery<ReservationDateException> query = builder.createQuery(ReservationDateException.class);
@@ -588,15 +592,17 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
     }
 
     /**
-     *
-     * @param cal
-     * @return
+     * Get the reason for the ReservationDateException for the corresponding Calendar date.
+     * @param cal Calendar with the date to be checked.
+     * @return the reason for the ReservationDateException.
      */
     public String getReasonForExceptionDate(Calendar cal){
         List<ReservationDateException> reservationDateExceptions = getReservationDateExceptions();
         for(ReservationDateException res : reservationDateExceptions){
-            if(cal.getTime().equals(res.getStartDate())){ // Make a get dates method for ReservationDateExceptions
-                return res.getdescription();
+            for(int i = 0; i < res.getDatesOfReservationDateException().size(); i++) {
+                if (cal.getTime().equals(res.getDatesOfReservationDateException().get(i))) { // Make a get dates method for ReservationDateExceptions
+                    return res.getdescription();
+                }
             }
         }
         return "No reason given!";

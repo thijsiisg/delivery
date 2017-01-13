@@ -100,6 +100,7 @@ public class ReservationDateException{
                 dates.add(calendar.getTime());
                 startCal.add(Calendar.DAY_OF_YEAR, 1);
             }
+            dates.add(endDate);
         }
         return dates;
     }
