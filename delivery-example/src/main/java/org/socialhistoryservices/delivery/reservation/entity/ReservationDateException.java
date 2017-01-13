@@ -86,8 +86,8 @@ public class ReservationDateException{
     public void setdescription(String description) { this.description = description; }
 
     /**
-     * Get the ReservationDateException's dates
-     * @return the ReservationDateException's dates
+     * Get the ReservationDateException's dates.
+     * @return the ReservationDateException's dates.
      */
     public List<Date> getDatesOfReservationDateException(){
         List<Date> dates = new ArrayList<Date>();
@@ -101,6 +101,10 @@ public class ReservationDateException{
                 startCal.add(Calendar.DAY_OF_YEAR, 1);
             }
             dates.add(endDate);
+
+        }
+        else{
+            dates.add(startDate);
         }
         return dates;
     }
