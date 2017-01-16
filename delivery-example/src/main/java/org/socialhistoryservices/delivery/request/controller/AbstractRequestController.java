@@ -1,5 +1,6 @@
 package org.socialhistoryservices.delivery.request.controller;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.socialhistoryservices.delivery.ErrorHandlingController;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;

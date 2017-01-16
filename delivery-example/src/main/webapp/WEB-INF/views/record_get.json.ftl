@@ -56,7 +56,21 @@ ${callback}([
       }
       <#if h_has_next>,</#if>
       </#list>
-    ]
+    ],
+
+    "childrenDifferentState" : {
+      <#list record.childrenDifferentState as childRecord>
+      "${childRecord.pid?js_string}" : {
+          <#assign childHolding = childRecord.holdings?first/>
+          "restrictionType": "${childRecord.realRestrictionType}",
+          "publicationStatus": "${childRecord.publicationStatus}",
+          "openForReproduction": "${childRecord.openForReproduction?c}",
+          "status": "${childHolding.status}",
+          "usageRestriction": "${childHolding.usageRestriction}"
+        }
+        <#if childRecord_has_next>,</#if>
+      </#list>
+    }
 
   <#if _sec.ifAllGranted("ROLE_RECORD_CONTACT_VIEW")>
     <#if record.realRestriction??>

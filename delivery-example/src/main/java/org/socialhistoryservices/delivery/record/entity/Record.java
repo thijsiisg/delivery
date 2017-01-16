@@ -392,6 +392,19 @@ public class Record {
         return children;
     }
 
+    /**
+     * Return all the children of this record with a different state.
+     * @return A list of all children with a different state.
+     */
+    public List<Record> getChildrenDifferentState() {
+        List<Record> children = new ArrayList<Record>();
+        for (Record childRecord : getChildren()) {
+            if (childRecord.hasDifferentStateThanParent())
+                children.add(childRecord);
+        }
+        return children;
+    }
+
     /** The Record's contact. */
     @ManyToOne(cascade=CascadeType.ALL)
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
@@ -498,9 +511,7 @@ public class Record {
         }
 
         setEmbargo(other.getEmbargo());
-        setRestrictionType(other.getRestrictionType());
-        
-    }
+        setRestrictionType(other.getRestrictionType());  }
 
     /**
      * Add/Update the holdings provided by the provided record.
@@ -581,6 +592,22 @@ public class Record {
 
         return (getPublicationStatus() != ExternalRecordInfo.PublicationStatus.MINIMAL) &&
                 (getPublicationStatus() != ExternalRecordInfo.PublicationStatus.CLOSED);
+    }
+
+    /**
+     * Determine if the state is different than the parent record.
+     * @return Whether the state differs.
+     */
+    public boolean hasDifferentStateThanParent() {
+        if (parent == null)
+            return false;
+
+        Holding h = getHoldings().get(0), hParent = parent.getHoldings().get(0);
+        return ((getRealRestrictionType() != parent.getRealRestrictionType())
+            || (getPublicationStatus() != parent.getPublicationStatus())
+            || (isOpenForReproduction() != parent.isOpenForReproduction())
+            || (h.getStatus() != hParent.getStatus())
+            || (h.getUsageRestriction() != hParent.getUsageRestriction()));
     }
 
     /**
