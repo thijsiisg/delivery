@@ -285,7 +285,7 @@ public class RecordServiceImpl implements RecordService {
 
         String itemSeparator = properties.getProperty("prop_itemSeparator", ".");
         if (pid.contains(itemSeparator)) {
-            String parentPid = pid.substring(0, pid.lastIndexOf(itemSeparator));
+            String parentPid = pid.substring(0, pid.indexOf(itemSeparator));
             Record parent = getRecordByPid(parentPid);
             if (parent == null) {
                 throw new NoSuchParentException();
@@ -388,7 +388,7 @@ public class RecordServiceImpl implements RecordService {
         Record parent = null;
         String itemSeparator = properties.getProperty("prop_itemSeparator");
         if (pid.contains(itemSeparator)) {
-            int idx = pid.lastIndexOf(itemSeparator);
+            int idx = pid.indexOf(itemSeparator);
             String parentPid = pid.substring(0, idx);
 
             parent = getRecordByPid(parentPid);

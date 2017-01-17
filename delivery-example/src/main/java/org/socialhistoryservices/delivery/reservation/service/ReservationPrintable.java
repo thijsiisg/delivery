@@ -61,10 +61,6 @@ public class ReservationPrintable extends RequestPrintable {
         drawName(drawInfo);
         drawDate(drawInfo);
         drawCreationDate(drawInfo);
-        // Disable this for now:
-        // offsetY = drawQueueNo(g2d, pw, offsetX,
-        // offsetY,
-        // valueOffset);
     }
 
     /**
@@ -77,20 +73,6 @@ public class ReservationPrintable extends RequestPrintable {
         drawMaterialInfo(drawInfo);
         drawType(drawInfo, holdingRequest.getHolding().getSignature());
         drawLocationInfo(drawInfo);
-    }
-
-    /**
-     * Draws the queue number.
-     * @param drawInfo Draw offsets.
-     */
-    private void drawQueueNo(DrawInfo drawInfo) {
-        HoldingReservation hr = (HoldingReservation) holdingRequest;
-        if (hr.getReservation().getQueueNo() == null) {
-            return;
-        }
-
-        String queueLabel = getMessage("reservation.queueNo", "Queue Number");
-        drawKeyValue(drawInfo, queueLabel, String.valueOf(hr.getReservation().getQueueNo()));
     }
 
     /**

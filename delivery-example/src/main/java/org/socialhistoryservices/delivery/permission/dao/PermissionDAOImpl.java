@@ -17,6 +17,7 @@
 package org.socialhistoryservices.delivery.permission.dao;
 
 import org.socialhistoryservices.delivery.permission.entity.Permission;
+import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.springframework.stereotype.Repository;
 
@@ -87,11 +88,11 @@ public class PermissionDAOImpl implements PermissionDAO {
     }
 
     /**
-     * List all Permissions matching a built query.
+     * List all RecordPermission matching a built query.
      * @param query The query to match by.
      * @return A list of matching Permissions.
      */
-    public List<Permission> list(CriteriaQuery<Permission> query) {
+    public List<RecordPermission> list(CriteriaQuery<RecordPermission> query) {
         return entityManager.createQuery(query).getResultList();
     }
 

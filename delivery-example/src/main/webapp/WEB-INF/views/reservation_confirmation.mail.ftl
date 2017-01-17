@@ -27,11 +27,6 @@
 --- <@_ "reservation.date" "Date"/> ---
 ${reservation.date?string(prop_dateFormat)}
 
-<#--<#if reservation.queueNo??>
---- <@_ "reservation.queueNo" "Queue Number"/> ---
-${reservation.queueNo?c}
-</#if>-->
-
 --- <@_ "reservation.records" "Records"/> ---
 <#list reservation.holdingReservations as hr>
  <#assign h = hr.holding>

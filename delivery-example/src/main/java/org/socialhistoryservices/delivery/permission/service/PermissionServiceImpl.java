@@ -19,6 +19,7 @@ package org.socialhistoryservices.delivery.permission.service;
 import org.socialhistoryservices.delivery.permission.dao.PermissionDAO;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.entity.Permission_;
+import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -81,11 +82,11 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     /**
-     * List all Permissions matching a built query.
+     * List all RecordPermissions matching a built query.
      * @param query The query to match by.
      * @return A list of matching Permissions.
      */
-    public List<Permission> listPermissions(CriteriaQuery<Permission> query) {
+    public List<RecordPermission> listPermissions(CriteriaQuery<RecordPermission> query) {
         return permissionDAO.list(query);
     }
 

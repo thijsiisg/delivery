@@ -57,9 +57,6 @@
     <li>
       <span><@_ "reservation.status" "Status"/></span> <@_ "reservation.statusType.${reservation.status?string}" reservation.status?string/>
     </li>
-    <#if reservation.queueNo??>
-      <li><span><@_ "reservation.queueNo" "Queue Number"/></span> ${reservation.queueNo?c}</li>
-    </#if>
   </ul>
 
   <table class="records">

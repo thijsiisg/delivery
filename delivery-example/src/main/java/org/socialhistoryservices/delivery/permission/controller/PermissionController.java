@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.permission.controller;
 
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
 import org.socialhistoryservices.delivery.api.RecordLookupService;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
@@ -24,16 +25,15 @@ import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
 import org.socialhistoryservices.delivery.permission.entity.RecordPermission_;
 import org.socialhistoryservices.delivery.permission.service.PermissionMailer;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
-import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
-import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo_;
-import org.socialhistoryservices.delivery.record.entity.Record;
-import org.socialhistoryservices.delivery.record.entity.Record_;
+import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.record.service.RecordService;
 import org.socialhistoryservices.delivery.ErrorHandlingController;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
+import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
+import org.springframework.mail.MailException;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +57,7 @@ import java.util.*;
 @Controller
 @Transactional
 @RequestMapping("/permission")
-public class PermissionController extends ErrorHandlingController {
+public class PermissionController extends AbstractRequestController {
 
     @Autowired
     protected Validator validator;
@@ -76,6 +76,8 @@ public class PermissionController extends ErrorHandlingController {
 
     @Autowired
     private SimpleDateFormat df;
+
+    private Logger log = Logger.getLogger(getClass());
 
     // {{{ Get API
     /**
@@ -119,16 +121,17 @@ public class PermissionController extends ErrorHandlingController {
         Map<String, String[]> p = req.getParameterMap();
         DateFormat apiDf = new SimpleDateFormat("yyyy-MM-dd");
         CriteriaBuilder cb = permissions.getPermissionCriteriaBuilder();
-        CriteriaQuery<Permission> cq = cb.createQuery(Permission.class);
-        Root<Permission> pmRoot = cq.from(Permission.class);
-        cq.select(pmRoot);
+        CriteriaQuery<RecordPermission> cq = cb.createQuery(RecordPermission.class);
+        Root<RecordPermission> rpRoot = cq.from(RecordPermission.class);
+        cq.select(rpRoot);
+
+        Join<RecordPermission,Permission> pmRoot = rpRoot.join(RecordPermission_.permission);
 
         // Expression to be the where clause of the query
         Expression where = null;
 
         // Filters
-        where = addDateFromFilter(p, apiDf, cb, pmRoot, where);
-        where = addDateToFilter(p, apiDf, cb, pmRoot, where);
+        where = addDateFilter(p, cb, pmRoot, where);
         where = addNameFilter(p, cb, pmRoot, where);
         where = addEmailFilter(p, cb, pmRoot, where);
         where = addResearchOrganizationFilter(p, cb, pmRoot, where);
@@ -136,22 +139,20 @@ public class PermissionController extends ErrorHandlingController {
         where = addAddressFilter(p, cb, pmRoot, where);
         where = addExplanationFilter(p, cb, pmRoot, where);
         where = addStatusFilter(p, cb, pmRoot, where);
-        where = addSearchFilter(p, cb, pmRoot, where);
+        where = addPermissionFilter(p, cb, rpRoot, where);
+        where = addSearchFilter(p, cb, rpRoot, pmRoot, where);
 
         // Set the where clause
         if (where != null) {
             cq.where(where);
         }
 
-        cq.distinct(true);
-
         // Set sort order and sort column
-        cq.orderBy(parseOrderFilter(p, cb, pmRoot));
+        cq.orderBy(parseOrderFilter(p, cb, rpRoot, pmRoot));
 
         // Fetch result set
-        List<Permission> rList = permissions.listPermissions(cq);
-        PagedListHolder<Permission> pagedListHolder = new
-                PagedListHolder<Permission>(rList);
+        List<RecordPermission> rList = permissions.listPermissions(cq);
+        PagedListHolder<RecordPermission> pagedListHolder = new PagedListHolder<RecordPermission>(rList);
 
         // Set the amount of permissions per page
         pagedListHolder.setPageSize(parsePageLenFilter(p));
@@ -172,55 +173,16 @@ public class PermissionController extends ErrorHandlingController {
     }
 
     /**
-     * Parse the page filter into an integer.
-     * @param p The parameter map to search the given filter value in.
-     * @return The current page to show, default 0. (external = 1).
-     */
-    private int parsePageFilter(Map<String, String[]> p) {
-        int page = 0;
-        if (p.containsKey("page")) {
-            try {
-               page = Math.max(0, Integer.parseInt(p.get("page")[0]) - 1);
-            } catch (NumberFormatException ex) {
-                throw new InvalidRequestException("Invalid page number: " +
-                        p.get("page")[0]);
-            }
-        }
-        return page;
-    }
-
-    /**
-     * Parse the page length filter.
-     * @param p The parameter map to search the given filter value in.
-     * @return The length of the page (defaults to the length in the config,
-     * can not exceed the maximum length in the config).
-     */
-    private int parsePageLenFilter(Map<String, String[]> p) {
-        int pageLen = Integer.parseInt(properties.getProperty("prop_permissionPageLen"));
-        if (p.containsKey("page_len")) {
-            try {
-                pageLen = Math.max(0,
-                                   Math.min(Integer.parseInt(p.get("page_len")
-                                           [0]), Integer.parseInt(properties.getProperty
-                                                         ("prop_permissionMaxPageLen"))));
-            } catch (NumberFormatException ex) {
-                throw new InvalidRequestException("Invalid page length: " +
-                        p.get("page_len")[0]);
-            }
-        }
-        return pageLen;
-    }
-
-    /**
      * Parse the sort and sort_dir filters into an Order to be used in a query.
      * @param p The parameter list to search the filter values in.
      * @param cb The criteria builder used to construct the Order.
+     * @param rpRoot The root of the record permission used to construct the Order.
      * @param pmRoot The root of the permission used to construct the Order.
      * @return The order the query should be in (asc/desc) sorted on provided
      * column. Defaults to asc on the PK column.
      */
-    private Order parseOrderFilter(Map<String, String[]> p,
-                                   CriteriaBuilder cb, Root<Permission> pmRoot) {
+    private Order parseOrderFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<RecordPermission> rpRoot,
+                                   Join<RecordPermission,Permission> pmRoot) {
         boolean containsSort = p.containsKey("sort");
         boolean containsSortDir = p.containsKey("sort_dir");
         Expression e = pmRoot.get(Permission_.id);
@@ -244,8 +206,9 @@ public class PermissionController extends ErrorHandlingController {
                 e = pmRoot.get(Permission_.researchSubject);
             } else if (sort.equals("explanation")) {
                 e = pmRoot.get(Permission_.explanation);
+            } else if (sort.equals("permission")) {
+                e = rpRoot.get(RecordPermission_.permission);
             }
-
         }
         if (containsSortDir && p.get("sort_dir")[0].toLowerCase().equals("desc")) {
              return cb.desc(e);
@@ -257,19 +220,17 @@ public class PermissionController extends ErrorHandlingController {
      * Add the search filter to the where clause, if present.
      * @param p The parameter list to search the given filter value in.
      * @param cb The criteria builder.
+     * @param rpRoot The record permission root.
      * @param pmRoot The permission root.
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addSearchFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
+    private Expression addSearchFilter(Map<String, String[]> p, CriteriaBuilder cb,  Root<RecordPermission> rpRoot,
+                                       Join<RecordPermission,Permission> pmRoot, Expression where) {
         if (p.containsKey("search") && !p.get("search")[0].trim().equals("")) {
             String search = p.get("search")[0].trim().toLowerCase();
-            Join<Permission,RecordPermission> recPerm = pmRoot.join
-                    (Permission_.recordPermissions);
-            Join<RecordPermission, Record> record = recPerm.join
-                    (RecordPermission_.record);
-            Join<Record,ExternalRecordInfo> eRoot = record.join(Record_
-                    .externalInfo);
+            Join<RecordPermission, Record> record = rpRoot.join(RecordPermission_.record);
+            Join<Record,ExternalRecordInfo> eRoot = record.join(Record_.externalInfo);
             Expression exSearch = cb.or(
                     cb.like(cb.lower(eRoot.get(ExternalRecordInfo_.title)),
                             "%" + search + "%"),
@@ -295,6 +256,32 @@ public class PermissionController extends ErrorHandlingController {
     }
 
     /**
+     * Add the permission filter to the where clause, if present.
+     * @param p The parameter list to search the given filter value in.
+     * @param cb The criteria builder.
+     * @param rpRoot The record permission root.
+     * @param where The already present where clause or null if none present.
+     * @return The (updated) where clause, or null if the filter did not exist.
+     */
+    private Expression addPermissionFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<RecordPermission> rpRoot,
+                                           Expression where) {
+        if (p.containsKey("permission")) {
+            Expression exPermission = null;
+            String permission = p.get("permission")[0].trim().toUpperCase();
+
+            if (permission.equals("TRUE"))
+                exPermission = cb.equal(rpRoot.<Boolean>get(RecordPermission_.granted), true);
+
+            if (permission.equals("FALSE"))
+                exPermission = cb.equal(rpRoot.<Boolean>get(RecordPermission_.granted), false);
+
+            if (exPermission != null)
+                where = where != null ? cb.and(where, exPermission) : exPermission;
+        }
+        return where;
+    }
+
+    /**
      * Add the status filter to the where clause, if present.
      * @param p The parameter list to search the given filter value in.
      * @param cb The criteria builder.
@@ -302,7 +289,8 @@ public class PermissionController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addStatusFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
+    private Expression addStatusFilter(Map<String, String[]> p, CriteriaBuilder cb,
+                                       Join<RecordPermission,Permission> pmRoot, Expression where) {
         if (p.containsKey("status")) {
             String status = p.get("status")[0].trim().toUpperCase();
             // Tolerant to empty status to ensure the filter in
@@ -330,7 +318,8 @@ public class PermissionController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addExplanationFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
+    private Expression addExplanationFilter(Map<String, String[]> p, CriteriaBuilder cb,
+                                            Join<RecordPermission,Permission> pmRoot, Expression where) {
         if (p.containsKey("explanation")) {
             Expression exExplanation = cb.like(
                      pmRoot.<String>get(Permission_.explanation),
@@ -348,7 +337,8 @@ public class PermissionController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addAddressFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
+    private Expression addAddressFilter(Map<String, String[]> p, CriteriaBuilder cb,
+                                        Join<RecordPermission,Permission> pmRoot, Expression where) {
         if (p.containsKey("address")) {
             Expression exAddress = cb.like(
                      pmRoot.<String>get(Permission_.address),
@@ -366,7 +356,8 @@ public class PermissionController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addResearchSubjectFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
+    private Expression addResearchSubjectFilter(Map<String, String[]> p, CriteriaBuilder cb,
+                                                Join<RecordPermission,Permission> pmRoot, Expression where) {
         if (p.containsKey("research_subject")) {
             Expression exResearch = cb.like(
                      pmRoot.<String>get(Permission_.researchSubject),
@@ -384,7 +375,8 @@ public class PermissionController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addResearchOrganizationFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
+    private Expression addResearchOrganizationFilter(Map<String, String[]> p, CriteriaBuilder cb,
+                                                     Join<RecordPermission,Permission> pmRoot, Expression where) {
         if (p.containsKey("research_organization")) {
             Expression exResearchOrg = cb.like(
                     pmRoot.<String>get(Permission_.researchOrganization),
@@ -402,7 +394,8 @@ public class PermissionController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addEmailFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
+    private Expression addEmailFilter(Map<String, String[]> p, CriteriaBuilder cb,
+                                      Join<RecordPermission,Permission> pmRoot, Expression where) {
         if (p.containsKey("visitor_email")) {
             Expression exEmail = cb.like(
                     pmRoot.<String>get(Permission_.email),
@@ -420,7 +413,8 @@ public class PermissionController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addNameFilter(Map<String, String[]> p, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
+    private Expression addNameFilter(Map<String, String[]> p, CriteriaBuilder cb,
+                                     Join<RecordPermission,Permission> pmRoot, Expression where) {
         if (p.containsKey("visitor_name")) {
             Expression exName = cb.like(pmRoot.<String>get(Permission_.name),
                     "%" + p.get("visitor_name")[0].trim() + "%");
@@ -438,7 +432,8 @@ public class PermissionController extends ErrorHandlingController {
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addDateToFilter(Map<String, String[]> p, DateFormat apiDf, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
+    private Expression addDateToFilter(Map<String, String[]> p, DateFormat apiDf, CriteriaBuilder cb,
+                                       Join<RecordPermission,Permission> pmRoot, Expression where) {
         if (p.containsKey("to_date")) {
             try {
                 Date d = apiDf.parse(p.get("to_date")[0]);
@@ -455,29 +450,37 @@ public class PermissionController extends ErrorHandlingController {
     }
 
     /**
-     * Add the date from filter to the where clause, if present.
+     * Add the date/from_date/to_date filter to the where clause, if present.
      * @param p The parameter list to search the given filter value in.
-     * @param apiDf The api date format.
      * @param cb The criteria builder.
      * @param pmRoot The permission root.
      * @param where The already present where clause or null if none present.
      * @return The (updated) where clause, or null if the filter did not exist.
      */
-    private Expression addDateFromFilter(Map<String, String[]> p, DateFormat apiDf, CriteriaBuilder cb, Root<Permission> pmRoot, Expression where) {
-        if (p.containsKey("from_date")) {
-            try {
-                Date d = apiDf.parse(p.get("from_date")[0]);
-                Expression exDate = cb.equal(pmRoot.<Date>get(
-                                             Permission_.dateFrom),
-                                             d);
+    private Expression addDateFilter(Map<String, String[]> p, CriteriaBuilder cb,
+                                              Join<RecordPermission,Permission> pmRoot, Expression where) {
+        Date date = getDateFilter(p);
+        if (date != null) {
+            Expression<Boolean> exDateFrom = cb.greaterThanOrEqualTo(pmRoot.<Date>get(Permission_.dateFrom), date);
+            Expression<Boolean> exDateTo = cb.lessThanOrEqualTo(pmRoot.<Date>get(Permission_.dateTo), date);
+            where = where != null ? cb.and(where, exDateFrom) : exDateFrom;
+            where = cb.and(where, exDateTo);
+        }
+        else {
+            Date fromDate = getFromDateFilter(p);
+            Date toDate = getToDateFilter(p);
+            if (fromDate != null) {
+                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(pmRoot.<Date>get(Permission_.dateFrom), fromDate);
                 where = where != null ? cb.and(where, exDate) : exDate;
-            } catch (ParseException ex) {
-                throw new InvalidRequestException("Invalid date: " +
-                        p.get("from_date")[0]);
+            }
+            if (toDate != null) {
+                Expression<Boolean> exDate = cb.lessThanOrEqualTo(pmRoot.<Date>get(Permission_.dateTo), toDate);
+                where = where != null ? cb.and(where, exDate) : exDate;
             }
         }
         return where;
     }
+
     // }}}
     // {{{ Create API
 
@@ -818,7 +821,13 @@ public class PermissionController extends ErrorHandlingController {
         permissions.savePermission(pm);
 
         // Notify the requester.
-        pmMailer.mailCode(pm);
+        try {
+            pmMailer.mailCode(pm);
+        }
+        catch (MailException e) {
+            log.error("Failed to send email", e);
+            throw e;
+        }
 
         return "redirect:/permission/";
     }
@@ -866,7 +875,13 @@ public class PermissionController extends ErrorHandlingController {
                 guaranteeUniqueCode(obj);
                 permissions.addPermission(obj);
 
-                pmMailer.mailConfirmation(obj);
+                try {
+                    pmMailer.mailConfirmation(obj);
+                }
+                catch (MailException e) {
+                    log.error("Failed to send email", e);
+                    model.addAttribute("error", "mail");
+                }
 
                 return "permission_success";
             }

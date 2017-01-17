@@ -580,6 +580,10 @@ ul.permissionDetails {
     padding: 0;
 }
 
+ul.permissionDetails li.spacing {
+    margin-top: 10px;
+}
+
 ul.permissionDetails span {
    font-weight: bold;
    width: 13em;

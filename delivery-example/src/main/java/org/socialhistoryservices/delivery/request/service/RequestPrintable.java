@@ -136,14 +136,10 @@ public abstract class RequestPrintable implements Printable {
      * @param g    The graphics object to draw on.
      * @param pf   The page format.
      * @param page The current page number.
-     * @return Whether more pages are coming or not.
+     * @return Whether the page rendered successfully.
      * @throws java.awt.print.PrinterException Thrown when something went wrong.
      */
     public int print(Graphics g, PageFormat pf, int page) throws PrinterException {
-        if (page > 1) {
-            return NO_SUCH_PAGE;
-        }
-
         int pageWidth = (int) pf.getImageableWidth();
         int pageHeight = (int) pf.getImageableHeight();
 
@@ -153,18 +149,16 @@ public abstract class RequestPrintable implements Printable {
 
         int halfWidth = pageWidth / 2;
 
-        // Draw line through middle.
-        //Line2D lin = new Line2D.Float(halfWidth, 0, halfWidth, pageHeight);
-        //g2d.draw(lin);
-
         DrawInfo drawInfo = new DrawInfo(g2d);
         drawInfo.setHeight(pageHeight);
         drawInfo.setValueOffset(80);
         int rightMargin = 20;
+
         // Draw all info to the g2d.
         for (int i = 1; i <= 2; i++) {
             draw(drawInfo, halfWidth, rightMargin, i);
         }
+
         // Tell the caller that this page is part of the printed document.
         return PAGE_EXISTS;
     }

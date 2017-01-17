@@ -33,6 +33,7 @@
 package org.socialhistoryservices.delivery.permission.service;
 
 import org.socialhistoryservices.delivery.permission.entity.Permission;
+import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
 import org.socialhistoryservices.delivery.record.entity.Record;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -75,11 +76,11 @@ public interface PermissionService {
     public CriteriaBuilder getPermissionCriteriaBuilder();
 
     /**
-     * List all Permissions matching a built query.
+     * List all RecordPermissions matching a built query.
      * @param query The query to match by.
      * @return A list of matching Permissions.
      */
-    public List<Permission> listPermissions(CriteriaQuery<Permission> query);
+    public List<RecordPermission> listPermissions(CriteriaQuery<RecordPermission> query);
 
     /**
      * Get a single Permission matching a built query.
