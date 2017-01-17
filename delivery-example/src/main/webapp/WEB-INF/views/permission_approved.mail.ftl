@@ -34,7 +34,7 @@ ${prop_urlSelf}/reservation/createform/<#list permission.recordPermissions as rp
 --- <@_ "permission.recordPermissions" "Permissions per Record"/> ---
 <#list permission.recordPermissions as rp>
 <#assign info = rp.record.externalInfo>
-<@_ "record.title" "Title"/>: ${rp.record.title} <#if info.author??>/ ${info.author}</#if><#if rp.record.parent??> - ${rp.record.holdings[0].signature}</#if>
+<@_ "record.title" "Title"/>: ${rp.record.title} <#if rp.record.parent??> - ${rp.record.holdings[0].signature} </#if><#if info.author??>/ ${info.author}</#if>
 <@_ "recordPermission.granted" "Permission"/>: ${rp.granted?string(granted_true,granted_false)}
 <#if rp.motivation??><@_ "recordPermission.motivation" "Motivation"/>: ${rp.motivation}</#if>
 <#if rp_has_next>--</#if>

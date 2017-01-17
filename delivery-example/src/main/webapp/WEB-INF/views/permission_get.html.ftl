@@ -58,8 +58,8 @@
             <#assign info = rp.record.externalInfo>
             <legend>
                 ${rp.record.title?html}
+                <#if rp.record.parent??> - ${rp.record.holdings[0].signature} </#if>
                 <#if info.author??>/ ${info.author}</#if>
-                <#if rp.record.parent??> - ${rp.record.holdings[0].signature}</#if>
             </legend>
 
             <ul>
