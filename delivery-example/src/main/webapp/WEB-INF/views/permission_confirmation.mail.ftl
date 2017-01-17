@@ -30,6 +30,6 @@ ${permission.dateTo?string(prop_dateFormat)}
 --- <@_ "reservation.records" "Records"/> ---
 <#list permission.recordPermissions as rp>
 <#assign info = rp.record.externalInfo>
-* ${rp.record.title} <#if info.author??>/ ${info.author}</#if><#if rp.record.parent??> - ${rp.record.holdings[0].signature}</#if>
+* ${rp.record.title} <#if rp.record.parent??> - ${rp.record.holdings[0].signature} </#if><#if info.author??>/ ${info.author}</#if>
 </#list>
 </@mail>

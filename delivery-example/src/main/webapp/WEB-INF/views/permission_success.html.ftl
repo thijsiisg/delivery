@@ -34,8 +34,8 @@
                 <#assign info = rec.externalInfo>
                 <li>
                     ${rec.title?html}
+                    <#if rec.parent??> - ${rec.holdings[0].signature} </#if>
                     <#if info.author??>/ ${info.author}</#if>
-                    <#if rec.parent??> - ${rec.holdings[0].signature}</#if>
                 </li>
             </#list>
         </ul>
