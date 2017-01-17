@@ -43,15 +43,12 @@
     <li><span><@_ "reservation.returnDate" "Return Date"/></span>${reservation.returnDate?string(prop_dateFormat)}</li>
     </#if>
     <li><span><@_ "reservation.status" "Status"/></span> <@_ "reservation.statusType.${reservation.status}" reservation.status?string /></li>
-    <#--<#if reservation.queueNo??>
-    <li><span><@_ "reservation.queueNo" "Queue No"/></span> ${reservation.queueNo?c}</li>
-    </#if>-->
 
 
     <#if reservation.comment??>
     <li><span><@_ "reservation.comment" "Comment"/></span>${reservation.comment?html}</li>
     </#if>
-    
+
     <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
     <li><br/><a href="${rc.contextPath}/reservation/masscreateform?fromReservationId=${reservation.id?c}">
     <@_ "reservationSingle.newReservation"/></a></li>

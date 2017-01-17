@@ -12,7 +12,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.Validator;
 
+import javax.print.PrintService;
 import java.awt.print.Book;
+import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.util.Iterator;
@@ -220,32 +222,35 @@ public abstract class AbstractRequestService implements RequestService {
      * Prints printables by using the default printer.
      *
      * @param requestPrintables The printables to print.
+     * @param printerName       The name of the printer to use.
      * @param alwaysPrint       If set to true, already printed requests will also be printed.
      * @throws PrinterException Thrown when delivering the print job to the printer failed.
      *                          Does not say anything if the printer actually printed (or ran out of paper for example).
      */
-    protected void printRequest(List<RequestPrintable> requestPrintables, boolean alwaysPrint)
-            throws PrinterException {
-        // TODO This is a hack, because it create multiple jobs printing one
-        // page each instead of a job printing multiple pages.
+    protected void printRequest(List<RequestPrintable> requestPrintables, String printerName, boolean alwaysPrint)
+        throws PrinterException {
+        Book pBook = new Book();
+
         for (RequestPrintable requestPrintable : requestPrintables) {
-            // Check if the request should be printed or not.
             if (!requestPrintable.getHoldingRequest().isPrinted() || alwaysPrint) {
-                PrinterJob job = PrinterJob.getPrinterJob();
-                job.setJobName("delivery");
-                // Autowiring does not seem to work in POJOs ?
-
-                // Note: Use Book to make sure margins are correct.
-                Book pBook = new Book();
                 pBook.append(requestPrintable, new IISHPageFormat());
-
-                job.setPageable(pBook);
-
-                // Print the print job, throws PrinterException when something was wrong.
-                job.print();
-
                 requestPrintable.getHoldingRequest().setPrinted(true);
             }
+        }
+
+        if (pBook.getNumberOfPages() > 0) {
+            PrintService printService = null;
+            for (PrintService curPrintService : PrinterJob.lookupPrintServices()) {
+                if (curPrintService.getName().equals(printerName))
+                    printService = curPrintService;
+            }
+
+            PrinterJob job = PrinterJob.getPrinterJob();
+            if (printService != null)
+                job.setPrintService(printService);
+            job.setJobName("delivery");
+            job.setPageable(pBook);
+            job.print();
         }
     }
 

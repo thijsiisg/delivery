@@ -455,7 +455,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 }
             }
 
-            printRequest(requestPrintables, alwaysPrint);
+            printRequest(requestPrintables, properties.getProperty("prop_printerArchive"), alwaysPrint);
 
             for (Reproduction r : reproductions) {
                 saveReproduction(r);

@@ -53,10 +53,6 @@
   </#if>
 
   <p><@_ "reservation.backToSearch" "Close this tab and return to Search for new requests" /></p>
-
-  <#--<#if reservation.queueNo??>
-    <@_ "reservation.queueNoMsg" "Your queue number is: "/> <span class="queueNo">${reservation.queueNo?c}</span>
-  </#if>-->
 </section>
 
 </@userbase>

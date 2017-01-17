@@ -44,7 +44,7 @@
   </#list>
 </ul>
 
-<form action="${rc.contextPath}/permission/createform/${pids}" method="GET">
+<form action="${rc.contextPath}/permission/createform/${pids?url}" method="GET" target="_blank">
   <input type="submit" value="<@_ "reservation.reqPermission" "Request Permission"/>"/>
 </form>
 
@@ -72,8 +72,7 @@
 <#assign pidParam = pidParam + k + prop_holdingSeparator + pids[k] + prop_pidSeparator>
 </#list>
 
-<form action="${rc.contextPath}/reservation/createform/${pidParam}"
-      method="GET">
+<form action="${rc.contextPath}/reservation/createform/${pidParam?url}" method="GET" target="_blank">
   <input type="submit" value="<@_ "reservation.create" "Create Reservation"/>"/>
 </form>
 

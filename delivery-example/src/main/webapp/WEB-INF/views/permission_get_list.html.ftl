@@ -34,7 +34,7 @@
 <form action="" method="GET">
   <#-- Generate hidden input for already existing GET vars -->
   <#list RequestParameters?keys as k>
-  <#if k!="search" && k!="status" && k!="page_len" && k!="page">
+  <#if k!="search" && k!="from_date" && k!="to_date" && k!="status" && k!="permission" && k!="page_len" && k!="page">
   <input type="hidden" name="${k?html}" value="${RequestParameters[k]?html}"/>
   </#if>
   </#list>
@@ -70,6 +70,59 @@
         </#list>
       </select>
     </li>
+      <li>
+          <label for="permission_filter"><@_ "recordPermission.granted" "Permission"/></label>
+          <select id="permission_filter" name="permission">
+              <option value=""
+                  <#if !RequestParameters["permission"]?? ||
+                  RequestParameters["permission"] == "">
+                      selected="selected"</#if>>
+                  <@_ "permissionList.allPermission" "Permission N/A"/>
+              </option>
+
+              <option value="true"
+                  <#if (RequestParameters["permission"]?? &&
+                  RequestParameters["permission"]?upper_case == 'TRUE')>
+                      selected="selected"</#if>>
+                  <@_ "recordPermission.granted.true" "Granted" />
+              </option>
+
+              <option value="false"
+                  <#if (RequestParameters["permission"]?? &&
+                  RequestParameters["permission"]?upper_case == 'FALSE')>
+                      selected="selected"</#if>>
+                  <@_ "recordPermission.granted.false" "Denied" />
+              </option>
+          </select>
+      </li>
+      <li>
+          <#assign from_date_value>
+          <#-- The date field has priority over from_date -->
+              <#if RequestParameters["date"]??>
+              ${RequestParameters["date"]?html}
+              <#elseif RequestParameters["from_date"]??>
+              ${RequestParameters["from_date"]?html}
+              </#if>
+          </#assign>
+          <label for="from_date_filter"><@_ "permissionList.dateFrom" "From"/>
+          </label>
+          <input type="text" maxlength="10" id="from_date_filter" name="from_date"
+                 value="${from_date_value?trim}" class="filter_date" />
+      </li>
+      <li>
+          <#assign to_date_value>
+          <#-- The date field has priority over to_date -->
+              <#if RequestParameters["date"]??>
+              ${RequestParameters["date"]?html}
+              <#elseif RequestParameters["to_date"]??>
+              ${RequestParameters["to_date"]?html}
+              </#if>
+          </#assign>
+          <label for="to_date_filter"><@_ "permissionList.dateUpTo" "Up To"/>
+          </label>
+          <input type="text" maxlength="10" id="to_date_filter" name="to_date"
+                 value="${to_date_value?trim}" class="filter_date" />
+      </li>
     <li>
       <label for="page_len_filter">
       <@_ "pageListHolder.nrResultsPerPage" "Amount of Results per Page"/>
@@ -112,11 +165,9 @@
   <thead>
   <tr>
     <th></th>
+    <th><@_ "holding.record" "Item"/></th>
     <th>
       <@sortLink "visitor_name"><@_ "permission.name" "Name"/></@sortLink>
-    </th>
-    <th>
-      <@sortLink "research_subject"><@_ "permission.researchSubject" "Research Subject"/></@sortLink>
     </th>
     <th>
       <@sortLink "from_date"><@_ "permission.dateFrom" "Date From"/></@sortLink>
@@ -124,37 +175,32 @@
     <th>
       <@sortLink "to_date"><@_ "permission.dateTo" "Date To"/></@sortLink>
     </th>
-    <th><@_ "permission.recordPermissions" "Record Permissions"/></th>
     <th><@sortLink "status"><@_ "permission.status" "Status"/></@sortLink></th>
+    <th><@sortLink "permission"><@_ "permission.permission" "Permission"/></@sortLink></th>
   </tr>
   </thead>
   <tbody>
-  <#list pageListHolder.pageList as permission>
+  <#list pageListHolder.pageList as recordPermission>
+    <#assign record = recordPermission.record>
+    <#assign permission = recordPermission.permission>
   <tr>
     <td>
       <a href="${rc.contextPath}/permission/${permission.id?c}">
       <@_ "permissionList.edit" "Administrate"/>
       </a>
     </td>
+    <td class="leftAligned">${record.title}<#if record.parent??> - ${record.holdings[0].signature}</#if></td>
     <td>${permission.name?html}</td>
-    <td>${permission.researchSubject?html}</td>
     <td>${permission.dateFrom?string(prop_dateFormat)}</td>
     <td>${permission.dateTo?string(prop_dateFormat)}</td>
-    <td>
-      <ul>
-        <#list permission.recordPermissions as rp>
-        <#assign info = rp.record.externalInfo>
-        <li>${rp.record.title?html} <#if info.author??>/ ${info.author} </#if>-
-        <#if !rp.granted && permission.status?string == "PENDING">
-        ${granted_null}
-        <#else>${rp.granted?string(granted_true,granted_false)}
-        </#if>
-        </li>
-        </#list>
-      </ul>
-    </td>
-
     <td><@_ "permission.statusType.${permission.status?string}" "${permission.status?string}" /></td>
+    <td>
+    <#if !recordPermission.granted && permission.status?string == "PENDING">
+        ${granted_null}
+    <#else>
+        ${recordPermission.granted?string(granted_true,granted_false)}
+    </#if>
+    </td>
   </tr>
   </#list>
   </tbody>

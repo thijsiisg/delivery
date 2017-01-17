@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.reservation.service;
 
+import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
@@ -74,40 +75,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * @param obj Reservation to add.
      */
     public void addReservation(Reservation obj) {
-        // Generate a new queue number if necessary
-        if (obj.getQueueNo() == null) {
-            Date now = new Date();
-            Date today = (Date)obj.getDate().clone();
-            today.setYear(now.getYear());
-            today.setMonth(now.getMonth());
-            today.setDate(now.getDate());
-
-            if (today.equals(obj.getDate())) {
-                // Get the last queue number today
-                CriteriaBuilder builder = getReservationCriteriaBuilder();
-
-                CriteriaQuery<Reservation> query = builder.createQuery(Reservation.class);
-                Root<Reservation> root = query.from(Reservation.class);
-                query.select(root);
-
-                query.where(builder.notEqual(root.get(Reservation_.queueNo), 0));
-                query.orderBy(builder.desc(root.get(Reservation_.creationDate)));
-
-                Reservation result = getReservation(query);
-
-                if (result == null
-                        || result.getDate().getDate() != obj.getDate().getDate()
-                        || result.getDate().getYear() != obj.getDate().getYear()
-                        || result.getDate().getMonth() != obj.getDate().getMonth()
-                   ) {
-                    obj.setQueueNo(1);
-                   }
-                else {
-                    obj.setQueueNo(result.getQueueNo()+1);
-                }
-            }
-        }
-
         // Make sure the holdings get set to the correct status.
         updateStatusAndAssociatedHoldingStatus(obj, obj.getStatus());
 
@@ -274,8 +241,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
         reservation.setVisitorName(other.getVisitorName());
         reservation.setVisitorEmail(other.getVisitorEmail());
         reservation.setComment(other.getComment());
-        //setPermission(other.getPermission());
-        //setQueueNo(other.getQueueNo());
 
         if (other.getHoldingReservations() == null) {
             for (HoldingReservation hr : reservation.getHoldingReservations()) {
@@ -360,14 +325,22 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
         try {
             Set<Reservation> reservations = new HashSet<Reservation>();
             List<RequestPrintable> requestPrintables = new ArrayList<RequestPrintable>();
+            List<RequestPrintable> requestPrintablesArchive = new ArrayList<RequestPrintable>();
+
             for (HoldingReservation hr : hrs) {
-                ReservationPrintable rp = new ReservationPrintable(
-                        hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
-                requestPrintables.add(rp);
+                ReservationPrintable rp =
+                    new ReservationPrintable(hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
                 reservations.add(hr.getReservation());
+
+                ExternalRecordInfo.MaterialType mt = hr.getHolding().getRecord().getExternalInfo().getMaterialType();
+                if (mt == ExternalRecordInfo.MaterialType.ARCHIVE)
+                    requestPrintablesArchive.add(rp);
+                else
+                    requestPrintables.add(rp);
             }
 
-            printRequest(requestPrintables, alwaysPrint);
+            printRequest(requestPrintables, properties.getProperty("prop_printerArchive"), alwaysPrint);
+            printRequest(requestPrintablesArchive, properties.getProperty("prop_printerReadingRoom"), alwaysPrint);
 
             for (Reservation r : reservations) {
                 saveReservation(r);

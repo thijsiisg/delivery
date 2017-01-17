@@ -73,17 +73,13 @@ public class EADRecordExtractor implements IISHRecordExtractor {
     public ExternalRecordInfo getRecordMetadata(Node node, String item) throws NoSuchPidException {
         ExternalRecordInfo externalInfo = new ExternalRecordInfo();
 
-        Node itemNode = (item != null) ? findItemNode(node, item) : node;
-        if (itemNode == null)
-            throw new NoSuchPidException();
-
         String author = evaluateAuthor(node);
         if (author != null && !author.isEmpty()) {
             author = author.trim();
             externalInfo.setAuthor(stripToSize(author, 125));
         }
 
-        String title = evaluateTitle(itemNode, (item != null));
+        String title = evaluateTitle(node);
         if (title != null && !title.isEmpty()) {
             // Strip trailing slashes
             title = title.trim();
@@ -137,14 +133,14 @@ public class EADRecordExtractor implements IISHRecordExtractor {
             throw new NoSuchPidException();
 
         try {
-            String signature = xpUnitId.evaluate(node);
+            String barcode = xpUnitId.evaluate(node);
             if (item != null)
-                signature += "." + item;
+                barcode += "." + item;
 
             ExternalHoldingInfo eh = new ExternalHoldingInfo();
-            eh.setBarcode(signature);
+            eh.setBarcode(barcode);
 
-            retMap.put(signature, eh);
+            retMap.put((item != null) ? item : barcode, eh);
         }
         catch (XPathExpressionException ignored) {
             logger.debug("getHoldingMetadata(): Invalid XPath", ignored);
@@ -186,19 +182,9 @@ public class EADRecordExtractor implements IISHRecordExtractor {
         }
     }
 
-    private String evaluateTitle(Node node, boolean isItemLevel) {
+    private String evaluateTitle(Node node) {
         try {
-            List<String> titles = new LinkedList<String>();
-
-            Node curNode = node;
-            while ((curNode != null) && (!isItemLevel || (xpDidUnitId.evaluate(curNode, XPathConstants.NODE) != null))) {
-                String title = xpTitle.evaluate(curNode);
-                if (title != null)
-                    titles.add(0, title.trim());
-                curNode = (Node) xpParent.evaluate(curNode, XPathConstants.NODE);
-            }
-
-            return titles.isEmpty() ? null : StringUtils.join(titles, " / ");
+            return xpTitle.evaluate(node);
         }
         catch (XPathExpressionException e) {
             return null;

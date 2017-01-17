@@ -25,6 +25,7 @@ import org.socialhistoryservices.delivery.record.service.RecordService;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction_;
 import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
 import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
+import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
 import org.socialhistoryservices.delivery.request.service.InUseException;
@@ -657,27 +658,48 @@ public class ReservationController extends AbstractRequestController {
             return false;
 
         int maxItems = Integer.parseInt(properties.getProperty("prop_reservationMaxItems"));
-        if (request.getHoldingRequests().size() > maxItems) {
+        int maxChildren = Integer.parseInt(properties.getProperty("prop_reservationMaxChildren"));
+
+        Map<String, Integer> noOfRequests = new HashMap<String, Integer>();
+        for (HoldingRequest hr : request.getHoldingRequests()) {
+            Record record = hr.getHolding().getRecord();
+            if (record.getParent() != null)
+                record = record.getParent();
+
+            if (noOfRequests.containsKey(record.getPid()))
+                noOfRequests.put(record.getPid(), noOfRequests.get(record.getPid()) + 1);
+            else
+                noOfRequests.put(record.getPid(), 1);
+        }
+
+        if (noOfRequests.size() > maxItems) {
             model.addAttribute("error", "limitItems");
             return false;
+        }
+
+        for (int count : noOfRequests.values()) {
+            if (count > maxChildren) {
+                model.addAttribute("error", "limitChildren");
+                return false;
+            }
         }
 
         return true;
     }
 
-	private List<HoldingReservation> uriPathToHoldingReservations(String path) {
-		List<Holding> holdings = uriPathToHoldings(path, true);
-		if (holdings == null)
-			return null;
+    private List<HoldingReservation> uriPathToHoldingReservations(String path) {
+        List<Holding> holdings = uriPathToHoldings(path, true);
+        if (holdings == null)
+            return null;
 
-		List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
-		for (Holding holding : holdings) {
-			HoldingReservation hr = new HoldingReservation();
-			hr.setHolding(holding);
-			hrs.add(hr);
-		}
-		return hrs;
-	}
+        List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
+        for (Holding holding : holdings) {
+            HoldingReservation hr = new HoldingReservation();
+            hr.setHolding(holding);
+            hrs.add(hr);
+        }
+        return hrs;
+    }
 
     /**
      * Print a reservation if it has been reserved between the opening and
