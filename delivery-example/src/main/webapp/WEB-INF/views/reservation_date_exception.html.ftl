@@ -24,10 +24,6 @@
     <@_ "reservationDateException.title" "New date exception"/>
 </#assign>
 
-<#assign submitLabel>
-    <@_ "reservationDateException.submit" "Add date exception"/>
-</#assign>
-
 <#-- Build the page -->
 <@preamble title>
 <script type="text/javascript">

@@ -986,6 +986,23 @@ public class ReservationController extends AbstractRequestController {
      * @param model The model to add attributes to.
      * @return The view to resolve.
      */
+    @RequestMapping(value = "/date_exception_overview",
+        method = RequestMethod.GET)
+    public String showDateExceptionOverviewForm(Model model){
+        CriteriaBuilder builder = reservationDateExceptions.getReservationDateExceptionCriteriaBuilder();
+        CriteriaQuery<ReservationDateException> query = builder.createQuery(ReservationDateException.class);
+        Root<ReservationDateException> root = query.from(ReservationDateException.class);
+        query.select(root);
+        List<ReservationDateException> result = reservationDateExceptions.listReservationDateExceptions(query);
+        model.addAttribute("reservationDateExceptions", result);
+        return "reservation_date_exception_overview";
+    }
+
+    /**
+     * Show the date exception form for reservation date exceptions.
+     * @param model The model to add attributes to.
+     * @return The view to resolve.
+     */
     @RequestMapping(value = "/date_exception",
                     method = RequestMethod.GET)
     public String showDateExceptionForm(Model model){
@@ -1028,7 +1045,6 @@ public class ReservationController extends AbstractRequestController {
         if(!reservations.exceptionDateExists(newResDate, result) && !reservations.isEndDateBeforeBeginDate(newResDate, result)){
             try{
                 reservationDateExceptions.addReservationDateException(newResDate);
-//            model.addAttribute("reservationDateException", newResDate);
             }catch(Exception e){
                 model.addAttribute("error", e.getMessage());
             }

@@ -655,9 +655,9 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                 result.addError(new FieldError(result.getObjectName(), "endDate",
                     null, false,
                     null, null, msg));
-                return false;
+                return true;
             }
-            else return true;
+            else return false;
         }
         return false;
     }
