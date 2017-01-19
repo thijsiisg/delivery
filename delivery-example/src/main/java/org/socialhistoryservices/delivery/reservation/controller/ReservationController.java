@@ -999,6 +999,37 @@ public class ReservationController extends AbstractRequestController {
     }
 
     /**
+     *
+     * @param req
+     * @param newResDate
+     * @param result
+     * @param code
+     * @param model
+     * @return
+     */
+    @RequestMapping(value = "/date_exception_overview",
+        method = RequestMethod.POST)
+    public String processDateExceptionOverviewForm(HttpServletRequest req, @ModelAttribute("reservationDateException")
+                                                    ReservationDateException resDateToDelete,
+                                                    BindingResult result,
+                                                    @RequestParam(required = false) List<String> checked,
+                                                    Model model) {
+        if(checked != null){
+            List<ReservationDateException> reservationDateExceptionList = new ArrayList<ReservationDateException>();
+            for(String s : checked) {
+                reservationDateExceptionList.add(reservationDateExceptions.getReservationDateExceptionsById(Integer.parseInt(s)));
+            }
+            try {
+                for (ReservationDateException res : reservationDateExceptionList) {
+                    reservationDateExceptions.removeReservationDateException(res);
+                }
+            }catch (Exception e){
+    //            model.addAttribute("error", e.getMessage());
+            }
+        }
+        return "redirect:/reservation/date_exception_overview";
+    }
+
      * Show the date exception form for reservation date exceptions.
      * @param model The model to add attributes to.
      * @return The view to resolve.
@@ -1027,20 +1058,6 @@ public class ReservationController extends AbstractRequestController {
                                            BindingResult result,
                                            @RequestParam(required = false) String code,
                                            Model model){
-//        CriteriaBuilder cb = reservationDateExceptions.getReservationDateExceptionCriteriaBuilder();
-//        CriteriaQuery<ReservationDateException> cq = cb.createQuery(ReservationDateException.class);
-//        Root<ReservationDateException> rRoot = cq.from(ReservationDateException.class);
-//        cq.select(rRoot);
-//
-//        List<ReservationDateException> result = reservationDateExceptions.listReservationDateExceptions(cq);
-//        for(ReservationDateException res : result){
-//            System.out.println("DateException is: " + res.toString());
-//        }
-
-//        CriteriaQuery<ReservationDateException> all = cq.select(rRoot);
-//        EntityManager em = null;
-//        TypedQuery<ReservationDateException> allQuery = em.createQuery(all);
-//        System.out.println(cq.getOrderList());
 
         if(!reservations.exceptionDateExists(newResDate, result) && !reservations.isEndDateBeforeBeginDate(newResDate, result)){
             try{

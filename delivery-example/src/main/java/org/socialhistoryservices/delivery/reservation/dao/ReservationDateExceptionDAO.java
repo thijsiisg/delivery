@@ -40,4 +40,11 @@ public interface ReservationDateExceptionDAO {
      * @return the CriteriaBuilder.
      */
     public CriteriaBuilder getCriteriaBuilder();
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    public ReservationDateException getById(int id);
 }

@@ -36,7 +36,8 @@
 <@heading/>
 <@body>
 <h1>${title}</h1>
-    <@form "" "reservationDateExceptions">
+    <#--<form action="" method="get">-->
+    <form action="/reservation/date_exception_overview" method="post">
     <fieldset class="reservation_form">
         <#if reservationDateExceptions?has_content>
             <@border>
@@ -56,11 +57,12 @@
                 </thead>
                 <#list reservationDateExceptions as exception>
                     <tr>
-                        <td></td>
+                        <td><input type="checkbox" name="checked" value=${exception.id?c}></td>
                         <td>${exception.getdescription()?html}</td>
                         <td>${exception.startDate?string(prop_dateFormat)}</td>
                         <#if exception.endDate??>
                             <td>${exception.endDate?string(prop_dateFormat)}</td>
+                        <#else><td>${"No end date given"}</td>
                         </#if>
                     </tr>
                 </#list>
@@ -68,5 +70,16 @@
         <#else><@_ "reservationDateExceptionOverview.empty" "No exception dates exist"/>
         </#if>
     </fieldset>
-    </@form>
+    <#--</form>-->
+    <#--<form action="/reservation/date_exception_overview" method="post">-->
+        <#if _sec.ifAnyGranted("ROLE_RESERVATION_DELETE")>
+            <#assign deleteLabel>
+                <@_ "reservationDateExceptionOverview.submit" "Delete"/>
+            </#assign>
+            <#assign deleteConfirm>
+                <@_ "reservationDateExceptionOverview.confirmDelete" "" />
+            </#assign>
+            <input type="submit" name="delete" value="${deleteLabel}" onClick="return confirm('${deleteConfirm}');"/>
+        </#if>
+    </form>
 </@body>

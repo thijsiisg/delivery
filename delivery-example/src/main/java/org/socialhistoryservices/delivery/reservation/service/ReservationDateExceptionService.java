@@ -41,4 +41,11 @@ public interface ReservationDateExceptionService {
      * @return the CriteriaBuilder.
      */
     public CriteriaBuilder getReservationDateExceptionCriteriaBuilder();
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    public ReservationDateException getReservationDateExceptionsById(int id);
 }

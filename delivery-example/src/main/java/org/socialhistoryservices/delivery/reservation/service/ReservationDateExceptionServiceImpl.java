@@ -58,4 +58,11 @@ public class ReservationDateExceptionServiceImpl implements ReservationDateExcep
      * @return the CriteriaBuilder.
      */
     public CriteriaBuilder getReservationDateExceptionCriteriaBuilder() { return reservationDateExceptionDAO.getCriteriaBuilder(); }
+
+    /**
+     *
+     * @param id
+     * @return
+     */
+    public ReservationDateException getReservationDateExceptionsById(int id){return reservationDateExceptionDAO.getById(id);}
 }
