@@ -423,8 +423,8 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                     Calendar resCalendar = Calendar.getInstance();
                     resCalendar.setTime(resDate);
                     String msg = "";
-                    if(getExceptionDates().contains(resCalendar)){
-                        msg =  "Date cannot be selected, reason: " + getReasonForExceptionDate(resCalendar);
+                    if(dateExceptionService.getExceptionDates().contains(resCalendar)){
+                        msg =  "Date cannot be selected, reason: " + dateExceptionService.getReasonForExceptionDate(resCalendar);
                     }
                     else {
                         msg = msgSource.getMessage("validator.reservationDate", null,
@@ -509,12 +509,9 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                     }
 
         // Check if date is an exception date
-        List<Calendar> exceptionDates = getExceptionDates();
-        for(Calendar c : exceptionDates)
-            System.out.println(c.toString());
+        List<Calendar> exceptionDates = dateExceptionService.getExceptionDates();
         for(int i = 0; i < exceptionDates.size(); i++){
             if(fromCal.equals(exceptionDates.get(i))){
-                System.out.println("Exceptional date encountered!! " + fromCal.getTime() + " -" + exceptionDates.get(i).getTime());
                 fromCal.add(Calendar.DAY_OF_YEAR,1);
                 // Check for weekends
                 if (fromCal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
@@ -547,119 +544,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                     }
 
         return fromCal.getTime();
-    }
-
-    /**
-     * Get all the ReservationDateException's dates known in the database.
-     * @return all ReservationDateException's dates from the database.
-     */
-    public List<Calendar> getExceptionDates(){
-        List<ReservationDateException> result = getReservationDateExceptions();
-        List<Calendar> exceptionDates = new ArrayList<Calendar>();
-        for(ReservationDateException res : result){
-            if(res.getEndDate() == null){
-                Calendar cal = GregorianCalendar.getInstance();
-                cal.setTime(res.getStartDate());
-                exceptionDates.add(cal);
-            }else{
-                Calendar startCal = GregorianCalendar.getInstance();
-                Calendar endCal = GregorianCalendar.getInstance();
-                startCal.setTime(res.getStartDate());
-                endCal.setTime(res.getEndDate());
-                while(startCal.getTime().before(endCal.getTime())){
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTime(startCal.getTime());
-                    exceptionDates.add(cal);
-                    startCal.add(Calendar.DAY_OF_YEAR, 1);
-                }
-                exceptionDates.add(endCal);
-            }
-        }
-        return exceptionDates;
-    }
-
-    /**
-     * Get all the ReservationDateExceptions from the database.
-     * @return all ReservationDateExceptions from the database.
-     */
-    public List<ReservationDateException> getReservationDateExceptions(){
-        CriteriaBuilder builder = dateExceptionService.getReservationDateExceptionCriteriaBuilder();
-        CriteriaQuery<ReservationDateException> query = builder.createQuery(ReservationDateException.class);
-        Root<ReservationDateException> root = query.from(ReservationDateException.class);
-        query.select(root);
-        List<ReservationDateException> result = dateExceptionService.listReservationDateExceptions(query);
-        return result;
-    }
-
-    /**
-     * Get the reason for the ReservationDateException for the corresponding Calendar date.
-     * @param cal Calendar with the date to be checked.
-     * @return the reason for the ReservationDateException.
-     */
-    public String getReasonForExceptionDate(Calendar cal){
-        List<ReservationDateException> reservationDateExceptions = getReservationDateExceptions();
-        for(ReservationDateException res : reservationDateExceptions){
-            for(int i = 0; i < res.getDatesOfReservationDateException().size(); i++) {
-                if (cal.getTime().equals(res.getDatesOfReservationDateException().get(i))) { // Make a get dates method for ReservationDateExceptions
-                    return res.getdescription();
-                }
-            }
-        }
-        return "No reason given!";
-    }
-
-    /**
-     *
-     * @param resExcept
-     * @param result
-     * @return
-     */
-    public Boolean exceptionDateExists(ReservationDateException resExcept, BindingResult result){
-        if(resExcept.getDatesOfReservationDateException().size() > 1){
-            for(int i = 0; i < resExcept.getDatesOfReservationDateException().size(); i++){
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(resExcept.getDatesOfReservationDateException().get(i));
-                if(getExceptionDates().contains(cal)){
-                    String msg = "One or more dates are already set as an exception date!";
-                    result.addError(new FieldError(result.getObjectName(), "endDate",
-                        resExcept.getEndDate(), false,
-                        null, null, msg));
-                    return true;
-                }
-            }
-        }
-        else{
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(resExcept.getStartDate());
-            if(getExceptionDates().contains(cal)){
-                String msg = "Date is already set as an exception date!";
-                result.addError(new FieldError(result.getObjectName(), "endDate",
-                    null, false,
-                    null, null, msg));
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     *
-     * @param resExcept
-     * @param result
-     * @return
-     */
-    public Boolean isEndDateBeforeBeginDate(ReservationDateException resExcept, BindingResult result){
-        if(resExcept.getEndDate() != null) {
-            if (resExcept.getEndDate().before(resExcept.getStartDate())) {
-                String msg = "End date is before begin date!";
-                result.addError(new FieldError(result.getObjectName(), "endDate",
-                    null, false,
-                    null, null, msg));
-                return true;
-            }
-            else return false;
-        }
-        return false;
     }
 
     /**

@@ -22,7 +22,6 @@ import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.record.service.RecordService;
-import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction_;
 import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
 import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
 import org.socialhistoryservices.delivery.request.entity.Request;
@@ -35,7 +34,6 @@ import org.socialhistoryservices.delivery.reservation.service.*;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
@@ -48,16 +46,10 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
-
-import javax.persistence.EntityManager;
 import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.print.PrinterException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -70,9 +62,6 @@ public class ReservationController extends AbstractRequestController {
 
     @Autowired
     private ReservationService reservations;
-
-    @Autowired
-    private ReservationDateExceptionService reservationDateExceptions; // = new ReservationDateExceptionServiceImpl();
 
     @Autowired
     private PermissionService permissions;
@@ -979,99 +968,6 @@ public class ReservationController extends AbstractRequestController {
         }
         model.addAttribute("reservation", newRes);
         return "reservation_mass_create";
-    }
-
-    /**
-     * Show the date exception form for reservation date exceptions.
-     * @param model The model to add attributes to.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/date_exception_overview",
-        method = RequestMethod.GET)
-    public String showDateExceptionOverviewForm(Model model){
-        CriteriaBuilder builder = reservationDateExceptions.getReservationDateExceptionCriteriaBuilder();
-        CriteriaQuery<ReservationDateException> query = builder.createQuery(ReservationDateException.class);
-        Root<ReservationDateException> root = query.from(ReservationDateException.class);
-        query.select(root);
-        List<ReservationDateException> result = reservationDateExceptions.listReservationDateExceptions(query);
-        model.addAttribute("reservationDateExceptions", result);
-        return "reservation_date_exception_overview";
-    }
-
-    /**
-     *
-     * @param req
-     * @param newResDate
-     * @param result
-     * @param code
-     * @param model
-     * @return
-     */
-    @RequestMapping(value = "/date_exception_overview",
-        method = RequestMethod.POST)
-    public String processDateExceptionOverviewForm(HttpServletRequest req, @ModelAttribute("reservationDateException")
-                                                    ReservationDateException resDateToDelete,
-                                                    BindingResult result,
-                                                    @RequestParam(required = false) List<String> checked,
-                                                    Model model) {
-        if(checked != null){
-            List<ReservationDateException> reservationDateExceptionList = new ArrayList<ReservationDateException>();
-            for(String s : checked) {
-                reservationDateExceptionList.add(reservationDateExceptions.getReservationDateExceptionsById(Integer.parseInt(s)));
-            }
-            try {
-                for (ReservationDateException res : reservationDateExceptionList) {
-                    reservationDateExceptions.removeReservationDateException(res);
-                }
-            }catch (Exception e){
-    //            model.addAttribute("error", e.getMessage());
-            }
-        }
-        return "redirect:/reservation/date_exception_overview";
-    }
-
-     * Show the date exception form for reservation date exceptions.
-     * @param model The model to add attributes to.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/date_exception",
-                    method = RequestMethod.GET)
-    public String showDateExceptionForm(Model model){
-        ReservationDateException reservationDateException = new ReservationDateException();
-        model.addAttribute("reservationDateException", reservationDateException);
-        return "reservation_date_exception";
-    }
-
-    /**
-     * Process the adding of a date where no reservations can be placed
-     * @param req
-     * @param newResDate The ReservationDateException class
-     * @param result
-     * @param code
-     * @param model The model to add attributes to
-     * @return The view to resolve
-     */
-    @RequestMapping(value = "/date_exception",
-                    method = RequestMethod.POST)
-    public String processDateExceptionForm(HttpServletRequest req, @ModelAttribute("reservationDateException")
-                                           ReservationDateException newResDate,
-                                           BindingResult result,
-                                           @RequestParam(required = false) String code,
-                                           Model model){
-
-        if(!reservations.exceptionDateExists(newResDate, result) && !reservations.isEndDateBeforeBeginDate(newResDate, result)){
-            try{
-                reservationDateExceptions.addReservationDateException(newResDate);
-            }catch(Exception e){
-                model.addAttribute("error", e.getMessage());
-            }
-        }
-
-        model.addAttribute("reservationDateException", newResDate);
-        if(!result.hasErrors())
-            return "redirect:/reservation/date_exception";
-        else
-            return "reservation_date_exception";
     }
 
     /**

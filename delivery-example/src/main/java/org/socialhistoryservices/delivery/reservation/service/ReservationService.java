@@ -216,7 +216,4 @@ public interface ReservationService {
      * @return The active reservation, or null if no active reservation exists.
      */
     public Reservation getActiveFor(Holding holding);
-
-    public Boolean exceptionDateExists(ReservationDateException resExcept, BindingResult result);
-    public Boolean isEndDateBeforeBeginDate(ReservationDateException resExcept, BindingResult result);
 }

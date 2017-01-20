@@ -57,9 +57,9 @@ public class ReservationDateExceptionDAOImpl implements ReservationDateException
     }
 
     /**
-     *
-     * @param q
-     * @return
+     * List all ReservationDateExceptions matching a built query.
+     * @param q The criteria query to execute.
+     * @return A list of matching ReservationDateExceptions.
      */
     public List<ReservationDateException> list(CriteriaQuery<ReservationDateException> q) {
         return entityManager.createQuery(q).getResultList();
@@ -72,9 +72,9 @@ public class ReservationDateExceptionDAOImpl implements ReservationDateException
     public CriteriaBuilder getCriteriaBuilder() { return entityManager.getCriteriaBuilder(); }
 
     /**
-     *
-     * @param id
-     * @return
+     * Get a ReservationDateException matching a given id.
+     * @param id The id to match the ReservationDateException on.
+     * @return A ReservationDateException matching the id.
      */
     public ReservationDateException getById(int id) {return entityManager.find(ReservationDateException.class, id); }
 }

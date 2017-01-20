@@ -115,6 +115,6 @@ public class ReservationDateException{
      */
     @Override
     public String toString(){
-        return "Id: " + id + " Start date: " + startDate + " End date: " + endDate;
+        return "Id: " + id + " Start date: " + startDate + " End date: " + endDate + " Reason: " + description;
     }
 }

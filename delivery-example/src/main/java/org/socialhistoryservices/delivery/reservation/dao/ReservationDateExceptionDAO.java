@@ -29,9 +29,9 @@ public interface ReservationDateExceptionDAO {
     public void save(ReservationDateException obj);
 
     /**
-     *
-     * @param q
-     * @return
+     * List all ReservationDateExceptions matching a built query.
+     * @param q The criteria query to execute.
+     * @return A list of matching ReservationDateExceptions.
      */
     public List<ReservationDateException> list(CriteriaQuery<ReservationDateException> q);
 
@@ -42,9 +42,9 @@ public interface ReservationDateExceptionDAO {
     public CriteriaBuilder getCriteriaBuilder();
 
     /**
-     *
-     * @param id
-     * @return
+     * Get a ReservationDateException matching a given id.
+     * @param id The id to match the ReservationDateException on.
+     * @return A ReservationDateException matching the id.
      */
     public ReservationDateException getById(int id);
 }

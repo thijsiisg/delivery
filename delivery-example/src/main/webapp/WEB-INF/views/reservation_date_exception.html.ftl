@@ -20,12 +20,21 @@
 <#include "form.ftl"/>
 
 <#-- Build the title -->
-<#assign title>
+<#assign exceptionTitle>
     <@_ "reservationDateException.title" "New date exception"/>
 </#assign>
+<#assign overviewTitle>
+    <@_ "reservationDateExceptionOverview.title" "Date exception overview"/>
+</#assign>
+
+<#macro border>
+<table cellpadding=3><tr><td>
+    <#nested>
+</tr></td></table>
+</#macro>
 
 <#-- Build the page -->
-<@preamble title>
+<@preamble exceptionTitle>
 <script type="text/javascript">
     $(document).ready(function(){
         $(".reservation_form .date").datepicker({
@@ -38,7 +47,7 @@
 </@preamble>
 <@heading/>
 <@body>
-    <h1>${title}</h1>
+    <h1>${exceptionTitle}</h1>
     <@form "" "reservationDateException">
         <fieldset class="reservation_form">
             <ul class="form">
@@ -47,8 +56,48 @@
                 <li><@date "reservationDateException.endDate" ""/></li>
             </ul>
         </fieldset>
+        <#if _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY")>
         <@buttons>
             <@submit "reservationDateException" />
         </@buttons>
+        </#if>
     </@form>
+    <h1>${overviewTitle}</h1>
+    <form action="/reservation_date_exception/date_exception_overview" method="post">
+        <fieldset class="reservation_form">
+            <#if reservationDateExceptions?has_content>
+                <@border>
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th><@sortLink "startDate"><@_ "reservationDateException.startDate" ""/></@sortLink></th>
+                        <th><@_ "reservationDateException.endDate" ""/></th>
+                        <th><@_ "reservationDateException.description" ""/></th>
+                    </tr>
+                    </thead>
+                    <#list reservationDateExceptions as exception>
+                        <tr>
+                            <td><input type="checkbox" name="checked" id=${exception.id?c} value=${exception.id?c}></td>
+                            <td>${exception.startDate?string(prop_dateFormat)}</td>
+                            <#if exception.endDate??>
+                                <td>${exception.endDate?string(prop_dateFormat)}</td>
+                            <#else><td>${"-"}</td>
+                            </#if>
+                            <td>${exception.getdescription()?html}</td>
+                        </tr>
+                    </#list>
+                </@border>
+            <#else><@_ "reservationDateExceptionOverview.empty" "No exception dates exist"/>
+            </#if>
+        </fieldset>
+        <#if _sec.ifAnyGranted("ROLE_RESERVATION_DELETE")>
+            <#assign deleteLabel>
+                <@_ "reservationDateExceptionOverview.submit" "Delete"/>
+            </#assign>
+            <#assign deleteConfirm>
+                <@_ "reservationDateExceptionOverview.confirmDelete" "" />
+            </#assign>
+            <input type="submit" name="delete" value="${deleteLabel}" onClick="return confirm('${deleteConfirm}');"/>
+        </#if>
+    </form>
 </@body>

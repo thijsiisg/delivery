@@ -133,13 +133,6 @@
             </a>
           </li>
         </#if>
-        <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
-          <li>
-            <a href="${rc.contextPath}/reservation/date_exception_overview">
-              <@_ "reservationDateExceptionOverview.title" "Date exception overview"/>
-            </a>
-          </li>
-        </#if>
         <br>
         <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_VIEW")>
           <li>
@@ -171,7 +164,7 @@
         </#if>
         <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
         <li>
-          <a href="${rc.contextPath}/reservation/date_exception">
+          <a href="${rc.contextPath}/reservation_date_exception/date_exception">
           <@_ "reservationDateException.title" "New date exception"/>
           </a>
         </li>
