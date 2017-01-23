@@ -5,6 +5,7 @@ import org.socialhistoryservices.delivery.reservation.entity.ReservationDateExce
 import org.socialhistoryservices.delivery.reservation.entity.ReservationDateException_;
 import org.socialhistoryservices.delivery.reservation.service.ReservationDateExceptionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,13 +56,16 @@ public class ReservationDateExceptionController extends AbstractRequestControlle
                     reservationDateExceptions.removeReservationDateException(res);
                 }
             }catch (Exception e){
-                String msg = "One or more exception dates cannot be removed!";
+                String msg = messageSource.getMessage("reservationDateExceptionOverview.cannotDelete", new Object[]{}, LocaleContextHolder.getLocale());
                 result.addError(new FieldError(result.getObjectName(), "",
                     resExceptions, false,
                     null, null, msg));
             }
         }
-        return "redirect:/reservation_date_exception/date_exception";
+        if(!result.hasErrors())
+            return "redirect:/reservation_date_exception/date_exception";
+        else
+            return "reservation_date_exception/date_exception";
     }
 
     /**
