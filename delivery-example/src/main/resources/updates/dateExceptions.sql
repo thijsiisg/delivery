@@ -20,3 +20,8 @@ INSERT INTO group_permissions VALUES (3, 16);
 INSERT INTO group_permissions VALUES (3, 17);
 INSERT INTO group_permissions VALUES (3, 18);
 INSERT INTO group_permissions VALUES (3, 19);
+
+INSERT INTO group_permissions VALUES (2, 16);
+INSERT INTO group_permissions VALUES (2, 17);
+INSERT INTO group_permissions VALUES (2, 18);
+INSERT INTO group_permissions VALUES (2, 19);
