@@ -56,14 +56,14 @@
                 <li><@date "reservationDateException.endDate" ""/></li>
             </ul>
         </fieldset>
-        <#if _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY")>
+        <#if _sec.ifAnyGranted("ROLE_DATE_EXCEPTION_CREATE")>
         <@buttons>
             <@submit "reservationDateException" />
         </@buttons>
         </#if>
     </@form>
     <h1>${overviewTitle}</h1>
-    <form action="/reservation_date_exception/date_exception_overview" method="post">
+    <@form "" "reservationDateException" >
         <fieldset class="reservation_form">
             <#if reservationDateExceptions?has_content>
                 <@border>
@@ -90,14 +90,14 @@
             <#else><@_ "reservationDateExceptionOverview.empty" "No exception dates exist"/>
             </#if>
         </fieldset>
-        <#if _sec.ifAnyGranted("ROLE_RESERVATION_DELETE")>
+        <#if _sec.ifAnyGranted("ROLE_DATE_EXCEPTION_DELETE")>
             <#assign deleteLabel>
                 <@_ "reservationDateExceptionOverview.submit" "Delete"/>
             </#assign>
             <#assign deleteConfirm>
                 <@_ "reservationDateExceptionOverview.confirmDelete" "" />
             </#assign>
-            <input type="submit" name="delete" value="${deleteLabel}" onClick="return confirm('${deleteConfirm}');"/>
+            <input type="submit" name="deleteDateException" value="${deleteLabel}" onClick="return confirm('${deleteConfirm}');"/>
         </#if>
-    </form>
+    </@form>
 </@body>

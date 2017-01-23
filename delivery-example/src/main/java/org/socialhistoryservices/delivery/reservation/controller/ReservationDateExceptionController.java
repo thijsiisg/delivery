@@ -5,6 +5,7 @@ import org.socialhistoryservices.delivery.reservation.entity.ReservationDateExce
 import org.socialhistoryservices.delivery.reservation.entity.ReservationDateException_;
 import org.socialhistoryservices.delivery.reservation.service.ReservationDateExceptionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -14,13 +15,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import javax.persistence.criteria.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
- * Controller of the Reservation package, handles all /reservation/* requests.
+ * Controller of the ReservationDateException package, handles all /reservation_date_exception/* requests.
  */
 @Controller
 @Transactional
@@ -31,17 +31,19 @@ public class ReservationDateExceptionController extends AbstractRequestControlle
 
 
     /**
-     * Process the deletion of selected ReservationDateExceptions. If none selected it goes back to the overview.
+     * Process the deletion of selected ReservationDateExceptions. If none selected it goes back to the default page.
      * @param checked List of checked ReservationDateException's ids.
      * @param model The Model to add response attributes to.
      * @return The view to resolve.
      */
-    @RequestMapping(value = "/date_exception_overview",
-        method = RequestMethod.POST)
-    public String processDateExceptionOverviewForm(@RequestParam(required = false) List<String> checked,
+    @RequestMapping(value = "/date_exception",
+                    method = RequestMethod.POST,
+                    params = "deleteDateException")
+    @Secured("ROLE_DATE_EXCEPTION_DELETE")
+    public String processDateExceptionDeleteForm(@RequestParam(required = false) ArrayList<String> checked,
                                                     Model model,
                                                     @ModelAttribute("reservationDateExceptions")
-                                                       List<ReservationDateException> resExceptions,
+                                                    ArrayList<ReservationDateException> resExceptions,
                                                     BindingResult result) {
         if(checked != null){
             List<ReservationDateException> reservationDateExceptionList = new ArrayList<ReservationDateException>();
@@ -69,6 +71,7 @@ public class ReservationDateExceptionController extends AbstractRequestControlle
      */
     @RequestMapping(value = "/date_exception",
         method = RequestMethod.GET)
+    @Secured("ROLE_DATE_EXCEPTION_VIEW")
     public String showDateExceptionForm(Model model, HttpServletRequest req){
         model.addAttribute("reservationDateExceptions", getDateExceptions(req));
         ReservationDateException reservationDateException = new ReservationDateException();
@@ -86,6 +89,7 @@ public class ReservationDateExceptionController extends AbstractRequestControlle
      */
     @RequestMapping(value = "/date_exception",
         method = RequestMethod.POST)
+    @Secured("ROLE_DATE_EXCEPTION_CREATE")
     public String processDateExceptionForm(HttpServletRequest req, @ModelAttribute("reservationDateException")
                                             ReservationDateException newResDate,
                                             BindingResult result,

@@ -162,7 +162,7 @@
           </a>
         </li>
         </#if>
-        <#if  _sec.ifAllGranted("ROLE_RESERVATION_CREATE")>
+        <#if  _sec.ifAllGranted("ROLE_DATE_EXCEPTION_VIEW")>
         <li>
           <a href="${rc.contextPath}/reservation_date_exception/date_exception">
           <@_ "reservationDateException.title" "New date exception"/>

@@ -55,17 +55,6 @@ ALTER TABLE reservations DROP COLUMN printed;
 
 /* NEW TABLES */
 
-CREATE TABLE reservation_date_exceptions
-(
-  id integer NOT NULL,
-  exception_startDate DATE NOT NULL,
-  exception_endDate DATE,
-  description CHARACTER VARYING(255)
-)
-WITH (
-  OIDS=FALSE
-);
-
 CREATE TABLE reproduction_custom_notes
 (
   id integer NOT NULL,
