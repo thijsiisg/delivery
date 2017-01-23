@@ -27,6 +27,7 @@ import org.socialhistoryservices.delivery.reservation.dao.HoldingReservationDAO;
 import org.socialhistoryservices.delivery.reservation.dao.ReservationDAO;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
+import org.socialhistoryservices.delivery.reservation.entity.ReservationDateException;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import org.springframework.validation.FieldError;
 import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
 import java.awt.print.PrinterException;
 import java.text.DateFormat;
@@ -60,6 +62,9 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
 
     @Autowired
     private HoldingReservationDAO holdingReservationDAO;
+
+    @Autowired
+    private ReservationDateExceptionService dateExceptionService;
 
     @Autowired
     private BeanFactory bf;
@@ -388,8 +393,16 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                 Date resDate = newRes.getDate();
                 if (resDate != null && !resDate.equals(getFirstValidReservationDate
                             (resDate))) {
-                    String msg =  msgSource.getMessage("validator.reservationDate", null,
+                    Calendar resCalendar = Calendar.getInstance();
+                    resCalendar.setTime(resDate);
+                    String msg = "";
+                    if(dateExceptionService.getExceptionDates().contains(resCalendar)){
+                        msg =  "Date cannot be selected, reason: " + dateExceptionService.getReasonForExceptionDate(resCalendar);
+                    }
+                    else {
+                        msg = msgSource.getMessage("validator.reservationDate", null,
                             "Invalid date", LocaleContextHolder.getLocale());
+                    }
                     result.addError(new FieldError(result.getObjectName(), "date",
                                 newRes.getDate(), false,
                                 null, null, msg));
@@ -449,7 +462,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
 
         Calendar firstPossibleCal = GregorianCalendar.getInstance();
 
-
         // Cannot reserve after "closing" time.
         if (firstPossibleCal.get(Calendar.HOUR_OF_DAY) > t.get(Calendar.HOUR_OF_DAY) ||
                 (firstPossibleCal.get(Calendar.HOUR_OF_DAY) == t.get(Calendar
@@ -459,6 +471,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                  >= t.get(Calendar.MINUTE))) {
             firstPossibleCal.add(Calendar.DAY_OF_YEAR, 1);
                  }
+
         // Cannot reserve in past (or after closing time).
         if (fromCal.get(Calendar.YEAR) < firstPossibleCal.get(Calendar.YEAR)
                 || (
@@ -467,6 +480,21 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                     (Calendar.DAY_OF_YEAR))) {
             fromCal = firstPossibleCal;
                     }
+
+        // Check if date is an exception date
+        List<Calendar> exceptionDates = dateExceptionService.getExceptionDates();
+        for(int i = 0; i < exceptionDates.size(); i++){
+            if(fromCal.equals(exceptionDates.get(i))){
+                fromCal.add(Calendar.DAY_OF_YEAR,1);
+                // Check for weekends
+                if (fromCal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
+                    fromCal.add(Calendar.DAY_OF_YEAR, 2);
+                }
+                if (fromCal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                    fromCal.add(Calendar.DAY_OF_YEAR, 1);
+                }
+            }
+        }
 
         // Check for weekends
         if (fromCal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
@@ -484,6 +512,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                     .get(Calendar.YEAR) == maxCal.get(Calendar.YEAR) && fromCal
                     .get(Calendar.DAY_OF_YEAR) > maxCal.get(Calendar.DAY_OF_YEAR)
                     )) {
+            System.out.println("Date reserved is beyond the max date: " + fromCal.getTime());
             return null;
                     }
 
