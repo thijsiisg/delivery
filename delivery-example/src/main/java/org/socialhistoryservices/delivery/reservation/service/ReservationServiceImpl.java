@@ -32,6 +32,7 @@ import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +66,9 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
 
     @Autowired
     private ReservationDateExceptionService dateExceptionService;
+
+    @Autowired
+    protected MessageSource messageSource;
 
     @Autowired
     private BeanFactory bf;
@@ -397,7 +401,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                     resCalendar.setTime(resDate);
                     String msg = "";
                     if(dateExceptionService.getExceptionDates().contains(resCalendar)){
-                        msg =  "Date cannot be selected, reason: " + dateExceptionService.getReasonForExceptionDate(resCalendar);
+                        msg =  messageSource.getMessage("reservationDateException.dateIsException", new Object[]{}, LocaleContextHolder.getLocale()) + dateExceptionService.getReasonForExceptionDate(resCalendar);
                     }
                     else {
                         msg = msgSource.getMessage("validator.reservationDate", null,
