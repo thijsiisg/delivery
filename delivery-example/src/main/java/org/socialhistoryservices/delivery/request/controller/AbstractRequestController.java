@@ -29,6 +29,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public abstract class AbstractRequestController extends ErrorHandlingController {
     private static final DateFormat API_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
@@ -85,7 +86,7 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         List<Holding> holdings = new ArrayList<Holding>();
         String[] tuples = getPidsFromURL(path);
         for (String tuple : tuples) {
-            String[] elements = tuple.split(properties.getProperty("prop_holdingSeparator", ":"));
+            String[] elements = tuple.split(Pattern.quote(properties.getProperty("prop_holdingSeparator", ":")));
             Record r = records.getRecordByPid(elements[0]);
 
             if (r == null) {
