@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -16,7 +17,8 @@ public class EADRecordExtractor implements IISHRecordExtractor {
     private static final Log logger = LogFactory.getLog(EADRecordExtractor.class);
 
     private XPath xpath;
-    private XPathExpression xpTitle, xpAuthor, xpPhysicalDescription, xpUnitId, xpDidUnitId, xpParent;
+    private XPathExpression xpTitle, xpAuthor, xpPhysicalDescription, xpUnitId, xpDidUnitId,
+        xpAccessAndUse, xpAccessRestrict, xpP, xpParent;
 
     public EADRecordExtractor() {
         XPathFactory factory = XPathFactory.newInstance();
@@ -30,6 +32,9 @@ public class EADRecordExtractor implements IISHRecordExtractor {
                 "normalize-space(.//ead:physdesc[@label='Physical Description']/ead:extent)");
             xpUnitId = xpath.compile(".//ead:unitid");
             xpDidUnitId = xpath.compile("./ead:did/ead:unitid");
+            xpAccessAndUse = xpath.compile(".//ead:descgrp[@type='access_and_use']");
+            xpAccessRestrict = xpath.compile(".//ead:accessrestrict");
+            xpP = xpath.compile("normalize-space(./p[1])");
             xpParent = xpath.compile("(" +
                 "./ancestor::ead:c01|" +
                 "./ancestor::ead:c02|" +
@@ -95,6 +100,7 @@ public class EADRecordExtractor implements IISHRecordExtractor {
 
         externalInfo.setMaterialType(ExternalRecordInfo.MaterialType.ARCHIVE);
         externalInfo.setPublicationStatus(ExternalRecordInfo.PublicationStatus.UNKNOWN);
+        externalInfo.setRestriction(evaluateRestriction(node, findItemNode(node, item)));
 
         String physicalDescription = evaluatePhysicalDescription(node);
         externalInfo.setPhysicalDescription((physicalDescription != null) ? physicalDescription.trim() : null);
@@ -159,6 +165,9 @@ public class EADRecordExtractor implements IISHRecordExtractor {
 
     private Node findItemNode(Node node, String item) {
         try {
+            if (item == null)
+                return null;
+
             Node itemNode = (Node) xpath.evaluate(".//ead:dsc//ead:unitid[text()='" + item + "']",
                 node, XPathConstants.NODE);
             Node parentNode = (Node) xpParent.evaluate(itemNode, XPathConstants.NODE);
@@ -170,6 +179,34 @@ public class EADRecordExtractor implements IISHRecordExtractor {
         }
         catch (XPathExpressionException ex) {
             return null;
+        }
+    }
+
+    private ExternalRecordInfo.Restriction evaluateRestriction(Node node, Node itemNode) {
+        try {
+            Element accessAndUse = (Element) xpAccessAndUse.evaluate(node, XPathConstants.NODE);
+            String restriction = xpP.evaluate(accessAndUse);
+            if (accessAndUse.getAttribute("type").equalsIgnoreCase("part") && (itemNode != null)) {
+                accessAndUse = (Element) xpAccessAndUse.evaluate(itemNode, XPathConstants.NODE);
+                if (accessAndUse != null)
+                    restriction = accessAndUse.getAttribute("type");
+            }
+
+            switch (restriction.trim().toLowerCase()) {
+                case "gesloten":
+                case "closed":
+                    return ExternalRecordInfo.Restriction.CLOSED;
+                case "beperkt":
+                case "restricted":
+                    return ExternalRecordInfo.Restriction.RESTRICTED;
+                case "date":
+                    return ExternalRecordInfo.Restriction.DATE_RESTRICTED;
+                default:
+                    return ExternalRecordInfo.Restriction.OPEN;
+            }
+        }
+        catch (XPathExpressionException e) {
+            return ExternalRecordInfo.Restriction.OPEN;
         }
     }
 

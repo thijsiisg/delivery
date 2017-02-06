@@ -172,7 +172,7 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         List<? extends HoldingRequest> holdingRequests = request.getHoldingRequests();
         for (HoldingRequest holdingRequest : holdingRequests) {
             Record permRecord = holdingRequest.getHolding().getRecord();
-            if (permRecord.getRealRestrictionType() == Record.RestrictionType.RESTRICTED) {
+            if (permRecord.getRestriction() == ExternalRecordInfo.Restriction.RESTRICTED) {
                 if (!perm.hasGranted(permRecord)) {
                     model.addAttribute("holding" + request.getClass().getSimpleName() + "s", holdingRequest);
                     return false;

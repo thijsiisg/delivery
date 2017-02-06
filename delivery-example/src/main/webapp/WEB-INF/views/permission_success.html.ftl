@@ -31,12 +31,7 @@
     <section>
         <ul class="items">
             <#list records as rec>
-                <#assign info = rec.externalInfo>
-                <li>
-                    ${rec.title?html}
-                    <#if rec.parent??> - ${rec.holdings[0].signature} </#if>
-                    <#if info.author??>/ ${info.author}</#if>
-                </li>
+                <li>${rec.toString()?html}</li>
             </#list>
         </ul>
     </section>

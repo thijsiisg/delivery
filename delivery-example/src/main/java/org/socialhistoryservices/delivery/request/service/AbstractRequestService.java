@@ -107,7 +107,7 @@ public abstract class AbstractRequestService implements RequestService {
             }
 
             // Do not check already linked holdings for CLOSED.
-            if (!has && h.getRecord().getRealRestrictionType() == Record.RestrictionType.CLOSED) {
+            if (!has && h.getRecord().getRestriction() == ExternalRecordInfo.Restriction.CLOSED) {
                 throw new ClosedException();
             }
 

@@ -189,7 +189,7 @@
       <@_ "permissionList.edit" "Administrate"/>
       </a>
     </td>
-    <td class="leftAligned">${record.title}<#if record.parent??> - ${record.holdings[0].signature}</#if></td>
+    <td class="leftAligned">${record.toString()?html}</td>
     <td>${permission.name?html}</td>
     <td>${permission.dateFrom?string(prop_dateFormat)}</td>
     <td>${permission.dateTo?string(prop_dateFormat)}</td>

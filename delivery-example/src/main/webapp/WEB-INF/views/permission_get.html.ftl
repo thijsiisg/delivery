@@ -56,11 +56,7 @@
     <#list permission.recordPermissions as rp>
         <fieldset class="recordPermissionDetails">
             <#assign info = rp.record.externalInfo>
-            <legend>
-                ${rp.record.title?html}
-                <#if rp.record.parent??> - ${rp.record.holdings[0].signature} </#if>
-                <#if info.author??>/ ${info.author}</#if>
-            </legend>
+            <legend>${rp.record.toString()?html}</legend>
 
             <ul>
                 <li>
@@ -84,9 +80,6 @@
                     <textarea id="motivation_${rp.id?c}"
                               name="motivation_${rp.id?c}"><#if rp.motivation??>${rp.motivation?html}</#if></textarea>
                 </li>
-                <#if rp.record.restriction??>
-                    <li><span><@_ "record.restriction" "Restriction Details"/></span> ${rp.record.restriction?html}</li>
-                </#if>
                 <#if rp.record.comments??>
                     <li><span><@_ "record.comments" "Comments"/></span> ${rp.record.comments?html}</li>
                 </#if>

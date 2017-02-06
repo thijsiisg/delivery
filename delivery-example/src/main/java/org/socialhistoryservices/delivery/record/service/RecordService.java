@@ -133,12 +133,6 @@ public interface RecordService {
     public void removeHolding(Holding obj);
 
     /**
-     * Scheduled task to update all closed records with embargo dates in the
-     * past to open status.
-     */
-    public void checkEmbargoDates();
-
-    /**
      * Updates the external info of the given record, if necessary.
      * @param record      The record of which to update the external info.
      * @param hardRefresh Always update the external info.

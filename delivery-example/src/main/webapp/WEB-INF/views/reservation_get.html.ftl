@@ -70,7 +70,7 @@
       <#assign h = hr.holding>
       <tr>
         <td>${h.id?c}</td>
-        <td>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></td>
+        <td>${hr.toShortString()?html}</td>
         <td><#if _sec.ifAllGranted("ROLE_RECORD_MODIFY")>
             <a target="_blank" href="${rc.contextPath}/record/editform/${h.record.pid?url}">${h.record.pid?html}</a>
             <#else>

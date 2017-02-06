@@ -74,7 +74,7 @@
         <#assign h = hr.holding>
       <tr>
         <td>${h.id?c}</td>
-        <td>${h.record.title?html} - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></td>
+        <td>${hr.toShortString()?html}</td>
         <td>${hr.printed?string(yes, no)}</td>
         <td><@holdingStatus holdingActiveRequests reservation h/></td>
       </tr>

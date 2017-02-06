@@ -68,13 +68,12 @@ $(document).ready(function(){
         <input type="hidden" id="holdingReservations[${i}].holding"
                name="holdingReservations[${i}].holding"
                class="holding" value="${hr.holding.id?c}"/>
-        <#if hr.holding.status != "AVAILABLE" || hr.holding.record.realRestrictionType == "CLOSED">
+        <#if hr.holding.status != "AVAILABLE" || hr.holding.record.restriction == "CLOSED">
         <span class="red">
         <#else>
         <span class="green">
         </#if>
-        ${hr.holding.record.title?html} <#if info.author??>/
-        ${info.author}</#if> - ${hr.holding.signature?html}</span>
+        ${hr.holding.record.toString()?html}</span>
         <#if info.materialType == "SERIAL">
         <ul class id="commentlist">
             <li><strong>
@@ -128,7 +127,7 @@ $(document).ready(function(){
       <#assign noResults = holdingList?size == 0>
       <#list holdingList as h>
         <#assign info = h.record.externalInfo>
-        <#if h.status != "AVAILABLE" || h.record.realRestrictionType == "CLOSED">
+        <#if h.status != "AVAILABLE" || h.record.restriction == "CLOSED">
         <li><span class="red">${h.record.title?html} <#if info.author??>/
         ${info.author}</#if> - ${h.signature?html}</span></li>
         <#else>
@@ -136,8 +135,7 @@ $(document).ready(function(){
         .parent());" value="<@_ "addHolding.submit"/>"/>
             <input type="hidden" class="holding" value="${h.id?c}"/>
 
-            <span class="green">${h.record.title?html} <#if info.author??>/
-            ${info.author}</#if> - ${h.signature?html}</span>
+            <span class="green">${h.record.toString()?html}</span>
         <#if info.materialType == "SERIAL">
         <ul class="commentlist hidden">
             <li><strong>

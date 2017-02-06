@@ -180,39 +180,6 @@ public class RecordServiceImpl implements RecordService {
     }
 
     /**
-     * Scheduled task to update all closed records with embargo dates in the
-     * past to open status.
-     */
-    @Scheduled(fixedDelay=1000 * 60 * 60)
-    public void checkEmbargoDates() {
-        // Build the query
-        CriteriaBuilder builder = getRecordCriteriaBuilder();
-
-        CriteriaQuery<Record> query = builder.createQuery(Record.class);
-        Root<Record> recRoot = query.from(Record.class);
-        query.select(recRoot);
-
-        Expression<Boolean> crit = builder.notEqual(recRoot.get(Record_.restrictionType),
-                    Record.RestrictionType.OPEN);
-
-        // Get earliest date
-        Calendar cal = GregorianCalendar.getInstance();
-        cal.add(Calendar.YEAR, -1000);
-        Date earliest = cal.getTime();
-        Date now = new Date();
-
-        crit = builder.and(crit, builder.isNotNull(recRoot.get(Record_.embargo)));
-        crit = builder.and(crit, builder.between(recRoot.get(Record_.embargo), earliest, now));
-        query.where(crit);
-
-        // Get list
-        for (Record rec : listRecords(query)) {
-            rec.setRestrictionType(Record.RestrictionType.OPEN);
-            saveRecord(rec);
-        }
-    }
-
-    /**
      * Updates the external info of the given record, if necessary.
      * @param record      The record of which to update the external info.
      * @param hardRefresh Always update the external info.
@@ -291,15 +258,10 @@ public class RecordServiceImpl implements RecordService {
                 throw new NoSuchParentException();
             }
             newRecord.setParent(parent);
-        } else {
-            // Make sure the restriction type cannot be inherit on parents.
-            if (newRecord.getRestrictionType() == Record.RestrictionType.INHERIT) {
-                newRecord.setRestrictionType(Record.RestrictionType.OPEN);
-            }
         }
 
         // Add holding/other API info if present
-	    updateExternalInfo(newRecord, true);
+        updateExternalInfo(newRecord, true);
 
         // Validate the record.
         validateRecord(newRecord, result);
@@ -402,9 +364,6 @@ public class RecordServiceImpl implements RecordService {
         r.setPid(pid);
         r.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
         r.setParent(parent);
-        if (r.getParent() != null) {
-            r.setRestrictionType(Record.RestrictionType.INHERIT);
-        }
         List<Holding> hList = new ArrayList<Holding>();
         for (Map.Entry<String, ExternalHoldingInfo> e :
             lookup.getHoldingMetadataByPid(pid).entrySet()) {
