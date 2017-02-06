@@ -260,7 +260,7 @@ public abstract class RequestPrintable implements Printable {
         drawCabinet(drawInfo, h.getCabinet());
         drawShelf(drawInfo, h.getShelf());
 
-        if (r.getRealRestrictionType() != Record.RestrictionType.OPEN) {
+        if (r.getRestriction() != ExternalRecordInfo.Restriction.OPEN) {
             drawInfo.setOffsetY(drawInfo.getOffsetY() + 10);
             drawRestrictedNotice(drawInfo);
         }

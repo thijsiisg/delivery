@@ -213,15 +213,6 @@ public class RecordController extends ErrorHandlingController {
             // Make sure there is a distinction between missing nodes and
             // nodes that are explicitly set to NULL for optional fields.
             JsonNode n = parseJSONBody(json);
-            if (n.path("restrictionType").isMissingNode()) {
-                newRecord.setRestrictionType(oldRecord.getRestrictionType());
-            }
-            if (n.path("embargo").isMissingNode()) {
-                newRecord.setEmbargo(oldRecord.getEmbargo());
-            }
-            if (n.path("restriction").isMissingNode()) {
-                newRecord.setRestriction(oldRecord.getRestriction());
-            }
             if (n.path("holdings").isMissingNode()) {
                 newRecord.setHoldings(oldRecord.getHoldings());
             }
@@ -265,19 +256,6 @@ public class RecordController extends ErrorHandlingController {
     // }}}
 
     // {{{ Model data
-    /**
-     * Restriction type enumeration in Map format for use in views.
-     * @return The map with restriction types.
-     */
-    @ModelAttribute("restriction_types")
-    public Map<String,Record.RestrictionType> restrictionTypes() {
-        Map<String,Record.RestrictionType> data = new HashMap<String,Record.RestrictionType>();
-        data.put("OPEN", Record.RestrictionType.OPEN);
-        data.put("RESTRICTED", Record.RestrictionType.RESTRICTED);
-        data.put("CLOSED", Record.RestrictionType.CLOSED);
-        data.put("INHERIT", Record.RestrictionType.INHERIT);
-        return data;
-    }
 
     /**
      * Usage Restriction type enumeration in Map format for use in views.

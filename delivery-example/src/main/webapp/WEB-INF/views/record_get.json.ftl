@@ -25,11 +25,8 @@ ${callback}([
   {
     "pid" : "${record.pid?js_string}",
     "title" : "${record.title?js_string}",
-    <#if record.embargo??>
-      "embargo" : "${record.embargo?string("yyyy-MM-dd")}",
-    </#if>
-    "restrictionType": "${record.realRestrictionType}",
     "publicationStatus": "${record.publicationStatus}",
+    "restriction": "${record.restriction}",
     "openForReproduction": ${record.openForReproduction?c},
      <#if record.copyright??>
       "copyright": "${record.copyright?js_string}",
@@ -62,7 +59,7 @@ ${callback}([
       <#list record.childrenDifferentState as childRecord>
       "${childRecord.pid?js_string}" : {
           <#assign childHolding = childRecord.holdings?first/>
-          "restrictionType": "${childRecord.realRestrictionType}",
+          "restriction": "${childRecord.restriction}",
           "publicationStatus": "${childRecord.publicationStatus}",
           "openForReproduction": "${childRecord.openForReproduction?c}",
           "status": "${childHolding.status}",
@@ -73,9 +70,6 @@ ${callback}([
     }
 
   <#if _sec.ifAllGranted("ROLE_RECORD_CONTACT_VIEW")>
-    <#if record.realRestriction??>
-    , "restriction" : "${record.realRestriction?js_string}"
-    </#if>
     <#if record.realContact??>
     ,
     <#assign c = record.realContact>

@@ -43,9 +43,7 @@
             <strong><@_ "reproduction.customReproduction" "Request offer"/></strong> <br/>
           </#if>
 
-          ${h.record.title?html} <#if info.author??>/ ${info.author}</#if>
-          - ${h.signature?html} <#if hr.comment??>- ${hr.comment}</#if>
-          <br/>
+          ${hr.toString()?html}<br/>
 
           <#if hr.standardOption??>
             <em>

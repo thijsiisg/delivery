@@ -35,8 +35,7 @@
       <#list reservation.holdingReservations as hr>
         <#assign h = hr.holding>
         <#assign info = h.record.externalInfo>
-        <li>${h.record.title?html} <#if info.author??>/ ${info.author}</#if>
-            - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></li>
+        <li>${hr.toString()?html}</li>
       </#list>
     </ul>
 

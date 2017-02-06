@@ -1,6 +1,8 @@
 package org.socialhistoryservices.delivery.request.entity;
 
+import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
+import org.socialhistoryservices.delivery.record.entity.Record;
 
 public abstract class HoldingRequest {
 
@@ -81,5 +83,57 @@ public abstract class HoldingRequest {
      */
     public void mergeWith(HoldingRequest other) {
         setComment(other.getComment());
+    }
+
+    public String toShortString() {
+        Record record = getHolding().getRecord();
+        ExternalRecordInfo externalInfo = record.getExternalInfo();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(externalInfo.getTitle());
+        sb.append(" - ");
+
+        boolean isArchive = externalInfo.getMaterialType() == ExternalRecordInfo.MaterialType.ARCHIVE;
+        if (isArchive && (record.getParent() != null)) {
+            sb.append(record.getParent().getHoldings().get(0).getSignature());
+            sb.append(" - ");
+        }
+        sb.append(getHolding().getSignature());
+
+        if (getComment() != null) {
+            sb.append(" - ");
+            sb.append(getComment());
+        }
+
+        return sb.toString().trim();
+    }
+
+    @Override
+    public String toString() {
+        Record record = getHolding().getRecord();
+        ExternalRecordInfo externalInfo = record.getExternalInfo();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(externalInfo.getTitle());
+        sb.append(" - ");
+
+        boolean isArchive = externalInfo.getMaterialType() == ExternalRecordInfo.MaterialType.ARCHIVE;
+        if (isArchive && (record.getParent() != null)) {
+            sb.append(record.getParent().getHoldings().get(0).getSignature());
+            sb.append(" - ");
+        }
+        sb.append(getHolding().getSignature());
+
+        if (!isArchive && (externalInfo.getAuthor() != null)) {
+            sb.append(" / ");
+            sb.append(externalInfo.getAuthor());
+        }
+
+        if (getComment() != null) {
+            sb.append(" - ");
+            sb.append(getComment());
+        }
+
+        return sb.toString().trim();
     }
 }

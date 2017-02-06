@@ -80,35 +80,6 @@
   </#list>
 </#macro>
 
-<#macro restrictionTypeRadio path prefix options>
-  <@spring.bind path/>
-    <label for="${spring.status.expression}0" class="field">
-      <#assign msgName = prefix + path/>
-      <@spring.messageText msgName spring.status.expression/>
-    </label>
-
-    <ul class="options">
-      <#list options?keys as value>
-      <#if value != "INHERIT" || record.parent??>
-      <li>
-        <#assign id="${spring.status.expression}${value_index}">
-        <input type="radio" id="${id}" name="${spring.status.expression}" value="${value?html}"<#if spring.stringStatusValue == value> checked="checked" </#if>/>
-        <#assign label = prefix + path + "." + options[value]?html />
-        <label for="${id}"><@spring.messageText label options[value]?html/></label>
-      </li>
-      </#if>
-      </#list>
-    </ul>
-
-    <#if spring.status.errorMessages?size != 0>
-    <ul class="errors">
-      <li>
-        <@spring.showErrors "</li><li>"/>
-      </li>
-    </ul>
-    </#if>
-</#macro>
-
 <#assign useParentTxt><@_ "editrecord.useParent" "Use Parent Data"/></#assign>
 <#assign useChildTxt><@_ "editrecord.useChild" "Specify Child Data"/></#assign>
 
@@ -140,33 +111,6 @@
     <legend><@_ "editrecord.set.record" "Metadata"/></legend>
 
     <ul class="form">
-    <li><@restrictionTypeRadio "record.restrictionType" "" restriction_types/></li>
-
-    <li>
-    <@date "record.embargo" "" ""/>
-    </li>
-
-    <#assign rsClass = "">
-    <#assign rsInfoClass = "hidden">
-    <#assign rsStartTxt = useParentTxt>
-    <#if record.parent?? && record.restrictionType == "INHERIT" && !record.restriction??>
-        <#assign rsClass = "hidden">
-        <#assign rsInfoClass = "">
-        <#assign rsStartTxt = useChildTxt>
-    </#if>
-    <#assign rs = "">
-    <#if record.parent?? && record.parent.realRestriction??>
-        <#assign rs = record.parent.realRestriction>
-    </#if>
-    <li><@textarea "record.restriction" "" rsClass/>
-        <textarea disabled="disabled" id="restrictionInfoField"
-                  class="parentInfo ${rsInfoClass}">${rs}</textarea>
-           <#if record.parent?? && record.restrictionType == "INHERIT"><a  class="parentInfoLink"
-           onclick="toggleField('restrictionInfoField',
-           'restriction', this, '${useParentTxt}', '${useChildTxt}');
-                   ">${rsStartTxt}</a></#if>
-    </li>
-
     <#assign csClass = "">
     <#assign csInfoClass = "hidden">
     <#assign csStartTxt = useParentTxt>
@@ -283,16 +227,6 @@
         <#if h.status == "AVAILABLE">
         <td class="green"><@_ "holding.statusType.AVAILABLE" "Available" /></td>
         <#else>
-        <#--<#assign activeReservation = {}>
-        <#list h.reservations as res>
-            <#if res.status != "COMPLETED">
-            <#assign activeReservation = res>
-            <#break>
-            </#if>
-        </#list>
-        <td class="orange"><a target="_blank" href="${rc
-        .contextPath}/reservation/${activeReservation.id?c}"><@_  "holding
-        .statusType.${h.status}" h.status?string /></a></td>-->
         <td class="orange"><@_  "holding.statusType.${h.status}" h.status?string /></td>
         </#if>
 

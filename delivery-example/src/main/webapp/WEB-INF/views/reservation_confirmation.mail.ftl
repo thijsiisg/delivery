@@ -29,8 +29,6 @@ ${reservation.date?string(prop_dateFormat)}
 
 --- <@_ "reservation.records" "Records"/> ---
 <#list reservation.holdingReservations as hr>
- <#assign h = hr.holding>
- <#assign info = h.record.externalInfo>
-* ${h.record.title} - ${h.signature} <#if info.author??>/ ${info.author} </#if><#if hr.comment??>- ${hr.comment}</#if>
+* ${hr.toString()}
 </#list>
 </@mail>

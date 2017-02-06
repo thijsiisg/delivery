@@ -34,11 +34,10 @@
   <#list holdingReservations as hr>
     <#assign h = hr.holding>
     <#assign info = h.record.externalInfo>
-    <#if h.record.realRestrictionType == "RESTRICTED">
+    <#if h.record.restriction == "RESTRICTED">
     <#assign pids = pids + h.record.pid?url+prop_pidSeparator>
-    <li>${h.record.title?html} <#if info.author??>/ ${info.author}</#if> -
-    ${h.signature?html}</li>
-    <#elseif h.record.realRestrictionType == "OPEN">
+    <li>${h.record.toString()?html}</li>
+    <#elseif h.record.restriction == "OPEN">
     <#assign hasOpen = true>
     </#if>
   </#list>
@@ -55,15 +54,14 @@
   <#assign pids = {}/>
   <#list holdingReservations as hr>
     <#assign h = hr.holding>
-    <#if h.record.realRestrictionType == "OPEN">
+    <#if h.record.restriction == "OPEN">
     <#assign info = h.record.externalInfo>
     <#if pids[h.record.pid]??>
          <#assign pids = pids + {h.record.pid : (pids[h.record.pid] +  prop_holdingSeparator + h.signature?url) }>
     <#else>
         <#assign pids = pids + {h.record.pid :  h.signature?url}>
     </#if>
-    <li>${h.record.title?html} <#if info.author??>/ ${info.author}</#if> -
-    ${h.signature?html}</li>
+    <li>${h.record.toString()?html}</li>
     </#if>
   </#list>
 </ul>

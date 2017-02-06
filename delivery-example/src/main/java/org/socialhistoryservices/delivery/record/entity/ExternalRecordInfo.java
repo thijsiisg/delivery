@@ -56,6 +56,13 @@ public class ExternalRecordInfo {
         CLOSED
     }
 
+    public enum Restriction {
+        DATE_RESTRICTED,
+        RESTRICTED,
+        OPEN,
+        CLOSED
+    }
+
     /** The id. */
     @Id
     @GeneratedValue
@@ -70,14 +77,11 @@ public class ExternalRecordInfo {
         return id;
     }
 
-
-    
      /** The Record's title. */
     @NotBlank
     @Size(max=125)
     @Column(name="title", nullable=false)
     private String title;
-
 
     /**
      * Get the Record's title.
@@ -94,7 +98,6 @@ public class ExternalRecordInfo {
     public void setTitle(String title) {
         this.title = title;
     }
-
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -140,28 +143,49 @@ public class ExternalRecordInfo {
         this.copyright = copyright;
     }
 
-	@NotNull
-	@Enumerated(EnumType.STRING)
-	@Column(name="publication_status", nullable=false)
-	private PublicationStatus publicationStatus;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name="publication_status", nullable=false)
+    private PublicationStatus publicationStatus;
 
-	/**
-	 * Get the publication status.
-	 * @return the publication status.
-	 */
-	public PublicationStatus getPublicationStatus() {
-		return publicationStatus;
-	}
+    /**
+     * Get the publication status.
+     * @return the publication status.
+     */
+    public PublicationStatus getPublicationStatus() {
+            return publicationStatus;
+    }
 
-	/**
-	 * Set the publication status.
-	 * @param publicationStatus the publication status.
-	 */
-	public void setPublicationStatus(PublicationStatus publicationStatus) {
-		this.publicationStatus = publicationStatus;
-	}
+    /**
+     * Set the publication status.
+     * @param publicationStatus the publication status.
+     */
+    public void setPublicationStatus(PublicationStatus publicationStatus) {
+        this.publicationStatus = publicationStatus;
+    }
 
-	@Size(max=125)
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name="restriction", nullable=false)
+    private Restriction restriction;
+
+    /**
+     * Get the restriction.
+     * @return the restriction.
+     */
+    public Restriction getRestriction() {
+        return restriction;
+    }
+
+    /**
+     * Set the restriction.
+     * @param restriction the restriction.
+     */
+    public void setRestriction(Restriction restriction) {
+        this.restriction = restriction;
+    }
+
+    @Size(max=125)
     @Column(name="author", nullable=true)
     private String author;
 
@@ -261,6 +285,7 @@ public class ExternalRecordInfo {
         setMaterialType(other.getMaterialType());
         setCopyright(other.getCopyright());
         setPublicationStatus(other.getPublicationStatus());
+        setRestriction(other.getRestriction());
         setAuthor(other.getAuthor());
         setDisplayYear(other.getDisplayYear());
         setPhysicalDescription(other.getPhysicalDescription());

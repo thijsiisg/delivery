@@ -790,8 +790,6 @@ public class PermissionController extends AbstractRequestController {
         return "redirect:/permission/" + id;
     }
 
-
-
     /**
      * Save a permission and send a message to the requester.
      * @param id The id of the permission to save.
@@ -914,7 +912,7 @@ public class PermissionController extends AbstractRequestController {
             }
             recs.add(rec);
 
-            if (rec.getRealRestrictionType() != Record.RestrictionType.RESTRICTED) {
+            if (rec.getRestriction() != ExternalRecordInfo.Restriction.RESTRICTED) {
                 return null;
             }
         }

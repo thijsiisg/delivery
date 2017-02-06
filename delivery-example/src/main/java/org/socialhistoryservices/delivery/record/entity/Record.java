@@ -146,48 +146,6 @@ public class Record {
         externalInfo.setTitle(title);
     }
 
-    /** The Record's restriction. */
-    @Column(name="restriction", columnDefinition="TEXT")
-    private String restriction;
-
-    /**
-     * Get the Record's restriction.
-     * @return the Record's restriction.
-     */
-    public String getRestriction() {
-        return restriction;
-    }
-
-    /**
-     * Set the Record's restriction.
-     * @param restriction the Record's restriction.
-     */
-    public void setRestriction(String restriction) {
-        this.restriction = restriction;
-    }
-
-    /**
-     * Get the Record's restriction description based on parents.
-     * @return The restriction.
-     */
-    public String getRealRestriction() {
-        String restriction = getRestriction();
-
-        if (restriction == null && getRestrictionType() == RestrictionType.INHERIT) {
-            // Check parents
-            Record obj = this;
-            while (obj != null) {
-                RestrictionType tp = obj.getRestrictionType();
-                String parentRestriction = obj.getRestriction();
-                if (tp != RestrictionType.INHERIT || parentRestriction != null) {
-                    return parentRestriction;
-                }
-                obj = obj.getParent();
-            }
-        }
-        return restriction;
-    }
-
     /**
      * Get the copyright holder.
      * @return The holder of the copyright.
@@ -215,6 +173,17 @@ public class Record {
      */
     public ExternalRecordInfo.PublicationStatus getPublicationStatus() {
         return externalInfo.getPublicationStatus();
+    }
+
+    /**
+     * Get the restriction.
+     * @return the restriction.
+     */
+    public ExternalRecordInfo.Restriction getRestriction() {
+        ExternalRecordInfo.Restriction restriction = externalInfo.getRestriction();
+        if (restriction == ExternalRecordInfo.Restriction.DATE_RESTRICTED)
+            return ExternalRecordInfo.Restriction.RESTRICTED;
+        return restriction;
     }
 
     /**
@@ -259,81 +228,6 @@ public class Record {
      */
     public void setComments(String comments) {
         this.comments = comments;
-    }
-
-    /** The Record's embargo. */
-    @Temporal(TemporalType.DATE)
-    @Column(name="embargo", nullable = true)
-    private Date embargo;
-
-    /**
-     * Get the Record's embargo.
-     * @return the Record's embargo.
-     */
-    public Date getEmbargo() {
-        return embargo;
-    }
-
-    /**
-     * Set the Record's embargo.
-     * @param embargo the Record's embargo.
-     */
-    public void setEmbargo(Date embargo) {
-        this.embargo = embargo;
-    }
-
-    /** The Record's RestrictionType. */
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(name="restriction_type", nullable=false)
-    private RestrictionType restrictionType;
-
-    /**
-     * Get the Record's RestrictionType.
-     * @return the Record's RestrictionType.
-     */
-    public RestrictionType getRestrictionType() {
-        return restrictionType;
-    }
-
-    /**
-     * List the Record's RestrictionType.
-     * @param restrictionType the Record's RestrictionType.
-     */
-    public void setRestrictionType(RestrictionType restrictionType) {
-        this.restrictionType = restrictionType;
-    }
-
-    /**
-     * Get the restriction type for this record, keeping the record's
-     * children into account to see if any are restricted.
-     * @return The calculated restriction type of the record.
-     */
-    public RestrictionType getRealRestrictionType() {
-        RestrictionType myType = getRestrictionType();
-        if (myType == RestrictionType.INHERIT) {
-            // Check parents
-            Record obj = this;
-            myType = RestrictionType.OPEN;
-            while (obj != null) {
-                RestrictionType tp = obj.getRestrictionType();
-                if (tp != RestrictionType.INHERIT) {
-                    myType = tp;
-                    break;
-                }
-                obj = obj.getParent();
-            }
-        }
-        /* Causes defect ticket #57.
-        if (myType != RestrictionType.OPEN)
-            return myType;
-        for (Record child : getChildren()) {
-            if (child.getRestrictionType() != RestrictionType.OPEN) {
-                return child.getRestrictionType();
-            }
-        }
-        return RestrictionType.OPEN;*/
-        return myType;
     }
 
     /** The Record's parent. */
@@ -485,7 +379,6 @@ public class Record {
         setTitle(other.getTitle());
         setPid(other.getPid());
         setParent(other.getParent());
-        setRestriction(other.getRestriction());
         setComments(other.getComments());
 
         getExternalInfo().mergeWith(other.getExternalInfo());
@@ -509,9 +402,7 @@ public class Record {
             // Add/update provided.
             addOrUpdateHoldingsProvidedByRecord(other);
         }
-
-        setEmbargo(other.getEmbargo());
-        setRestrictionType(other.getRestrictionType());  }
+    }
 
     /**
      * Add/Update the holdings provided by the provided record.
@@ -603,11 +494,34 @@ public class Record {
             return false;
 
         Holding h = getHoldings().get(0), hParent = parent.getHoldings().get(0);
-        return ((getRealRestrictionType() != parent.getRealRestrictionType())
+        return ((getRestriction() != parent.getRestriction())
             || (getPublicationStatus() != parent.getPublicationStatus())
             || (isOpenForReproduction() != parent.isOpenForReproduction())
             || (h.getStatus() != hParent.getStatus())
             || (h.getUsageRestriction() != hParent.getUsageRestriction()));
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getTitle());
+
+        boolean isArchive = getExternalInfo().getMaterialType() == ExternalRecordInfo.MaterialType.ARCHIVE;
+        if (isArchive) {
+            sb.append(" - ");
+            if (getParent() != null) {
+                sb.append(getParent().getHoldings().get(0).getSignature());
+                sb.append(" - ");
+            }
+            sb.append(getHoldings().get(0).getSignature());
+        }
+
+        if (!isArchive && (getExternalInfo().getAuthor() != null)) {
+            sb.append(" / ");
+            sb.append(getExternalInfo().getAuthor());
+        }
+
+        return sb.toString().trim();
     }
 
     /**
@@ -618,6 +532,5 @@ public class Record {
         children = new ArrayList<Record>();
         externalInfo = new ExternalRecordInfo();
         setExternalInfoUpdated(new Date());
-        setRestrictionType(RestrictionType.OPEN);
     }
 }
