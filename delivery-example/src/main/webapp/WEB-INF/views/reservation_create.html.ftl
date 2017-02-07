@@ -83,7 +83,7 @@ $(document).ready(function(){
                                         <#assign items = []>
                                         <#list reservation.holdingReservations as childHr>
                                             <#assign childR = childHr.holding.record>
-                                            <#if childR.parent.pid == r.parent.pid>
+                                            <#if childR.parent?? && childR.parent.pid == r.parent.pid>
                                                 <#assign skip = skip + [childR.pid]>
 
                                                 <input name="holdingReservations[${idx}].holding"
