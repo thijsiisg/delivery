@@ -16,10 +16,12 @@
 
 package org.socialhistoryservices.delivery.api;
 
+import org.socialhistoryservices.delivery.record.entity.ArchiveHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,15 +29,13 @@ import java.util.Map;
  * Records by providing PIDs and vice versa.
  */
 public interface RecordLookupService {
-
-
     public class PageChunk {
-
         public PageChunk(int resultCountPerChunk, int resultStart) {
             results = new HashMap<String, String>();
             this.resultCountPerChunk = resultCountPerChunk;
             this.resultStart = resultStart;
         }
+
         public int getTotalResultCount() {
             return resultCount;
         }
@@ -48,11 +48,9 @@ public interface RecordLookupService {
             return resultStart;
         }
 
-
         public int getResultCountPerChunk() {
             return resultCountPerChunk;
         }
-
 
         public Map<String, String> getResults() {
             return results;
@@ -68,7 +66,6 @@ public interface RecordLookupService {
         private Map <String, String> results;
     }
 
-
     /**
      * Search for records with the specified title.
      * @param title The title to search for.
@@ -83,8 +80,15 @@ public interface RecordLookupService {
      * @return The metadata of the record, if found.
      * @throws NoSuchPidException Thrown when the PID is not found.
      */
-    public ExternalRecordInfo getRecordMetaDataByPid(String pid) throws
-            NoSuchPidException;
+    public ExternalRecordInfo getRecordMetaDataByPid(String pid) throws NoSuchPidException;
+
+    /**
+     * Maps a PID to archive holding info of a record.
+     * @param pid The PID to lookup.
+     * @return The archive metadata of the record, if found.
+     * @throws NoSuchPidException Thrown when the PID is not found.
+     */
+    public List<ArchiveHoldingInfo> getArchiveHoldingInfoByPid(String pid) throws NoSuchPidException;
 
     /**
      * Get a map of holding signatures associated with this PID (if any
@@ -95,6 +99,5 @@ public interface RecordLookupService {
      * @throws NoSuchPidException Thrown when the PID being searched for is
      * not found in the API.
      */
-    public Map<String, ExternalHoldingInfo> getHoldingMetadataByPid(String pid)
-            throws NoSuchPidException;
+    public Map<String, ExternalHoldingInfo> getHoldingMetadataByPid(String pid) throws NoSuchPidException;
 }

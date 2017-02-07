@@ -10,6 +10,26 @@ ALTER TABLE records DROP COLUMN embargo;
 ALTER TABLE records DROP COLUMN restriction;
 ALTER TABLE records DROP COLUMN restriction_type;
 
+/* ADD NEW TABLES */
+
+CREATE TABLE archive_holding_info
+(
+  id integer NOT NULL,
+  format character varying(50),
+  meter character varying(50),
+  note text,
+  numbers character varying(50),
+  shelvinglocation character varying(255),
+  record_id integer NOT NULL,
+  CONSTRAINT archive_holding_info_pkey PRIMARY KEY (id),
+  CONSTRAINT fk67393d07ebb43f2f FOREIGN KEY (record_id)
+  REFERENCES records (id) MATCH SIMPLE
+  ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+
 /* RESET THE EXTERNAL INFO OF ARCHIVES */
 
 UPDATE records

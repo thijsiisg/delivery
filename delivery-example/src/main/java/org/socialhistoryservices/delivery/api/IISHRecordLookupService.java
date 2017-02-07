@@ -18,6 +18,7 @@ package org.socialhistoryservices.delivery.api;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.socialhistoryservices.delivery.record.entity.ArchiveHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.w3c.dom.Node;
@@ -42,6 +43,7 @@ public class IISHRecordLookupService implements RecordLookupService {
 
     private XPathExpression xpSearch, xpAll, xpOAI, xpSearch245aTitle, xpSearch500aTitle, xpSearch600aTitle,
         xpSearch610aTitle, xpSearch650aTitle, xpSearch651aTitle, xpSearch245kTitle, xpSearch245bSubTitle,
+        xpArchive931, xpArchiveLocation, xpArchiveMeter, xpArchiveNumbers, xpArchiveFormat, xpArchiveNote,
         xp856uUrl, xpSearchIdent, xpSearchMeta, xpNumberOfRecords;
 
     private IISHRecordExtractor marcRecordExtractor, eadRecordExtractor;
@@ -67,34 +69,22 @@ public class IISHRecordLookupService implements RecordLookupService {
             xpAll = xpath.compile("/srw:searchRetrieveResponse");
             xpOAI = xpath.compile("//oai:record");
             xpSearch = xpath.compile("//srw:record");
-            xpSearch245aTitle = xpath.compile("ns1:recordData/marc:record/" +
-                "marc:datafield[@tag=245]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpSearch245bSubTitle = xpath.compile("ns1:recordData/marc:record/" +
-                "marc:datafield[@tag=245]" +
-                "/marc:subfield[@code=\"b\"]");
-            xpSearch500aTitle = xpath.compile("ns1:recordData/marc:record/" +
-                "marc:datafield[@tag=500]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpSearch600aTitle = xpath.compile("ns1:recordData/marc:record/" +
-                "marc:datafield[@tag=600]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpSearch610aTitle = xpath.compile("ns1:recordData/marc:record/" +
-                "marc:datafield[@tag=610]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpSearch650aTitle = xpath.compile("ns1:recordData/marc:record/" +
-                "marc:datafield[@tag=650]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpSearch651aTitle = xpath.compile("ns1:recordData/marc:record/" +
-                "marc:datafield[@tag=651]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpSearch245kTitle = xpath.compile("ns1:recordData/marc:record/" +
-                "marc:datafield[@tag=245]" +
-                "/marc:subfield[@code=\"k\"]");
-            xp856uUrl = xpath.compile("marc:datafield[@tag=856]" +
-                "/marc:subfield[@code=\"u\"]");
-            xpSearchIdent = xpath.compile("ns1:extraRecordData/" +
-                "extraData:extraData/iisg:identifier");
+            xpSearch245aTitle = XmlUtils.getXPathForMarc(xpath, "245", 'a');
+            xpSearch245bSubTitle = XmlUtils.getXPathForMarc(xpath, "245", 'b');
+            xpSearch500aTitle = XmlUtils.getXPathForMarc(xpath, "500", 'a');
+            xpSearch600aTitle = XmlUtils.getXPathForMarc(xpath, "600", 'a');
+            xpSearch610aTitle = XmlUtils.getXPathForMarc(xpath, "610", 'a');
+            xpSearch650aTitle = XmlUtils.getXPathForMarc(xpath, "650", 'a');
+            xpSearch651aTitle = XmlUtils.getXPathForMarc(xpath, "651", 'a');
+            xpSearch245kTitle = XmlUtils.getXPathForMarc(xpath, "245", 'k');
+            xpArchive931 = XmlUtils.getXPathForMarcTag(xpath, "931");
+            xpArchiveLocation = XmlUtils.getXPathForMarcSubfield(xpath, 'a');
+            xpArchiveMeter = XmlUtils.getXPathForMarcSubfield(xpath, 'b');
+            xpArchiveNumbers = XmlUtils.getXPathForMarcSubfield(xpath, 'c');
+            xpArchiveFormat = XmlUtils.getXPathForMarcSubfield(xpath, 'e');
+            xpArchiveNote = XmlUtils.getXPathForMarcSubfield(xpath, 'f');
+            xp856uUrl = XmlUtils.getXPathForMarc(xpath, "856", 'u');
+            xpSearchIdent = xpath.compile("ns1:extraRecordData/extraData:extraData/iisg:identifier");
             xpSearchMeta = xpath.compile("//marc:record");
             xpNumberOfRecords = xpath.compile("//ns1:numberOfRecords");
         }
@@ -123,7 +113,7 @@ public class IISHRecordLookupService implements RecordLookupService {
             throw new RuntimeException(e);
         }
 
-        String query = "marc.245+all+\"" + title + "\"";
+        String query = getQuery("marc.245+all+\"" + title + "\"", true);
         logger.debug(String.format("getRecordsByTitle(title: %s, resultcountPerChunk: %d, resultStart: %d)",
             title, resultCountPerChunk, resultStart));
         Node out = doSearch(query, pc.getResultCountPerChunk(), pc.getResultStart());
@@ -176,7 +166,7 @@ public class IISHRecordLookupService implements RecordLookupService {
         logger.debug(String.format("getRecordMetaDataByPid(%s)", pid));
 
         String[] parentPidAndItem = getParentPidAndItem(pid);
-        Node node = searchByPid(parentPidAndItem[0]);
+        Node node = searchByPid(parentPidAndItem[0], true);
         Node eadNode = getEADNode(node);
 
         if (eadNode != null)
@@ -185,11 +175,46 @@ public class IISHRecordLookupService implements RecordLookupService {
     }
 
     @Override
+    public List<ArchiveHoldingInfo> getArchiveHoldingInfoByPid(String pid) throws NoSuchPidException {
+        logger.debug(String.format("getArchiveHoldingInfoByPid(%s)", pid));
+
+        String[] parentPidAndItem = getParentPidAndItem(pid);
+        Node node = searchByPid(parentPidAndItem[0], false);
+
+        List<ArchiveHoldingInfo> info = new ArrayList<>();
+        try {
+            NodeList archiveList = (NodeList) xpArchive931.evaluate(node, XPathConstants.NODESET);
+            if (archiveList != null) {
+                for (int i = 0; i < archiveList.getLength(); i++) {
+                    Node archiveItem = archiveList.item(i);
+
+                    ArchiveHoldingInfo ahi = new ArchiveHoldingInfo();
+                    ahi.setShelvingLocation(XmlUtils.evaluate(xpArchiveLocation, archiveItem));
+                    ahi.setMeter(XmlUtils.evaluate(xpArchiveMeter, archiveItem));
+                    ahi.setNumbers(XmlUtils.evaluate(xpArchiveNumbers, archiveItem));
+                    ahi.setFormat(XmlUtils.evaluate(xpArchiveFormat, archiveItem));
+                    ahi.setNote(XmlUtils.evaluate(xpArchiveNote, archiveItem));
+
+                    if (ahi.getShelvingLocation() != null || ahi.getMeter() != null ||
+                        ahi.getNumbers() != null || ahi.getFormat() != null || ahi.getNote() != null) {
+                        info.add(ahi);
+                    }
+                }
+            }
+        }
+        catch (XPathExpressionException ignored) {
+            logger.debug("getArchiveHoldingInfoByPid(): Invalid XPath", ignored);
+        }
+
+        return info;
+    }
+
+    @Override
     public Map<String, ExternalHoldingInfo> getHoldingMetadataByPid(String pid) throws NoSuchPidException {
         logger.debug(String.format("getHoldingMetaDataByPid(%s)", pid));
 
         String[] parentPidAndItem = getParentPidAndItem(pid);
-        Node node = searchByPid(parentPidAndItem[0]);
+        Node node = searchByPid(parentPidAndItem[0], true);
         Node eadNode = getEADNode(node);
 
         if (eadNode != null)
@@ -216,14 +241,7 @@ public class IISHRecordLookupService implements RecordLookupService {
         search += "&recordPacking=xml";
         search += "&sortKeys=";
         search += "&stylesheet=";
-
-        search += "&query=iisg.collectionName+=+\"iish.evergreen.biblio\"";
-        search += "+or+iisg.collectionName+=+\"iish.archieven\"";
-        search += "+or+iisg.collectionName+=+\"iish.eci\"";
-
-        if (!query.isEmpty()) {
-            search += "+and+" + query;
-        }
+        search += "&query=" + query;
 
         try {
             String apiProto = properties.getProperty("prop_apiProto");
@@ -257,10 +275,16 @@ public class IISHRecordLookupService implements RecordLookupService {
      * Search metadata by PID.
      *
      * @param pid The PID to search for.
+     * @param metadata Whether we want the metadata record.
      * @return The main record node.
      * @throws NoSuchPidException Thrown when the search returns nothing.
      */
-    private Node searchByPid(String pid) throws NoSuchPidException {
+    private Node searchByPid(String pid, boolean metadata) throws NoSuchPidException {
+        // If we do not search for metadata, then we need to strip the naming authority from the PID
+        if (!metadata) {
+            pid = pid.replace("10622/", "");
+        }
+
         String encodedPid;
         try {
             encodedPid = URLEncoder.encode(pid, "utf-8");
@@ -269,7 +293,15 @@ public class IISHRecordLookupService implements RecordLookupService {
             throw new RuntimeException(e);
         }
 
-        String query = "dc.identifier+=+\"" + encodedPid + "\"";
+        String query;
+        if (metadata) {
+            query = getQuery("dc.identifier+=+\"" + encodedPid + "\"", true);
+        }
+        else {
+            query = getQuery("marc.852$j=+\"" + encodedPid + "\"", false);
+        }
+
+
         Node all = doSearch(query, 1, 1);
         NodeList search = null;
         int resultCount = 0;
@@ -319,6 +351,25 @@ public class IISHRecordLookupService implements RecordLookupService {
         if (recTitle.isEmpty())
             recTitle = xpSearch245kTitle.evaluate(node);
         return recTitle;
+    }
+
+    private String getQuery(String q, boolean metadata) {
+        String query;
+
+        if (metadata) {
+            query = "iisg.collectionName+=+\"iish.evergreen.biblio\"";
+            query += "+or+iisg.collectionName+=+\"iish.archieven\"";
+            query += "+or+iisg.collectionName+=+\"iish.eci\"";
+        }
+        else {
+            query = "iisg.collectionName+=+\"iish.evergreen.biblio\"";
+        }
+
+        if (!q.isEmpty()) {
+            query += "+and+" + q;
+        }
+
+        return query;
     }
 
     private Node getEADNode(Node node) {

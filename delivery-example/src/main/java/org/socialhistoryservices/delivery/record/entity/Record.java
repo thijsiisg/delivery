@@ -194,6 +194,30 @@ public class Record {
         return externalInfo.getPhysicalDescription();
     }
 
+    @OneToMany(mappedBy="record", cascade=CascadeType.ALL)
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    private List<ArchiveHoldingInfo> archiveHoldingInfo = new ArrayList<>();
+
+    /**
+     * Get the archive holding info.
+     * @return The info object.
+     */
+    public List<ArchiveHoldingInfo> getArchiveHoldingInfo() {
+        return archiveHoldingInfo;
+    }
+
+    /**
+     * Set the archive holding info (preferably from IISHRecordLookupService.getArchiveHoldingInfoByPid).
+     * @param info The info.
+     */
+    public void setArchiveHoldingInfo(List<ArchiveHoldingInfo> archiveHoldingInfo) {
+        this.archiveHoldingInfo.clear();
+        for (ArchiveHoldingInfo ahi : archiveHoldingInfo) {
+            ahi.setRecord(this);
+            this.archiveHoldingInfo.add(ahi);
+        }
+    }
+
     /** The Record's comments. */
     @Column(name="comments", columnDefinition="TEXT")
     private String comments;

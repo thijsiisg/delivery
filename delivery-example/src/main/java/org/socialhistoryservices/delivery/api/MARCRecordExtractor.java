@@ -27,49 +27,28 @@ public class MARCRecordExtractor implements IISHRecordExtractor {
         xpath.setNamespaceContext(new IISHNamespaceContext());
 
         try {
-            xpAuthor = xpath.compile("marc:datafield[@tag=100]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpAltAuthor = xpath.compile("marc:datafield[@tag=110]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpAlt2Author = xpath.compile("marc:datafield[@tag=700]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpAlt3Author = xpath.compile("marc:datafield[@tag=710]" +
-                "/marc:subfield[@code=\"a\"]");
-            xp245aTitle = xpath.compile("marc:datafield[@tag=245]" +
-                "/marc:subfield[@code=\"a\"]");
-            xp500aTitle = xpath.compile("marc:datafield[@tag=500]" +
-                "/marc:subfield[@code=\"a\"]");
-            xp600aTitle = xpath.compile("marc:datafield[@tag=600]" +
-                "/marc:subfield[@code=\"a\"]");
-            xp610aTitle = xpath.compile("marc:datafield[@tag=610]" +
-                "/marc:subfield[@code=\"a\"]");
-            xp650aTitle = xpath.compile("marc:datafield[@tag=650]" +
-                "/marc:subfield[@code=\"a\"]");
-            xp651aTitle = xpath.compile("marc:datafield[@tag=651]" +
-                "/marc:subfield[@code=\"a\"]");
-            xp245kTitle = xpath.compile("marc:datafield[@tag=245]" +
-                "/marc:subfield[@code=\"k\"]");
-            xp245bSubTitle = xpath.compile("marc:datafield[@tag=245]" +
-                "/marc:subfield[@code=\"b\"]");
-            xpYear = xpath.compile("marc:datafield[@tag=260]" +
-                "/marc:subfield[@code=\"c\"]");
-            xpPhysicalDescription = xpath.compile("marc:datafield[@tag=300]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpGenres = xpath.compile("marc:datafield[@tag=655]" +
-                "/marc:subfield[@code=\"a\"]");
-            xpShelvingLocations = xpath.compile("marc:datafield[@tag=852]" +
-                "/marc:subfield[@code=\"c\"]");
-            xpSignatures = xpath.compile("marc:datafield[@tag=852]" +
-                "/marc:subfield[@code=\"j\"]");
-            xpBarcodes = xpath.compile("marc:datafield[@tag=852]" +
-                "/marc:subfield[@code=\"p\"]");
-            xpSerialNumbers = xpath.compile("marc:datafield[@tag=866]" +
-                "/marc:subfield[@code=\"a\"]");
+            xpAuthor = XmlUtils.getXPathForMarc(xpath, "100", 'a');
+            xpAltAuthor = XmlUtils.getXPathForMarc(xpath, "110", 'a');
+            xpAlt2Author = XmlUtils.getXPathForMarc(xpath, "700", 'a');
+            xpAlt3Author = XmlUtils.getXPathForMarc(xpath, "710", 'a');
+            xp245aTitle = XmlUtils.getXPathForMarc(xpath, "245", 'a');
+            xp500aTitle = XmlUtils.getXPathForMarc(xpath, "500", 'a');
+            xp600aTitle = XmlUtils.getXPathForMarc(xpath, "600", 'a');
+            xp610aTitle = XmlUtils.getXPathForMarc(xpath, "610", 'a');
+            xp650aTitle =XmlUtils.getXPathForMarc(xpath, "650", 'a');
+            xp651aTitle = XmlUtils.getXPathForMarc(xpath, "651", 'a');
+            xp245kTitle = XmlUtils.getXPathForMarc(xpath, "245", 'k');
+            xp245bSubTitle = XmlUtils.getXPathForMarc(xpath, "245", 'b');
+            xpYear = XmlUtils.getXPathForMarc(xpath, "260", 'c');
+            xpPhysicalDescription = XmlUtils.getXPathForMarc(xpath, "300", 'a');
+            xpGenres = XmlUtils.getXPathForMarc(xpath, "655", 'a');
+            xpShelvingLocations = XmlUtils.getXPathForMarc(xpath, "852", 'c');
+            xpSignatures = XmlUtils.getXPathForMarc(xpath, "852", 'j');
+            xpBarcodes = XmlUtils.getXPathForMarc(xpath, "852", 'p');
+            xpSerialNumbers = XmlUtils.getXPathForMarc(xpath, "866", 'a');
             xpLeader = xpath.compile("marc:leader");
-            xp540bCopyright = xpath.compile("marc:datafield[@tag=540]" +
-                "/marc:subfield[@code=\"b\"]");
-            xp542mAccess = xpath.compile("marc:datafield[@tag=542]" +
-                "/marc:subfield[@code=\"m\"]");
+            xp540bCopyright = XmlUtils.getXPathForMarc(xpath, "540", 'b');
+            xp542mAccess = XmlUtils.getXPathForMarc(xpath, "542", 'm');
         }
         catch (XPathExpressionException ex) {
             logger.error("Failed initializing XPath expressions");
@@ -96,7 +75,7 @@ public class MARCRecordExtractor implements IISHRecordExtractor {
         if (title != null && !title.isEmpty()) {
             // Strip trailing slashes
             title = title.trim().replaceAll("[/:]$", "");
-            String subTitle = evaluateSubTitle(node);
+            String subTitle = XmlUtils.evaluate(xp245bSubTitle, node);
             if (subTitle != null && !subTitle.isEmpty()) {
                 title += " " + subTitle.trim().replaceAll("[/:]$", "");
             }
@@ -111,15 +90,15 @@ public class MARCRecordExtractor implements IISHRecordExtractor {
             externalInfo.setTitle("Unknown Record");
         }
 
-        String year = evaluateYear(node);
+        String year = XmlUtils.evaluate(xpYear, node);
         if (year != null && !year.isEmpty()) {
             externalInfo.setDisplayYear(stripToSize(year, 30));
         }
 
         externalInfo.setMaterialType(evaluateMaterialType(node));
-        externalInfo.setCopyright(evaluateCopyright(node));
+        externalInfo.setCopyright(XmlUtils.evaluate(xp540bCopyright, node));
         externalInfo.setPublicationStatus(evaluatePublicationStatus(node));
-        externalInfo.setPhysicalDescription(evaluatePhysicalDescription(node));
+        externalInfo.setPhysicalDescription(XmlUtils.evaluate(xpPhysicalDescription, node));
         externalInfo.setGenres(evaluateGenres(node));
 
         return externalInfo;
@@ -152,14 +131,10 @@ public class MARCRecordExtractor implements IISHRecordExtractor {
 
         try {
             // TODO: 866 is not always available.
-            NodeList shelfNodes = (NodeList) xpShelvingLocations.evaluate(node,
-                XPathConstants.NODESET);
-            NodeList sigNodes = (NodeList) xpSignatures.evaluate(node,
-                XPathConstants.NODESET);
-            NodeList serNodes = (NodeList) xpSerialNumbers.evaluate(node,
-                XPathConstants.NODESET);
-            NodeList barcodes = (NodeList) xpBarcodes.evaluate(node,
-                XPathConstants.NODESET);
+            NodeList shelfNodes = (NodeList) xpShelvingLocations.evaluate(node, XPathConstants.NODESET);
+            NodeList sigNodes = (NodeList) xpSignatures.evaluate(node, XPathConstants.NODESET);
+            NodeList serNodes = (NodeList) xpSerialNumbers.evaluate(node, XPathConstants.NODESET);
+            NodeList barcodes = (NodeList) xpBarcodes.evaluate(node, XPathConstants.NODESET);
 
             if (shelfNodes == null || sigNodes == null || serNodes == null || barcodes == null)
                 return retMap;
@@ -281,25 +256,6 @@ public class MARCRecordExtractor implements IISHRecordExtractor {
         return ExternalRecordInfo.MaterialType.OTHER;
     }
 
-    private String evaluateYear(Node node) {
-        try {
-            return xpYear.evaluate(node);
-        }
-        catch (XPathExpressionException e) {
-            return null;
-        }
-    }
-
-    private String evaluatePhysicalDescription(Node node) {
-        try {
-            String physicalDescription = xpPhysicalDescription.evaluate(node);
-            return (!physicalDescription.isEmpty()) ? physicalDescription : null;
-        }
-        catch (XPathExpressionException e) {
-            return null;
-        }
-    }
-
     private String evaluateGenres(Node node) {
         try {
             Set<String> genres = new HashSet<String>();
@@ -337,21 +293,12 @@ public class MARCRecordExtractor implements IISHRecordExtractor {
 
             // Strip trailing slashes
             title = title.trim().replaceAll("[/:]$", "");
-            String subTitle = evaluateSubTitle(node);
+            String subTitle = XmlUtils.evaluate(xp245bSubTitle, node);
             if (subTitle != null && !subTitle.isEmpty()) {
                 title += " " + subTitle.trim().replaceAll("[/:]$", "");
             }
 
             return title;
-        }
-        catch (XPathExpressionException e) {
-            return null;
-        }
-    }
-
-    private String evaluateSubTitle(Node node) {
-        try {
-            return xp245bSubTitle.evaluate(node);
         }
         catch (XPathExpressionException e) {
             return null;
@@ -374,22 +321,6 @@ public class MARCRecordExtractor implements IISHRecordExtractor {
             if (author.isEmpty())
                 author = xpAlt3Author.evaluate(node);
             return author;
-        }
-        catch (XPathExpressionException ex) {
-            return null;
-        }
-    }
-
-    /**
-     * Fetches copyright from MARCXML.
-     *
-     * @param node The XML node to execute the XPath on.
-     * @return The holder of the copyright.
-     */
-    private String evaluateCopyright(Node node) {
-        try {
-            String copyright = xp540bCopyright.evaluate(node);
-            return copyright.isEmpty() ? null : copyright;
         }
         catch (XPathExpressionException ex) {
             return null;

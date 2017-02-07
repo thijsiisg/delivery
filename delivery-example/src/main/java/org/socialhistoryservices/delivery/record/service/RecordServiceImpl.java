@@ -198,13 +198,19 @@ public class RecordServiceImpl implements RecordService {
             // We need to update the external info
             String pid = record.getPid();
             ExternalRecordInfo eri = lookup.getRecordMetaDataByPid(pid);
+            List<ArchiveHoldingInfo> ahi = lookup.getArchiveHoldingInfoByPid(pid);
             Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
 
+            // Update external record info
             if (record.getExternalInfo() != null)
                 record.getExternalInfo().mergeWith(eri);
             else
                 record.setExternalInfo(eri);
 
+            // Update archive holding info
+            record.setArchiveHoldingInfo(ahi);
+
+            // Update the holdings, merge exisiting holdings, add new holdings, do not remove old holdings
             for (String signature : ehMap.keySet()) {
                 boolean found = false;
 
@@ -363,6 +369,7 @@ public class RecordServiceImpl implements RecordService {
         Record r = new Record();
         r.setPid(pid);
         r.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
+        r.setArchiveHoldingInfo(lookup.getArchiveHoldingInfoByPid(pid));
         r.setParent(parent);
         List<Holding> hList = new ArrayList<Holding>();
         for (Map.Entry<String, ExternalHoldingInfo> e :
