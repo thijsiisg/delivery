@@ -175,14 +175,14 @@ public class IISHRecordLookupService implements RecordLookupService {
     }
 
     @Override
-    public List<ArchiveHoldingInfo> getArchiveHoldingInfoByPid(String pid) throws NoSuchPidException {
+    public List<ArchiveHoldingInfo> getArchiveHoldingInfoByPid(String pid) {
         logger.debug(String.format("getArchiveHoldingInfoByPid(%s)", pid));
-
-        String[] parentPidAndItem = getParentPidAndItem(pid);
-        Node node = searchByPid(parentPidAndItem[0], false);
 
         List<ArchiveHoldingInfo> info = new ArrayList<>();
         try {
+            String[] parentPidAndItem = getParentPidAndItem(pid);
+            Node node = searchByPid(parentPidAndItem[0], false);
+
             NodeList archiveList = (NodeList) xpArchive931.evaluate(node, XPathConstants.NODESET);
             if (archiveList != null) {
                 for (int i = 0; i < archiveList.getLength(); i++) {
@@ -204,6 +204,9 @@ public class IISHRecordLookupService implements RecordLookupService {
         }
         catch (XPathExpressionException ignored) {
             logger.debug("getArchiveHoldingInfoByPid(): Invalid XPath", ignored);
+        }
+        catch (NoSuchPidException ignored) {
+            logger.debug("getArchiveHoldingInfoByPid(): No such PID", ignored);
         }
 
         return info;
