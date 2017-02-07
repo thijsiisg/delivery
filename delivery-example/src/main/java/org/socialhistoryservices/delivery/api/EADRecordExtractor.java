@@ -34,7 +34,7 @@ public class EADRecordExtractor implements IISHRecordExtractor {
             xpDidUnitId = xpath.compile("./ead:did/ead:unitid");
             xpAccessAndUse = xpath.compile(".//ead:descgrp[@type='access_and_use']");
             xpAccessRestrict = xpath.compile(".//ead:accessrestrict");
-            xpP = xpath.compile("normalize-space(./p[1])");
+            xpP = xpath.compile("normalize-space(./ead:p[1])");
             xpParent = xpath.compile("(" +
                 "./ancestor::ead:c01|" +
                 "./ancestor::ead:c02|" +
@@ -185,11 +185,13 @@ public class EADRecordExtractor implements IISHRecordExtractor {
     private ExternalRecordInfo.Restriction evaluateRestriction(Node node, Node itemNode) {
         try {
             Element accessAndUse = (Element) xpAccessAndUse.evaluate(node, XPathConstants.NODE);
-            String restriction = xpP.evaluate(accessAndUse);
-            if (accessAndUse.getAttribute("type").equalsIgnoreCase("part") && (itemNode != null)) {
-                accessAndUse = (Element) xpAccessAndUse.evaluate(itemNode, XPathConstants.NODE);
-                if (accessAndUse != null)
-                    restriction = accessAndUse.getAttribute("type");
+            Element accessRestrict = (Element) xpAccessRestrict.evaluate(accessAndUse, XPathConstants.NODE);
+            String restriction = xpP.evaluate(accessRestrict);
+
+            if (accessRestrict.getAttribute("type").equalsIgnoreCase("part") && (itemNode != null)) {
+                accessRestrict = (Element) xpAccessRestrict.evaluate(itemNode, XPathConstants.NODE);
+                if (accessRestrict != null)
+                    restriction = accessRestrict.getAttribute("type");
             }
 
             switch (restriction.trim().toLowerCase()) {
