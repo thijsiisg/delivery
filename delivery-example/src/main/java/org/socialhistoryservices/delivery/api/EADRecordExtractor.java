@@ -78,13 +78,13 @@ public class EADRecordExtractor implements IISHRecordExtractor {
     public ExternalRecordInfo getRecordMetadata(Node node, String item) throws NoSuchPidException {
         ExternalRecordInfo externalInfo = new ExternalRecordInfo();
 
-        String author = evaluateAuthor(node);
+        String author = XmlUtils.evaluate(xpAuthor, node);
         if (author != null && !author.isEmpty()) {
             author = author.trim();
             externalInfo.setAuthor(stripToSize(author, 125));
         }
 
-        String title = evaluateTitle(node);
+        String title = XmlUtils.evaluate(xpTitle, node);
         if (title != null && !title.isEmpty()) {
             // Strip trailing slashes
             title = title.trim();
@@ -102,7 +102,7 @@ public class EADRecordExtractor implements IISHRecordExtractor {
         externalInfo.setPublicationStatus(ExternalRecordInfo.PublicationStatus.UNKNOWN);
         externalInfo.setRestriction(evaluateRestriction(node, findItemNode(node, item)));
 
-        String physicalDescription = evaluatePhysicalDescription(node);
+        String physicalDescription = XmlUtils.evaluate(xpPhysicalDescription, node);
         externalInfo.setPhysicalDescription((physicalDescription != null) ? physicalDescription.trim() : null);
 
         return externalInfo;
@@ -207,33 +207,6 @@ public class EADRecordExtractor implements IISHRecordExtractor {
         }
         catch (XPathExpressionException e) {
             return ExternalRecordInfo.Restriction.OPEN;
-        }
-    }
-
-    private String evaluatePhysicalDescription(Node node) {
-        try {
-            return xpPhysicalDescription.evaluate(node);
-        }
-        catch (XPathExpressionException e) {
-            return null;
-        }
-    }
-
-    private String evaluateTitle(Node node) {
-        try {
-            return xpTitle.evaluate(node);
-        }
-        catch (XPathExpressionException e) {
-            return null;
-        }
-    }
-
-    private String evaluateAuthor(Node node) {
-        try {
-            return xpAuthor.evaluate(node);
-        }
-        catch (XPathExpressionException ex) {
-            return null;
         }
     }
 }
