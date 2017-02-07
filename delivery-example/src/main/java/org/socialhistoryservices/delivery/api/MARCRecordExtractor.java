@@ -100,6 +100,7 @@ public class MARCRecordExtractor implements IISHRecordExtractor {
         externalInfo.setPublicationStatus(evaluatePublicationStatus(node));
         externalInfo.setPhysicalDescription(XmlUtils.evaluate(xpPhysicalDescription, node));
         externalInfo.setGenres(evaluateGenres(node));
+        externalInfo.setRestriction(ExternalRecordInfo.Restriction.OPEN);
 
         return externalInfo;
     }

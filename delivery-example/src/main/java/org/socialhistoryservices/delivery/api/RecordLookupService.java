@@ -86,9 +86,8 @@ public interface RecordLookupService {
      * Maps a PID to archive holding info of a record.
      * @param pid The PID to lookup.
      * @return The archive metadata of the record, if found.
-     * @throws NoSuchPidException Thrown when the PID is not found.
      */
-    public List<ArchiveHoldingInfo> getArchiveHoldingInfoByPid(String pid) throws NoSuchPidException;
+    public List<ArchiveHoldingInfo> getArchiveHoldingInfoByPid(String pid);
 
     /**
      * Get a map of holding signatures associated with this PID (if any
