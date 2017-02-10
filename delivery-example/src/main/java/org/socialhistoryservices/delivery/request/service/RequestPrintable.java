@@ -29,11 +29,16 @@ import java.util.Properties;
  * Represents a printable request.
  */
 public abstract class RequestPrintable implements Printable {
-    protected static final int MIN_LINE_HEIGHT = 13;
+    protected static final int DPI = 150;
+    protected static final int KEY_TAB_OFFSET = 80;
 
     protected Font normalFont;
     protected Font boldFont;
     protected Font italicFont;
+
+    protected Font smallNormalFont;
+    protected Font smallBoldFont;
+    protected Font smallItalicFont;
 
     protected DateFormat df;
     protected Properties properties;
@@ -47,7 +52,7 @@ public abstract class RequestPrintable implements Printable {
         private int offsetY;
         private int width;
         private int height;
-        private int valueOffset;
+        private float valueOffset;
         private Graphics2D g2d;
 
         public DrawInfo(Graphics2D g2d) {
@@ -90,11 +95,11 @@ public abstract class RequestPrintable implements Printable {
             this.height = h;
         }
 
-        public int getValueOffset() {
+        public float getValueOffset() {
             return valueOffset;
         }
 
-        public void setValueOffset(int valueOffset) {
+        public void setValueOffset(float valueOffset) {
             this.valueOffset = valueOffset;
         }
     }
@@ -108,17 +113,19 @@ public abstract class RequestPrintable implements Printable {
      */
     public RequestPrintable(HoldingRequest hr, MessageSource mSource, DateFormat format, Properties prop) {
         properties = prop;
-        // Add holdings to array for easy traversing.
         holdingRequest = hr;
 
         l = new Locale("en");
         msgSource = mSource;
         df = format;
 
-        // Set the normal and bold font.
         normalFont = new Font("Arial", Font.PLAIN, 10);
         boldFont = normalFont.deriveFont(Font.BOLD);
         italicFont = normalFont.deriveFont(Font.ITALIC);
+
+        smallNormalFont = normalFont.deriveFont(8f);
+        smallBoldFont = smallNormalFont.deriveFont(Font.BOLD);
+        smallItalicFont = smallNormalFont.deriveFont(Font.ITALIC);
     }
 
     /**
@@ -151,12 +158,13 @@ public abstract class RequestPrintable implements Printable {
 
         DrawInfo drawInfo = new DrawInfo(g2d);
         drawInfo.setHeight(pageHeight);
-        drawInfo.setValueOffset(80);
         int rightMargin = 20;
 
         // Draw all info to the g2d.
         for (int i = 1; i <= 2; i++) {
-            draw(drawInfo, halfWidth, rightMargin, i);
+            drawInfo.setWidth(halfWidth - rightMargin);
+            drawInfo.setOffsetX(halfWidth * (i - 1) + 10);
+            draw(drawInfo);
         }
 
         // Tell the caller that this page is part of the printed document.
@@ -166,35 +174,35 @@ public abstract class RequestPrintable implements Printable {
     /**
      * Draw the request information.
      *
-     * @param drawInfo    Draw offsets.
-     * @param halfWidth   width of one half of the page
-     * @param rightMargin margin on the right of the page.
-     * @param i           1 = left side, 2 = right side
+     * @param drawInfo Draw offsets.
      */
-    protected void draw(DrawInfo drawInfo, int halfWidth, int rightMargin, int i) {
-        drawInfo.setWidth(halfWidth - rightMargin);
-        drawInfo.setOffsetX(halfWidth * (i - 1) + 10);
-        drawBarcode(drawInfo, holdingRequest.getHolding().getId());
-        drawRequestInfo(drawInfo);
-        drawInfo.setOffsetY(drawInfo.getOffsetY() + 20);
-        drawHoldingInfo(drawInfo);
-        drawInfo.setOffsetY(drawInfo.getHeight() - 100);
-        drawReturnNotice(drawInfo);
+    protected abstract void draw(DrawInfo drawInfo);
+
+    /**
+     * Draw a barcode on the provided graphics.
+     *
+     * @param drawInfo Draw offsets.
+     * @param number   The barcode number to create a barcode from.
+     */
+    protected void drawBarcode(DrawInfo drawInfo, int number) {
+        Code128Bean barcode = new Code128Bean();
+        barcode.setModuleWidth(UnitConv.in2mm(5.0f / DPI));
+        barcode.setBarHeight(30);
+        barcode.setFontSize(12);
+
+        String msg = String.format("%09d", number);
+        BarcodeDimension dim = barcode.calcDimensions(msg);
+
+        // Align to the right of the page
+        barcode.doQuietZone(true);
+        barcode.setQuietZone(drawInfo.getWidth() + drawInfo.getOffsetX() - dim.getWidth() - 10);
+        barcode.setVerticalQuietZone(0);
+
+        // Generate the barcode
+        Java2DCanvasProvider canvas = new Java2DCanvasProvider(drawInfo.getG2d(), 0);
+        barcode.generateBarcode(canvas, msg);
+        drawInfo.setOffsetY((int) dim.getHeight() + 30);
     }
-
-    /**
-     * Draws all request info.
-     *
-     * @param drawInfo Draw offsets.
-     */
-    protected abstract void drawRequestInfo(DrawInfo drawInfo);
-
-    /**
-     * Draws all holding info.
-     *
-     * @param drawInfo Draw offsets.
-     */
-    protected abstract void drawHoldingInfo(DrawInfo drawInfo);
 
     /**
      * Draws the name of the person making the request.
@@ -203,7 +211,7 @@ public abstract class RequestPrintable implements Printable {
      */
     protected void drawName(DrawInfo drawInfo) {
         String nameLabel = getMessage("request.name", "Name");
-        drawKeyValue(drawInfo, nameLabel, holdingRequest.getRequest().getName(), italicFont, true);
+        drawKeyValueNewLine(drawInfo, nameLabel, holdingRequest.getRequest().getName(), italicFont, true);
     }
 
     /**
@@ -217,7 +225,7 @@ public abstract class RequestPrintable implements Printable {
             properties.getProperty("prop_timeFormat", "HH:mm:ss");
 
         SimpleDateFormat spdf = new SimpleDateFormat(dateTimeFormat);
-        drawKeyValue(drawInfo, dateLabel, spdf.format(holdingRequest.getRequest().getCreationDate()));
+        drawKeyValueNewLine(drawInfo, dateLabel, spdf.format(holdingRequest.getRequest().getCreationDate()));
     }
 
     /**
@@ -230,7 +238,6 @@ public abstract class RequestPrintable implements Printable {
 
         drawTitle(drawInfo, r.getTitle());
         drawAuthor(drawInfo, r.getExternalInfo().getAuthor());
-        //drawPid(drawInfo, r.getPid());
     }
 
     /**
@@ -242,7 +249,6 @@ public abstract class RequestPrintable implements Printable {
         Record r = holdingRequest.getHolding().getRecord();
 
         drawMaterialType(drawInfo, r.getExternalInfo().getMaterialType());
-        drawInventory(drawInfo, r);
         drawComment(drawInfo, holdingRequest.getComment());
     }
 
@@ -259,11 +265,6 @@ public abstract class RequestPrintable implements Printable {
         drawDirection(drawInfo, h.getDirection());
         drawCabinet(drawInfo, h.getCabinet());
         drawShelf(drawInfo, h.getShelf());
-
-        if (r.getRestriction() != ExternalRecordInfo.Restriction.OPEN) {
-            drawInfo.setOffsetY(drawInfo.getOffsetY() + 10);
-            drawRestrictedNotice(drawInfo);
-        }
     }
 
     /**
@@ -274,19 +275,7 @@ public abstract class RequestPrintable implements Printable {
      */
     protected void drawType(DrawInfo drawInfo, String value) {
         String typeLabel = getMessage("holding.signature", "Signature");
-        drawKeyValue(drawInfo, typeLabel, value, italicFont, true);
-    }
-
-    /**
-     * Draw the comment of the holding reservation (used to specify
-     * years/numbers for serials).
-     *
-     * @param drawInfo Draw offsets.
-     * @param value    The value to draw.
-     */
-    private void drawComment(DrawInfo drawInfo, String value) {
-        String commentLabel = getMessage("holdingReservations.comment", "Comment");
-        drawKeyValue(drawInfo, commentLabel, value);
+        drawKeyValueNewLine(drawInfo, typeLabel, value, italicFont, true);
     }
 
     /**
@@ -294,7 +283,7 @@ public abstract class RequestPrintable implements Printable {
      *
      * @param drawInfo Draw offsets.
      */
-    private void drawReturnNotice(DrawInfo drawInfo) {
+    protected void drawReturnNotice(DrawInfo drawInfo) {
         String returnKeep = getMessage("print.return", "Return or Keep?");
         String returnForm = getMessage("print.returnForm", "Please return form along with item.");
 
@@ -311,16 +300,15 @@ public abstract class RequestPrintable implements Printable {
     }
 
     /**
-     * Draw the restriction notice.
+     * Draw the comment of the holding reservation (used to specify
+     * years/numbers for serials).
      *
-     * @param drawInfo Draw restriction notice.
+     * @param drawInfo Draw offsets.
+     * @param value    The value to draw.
      */
-    private void drawRestrictedNotice(DrawInfo drawInfo) {
-        String key = getMessage("record.restriction", "Restriction Details");
-        String value = getMessage("print.accessGranted",
-            "This item is not publicly available, but this person has been granted access.");
-
-        drawKeyValue(drawInfo, key, value);
+    private void drawComment(DrawInfo drawInfo, String value) {
+        String commentLabel = getMessage("holdingReservations.comment", "Comment");
+        drawKeyValueNewLine(drawInfo, commentLabel, value);
     }
 
     /**
@@ -333,9 +321,8 @@ public abstract class RequestPrintable implements Printable {
         if (value == null) {
             return;
         }
-        String shelfLabel = getMessage("holding.shelf",
-            "Shelf");
-        drawKeyValue(drawInfo, shelfLabel, value);
+        String shelfLabel = getMessage("holding.shelf", "Shelf");
+        drawKeyValueNewLine(drawInfo, shelfLabel, value);
     }
 
     /**
@@ -345,9 +332,8 @@ public abstract class RequestPrintable implements Printable {
      * @param value    The value to draw.
      */
     private void drawDirection(DrawInfo drawInfo, String value) {
-        String directionLabel = getMessage("holding.direction",
-            "Direction");
-        drawKeyValue(drawInfo, directionLabel, value);
+        String directionLabel = getMessage("holding.direction", "Direction");
+        drawKeyValueNewLine(drawInfo, directionLabel, value);
     }
 
     /**
@@ -360,9 +346,8 @@ public abstract class RequestPrintable implements Printable {
         if (value == null) {
             return;
         }
-        String cabinetLabel = getMessage("holding.cabinet",
-            "Cabinet");
-        drawKeyValue(drawInfo, cabinetLabel, value);
+        String cabinetLabel = getMessage("holding.cabinet", "Cabinet");
+        drawKeyValueNewLine(drawInfo, cabinetLabel, value);
     }
 
     /**
@@ -376,7 +361,7 @@ public abstract class RequestPrintable implements Printable {
             return;
         }
         String floorLabel = getMessage("holding.floor", "Floor");
-        drawKeyValue(drawInfo, floorLabel, String.valueOf(value));
+        drawKeyValueNewLine(drawInfo, floorLabel, String.valueOf(value));
     }
 
     /**
@@ -386,7 +371,7 @@ public abstract class RequestPrintable implements Printable {
      * @param value    The value to draw.
      */
     private void drawPid(DrawInfo drawInfo, String value) {
-        drawKeyValue(drawInfo, "PID", value);
+        drawKeyValueNewLine(drawInfo, "PID", value);
     }
 
     /**
@@ -398,24 +383,7 @@ public abstract class RequestPrintable implements Printable {
     private void drawMaterialType(DrawInfo drawInfo, ExternalRecordInfo.MaterialType value) {
         String typeLabel = getMessage("record.externalInfo.materialType", "Material");
         String val = getMessage("record.externalInfo.materialType." + value, "");
-        drawKeyValue(drawInfo, typeLabel, val);
-    }
-
-    /**
-     * Draws the item number.
-     *
-     * @param drawInfo Draw offsets.
-     * @param r        Record to check.
-     */
-    private void drawInventory(DrawInfo drawInfo, Record r) {
-        if (r.getExternalInfo().getMaterialType() != ExternalRecordInfo.MaterialType.ARCHIVE) {
-            return;
-        }
-
-        String queueLabel = getMessage("record.inventory", "Inventory Nr");
-        String pid = r.getPid();
-
-        drawKeyValue(drawInfo, queueLabel, pid.substring(pid.lastIndexOf(".") + 1));
+        drawKeyValueNewLine(drawInfo, typeLabel, val);
     }
 
     /**
@@ -425,7 +393,7 @@ public abstract class RequestPrintable implements Printable {
      */
     private void drawTitle(DrawInfo drawInfo, String value) {
         String titleLabel = getMessage("record.title", "Title");
-        drawKeyValue(drawInfo, titleLabel, value);
+        drawKeyValueNewLine(drawInfo, titleLabel, value);
     }
 
     /**
@@ -436,48 +404,23 @@ public abstract class RequestPrintable implements Printable {
      */
     private void drawAuthor(DrawInfo drawInfo, String value) {
         String authorLabel = getMessage("record.externalInfo.author", "Author");
-        drawKeyValue(drawInfo, authorLabel, value);
+        drawKeyValueNewLine(drawInfo, authorLabel, value);
     }
 
     /**
-     * Draw a barcode on the provided graphics.
-     *
-     * @param drawInfo Draw offsets.
-     * @param number   The barcode number to create a barcode from.
-     */
-    private void drawBarcode(DrawInfo drawInfo, int number) {
-        String msg = String.format("%09d", number);
-        final int dpi = 150;
-        Code128Bean barcode = new Code128Bean();
-        barcode.setModuleWidth(UnitConv.in2mm(5.0f / dpi));
-        barcode.setBarHeight(30);
-        barcode.setFontSize(12);
-
-        // Align to the right of the page.
-        BarcodeDimension dim = barcode.calcDimensions(msg);
-        barcode.doQuietZone(true);
-        barcode.setQuietZone(drawInfo.getWidth() + drawInfo.getOffsetX() - dim.getWidth() - 10);
-        barcode.setVerticalQuietZone(0);
-
-        Java2DCanvasProvider canvas = new Java2DCanvasProvider(drawInfo.getG2d(), 0);
-        // Generate the barcode.
-        barcode.generateBarcode(canvas, msg);
-        drawInfo.setOffsetY((int) dim.getHeight() + 30);
-    }
-
-    /**
-     * Draw a key value pair on the provided graphics object.
+     * Draw a key value pair (and a new line) on the provided graphics object.
      *
      * @param drawInfo Draw offsets.
      * @param key      The key to use.
      * @param value    The value to use.
      */
-    protected void drawKeyValue(DrawInfo drawInfo, String key, String value) {
-        drawKeyValue(drawInfo, key, value, normalFont, false);
+    protected void drawKeyValueNewLine(DrawInfo drawInfo, String key, String value) {
+        drawKeyValue(drawInfo, key, value, true);
+        drawNewLine(drawInfo);
     }
 
     /**
-     * Draw a key value pair on the provided graphics object.
+     * Draw a key value pair (and a new line) on the provided graphics object.
      *
      * @param drawInfo  Draw offsets.
      * @param key       The key to use.
@@ -485,22 +428,79 @@ public abstract class RequestPrintable implements Printable {
      * @param font      The font to use.
      * @param underline Whether to underline the value
      */
-    protected void drawKeyValue(DrawInfo drawInfo, String key, String value, Font font, boolean underline) {
+    protected void drawKeyValueNewLine(DrawInfo drawInfo, String key, String value, Font font, boolean underline) {
+        drawKeyValue(drawInfo, key, value, font, underline, true);
+        drawNewLine(drawInfo);
+    }
+
+    /**
+     * Draw a key value pair (and a new line) on the provided graphics object.
+     *
+     * @param drawInfo Draw offsets.
+     * @param key      The key to use.
+     * @param value    The value to use.
+     */
+    protected void drawKeyValue(DrawInfo drawInfo, String key, String value, boolean tab) {
+        drawKeyValue(drawInfo, key, value, normalFont, false, tab);
+    }
+
+    /**
+     * Draw a key value pair (and a new line) on the provided graphics object.
+     *
+     * @param drawInfo  Draw offsets.
+     * @param key       The key to use.
+     * @param value     The value to use.
+     * @param font      The font to use.
+     * @param underline Whether to underline the value
+     * @param tab       Add a tab after the key
+     */
+    protected void drawKeyValue(DrawInfo drawInfo, String key, String value, Font font, boolean underline, boolean tab) {
+        // Do not print key-value pairs with missing value.
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+
+        // Draw key
+        if (key != null) {
+            Graphics2D g2d = drawInfo.getG2d();
+            g2d.setFont(boldFont.deriveFont((float) font.getSize()));
+            g2d.drawString(key + ":", drawInfo.getOffsetX() + drawInfo.getValueOffset(), drawInfo.getOffsetY());
+
+            float offset = tab ? KEY_TAB_OFFSET : g2d.getFontMetrics().stringWidth(key + ": ");
+            drawInfo.setValueOffset(drawInfo.getValueOffset() + offset);
+        }
+
+        drawValue(drawInfo, value, font, underline);
+    }
+
+    /**
+     * Draw a value and a new line on the provided graphics object.
+     *
+     * @param drawInfo  Draw offsets.
+     * @param value     The value to use.
+     * @param font      The font to use.
+     * @param underline Whether to underline the value
+     */
+    protected void drawValueNewLine(DrawInfo drawInfo, String value, Font font, boolean underline) {
+        drawValue(drawInfo, value, font, underline);
+        drawNewLine(drawInfo);
+    }
+
+    /**
+     * Draw a value on the provided graphics object.
+     *
+     * @param drawInfo  Draw offsets.
+     * @param value     The value to use.
+     * @param font      The font to use.
+     * @param underline Whether to underline the value
+     */
+    protected void drawValue(DrawInfo drawInfo, String value, Font font, boolean underline) {
         // Do not print key-value pairs with missing value.
         if (value == null || value.isEmpty()) {
             return;
         }
         Graphics2D g2d = drawInfo.getG2d();
         int x = drawInfo.getOffsetX();
-        int y = drawInfo.getOffsetY();
-        int width = drawInfo.getWidth();
-        int offset = (key != null) ? drawInfo.getValueOffset() : 0;
-
-        // Draw key (word-wrap disabled)
-        if (key != null) {
-            g2d.setFont(boldFont);
-            g2d.drawString(key + ":", x, y);
-        }
 
         // Draw value (word-wrap enabled)
         FontMetrics fm = g2d.getFontMetrics();
@@ -513,29 +513,57 @@ public abstract class RequestPrintable implements Printable {
         AttributedCharacterIterator styledTextIterator = styledText.getIterator();
         LineBreakMeasurer measurer = new LineBreakMeasurer(styledTextIterator, frc);
 
+        boolean firstLine = true;
         while (measurer.getPosition() < value.length()) {
-            TextLayout textLayout = measurer.nextLayout(width - offset);
-            textLayout.draw(g2d, x + offset, y);
-            y += Math.max(MIN_LINE_HEIGHT, fm.getHeight());
+            if (!firstLine)
+                drawNewLine(drawInfo);
+
+            float width = drawInfo.getWidth() - drawInfo.getValueOffset();
+            TextLayout textLayout = measurer.nextLayout(width);
+            textLayout.draw(g2d, x + drawInfo.getValueOffset(), drawInfo.getOffsetY());
+
+            firstLine = false;
+            drawInfo.setValueOffset(drawInfo.getValueOffset() + textLayout.getAdvance() + fm.stringWidth(" "));
         }
-        drawInfo.setOffsetY(y);
     }
 
     /**
-     * Draw a key value pair on the provided graphics object.
+     * Draw a new line on the provided graphics object.
      *
-     * @param g2d   The graphics object to draw on.
-     * @param key   The key to use.
-     * @param value The value to use.
-     * @param x     The x coordinate to start drawing.
-     * @param y     The y coordinate to start drawing.
-     * @param width The width of the graphics object.
-     * @return The y coordinate to continue drawing.
+     * @param drawInfo Draw offsets.
      */
-    protected int drawKeyValue(Graphics2D g2d, String key, String value, int x, int y, int width) {
-        g2d.setFont(boldFont);
-        int offset = g2d.getFontMetrics().stringWidth(key);
-        return 0; //drawKeyValue(g2d, key, value, x, y, offset + 10, width);
+    protected void drawNewLine(DrawInfo drawInfo) {
+        drawInfo.setValueOffset(0);
+        drawInfo.setOffsetY(drawInfo.getOffsetY() + drawInfo.getG2d().getFontMetrics().getHeight());
+    }
+
+    /**
+     * Determine the height if the provided value is drawn on the provided graphics object.
+     *
+     * @param drawInfo Draw offsets.
+     * @param value    The value to use.
+     * @param font     The font to use.
+     * @return The height.
+     */
+    protected int determineHeight(DrawInfo drawInfo, String value, Font font) {
+        if (value == null || value.isEmpty())
+            return 0;
+
+        AttributedString styledText = new AttributedString(value.replace("\n", " "));
+        styledText.addAttribute(TextAttribute.FONT, font);
+
+        Graphics2D g2d = drawInfo.getG2d();
+        LineBreakMeasurer measurer = new LineBreakMeasurer(styledText.getIterator(),  g2d.getFontRenderContext());
+
+        int height = 0;
+        float offset = drawInfo.getValueOffset();
+        while (measurer.getPosition() < value.length()) {
+            FontMetrics fm = g2d.getFontMetrics(font);
+            TextLayout textLayout = measurer.nextLayout(drawInfo.getWidth() - offset);
+            height += fm.getHeight();
+            offset = 0;
+        }
+        return height;
     }
 
     /**
