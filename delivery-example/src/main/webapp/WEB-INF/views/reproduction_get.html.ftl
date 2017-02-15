@@ -35,7 +35,7 @@
   <#if reproduction.order??>
     <li>
       <span><@_ "reproduction.order" "Order id (PayWay)"/></span>
-    ${reproduction.order.id?html}
+    ${reproduction.order.id?html} <i>(<@_ "order.payed.${reproduction.order.payed}" "" />)</i>
     </li>
   </#if>
 
