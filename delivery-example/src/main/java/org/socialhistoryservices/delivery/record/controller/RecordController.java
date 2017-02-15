@@ -93,6 +93,8 @@ public class RecordController extends ErrorHandlingController {
      */
     private String get(String[] pids, Model model) {
         List<Record> recs = new ArrayList<Record>();
+        Map<String, List<Record>> reservedChilds = new HashMap<>();
+
         for (String pid : pids) {
             synchronized (this) { // Issue #139: Make sure that when A enters, B has to wait, and will detect the insert into the database by B when entering.
                 Record rec = records.getRecordByPid(pid);
@@ -113,6 +115,9 @@ public class RecordController extends ErrorHandlingController {
 
                 if (rec != null) {
                     recs.add(rec);
+
+                    List<Record> reserved = records.getReservedChildRecords(rec);
+                    reservedChilds.put(rec.getPid(), reserved);
                 }
             }
         }
@@ -121,6 +126,7 @@ public class RecordController extends ErrorHandlingController {
             throw new ResourceNotFoundException();
 
         model.addAttribute("records", recs);
+        model.addAttribute("reservedChilds", reservedChilds);
         return "record_get";
     }
 

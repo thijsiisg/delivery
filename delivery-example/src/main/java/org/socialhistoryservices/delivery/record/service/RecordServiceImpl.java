@@ -383,4 +383,27 @@ public class RecordServiceImpl implements RecordService {
         r.setHoldings(hList);
         return r;
     }
+
+    /**
+     * Get all child records of the given record that are currently reserved.
+     * @param record The parent record.
+     * @return A list of all reserved child records.
+     */
+    public List<Record> getReservedChildRecords(Record record) {
+        if (record.getParent() != null)
+            return new ArrayList<>();
+
+        CriteriaBuilder builder = getRecordCriteriaBuilder();
+        CriteriaQuery<Record> query = builder.createQuery(Record.class);
+        Root<Record> recRoot = query.from(Record.class);
+        Join<Record, Holding> hRoot = recRoot.join(Record_.holdings);
+
+        Predicate parentEquals = builder.equal(recRoot.get(Record_.parent), record);
+        Predicate notAvailable = builder.notEqual(hRoot.get(Holding_.status), Holding.Status.AVAILABLE);
+
+        query.select(recRoot);
+        query.where(builder.and(parentEquals, notAvailable));
+
+        return listRecords(query);
+    }
 }
