@@ -157,32 +157,6 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
     }
 
     /**
-     * Checks the permission if applicable (i.e. holdings selected are tied to one or more restricted records).
-     *
-     * @param model   The model to add errors to.
-     * @param perm    The permission, can be null if not applicable.
-     * @param request The Request with holdings to check.
-     * @return True iff the given permission (can be null) is allowed to reserve the provided holdings.
-     */
-    protected boolean checkPermissions(Model model, Permission perm, Request request) {
-        if (perm == null) {
-            perm = new Permission();
-        }
-
-        List<? extends HoldingRequest> holdingRequests = request.getHoldingRequests();
-        for (HoldingRequest holdingRequest : holdingRequests) {
-            Record permRecord = holdingRequest.getHolding().getRecord();
-            if (permRecord.getRestriction() == ExternalRecordInfo.Restriction.RESTRICTED) {
-                if (!perm.hasGranted(permRecord)) {
-                    model.addAttribute("holding" + request.getClass().getSimpleName() + "s", holdingRequest);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
      * Initilizes the model for use with an overview.
      *
      * @param p               The parameter map.

@@ -10,6 +10,9 @@ ALTER TABLE records DROP COLUMN embargo;
 ALTER TABLE records DROP COLUMN restriction;
 ALTER TABLE records DROP COLUMN restriction_type;
 
+ALTER TABLE reservations DROP COLUMN queueNo;
+ALTER TABLE reservations DROP COLUMN permission_id;
+
 /* ADD NEW TABLES */
 
 CREATE TABLE archive_holding_info
@@ -24,6 +27,22 @@ CREATE TABLE archive_holding_info
   CONSTRAINT archive_holding_info_pkey PRIMARY KEY (id),
   CONSTRAINT fk67393d07ebb43f2f FOREIGN KEY (record_id)
   REFERENCES records (id) MATCH SIMPLE
+  ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+
+CREATE TABLE reservation_permissions
+(
+  reservation_id integer NOT NULL,
+  permission_id integer NOT NULL,
+  CONSTRAINT reservation_permissions_pkey PRIMARY KEY (reservation_id, permission_id),
+  CONSTRAINT fk84f1449159b33e6d FOREIGN KEY (permission_id)
+  REFERENCES permissions (id) MATCH SIMPLE
+  ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT fk84f14491b3f0de98 FOREIGN KEY (reservation_id)
+  REFERENCES reservations (id) MATCH SIMPLE
   ON UPDATE NO ACTION ON DELETE NO ACTION
 )
 WITH (
