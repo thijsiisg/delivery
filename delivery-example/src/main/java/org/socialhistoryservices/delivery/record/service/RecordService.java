@@ -173,4 +173,11 @@ public interface RecordService {
      * in the API.
      */
     public Record createRecordByPid(String pid) throws NoSuchPidException;
+
+    /**
+     * Get all child records of the given record that are currently reserved.
+     * @param record The parent record.
+     * @return A list of all reserved child records.
+     */
+    public List<Record> getReservedChildRecords(Record record);
 }

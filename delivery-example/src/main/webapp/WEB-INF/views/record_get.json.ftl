@@ -55,19 +55,12 @@ ${callback}([
       </#list>
     ],
 
-    "childrenDifferentState" : {
-      <#list record.childrenDifferentState as childRecord>
-      "${childRecord.pid?js_string}" : {
-          <#assign childHolding = childRecord.holdings?first/>
-          "restriction": "${childRecord.restriction}",
-          "publicationStatus": "${childRecord.publicationStatus}",
-          "openForReproduction": "${childRecord.openForReproduction?c}",
-          "status": "${childHolding.status}",
-          "usageRestriction": "${childHolding.usageRestriction}"
-        }
-        <#if childRecord_has_next>,</#if>
+    "reservedChilds" : [
+      <#list reservedChilds[record.pid] as reservedChildRecord>
+        <#assign childHolding = reservedChildRecord.holdings?first/>
+        "${childHolding.signature?js_string}"<#if reservedChildRecord_has_next>,</#if>
       </#list>
-    }
+   ]
 
   <#if _sec.ifAllGranted("ROLE_RECORD_CONTACT_VIEW")>
     <#if record.realContact??>
