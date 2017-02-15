@@ -337,15 +337,18 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
             List<RequestPrintable> requestPrintablesArchive = new ArrayList<RequestPrintable>();
 
             for (HoldingReservation hr : hrs) {
-                ReservationPrintable rp =
-                    new ReservationPrintable(hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
-                reservations.add(hr.getReservation());
-
                 ExternalRecordInfo.MaterialType mt = hr.getHolding().getRecord().getExternalInfo().getMaterialType();
-                if (mt == ExternalRecordInfo.MaterialType.ARCHIVE)
-                    requestPrintablesArchive.add(rp);
-                else
-                    requestPrintables.add(rp);
+                if (mt == ExternalRecordInfo.MaterialType.ARCHIVE) {
+                    requestPrintablesArchive.add(
+                        new ArchiveReservationPrintable(
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties));
+                }
+                else {
+                    requestPrintables.add(
+                        new ReservationPrintable(
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties));
+                }
+                reservations.add(hr.getReservation());
             }
 
             printRequest(requestPrintables, properties.getProperty("prop_printerArchive"), alwaysPrint);

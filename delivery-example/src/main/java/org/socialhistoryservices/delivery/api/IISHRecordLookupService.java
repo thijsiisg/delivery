@@ -179,34 +179,38 @@ public class IISHRecordLookupService implements RecordLookupService {
         logger.debug(String.format("getArchiveHoldingInfoByPid(%s)", pid));
 
         List<ArchiveHoldingInfo> info = new ArrayList<>();
-        try {
-            String[] parentPidAndItem = getParentPidAndItem(pid);
-            Node node = searchByPid(parentPidAndItem[0], false);
+        String[] parentPidAndItem = getParentPidAndItem(pid);
 
-            NodeList archiveList = (NodeList) xpArchive931.evaluate(node, XPathConstants.NODESET);
-            if (archiveList != null) {
-                for (int i = 0; i < archiveList.getLength(); i++) {
-                    Node archiveItem = archiveList.item(i);
+        // Child records should look for archive holding info at their parent
+        if (parentPidAndItem[1] == null) {
+            try {
+                Node node = searchByPid(parentPidAndItem[0], false);
+                NodeList archiveList = (NodeList) xpArchive931.evaluate(node, XPathConstants.NODESET);
 
-                    ArchiveHoldingInfo ahi = new ArchiveHoldingInfo();
-                    ahi.setShelvingLocation(XmlUtils.evaluate(xpArchiveLocation, archiveItem));
-                    ahi.setMeter(XmlUtils.evaluate(xpArchiveMeter, archiveItem));
-                    ahi.setNumbers(XmlUtils.evaluate(xpArchiveNumbers, archiveItem));
-                    ahi.setFormat(XmlUtils.evaluate(xpArchiveFormat, archiveItem));
-                    ahi.setNote(XmlUtils.evaluate(xpArchiveNote, archiveItem));
+                if (archiveList != null) {
+                    for (int i = 0; i < archiveList.getLength(); i++) {
+                        Node archiveItem = archiveList.item(i);
 
-                    if (ahi.getShelvingLocation() != null || ahi.getMeter() != null ||
-                        ahi.getNumbers() != null || ahi.getFormat() != null || ahi.getNote() != null) {
-                        info.add(ahi);
+                        ArchiveHoldingInfo ahi = new ArchiveHoldingInfo();
+                        ahi.setShelvingLocation(XmlUtils.evaluate(xpArchiveLocation, archiveItem));
+                        ahi.setMeter(XmlUtils.evaluate(xpArchiveMeter, archiveItem));
+                        ahi.setNumbers(XmlUtils.evaluate(xpArchiveNumbers, archiveItem));
+                        ahi.setFormat(XmlUtils.evaluate(xpArchiveFormat, archiveItem));
+                        ahi.setNote(XmlUtils.evaluate(xpArchiveNote, archiveItem));
+
+                        if (ahi.getShelvingLocation() != null || ahi.getMeter() != null ||
+                            ahi.getNumbers() != null || ahi.getFormat() != null || ahi.getNote() != null) {
+                            info.add(ahi);
+                        }
                     }
                 }
             }
-        }
-        catch (XPathExpressionException ignored) {
-            logger.debug("getArchiveHoldingInfoByPid(): Invalid XPath", ignored);
-        }
-        catch (NoSuchPidException ignored) {
-            logger.debug("getArchiveHoldingInfoByPid(): No such PID", ignored);
+            catch (XPathExpressionException ignored) {
+                logger.debug("getArchiveHoldingInfoByPid(): Invalid XPath", ignored);
+            }
+            catch (NoSuchPidException ignored) {
+                logger.debug("getArchiveHoldingInfoByPid(): No such PID", ignored);
+            }
         }
 
         return info;

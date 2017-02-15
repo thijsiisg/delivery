@@ -747,6 +747,10 @@ ul li input[type="text"].price, ul li input[type="text"].percentage {
     width: 8em;
 }
 
+input.code {
+    width: 20em;
+}
+
 ul.holdingReservationDetails, ul.holdingReproductionDetails {
     list-style: none;
     margin: 0;

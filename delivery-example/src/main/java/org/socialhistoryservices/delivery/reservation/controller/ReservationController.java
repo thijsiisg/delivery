@@ -535,20 +535,20 @@ public class ReservationController extends AbstractRequestController {
      * Show the create form of a reservation (visitors create form).
      * @param req The HTTP request.
      * @param path The pid/signature string (URL encoded).
-     * @param code The permission code to use for restricted records.
+     * @param codes The permission codes to use for restricted records.
      * @param model The model to add response attributes to.
      * @return The view to resolve.
      */
     @RequestMapping(value = "/createform/{path:.*}",
                     method = RequestMethod.GET)
     public String showCreateForm(HttpServletRequest req, @PathVariable String path,
-                           @RequestParam(required=false) String code,
+                           @RequestParam(required=false) String[] codes,
                            Model model) {
         Reservation newRes = new Reservation();
         newRes.setDate(reservations.getFirstValidReservationDate(new Date()));
 
         newRes.setHoldingReservations(uriPathToHoldingReservations(path));
-        return processVisitorReservationCreation(req, newRes, null, code,
+        return processVisitorReservationCreation(req, newRes, null, codes,
                 model, false);
     }
 
@@ -557,7 +557,7 @@ public class ReservationController extends AbstractRequestController {
      * @param req The HTTP request.
      * @param newRes The submitted reservation.
      * @param result The binding result to put errors in.
-     * @param code The permission code to use for restricted records.
+     * @param codes The permission codes to use for restricted records.
      * @param model The model to add response attributes to.
      * @return The view to resolve.
      */
@@ -566,39 +566,57 @@ public class ReservationController extends AbstractRequestController {
     public String processCreateForm(HttpServletRequest req, @ModelAttribute("reservation")
                                         Reservation newRes,
                                         BindingResult result,
-                           @RequestParam(required=false) String code,
+                           @RequestParam(required=false) String[] codes,
                            Model model) {
-       return processVisitorReservationCreation(req, newRes, result, code,
+       return processVisitorReservationCreation(req, newRes, result, codes,
                 model, true);
     }
 
     private String processVisitorReservationCreation(HttpServletRequest req, Reservation newRes,
                                                      BindingResult result,
-                                                     String permission,
+                                                     String[] codes,
                                                      Model model, boolean commit) {
         if (!checkHoldings(model, newRes)) return "reservation_error";
 
-
-        Permission perm = permissions.getPermissionByCode(permission);
-        if (!checkPermissions(model, perm, newRes)) {
-            model.addAttribute("holdingReservations", newRes.getHoldingReservations());
-            return "reservation_choice";
+        // Validate the permission codes and add the found permissions to the reservation
+        if (codes != null) {
+            for (String code : codes) {
+                Permission perm = permissions.getPermissionByCode(code);
+                if (checkPermissions(model, perm, newRes)) {
+                    newRes.getPermissions().add(perm);
+                }
+            }
         }
 
-        if (perm != null ) {
-            if (!commit) {
-                newRes.setVisitorName(perm.getName());
-                newRes.setVisitorEmail(perm.getEmail());
-                newRes.setDate(reservations.getFirstValidReservationDate(perm
-                        .getDateFrom()));
-            } else {
-                newRes.setPermission(perm);
+        // If the reservation contains restricted items, go to the choice screen
+        List<HoldingReservation> open = new ArrayList<>();
+        List<HoldingReservation> restricted = new ArrayList<>();
+        for (HoldingReservation hr : newRes.getHoldingReservations()) {
+            Record record = hr.getHolding().getRecord();
+            ExternalRecordInfo.Restriction restriction = record.getRestriction();
+
+            if (restriction == ExternalRecordInfo.Restriction.RESTRICTED) {
+                boolean hasPermission = false;
+                for (Permission permission : newRes.getPermissions()) {
+                    if (permission.hasGranted(record)) {
+                        hasPermission = true;
+                        open.add(hr);
+                    }
+                }
+
+                if (!hasPermission)
+                    restricted.add(hr);
             }
-            if (newRes.getDate() == null || !perm.isValidOn(newRes.getDate())
-                    ) {
-                model.addAttribute("error", "notValidOnDate");
-                return "reservation_error";
+            else if (restriction == ExternalRecordInfo.Restriction.OPEN) {
+                open.add(hr);
             }
+        }
+
+        if (!restricted.isEmpty()) {
+            model.addAttribute("reservation", newRes);
+            model.addAttribute("holdingReservationsOpen", open);
+            model.addAttribute("holdingReservationsRestricted", restricted);
+            return "reservation_choice";
         }
 
         try {
@@ -609,18 +627,19 @@ public class ReservationController extends AbstractRequestController {
                 if (!result.hasErrors()) {
                     // Mail the confirmation to the visitor.
                     try {
-	                    resMailer.mailConfirmation(newRes);
+                        resMailer.mailConfirmation(newRes);
                     }
                     catch (MailException e) {
                         log.error("Failed to send email", e);
-	                    model.addAttribute("error", "mail");
+                        model.addAttribute("error", "mail");
                     }
                     // Automatically print the reservation.
                     autoPrint(newRes);
                     model.addAttribute("reservation", newRes);
                     return "reservation_success";
                 }
-            } else {
+            }
+            else {
                 reservations.validateHoldingsAndAvailability(newRes, null);
             }
 
@@ -636,6 +655,37 @@ public class ReservationController extends AbstractRequestController {
         model.addAttribute("reservation", newRes);
 
         return "reservation_create";
+    }
+
+    /**
+     * Checks the permission if applicable (i.e. holdings selected are tied to one or more restricted records).
+     *
+     * @param model       The model to add errors to.
+     * @param perm        The permission, can be null if not applicable.
+     * @param reservation The Reservation with holdings to check.
+     * @return True iff the given permission (can be null) is allowed to reserve the provided holdings.
+     */
+    protected boolean checkPermissions(Model model, Permission perm, Reservation reservation) {
+        if (perm == null) {
+            model.addAttribute("error", "invalidCode");
+            return false;
+        }
+
+        /*if ((reservation.getDate() == null) || !perm.isValidOn(reservation.getDate())) {
+            model.addAttribute("error", "notValidOnDate");
+            return false;
+        }*/
+
+        for (HoldingReservation hr : reservation.getHoldingReservations()) {
+            Record permRecord = hr.getHolding().getRecord();
+            if (permRecord.getRestriction() == ExternalRecordInfo.Restriction.RESTRICTED) {
+                if (perm.hasGranted(permRecord))
+                    return true;
+            }
+        }
+
+        model.addAttribute("error", "invalidCode");
+        return false;
     }
 
     /**
