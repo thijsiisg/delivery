@@ -21,15 +21,18 @@ import org.apache.commons.logging.LogFactory;
 import org.socialhistoryservices.delivery.record.entity.ArchiveHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.*;
 import java.util.*;
 
@@ -383,6 +386,20 @@ public class IISHRecordLookupService implements RecordLookupService {
         try {
             String url = xp856uUrl.evaluate(node);
             if (url.endsWith("?locatt=view:ead")) {
+                // TODO: Temp for testing purposes
+                String id = url.replace("http://hdl.handle.net/10622/", "").replace("?locatt=view:ead", "");
+                FileInputStream fileInputStreamTemp = new FileInputStream("/home/ead/" + id  + ".xml");
+                BufferedReader rdrTemp = new BufferedReader(new InputStreamReader(fileInputStreamTemp));
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                factory.setNamespaceAware(true);
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document document = builder.parse(new InputSource(rdrTemp));
+                Element eadNodeTemp = document.getDocumentElement();
+                if (eadNodeTemp != null) {
+                    eadNodeTemp.setAttribute("ead","urn:isbn:1-931666-22-9");
+                    return eadNodeTemp;
+                }
+
                 URL eadUrl = new URL(url);
                 logger.debug(String.format("getEADNode(): Querying EAD URL: %s", eadUrl.toString()));
                 URLConnection conn = eadUrl.openConnection();
@@ -399,6 +416,9 @@ public class IISHRecordLookupService implements RecordLookupService {
         }
         catch (XPathExpressionException ex) {
             logger.debug("getEADNode(): Invalid XPath", ex);
+            return null;
+        }
+        catch (SAXException | ParserConfigurationException e) {
             return null;
         }
     }
