@@ -188,10 +188,16 @@ public class EADRecordExtractor implements IISHRecordExtractor {
             Element accessRestrict = (Element) xpAccessRestrict.evaluate(accessAndUse, XPathConstants.NODE);
             String restriction = xpP.evaluate(accessRestrict);
 
-            if (accessRestrict.getAttribute("type").equalsIgnoreCase("part") && (itemNode != null)) {
+            String type = accessRestrict.getAttribute("type").toLowerCase();
+            if (type.equals("date"))
+                restriction = "date";
+
+            if (type.equals("part") && (itemNode != null)) {
                 accessRestrict = (Element) xpAccessRestrict.evaluate(itemNode, XPathConstants.NODE);
                 if (accessRestrict != null)
                     restriction = accessRestrict.getAttribute("type");
+                else
+                    restriction = "open";
             }
 
             switch (restriction.trim().toLowerCase()) {
