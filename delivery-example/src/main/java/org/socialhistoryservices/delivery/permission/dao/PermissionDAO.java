@@ -58,6 +58,12 @@ public interface PermissionDAO {
     public void remove(Permission obj);
 
     /**
+     * Remove a RecordPermission from the database.
+     * @param obj RecordPermission to remove.
+     */
+    public void remove(RecordPermission obj);
+
+    /**
      * Save changes to a Permission in the database.
      * @param obj Permission to save.
      */

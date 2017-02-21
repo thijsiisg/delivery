@@ -50,26 +50,6 @@
       <input type="text" id="search_filter" name="search"
              value="${search_value?trim}" />
     </li>
-    <li>
-      <label for="status_filter"><@_ "permission.status" "Status"/></label>
-      <select id="status_filter" name="status">
-        <option value=""
-        <#if !RequestParameters["status"]?? ||
-             RequestParameters["status"] == "">
-        selected="selected"</#if>>
-        <@_ "permissionList.allStatus" "Status N/A"/>
-        </option>
-
-        <#list status_types?keys  as k>
-        <option value="${k?lower_case}"
-        <#if (RequestParameters["status"]?? &&
-              RequestParameters["status"]?upper_case == k)>
-        selected="selected"</#if>>
-        <@_ "permission.statusType.${k}" "${k}" />
-        </option>
-        </#list>
-      </select>
-    </li>
       <li>
           <label for="permission_filter"><@_ "recordPermission.granted" "Permission"/></label>
           <select id="permission_filter" name="permission">
@@ -78,6 +58,13 @@
                   RequestParameters["permission"] == "">
                       selected="selected"</#if>>
                   <@_ "permissionList.allPermission" "Permission N/A"/>
+              </option>
+
+              <option value="null"
+                  <#if (RequestParameters["permission"]?? &&
+                  RequestParameters["permission"]?upper_case == 'NULL')>
+                      selected="selected"</#if>>
+                  <@_ "recordPermission.granted.null" "To decide" />
               </option>
 
               <option value="true"
@@ -169,14 +156,10 @@
     <th>
       <@sortLink "visitor_name"><@_ "permission.name" "Name"/></@sortLink>
     </th>
-    <th>
-      <@sortLink "from_date"><@_ "permission.dateFrom" "Date From"/></@sortLink>
-    </th>
-    <th>
-      <@sortLink "to_date"><@_ "permission.dateTo" "Date To"/></@sortLink>
-    </th>
-    <th><@sortLink "status"><@_ "permission.status" "Status"/></@sortLink></th>
     <th><@sortLink "permission"><@_ "permission.permission" "Permission"/></@sortLink></th>
+    <th>
+      <@sortLink "date_granted"><@_ "permission.dateGranted" "Date granted"/></@sortLink>
+    </th>
   </tr>
   </thead>
   <tbody>
@@ -191,14 +174,18 @@
     </td>
     <td class="leftAligned">${record.toString()?html}</td>
     <td>${permission.name?html}</td>
-    <td>${permission.dateFrom?string(prop_dateFormat)}</td>
-    <td>${permission.dateTo?string(prop_dateFormat)}</td>
-    <td><@_ "permission.statusType.${permission.status?string}" "${permission.status?string}" /></td>
     <td>
-    <#if !recordPermission.granted && permission.status?string == "PENDING">
+    <#if !recordPermission.granted && !recordPermission.dateGranted??>
         ${granted_null}
     <#else>
         ${recordPermission.granted?string(granted_true,granted_false)}
+    </#if>
+    </td>
+    <td>
+    <#if recordPermission.dateGranted??>
+        ${recordPermission.dateGranted?string(prop_dateFormat)}
+    <#else>
+        ${granted_null}
     </#if>
     </td>
   </tr>

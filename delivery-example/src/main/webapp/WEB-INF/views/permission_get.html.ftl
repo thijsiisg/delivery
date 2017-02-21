@@ -33,19 +33,11 @@
     <li><span><@_ "permission.email" "E-mail"/></span> ${permission.email?html}</li>
     <li><span><@_ "permission.address" "Address"/></span> ${permission.address?html}</li>
 
-    <li class="spacing">
-        <span><@_ "permission.dateFrom" "Date From"/></span> ${permission.dateFrom?string(prop_dateFormat)}</li>
-    <li><span><@_ "permission.dateTo" "Date To"/></span> ${permission.dateTo?string(prop_dateFormat)}</li>
-
     <li class="spacing"><span><@_ "permission.researchSubject" "Research Subject"/></span>
         <em>${permission.researchSubject?html}</em></li>
     <li><span><@_ "permission.researchOrganization" "Research Organization"/></span>
         <em>${permission.researchOrganization?html}</em></li>
     <li><span><@_ "permission.explanation" "Explanation/Comments"/></span> <em>${permission.explanation?html}</em></li>
-
-    <li class="spacing">
-        <span><@_ "permission.status" "Status"/></span> <@_ "permission.statusType.${permission.status?string}" permission.status?string/>
-    </li>
 </ul>
 
 <h3><@_ "permission.recordPermissions" "Permissions per record"/>:</h3>
@@ -61,13 +53,23 @@
             <ul>
                 <li>
                     <select name="granted_${rp.id?c}" <#if _sec.ifNotGranted("ROLE_PERMISSION_MODIFY")>disabled="disabled"</#if>>
-                        <option value="true" <#if rp.granted>selected="selected"</#if>>
+                        <option value="null" <#if !rp.dateGranted??>selected="selected"</#if>>
+                            <@_ "recordPermission.granted.null" "To decide"/>
+                        </option>
+                        <option value="true" <#if rp.dateGranted?? && rp.granted>selected="selected"</#if>>
                             <@_ "recordPermission.granted.true" "Granted"/>
                         </option>
-                        <option value="false" <#if !rp.granted>selected="selected"</#if>>
+                        <option value="false" <#if rp.dateGranted?? && !rp.granted>selected="selected"</#if>>
                             <@_ "recordPermission.granted.false" "Denied"/>
                         </option>
                     </select>
+
+                    <#if rp.record.parent??>
+                        <label>
+                            <input type="checkbox" name="parent_${rp.id?c}"/>
+                            <@_ "recordPermission.parent" "Allow/Deny on a collection level"/>
+                        </label>
+                    </#if>
                 </li>
                 <li class="motivation">
                     <label for="motivation_${rp.id?c}">
@@ -131,22 +133,15 @@
         <#assign save_label>
             <@_ "permissionSingle.save" "Save" />
         </#assign>
-        <#assign save_and_finish_label>
-            <@_ "permissionSingle.saveAndFinish" "Save and Finish" />
+        <#assign save_and_email_label>
+            <@_ "permissionSingle.saveAndEmail" "Save and email" />
         </#assign>
         <#assign deleteConfirm>
             <@_ "permissionSingle.confirmDelete" "Deletion of this permission request, including all the individual permissions set, is permanent. Are you sure you want to delete this permission request?" />
         </#assign>
-        <#assign finishConfirm>
-            <@_ "permissionSingle.confirmFinish" "Finishing the request will give the requester access to the records you granted access to. Please confirm you are done granting/denying the permission request."/>
-        </#assign>
 
         <input type="submit" name="save" value="${save_label}"/>
-        <#if permission.status?string != "HANDLED">
-            <input type="submit" name="saveandfinish"
-                   onClick="return confirm('${finishConfirm}');"
-                   value="${save_and_finish_label}"/>
-        </#if>
+        <input type="submit" name="saveandemail" value="${save_and_email_label}"/>
         <#if _sec.ifAllGranted("ROLE_PERMISSION_DELETE")>
             <input type="submit" name="delete"
                    onClick="return confirm('${deleteConfirm}');"

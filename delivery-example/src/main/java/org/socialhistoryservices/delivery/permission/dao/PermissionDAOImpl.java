@@ -63,6 +63,17 @@ public class PermissionDAOImpl implements PermissionDAO {
     }
 
     /**
+     * Remove a RecordPermission from the database.
+     * @param obj RecordPermission to remove.
+     */
+    public void remove(RecordPermission obj) {
+        try {
+            obj = entityManager.getReference(RecordPermission.class, obj.getId());
+            entityManager.remove(obj);
+        } catch (EntityNotFoundException ignored) {}
+    }
+
+    /**
      * Save changes to a Permission in the database.
      * @param obj Permission to save.
      */

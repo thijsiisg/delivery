@@ -57,6 +57,14 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     /**
+     * Remove a RecordPermission from the database.
+     * @param obj RecordPermission to remove.
+     */
+    public void removeRecordPermission(RecordPermission obj) {
+        permissionDAO.remove(obj);
+    }
+
+    /**
      * Save changes to a Permission in the database.
      * @param obj Permission to save.
      */

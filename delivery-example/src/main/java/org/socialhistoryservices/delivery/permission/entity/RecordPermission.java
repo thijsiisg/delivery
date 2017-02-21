@@ -19,6 +19,7 @@ package org.socialhistoryservices.delivery.permission.entity;
 import org.socialhistoryservices.delivery.record.entity.Record;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * A permission on a specific restricted record (links a permission request
@@ -86,6 +87,26 @@ public class RecordPermission {
      */
     public String getMotivation() {
         return motivation;
+    }
+
+    @Temporal(TemporalType.DATE)
+    @Column(name="date_granted")
+    private Date dateGranted;
+
+    /**
+     * Get the date granted.
+     * @return The date granted.
+     */
+    public Date getDateGranted() {
+        return dateGranted;
+    }
+
+    /**
+     * Set the date granted.
+     * @param dateGranted The date granted.
+     */
+    public void setDateGranted(Date dateGranted) {
+        this.dateGranted = dateGranted;
     }
 
     /** The RecordPermission's permission. */
