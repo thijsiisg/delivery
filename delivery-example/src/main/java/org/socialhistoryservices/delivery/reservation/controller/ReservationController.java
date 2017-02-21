@@ -679,11 +679,6 @@ public class ReservationController extends AbstractRequestController {
             return false;
         }
 
-        /*if ((reservation.getDate() == null) || !perm.isValidOn(reservation.getDate())) {
-            model.addAttribute("error", "notValidOnDate");
-            return false;
-        }*/
-
         for (HoldingReservation hr : reservation.getHoldingReservations()) {
             Record permRecord = hr.getHolding().getRecord();
             if (permRecord.getRestriction() == ExternalRecordInfo.Restriction.RESTRICTED) {

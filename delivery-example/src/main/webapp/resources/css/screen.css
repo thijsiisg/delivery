@@ -613,6 +613,10 @@ fieldset.recordPermissionDetails select {
     margin-bottom: 5px;
 }
 
+fieldset.recordPermissionDetails input[type=checkbox] {
+    vertical-align: middle;
+}
+
 .user_list {
     list-style: none;
     margin: 0;

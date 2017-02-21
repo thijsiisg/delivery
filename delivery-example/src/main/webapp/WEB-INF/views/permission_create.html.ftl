@@ -84,8 +84,6 @@
                 <@input "permission.visitorName" ""/>
                 <@input "permission.visitorEmail" ""/>
                 <@textarea "permission.address" ""/>
-                <@date "permission.dateFrom" ""/>
-                <@date "permission.dateTo" ""/>
                 <@input "permission.researchOrganization" "create"/>
                 <@textarea "permission.researchSubject" "create"/>
                 <@textarea "permission.explanation" "create"/>

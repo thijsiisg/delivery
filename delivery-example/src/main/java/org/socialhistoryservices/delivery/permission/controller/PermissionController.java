@@ -131,14 +131,13 @@ public class PermissionController extends AbstractRequestController {
         Expression where = null;
 
         // Filters
-        where = addDateFilter(p, cb, pmRoot, where);
+        where = addDateFilter(p, cb, rpRoot, where);
         where = addNameFilter(p, cb, pmRoot, where);
         where = addEmailFilter(p, cb, pmRoot, where);
         where = addResearchOrganizationFilter(p, cb, pmRoot, where);
         where = addResearchSubjectFilter(p, cb, pmRoot, where);
         where = addAddressFilter(p, cb, pmRoot, where);
         where = addExplanationFilter(p, cb, pmRoot, where);
-        where = addStatusFilter(p, cb, pmRoot, where);
         where = addPermissionFilter(p, cb, rpRoot, where);
         where = addSearchFilter(p, cb, rpRoot, pmRoot, where);
 
@@ -192,12 +191,8 @@ public class PermissionController extends AbstractRequestController {
                 e = pmRoot.get(Permission_.name);
             } else if (sort.equals("visitor_email")) {
                 e = pmRoot.get(Permission_.email);
-            } else if (sort.equals("status")) {
-                e = pmRoot.get(Permission_.status);
-            } else if (sort.equals("from_date")) {
-                e = pmRoot.get(Permission_.dateFrom);
-            } else if (sort.equals("to_date")) {
-                e = pmRoot.get(Permission_.dateTo);
+            } else if (sort.equals("date_granted")) {
+                e = rpRoot.get(RecordPermission_.dateGranted);
             } else if (sort.equals("address")) {
                 e = pmRoot.get(Permission_.address);
             } else if (sort.equals("research_organization")) {
@@ -238,14 +233,11 @@ public class PermissionController extends AbstractRequestController {
                             "%" + search + "%"),
                     cb.like(cb.lower(pmRoot.<String>get(Permission_.email)),
                             "%" + search + "%"),
-                    cb.like(cb.lower(pmRoot.<String>get(Permission_
-                            .explanation)),
+                    cb.like(cb.lower(pmRoot.<String>get(Permission_.explanation)),
                             "%" + search + "%"),
-                    cb.like(cb.lower(pmRoot.<String>get(Permission_
-                            .researchOrganization)),
+                    cb.like(cb.lower(pmRoot.<String>get(Permission_.researchOrganization)),
                             "%" + search + "%"),
-                    cb.like(cb.lower(pmRoot.<String>get(Permission_
-                            .researchSubject)),
+                    cb.like(cb.lower(pmRoot.<String>get(Permission_.researchSubject)),
                             "%" + search + "%"),
                     cb.like(cb.lower(pmRoot.<String>get(Permission_.address)),
                             "%" + search + "%")
@@ -275,37 +267,11 @@ public class PermissionController extends AbstractRequestController {
             if (permission.equals("FALSE"))
                 exPermission = cb.equal(rpRoot.<Boolean>get(RecordPermission_.granted), false);
 
+            if (permission.equals("NULL"))
+                exPermission = cb.isNull(rpRoot.<Date>get(RecordPermission_.dateGranted));
+
             if (exPermission != null)
                 where = where != null ? cb.and(where, exPermission) : exPermission;
-        }
-        return where;
-    }
-
-    /**
-     * Add the status filter to the where clause, if present.
-     * @param p The parameter list to search the given filter value in.
-     * @param cb The criteria builder.
-     * @param pmRoot The permission root.
-     * @param where The already present where clause or null if none present.
-     * @return The (updated) where clause, or null if the filter did not exist.
-     */
-    private Expression addStatusFilter(Map<String, String[]> p, CriteriaBuilder cb,
-                                       Join<RecordPermission,Permission> pmRoot, Expression where) {
-        if (p.containsKey("status")) {
-            String status = p.get("status")[0].trim().toUpperCase();
-            // Tolerant to empty status to ensure the filter in
-            // permission_get_list.html.ftl works
-            if (!status.equals("")) {
-                try {
-                    Expression exStatus = cb.equal(
-                        pmRoot.<Permission.Status>get(Permission_.status),
-                        Permission.Status.valueOf(status));
-                    where = where != null ? cb.and(where, exStatus) : exStatus;
-                } catch (IllegalArgumentException ex) {
-                    throw new InvalidRequestException("No such status: " +
-                            status);
-                }
-            }
         }
         return where;
     }
@@ -424,33 +390,7 @@ public class PermissionController extends AbstractRequestController {
     }
 
     /**
-     * Add the date to filter to the where clause, if present.
-     * @param p The parameter list to search the given filter value in.
-     * @param apiDf The format of the api date.
-     * @param cb The criteria builder.
-     * @param pmRoot The permission root.
-     * @param where The already present where clause or null if none present.
-     * @return The (updated) where clause, or null if the filter did not exist.
-     */
-    private Expression addDateToFilter(Map<String, String[]> p, DateFormat apiDf, CriteriaBuilder cb,
-                                       Join<RecordPermission,Permission> pmRoot, Expression where) {
-        if (p.containsKey("to_date")) {
-            try {
-                Date d = apiDf.parse(p.get("to_date")[0]);
-                Expression exDate = cb.equal(pmRoot.<Date>get(
-                                             Permission_.dateTo),
-                                             d);
-                where = where != null ? cb.and(where, exDate) : exDate;
-            } catch (ParseException ex) {
-                throw new InvalidRequestException("Invalid date: " +
-                        p.get("to_date")[0]);
-            }
-        }
-        return where;
-    }
-
-    /**
-     * Add the date/from_date/to_date filter to the where clause, if present.
+     * Add the date granted filter to the where clause, if present.
      * @param p The parameter list to search the given filter value in.
      * @param cb The criteria builder.
      * @param pmRoot The permission root.
@@ -458,23 +398,23 @@ public class PermissionController extends AbstractRequestController {
      * @return The (updated) where clause, or null if the filter did not exist.
      */
     private Expression addDateFilter(Map<String, String[]> p, CriteriaBuilder cb,
-                                              Join<RecordPermission,Permission> pmRoot, Expression where) {
+                                     Root<RecordPermission> rpRoot, Expression where) {
         Date date = getDateFilter(p);
         if (date != null) {
-            Expression<Boolean> exDateFrom = cb.greaterThanOrEqualTo(pmRoot.<Date>get(Permission_.dateFrom), date);
-            Expression<Boolean> exDateTo = cb.lessThanOrEqualTo(pmRoot.<Date>get(Permission_.dateTo), date);
-            where = where != null ? cb.and(where, exDateFrom) : exDateFrom;
-            where = cb.and(where, exDateTo);
+            Expression<Boolean> exDate = cb.equal(rpRoot.<Date>get(RecordPermission_.dateGranted), date);
+            where = where != null ? cb.and(where, exDate) : exDate;
         }
         else {
             Date fromDate = getFromDateFilter(p);
             Date toDate = getToDateFilter(p);
             if (fromDate != null) {
-                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(pmRoot.<Date>get(Permission_.dateFrom), fromDate);
+                Expression<Boolean> exDate = cb.greaterThanOrEqualTo
+                    (rpRoot.<Date>get(RecordPermission_.dateGranted), fromDate);
                 where = where != null ? cb.and(where, exDate) : exDate;
             }
             if (toDate != null) {
-                Expression<Boolean> exDate = cb.lessThanOrEqualTo(pmRoot.<Date>get(Permission_.dateTo), toDate);
+                Expression<Boolean> exDate = cb.lessThanOrEqualTo(
+                    rpRoot.<Date>get(RecordPermission_.dateGranted), toDate);
                 where = where != null ? cb.and(where, exDate) : exDate;
             }
         }
@@ -499,10 +439,6 @@ public class PermissionController extends AbstractRequestController {
         // Create the form
         PermissionForm form = new PermissionForm();
         form.fillFrom(root, df);
-
-        if (form.getDateFrom() == null) {
-            form.setDateFrom(df.format(new Date()));
-        }
 
         // Validate the form
         BindingResult res = new BeanPropertyBindingResult(form, "permission");
@@ -580,19 +516,8 @@ public class PermissionController extends AbstractRequestController {
             throw InvalidRequestException.create(res);
         }
 
-        // Save old data
-        Permission.Status oldStatus = obj.getStatus();
-        Permission.Status newStatus;
-
         // Update the permission
         form.fillInto(obj, df);
-
-        newStatus = obj.getStatus();
-
-        if (oldStatus.ordinal() > newStatus.ordinal()) {
-            throw new InvalidRequestException("Cannot change permission " +
-                    "status backwards.");
-        }
 
         // Remove the removed record permissions from the permission.
         removeRecordPermissions(granted, obj);
@@ -749,15 +674,25 @@ public class PermissionController extends AbstractRequestController {
      * @param p The parameter map in which (recordpermission.id,
      * granted) tuples are stored.
      */
-     private void updateRecordPermissions(Permission pm, Map<String,
-             String[]> p) {
+     private void updateRecordPermissions(Permission pm, Map<String,String[]> p) {
+        Set<Record> parents = new HashSet<>();
+        Set<RecordPermission> toRemove = new HashSet<>();
 
         // Update all granted statuses, if found.
         for (RecordPermission rp : pm.getRecordPermissions()) {
             String gKey = "granted_" + rp.getId();
+            String pKey = "parent_" + rp.getId();
             String mKey = "motivation_" + rp.getId();
-            if (p.containsKey(gKey)) {
+            if (p.containsKey(gKey) && !p.get(gKey)[0].trim().equals("null")) {
                 rp.setGranted(p.get(gKey)[0].trim().equals("true"));
+                rp.setDateGranted(new Date());
+            }
+            if (p.containsKey(pKey)) {
+                Record parent = rp.getRecord().getParent();
+                if (parent != null) {
+                    parents.add(parent);
+                    rp.setRecord(parent);
+                }
             }
             if (p.containsKey(mKey)) {
                 String motivation = p.get(mKey)[0].trim();
@@ -766,6 +701,16 @@ public class PermissionController extends AbstractRequestController {
                 }
             }
         }
+
+        // Now remove all redundant record permissions.
+        for (RecordPermission rp : pm.getRecordPermissions()) {
+            Record parent = rp.getRecord().getParent();
+            if ((parent != null) && parents.contains(parent)) {
+                toRemove.add(rp);
+                permissions.removeRecordPermission(rp);
+            }
+        }
+        pm.getRecordPermissions().removeAll(toRemove);
 
         // Save all changes (could also save per record permission instead).
         permissions.savePermission(pm);
@@ -787,7 +732,7 @@ public class PermissionController extends AbstractRequestController {
            throw new InvalidRequestException("No such permission");
         }
         updateRecordPermissions(pm, req.getParameterMap());
-        return "redirect:/permission/" + id;
+        return "redirect:/permission/";
     }
 
     /**
@@ -798,7 +743,7 @@ public class PermissionController extends AbstractRequestController {
      */
     @RequestMapping(value = "/process",
                     method = RequestMethod.POST,
-                    params = "saveandfinish")
+                    params = "saveandemail")
     @Secured("ROLE_PERMISSION_MODIFY")
     public String formSaveAndFinish(@RequestParam int id,
                                  HttpServletRequest req) {
@@ -806,17 +751,7 @@ public class PermissionController extends AbstractRequestController {
         if (pm == null) {
            throw new InvalidRequestException("No such permission.");
         }
-
-        if (pm.getStatus() == Permission.Status.HANDLED) {
-            throw new InvalidRequestException("Cannot finish a permission " +
-                    "which is already finished.");
-        }
-
         updateRecordPermissions(pm, req.getParameterMap());
-
-        // Now finish the permission by updating the status
-        pm.setStatus(Permission.Status.HANDLED);
-        permissions.savePermission(pm);
 
         // Notify the requester.
         try {
@@ -1019,19 +954,6 @@ public class PermissionController extends AbstractRequestController {
     public String apiFakeDelete(@PathVariable int id, HttpServletRequest req) {
         remove(id);
         return "";
-    }
-    // }}}
-    // {{{ Model data
-    /**
-     * Map representation of status types of reservations for use in views.
-     * @return The map {string status, enum status}.
-     */
-    @ModelAttribute("status_types")
-    public Map<String, Permission.Status> statusTypes() {
-        Map<String, Permission.Status> data = new HashMap<String, Permission.Status>();
-        data.put("PENDING", Permission.Status.PENDING);
-        data.put("HANDLED", Permission.Status.HANDLED);
-        return data;
     }
     // }}}
 }

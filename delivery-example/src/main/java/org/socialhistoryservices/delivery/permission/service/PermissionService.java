@@ -57,6 +57,12 @@ public interface PermissionService {
     public void removePermission(Permission obj);
 
     /**
+     * Remove a RecordPermission from the database.
+     * @param obj RecordPermission to remove.
+     */
+    public void removeRecordPermission(RecordPermission obj);
+
+    /**
      * Save changes to a Permission in the database.
      * @param obj Permission to save.
      */

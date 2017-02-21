@@ -29,9 +29,8 @@ import java.util.Date;
 /**
  * Form to handle modifying permissions.
  */
-@ValidPermissionDateRange(from="dateFrom", to="dateTo")
 public class PermissionForm {
-    
+
     /** The name of the visitor to view the record. */
     @NotNull
     @Size(min=1, max=255)
@@ -69,44 +68,6 @@ public class PermissionForm {
      */
     public void setVisitorEmail(String visitorEmail) {
         this.visitorEmail = visitorEmail;
-    }
-
-    /** The date from which the permission becomes active. */
-    @NotNull
-    @ValidPermissionDate
-    private String dateFrom;
-    /**
-     * Get the Permission's date.
-     * @return The date.
-     */
-    public String getDateFrom() {
-        return dateFrom;
-    }
-    /**
-     * Set the Permission's date.
-     * @param date The new date.
-     */
-    public void setDateFrom(String date) {
-        this.dateFrom = date;
-    }
-
-    /** The date until which the permission is active. */
-    @NotNull
-    @ValidPermissionDate
-    private String dateTo;
-    /**
-     * Get the Permission's date.
-     * @return The date.
-     */
-    public String getDateTo() {
-        return dateTo;
-    }
-    /**
-     * Set the Permission's date.
-     * @param date The new date.
-     */
-    public void setDateTo(String date) {
-        this.dateTo = date;
     }
 
     /**
@@ -147,7 +108,7 @@ public class PermissionForm {
     public void setAddress(String address) {
         this.address = address;
     }
-    
+
     /** The explanation of the permission's applicant. */
     @NotNull
     @Size(min=1)
@@ -215,8 +176,6 @@ public class PermissionForm {
         setVisitorName(obj.getName());
         setVisitorEmail(obj.getEmail());
         setStatus(obj.getStatus().toString());
-        setDateFrom(df.format(obj.getDateFrom()));
-        setDateTo(df.format(obj.getDateTo()));
         setAddress(obj.getAddress());
         setExplanation(obj.getExplanation());
         setResearchOrganization(obj.getResearchOrganization());
@@ -237,8 +196,6 @@ public class PermissionForm {
         setExplanation(root.path("explanation").getTextValue());
         setResearchOrganization(root.path("research_organization").getTextValue());
         setResearchSubject(root.path("research_subject").getTextValue());
-        setDateFrom(getDateValueFromNode(root.path("from_date"), df));
-        setDateTo(getDateValueFromNode(root.path("to_date"), df));
     }
 
     /**
@@ -279,17 +236,5 @@ public class PermissionForm {
         obj.setExplanation(getExplanation());
         obj.setResearchOrganization(getResearchOrganization());
         obj.setResearchSubject(getResearchSubject());
-        try {
-            obj.setDateFrom(df.parse(getDateFrom()));
-        }
-        catch (ParseException ex) {
-            // Date is not used
-        }
-        try {
-            obj.setDateTo(df.parse(getDateTo()));
-        }
-        catch (ParseException ex) {
-            // Date is not used
-        }
     }
 }

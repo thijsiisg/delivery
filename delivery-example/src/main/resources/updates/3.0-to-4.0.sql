@@ -3,6 +3,7 @@ BEGIN;
 /* ADD NEW COLUMNS */
 
 ALTER TABLE external_record_info ADD COLUMN restriction character varying(255) NOT NULL DEFAULT 'OPEN';
+ALTER TABLE recordpermissions ADD COLUMN date_granted date;
 
 /* REMOVE OLD COLUMNS */
 
@@ -12,6 +13,10 @@ ALTER TABLE records DROP COLUMN restriction_type;
 
 ALTER TABLE reservations DROP COLUMN queueNo;
 ALTER TABLE reservations DROP COLUMN permission_id;
+
+ALTER TABLE permissions DROP COLUMN status;
+ALTER TABLE permissions DROP COLUMN date_from;
+ALTER TABLE permissions DROP COLUMN date_to;
 
 /* ADD NEW TABLES */
 
