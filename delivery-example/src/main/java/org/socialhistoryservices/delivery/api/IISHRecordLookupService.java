@@ -388,16 +388,19 @@ public class IISHRecordLookupService implements RecordLookupService {
             if (url.endsWith("?locatt=view:ead")) {
                 // TODO: Temp for testing purposes
                 String id = url.replace("http://hdl.handle.net/10622/", "").replace("?locatt=view:ead", "");
-                FileInputStream fileInputStreamTemp = new FileInputStream("/home/ead/" + id  + ".xml");
-                BufferedReader rdrTemp = new BufferedReader(new InputStreamReader(fileInputStreamTemp));
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                factory.setNamespaceAware(true);
-                DocumentBuilder builder = factory.newDocumentBuilder();
-                Document document = builder.parse(new InputSource(rdrTemp));
-                Element eadNodeTemp = document.getDocumentElement();
-                if (eadNodeTemp != null) {
-                    eadNodeTemp.setAttribute("ead","urn:isbn:1-931666-22-9");
-                    return eadNodeTemp;
+                File file = new File("/home/ead/" + id  + ".xml");
+                if (file.exists() && file.canRead()) {
+                    FileInputStream fileInputStreamTemp = new FileInputStream(file);
+                    BufferedReader rdrTemp = new BufferedReader(new InputStreamReader(fileInputStreamTemp));
+                    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                    factory.setNamespaceAware(true);
+                    DocumentBuilder builder = factory.newDocumentBuilder();
+                    Document document = builder.parse(new InputSource(rdrTemp));
+                    Element eadNodeTemp = document.getDocumentElement();
+                    if (eadNodeTemp != null) {
+                        eadNodeTemp.setAttribute("ead","urn:isbn:1-931666-22-9");
+                        return eadNodeTemp;
+                    }
                 }
 
                 URL eadUrl = new URL(url);
