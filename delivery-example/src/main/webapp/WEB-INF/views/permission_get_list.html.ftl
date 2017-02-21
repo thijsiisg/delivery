@@ -34,7 +34,7 @@
 <form action="" method="GET">
   <#-- Generate hidden input for already existing GET vars -->
   <#list RequestParameters?keys as k>
-  <#if k!="search" && k!="from_date" && k!="to_date" && k!="status" && k!="permission" && k!="page_len" && k!="page">
+  <#if k!="search" && k!="from_date" && k!="to_date" && k!="permission" && k!="page_len" && k!="page">
   <input type="hidden" name="${k?html}" value="${RequestParameters[k]?html}"/>
   </#if>
   </#list>

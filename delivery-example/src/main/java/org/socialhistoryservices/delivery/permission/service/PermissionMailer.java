@@ -44,9 +44,6 @@ public class PermissionMailer extends Mailer {
      * mail somehow failed.
      */
     public void mailCode(Permission pm) throws MailException {
-        assert pm.getStatus() == Permission.Status.HANDLED : "Can only mail" +
-                " notification when Permission status is HANDLED";
-
         // Do not mail when mail is disabled.
         if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
             return;
@@ -106,9 +103,6 @@ public class PermissionMailer extends Mailer {
      * mail somehow failed.
      */
     public void mailConfirmation(Permission pm) throws MailException {
-        assert pm.getStatus() == Permission.Status.PENDING : "Can only mail" +
-                " confirmation when Permission status is PENDING";
-
         // Do not mail when mail is disabled.
         if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
             return;

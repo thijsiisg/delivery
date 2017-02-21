@@ -175,7 +175,6 @@ public class PermissionForm {
         // Set up the form to edit
         setVisitorName(obj.getName());
         setVisitorEmail(obj.getEmail());
-        setStatus(obj.getStatus().toString());
         setAddress(obj.getAddress());
         setExplanation(obj.getExplanation());
         setResearchOrganization(obj.getResearchOrganization());
@@ -229,9 +228,6 @@ public class PermissionForm {
     public void fillInto(Permission obj, SimpleDateFormat df) {
         obj.setName(getVisitorName());
         obj.setEmail(getVisitorEmail());
-
-        if (getStatus() != null)
-            obj.setStatus(Permission.Status.valueOf(getStatus()));
         obj.setAddress(getAddress());
         obj.setExplanation(getExplanation());
         obj.setResearchOrganization(getResearchOrganization());
