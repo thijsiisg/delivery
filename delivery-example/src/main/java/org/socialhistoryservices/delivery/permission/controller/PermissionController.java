@@ -810,6 +810,7 @@ public class PermissionController extends AbstractRequestController {
 
                 try {
                     pmMailer.mailConfirmation(obj);
+                    pmMailer.mailReadingRoom(obj);
                 }
                 catch (MailException e) {
                     log.error("Failed to send email", e);
