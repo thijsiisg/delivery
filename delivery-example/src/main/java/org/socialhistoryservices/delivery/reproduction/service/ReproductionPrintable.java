@@ -106,7 +106,7 @@ public class ReproductionPrintable extends RequestPrintable {
      */
     private void drawEmail(DrawInfo drawInfo) {
         String nameLabel = getMessage("request.email", "Email");
-        drawKeyValue(drawInfo, nameLabel, holdingRequest.getRequest().getEmail(), italicFont, true);
+        drawKeyValue(drawInfo, nameLabel, holdingRequest.getRequest().getEmail(), italicFont, false);
     }
 
     /**
