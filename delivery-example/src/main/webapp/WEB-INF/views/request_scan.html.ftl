@@ -185,7 +185,7 @@
             <#if hr.isInSor()>
               <em class="info">(<@_ "reproduction.print.inSor" "in SOR"/>)</em>
             <#elseif hr.hasOrderDetails() && (reproduction.getStatus() != "ACTIVE")>
-              <em class="info">(<@_ "reproduction.print.notYetPayed" "not yet payed"/>)</em>
+              <em class="info">(<@_ "reproduction.print.notYetPayed" "not yet paid"/>)</em>
             </#if>
           </#if>
         </li>
