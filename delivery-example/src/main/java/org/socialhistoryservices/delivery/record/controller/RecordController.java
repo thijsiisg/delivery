@@ -222,9 +222,6 @@ public class RecordController extends ErrorHandlingController {
             if (n.path("holdings").isMissingNode()) {
                 newRecord.setHoldings(oldRecord.getHoldings());
             }
-            if (n.path("contact").isMissingNode()) {
-                newRecord.setContact(oldRecord.getContact());
-            }
             if (n.path("comments").isMissingNode()) {
                 newRecord.setComments(oldRecord.getComments());
             }
@@ -447,9 +444,6 @@ public class RecordController extends ErrorHandlingController {
                     }
                 }
             }
-        }
-        if (newRecord.getContact() != null && newRecord.getContact().isEmpty()) {
-            newRecord.setContact(null);
         }
 
         try {

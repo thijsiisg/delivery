@@ -292,13 +292,6 @@ public class RecordServiceImpl implements RecordService {
         // Validate the record
         validator.validate(record, result);
 
-        // Validate the associated contact if present
-        if (record.getContact() != null) {
-            result.pushNestedPath("contact");
-            validator.validate(record.getContact(), result);
-            result.popNestedPath();
-        }
-
         // Validate associated holdings if present
         int i = 0;
         for(Holding h : record.getHoldings()) {

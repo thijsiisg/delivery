@@ -753,7 +753,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     /**
      * Scheduled task to cancel all reproductions not payed within the time frame after the offer was ready.
      */
-    @Scheduled(cron = "0 0 * * * MON-FRI")
+    @Scheduled(cron = "0 0 0 * * MON-FRI")
     public void checkPayedReproductions() {
         // Determine the number of days
         Integer nrOfDays = Integer.parseInt(properties.getProperty("prop_reproductionMaxDaysPayment", "14"));

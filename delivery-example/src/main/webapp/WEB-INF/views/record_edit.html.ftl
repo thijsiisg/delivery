@@ -134,63 +134,6 @@
     </ul>
   </fieldset>
 
-  <fieldset>
-    <legend><@_ "editrecord.set.contact" "Contact Data"/></legend>
-    <#assign contactClass = "contactField">
-    <#assign contactInfoClass = "contactInfoField hidden">
-    <#assign cStartTxt = useParentTxt>
-    <#if record.parent?? && !record.contact??>
-        <#assign contactClass = "contactField hidden">
-        <#assign contactInfoClass = "contactInfoField">
-        <#assign cStartTxt = useChildTxt>
-    </#if>
-
-    <#assign c = {}>
-    <#if record.parent?? && record.parent.realContact??>
-        <#assign c = record.parent.realContact>
-    </#if>
-    <#if record.parent??><a  class="parentInfoLink"
-           onclick="toggleFieldsWithClass('contactInfoField',
-           'contactField', this, '${useParentTxt}', '${useChildTxt}');
-                   ">${cStartTxt}</a></#if>
-    <ul class="form">
-
-    <li><@input "contact.firstname" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.firstname!""}" id="contact.firstnameInfo"/>
-
-    </li>
-    <li><@input "contact.preposition" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.preposition!""}" id="contact.prepositionInfo"/>
-    </li>
-    <li><@input "contact.lastname" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.lastname!""}" id="contact.lastnameInfo"/>
-    </li>
-    <li><@input "contact.email" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.email!""}" id="contact.emailInfo"/>
-    </li>
-    <li><@input "contact.phone" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.phone!""}" id="contact.phoneInfo"/>
-    </li>
-    <li><@input "contact.fax" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.fax!""}" id="contact.faxInfo"/>
-    </li>
-    <li><@input "contact.address" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.address!""}" id="contact.addressInfo"/>
-    </li>
-    <li><@input "contact.zipcode" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.zipcode!""}" id="contact.zipcodeInfo"/>
-    </li>
-    <li><@input "contact.location" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.location!""}" id="contact.locationInfo"/>
-    </li>
-    <li><@input "contact.country" "" "record." contactClass/>
-        <input type="text" disabled="disabled" class="parentInfo ${contactInfoClass}" value="${c.country!""}" id="contact.country"/>
-    </li>
-    </ul>
-  </fieldset>
-
-
-
 <fieldset class="holdings">
   <legend><@_ "editrecord.set.holdings" "Holdings"/></legend>
   <table class="holdings">
