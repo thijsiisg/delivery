@@ -10,6 +10,7 @@ ALTER TABLE recordpermissions ADD COLUMN date_granted date;
 ALTER TABLE records DROP COLUMN embargo;
 ALTER TABLE records DROP COLUMN restriction;
 ALTER TABLE records DROP COLUMN restriction_type;
+ALTER TABLE records DROP COLUMN comments;
 ALTER TABLE records DROP COLUMN contact_id;
 
 ALTER TABLE reservations DROP COLUMN queueNo;

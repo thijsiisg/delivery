@@ -196,10 +196,6 @@ ul li em.info {
     font-size: 110%;
 }
 
-fieldset.holdings {
-    clear: both;
-}
-
 table.holdings, table.holdings tr, table.holdings td {
     border: 1px solid #888;
     border-collapse: collapse;

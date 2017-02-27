@@ -82,9 +82,6 @@
                     <textarea id="motivation_${rp.id?c}"
                               name="motivation_${rp.id?c}"><#if rp.motivation??>${rp.motivation?html}</#if></textarea>
                 </li>
-                <#if rp.record.comments??>
-                    <li><span><@_ "record.comments" "Comments"/></span> ${rp.record.comments?html}</li>
-                </#if>
                 <#if _sec.ifAllGranted("ROLE_PERMISSION_MODIFY")>
                     <li>
                         <a href="${rc.contextPath}/record/editform/${rp.record.pid?url}" target="_blank">
