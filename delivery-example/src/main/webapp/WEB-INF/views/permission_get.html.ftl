@@ -85,36 +85,6 @@
                 <#if rp.record.comments??>
                     <li><span><@_ "record.comments" "Comments"/></span> ${rp.record.comments?html}</li>
                 </#if>
-                <#if rp.record.realContact??>
-                    <#assign cnt = rp.record.realContact>
-                    <#if cnt.firstname?? ||
-                    cnt.lastname??>
-                        <li>
-                            <span><@_ "record.contactFullName" "Contact Name"/></span> ${(cnt.firstname!"")?html} ${(cnt.preposition!"")?html} ${(cnt.lastname!"")?html}
-                        </li>
-                    </#if>
-                    <#if cnt.phone??>
-                        <li><span><@_ "contact.phone" "Phone"/></span> ${cnt.phone?html}</li>
-                    </#if>
-                    <#if cnt.fax??>
-                        <li><span><@_ "contact.fax" "Fax"/></span> ${cnt.fax?html}</li>
-                    </#if>
-                    <#if cnt.email??>
-                        <li><span><@_ "contact.email" "E-mail"/></span> ${cnt.email?html}</li>
-                    </#if>
-                    <#if cnt.address??>
-                        <li><span><@_ "contact.address" "Address"/></span> ${cnt.address?html}</li>
-                    </#if>
-                    <#if cnt.zipcode??>
-                        <li><span><@_ "contact.zipcode" "Zipcode"/></span> ${cnt.zipcode?html}</li>
-                    </#if>
-                    <#if cnt.location??>
-                        <li><span><@_ "contact.location" "Location"/></span> ${cnt.location?html}</li>
-                    </#if>
-                    <#if cnt.country??>
-                        <li><span><@_ "contact.country" "Country"/></span> ${cnt.country?html}</li>
-                    </#if>
-                </#if>
                 <#if _sec.ifAllGranted("ROLE_PERMISSION_MODIFY")>
                     <li>
                         <a href="${rc.contextPath}/record/editform/${rp.record.pid?url}" target="_blank">

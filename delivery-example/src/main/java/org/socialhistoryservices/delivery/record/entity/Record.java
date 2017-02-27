@@ -310,44 +310,6 @@ public class Record {
         return children;
     }
 
-    /** The Record's contact. */
-    @ManyToOne(cascade=CascadeType.ALL)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-    @JoinColumn(name="contact_id")
-    private Contact contact;
-
-    /**
-     * Get the Record's contact.
-     * @return the Record's contact.
-     */
-    public Contact getContact() {
-        return contact;
-    }
-
-    /**
-     * Get the contact, getting it from the parent record if not specified.
-     * @return Any contact data in the parent tree.
-     */
-    public Contact getRealContact() {
-        // Check parents
-        Record obj = this;
-        while (obj != null) {
-            if (obj.getContact() != null) {
-                return obj.getContact();
-            }
-            obj = obj.getParent();
-        }
-        return null;
-    }
-
-    /**
-     * Set the Record's contact.
-     * @param contact the Record's contact.
-     */
-    public void setContact(Contact contact) {
-        this.contact = contact;
-    }
-
     /**
      * Holdings associated with the record.
      */
@@ -393,15 +355,6 @@ public class Record {
         setComments(other.getComments());
 
         getExternalInfo().mergeWith(other.getExternalInfo());
-
-        // Merge contact.
-        Contact c = getContact();
-        Contact oc = other.getContact();
-        if (c == null || oc == null) {
-            setContact(oc);
-        } else {
-            c.mergeWith(oc);
-        }
 
         // Merge holdings.
         if (other.getHoldings() == null) {
