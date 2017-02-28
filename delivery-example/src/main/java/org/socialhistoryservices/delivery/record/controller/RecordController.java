@@ -222,9 +222,6 @@ public class RecordController extends ErrorHandlingController {
             if (n.path("holdings").isMissingNode()) {
                 newRecord.setHoldings(oldRecord.getHoldings());
             }
-            if (n.path("comments").isMissingNode()) {
-                newRecord.setComments(oldRecord.getComments());
-            }
         }
 
         try {

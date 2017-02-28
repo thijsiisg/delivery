@@ -218,42 +218,6 @@ public class Record {
         }
     }
 
-    /** The Record's comments. */
-    @Column(name="comments", columnDefinition="TEXT")
-    private String comments;
-
-    /**
-     * Get the Record's comments.
-     * @return the Record's comments.
-     */
-    public String getComments() {
-        return comments;
-    }
-
-    /**
-     * Get the comments, getting it from the parent record if not specified.
-     * @return Any comments data in the parent tree.
-     */
-    public String getRealComments() {
-        // Check parents
-        Record obj = this;
-        while (obj != null) {
-            if (obj.getComments() != null) {
-                return obj.getComments();
-            }
-            obj = obj.getParent();
-        }
-        return null;
-    }
-
-    /**
-     * Set the Record's comments.
-     * @param comments the Record's comments.
-     */
-    public void setComments(String comments) {
-        this.comments = comments;
-    }
-
     /** The Record's parent. */
     @ManyToOne
     @JoinColumn(name="parent_id")
@@ -352,7 +316,6 @@ public class Record {
         setTitle(other.getTitle());
         setPid(other.getPid());
         setParent(other.getParent());
-        setComments(other.getComments());
 
         getExternalInfo().mergeWith(other.getExternalInfo());
 

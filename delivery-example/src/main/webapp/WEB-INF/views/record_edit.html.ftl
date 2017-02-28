@@ -106,34 +106,6 @@
 </#if>
 
 <@form "" "record" "save">
-  <fieldset class="record_form">
-
-    <legend><@_ "editrecord.set.record" "Metadata"/></legend>
-
-    <ul class="form">
-    <#assign csClass = "">
-    <#assign csInfoClass = "hidden">
-    <#assign csStartTxt = useParentTxt>
-    <#if record.parent?? && !record.comments??>
-        <#assign csClass = "hidden">
-        <#assign csInfoClass = "">
-        <#assign csStartTxt = useChildTxt>
-    </#if>
-    <#assign cs = "">
-    <#if record.parent?? && record.parent.realComments??>
-        <#assign cs = record.parent.realComments>
-    </#if>
-    <li><@textarea "record.comments" "" csClass/>
-        <textarea disabled="disabled" id="commentsInfoField" class="parentInfo
-        ${csInfoClass}">${cs}</textarea>
-           <#if record.parent??><a  class="parentInfoLink"
-           onclick="toggleField('commentsInfoField',
-           'comments', this, '${useParentTxt}', '${useChildTxt}');
-                   ">${csStartTxt}</a></#if>
-    </li>
-    </ul>
-  </fieldset>
-
 <fieldset class="holdings">
   <legend><@_ "editrecord.set.holdings" "Holdings"/></legend>
   <table class="holdings">
