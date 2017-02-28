@@ -817,11 +817,17 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             .value(Reproduction.Status.HAS_ORDER_DETAILS)
             .value(Reproduction.Status.CONFIRMED);
 
-        query.where(builder.and(dateCriteria, statusCriteria));
+        // Only reproductions that have a reminder mail not sent
+        Expression<Boolean> reminderCriteria = builder.in(reproductionRoot.get(Reproduction_.offerMailReminderSent))
+            .value(false);
 
-        // Cancel all found reproductions
+        query.where(builder.and(dateCriteria, statusCriteria), builder.in(reminderCriteria));
+
+        // Send mail for all found reproductions and update mail sent to true
         for (Reproduction reproduction : listReproductions(query)) {
             reproductionMailer.mailReminder(reproduction);
+            reproduction.setOfferMailReminderSent(true);
+            saveReproduction(reproduction);
         }
     }
 
