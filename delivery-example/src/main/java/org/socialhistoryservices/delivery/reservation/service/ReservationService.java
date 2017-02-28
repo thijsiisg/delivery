@@ -39,6 +39,7 @@ import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
+import org.socialhistoryservices.delivery.reservation.entity.ReservationDateException;
 import org.springframework.validation.BindingResult;
 
 import javax.persistence.Tuple;

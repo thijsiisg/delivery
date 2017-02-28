@@ -1,6 +1,6 @@
 <#include "mail.ftl">
 <@mailRaedingRoom>
-<@_ "reproductionMail.activeReproductionMessage" "A reproduction has been confirmed and payed." />
+<@_ "reproductionMail.activeReproductionMessage" "A reproduction has been confirmed and paid." />
 
 
 <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}

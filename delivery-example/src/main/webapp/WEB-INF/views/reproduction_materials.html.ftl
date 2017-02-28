@@ -3,7 +3,7 @@
 
 <#-- Build the title -->
 <#assign title>
-<@_ "reproductionMaterials.noRequestsAndTotalAmount" "Number of requests and total amount payed"/>
+<@_ "reproductionMaterials.noRequestsAndTotalAmount" "Number of requests and total amount paid"/>
 </#assign>
 
 <#-- Build the page -->
@@ -106,6 +106,6 @@
 </#if>
 
 <a href="${rc.contextPath}/reproduction/excel?from_date=${from_date_value?trim}&to_date=${to_date_value?trim}">
-  <@_ "reproductionList.downloadPayedXls" "Download an overview of payed reproductions for this period (XLS)"/>
+  <@_ "reproductionList.downloadPayedXls" "Download an overview of paid reproductions for this period (XLS)"/>
 </a>
 </@base>

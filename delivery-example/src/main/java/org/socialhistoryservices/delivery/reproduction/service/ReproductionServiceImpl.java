@@ -751,12 +751,12 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
-     * Scheduled task to cancel all reproductions not payed within the time frame after the offer was ready.
+     * Scheduled task to cancel all reproductions not paid within the time frame after the offer was ready.
      */
     @Scheduled(cron = "0 0 0 * * MON-FRI")
     public void checkPayedReproductions() {
         // Determine the number of days
-        Integer nrOfDays = Integer.parseInt(properties.getProperty("prop_reproductionMaxDaysPayment", "14"));
+        Integer nrOfDays = Integer.parseInt(properties.getProperty("prop_reproductionMaxDaysPayment", "21"));
 
         // Determine the date that many days ago
         Calendar calendar = GregorianCalendar.getInstance();
@@ -774,7 +774,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 calendar.getTime()
         );
 
-        // Only reproductions that have an offer, but are not yet payed
+        // Only reproductions that have an offer, but are not yet paid
         Expression<Boolean> statusCriteria = builder.in(reproductionRoot.get(Reproduction_.status))
                 .value(Reproduction.Status.HAS_ORDER_DETAILS)
                 .value(Reproduction.Status.CONFIRMED);
@@ -785,6 +785,43 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         for (Reproduction reproduction : listReproductions(query)) {
             updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.CANCELLED);
             saveReproduction(reproduction);
+        }
+    }
+
+    /**
+     * Scheduled task to send a reminder for all reproductions not paid within the time frame after the offer was ready.
+     */
+    @Scheduled(cron = "0 0 0 * * MON-FRI")
+    public void checkReminderReproductions(){
+        // Determine the number of days
+        Integer nrOfDays = Integer.parseInt(properties.getProperty("prop_reproductionMaxDaysReminder", "14"));
+
+        // Determine the date that many days ago
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.add(Calendar.DAY_OF_YEAR, -nrOfDays);
+
+        // Build the query
+        CriteriaBuilder builder = getReproductionCriteriaBuilder();
+        CriteriaQuery<Reproduction> query = builder.createQuery(Reproduction.class);
+        Root<Reproduction> reproductionRoot = query.from(Reproduction.class);
+        query.select(reproductionRoot);
+
+        // Only reproductions outside the given time frame
+        Expression<Boolean> dateCriteria = builder.lessThan(
+            reproductionRoot.get(Reproduction_.dateHasOrderDetails),
+            calendar.getTime()
+        );
+
+        // Only reproductions that have an offer, but are not yet paid
+        Expression<Boolean> statusCriteria = builder.in(reproductionRoot.get(Reproduction_.status))
+            .value(Reproduction.Status.HAS_ORDER_DETAILS)
+            .value(Reproduction.Status.CONFIRMED);
+
+        query.where(builder.and(dateCriteria, statusCriteria));
+
+        // Cancel all found reproductions
+        for (Reproduction reproduction : listReproductions(query)) {
+            reproductionMailer.mailReminder(reproduction);
         }
     }
 

@@ -79,6 +79,22 @@ public class ReproductionMailer extends RequestMailer {
     }
 
     /**
+     * Mail a reminder message for a reproduction to the customer.
+     *
+     * @param reproduction The reproduction to extract mail details from.
+     * @throws MailException Thrown when sending mail somehow failed
+     */
+    public void mailReminder(Reproduction reproduction) throws MailException{
+        assert reproduction.getStatus() == Reproduction.Status.HAS_ORDER_DETAILS :
+            "Can only mail order ready when Reproduction status is HAS_ORDER_DETAILS";
+
+        String subject = getMessage("reproductionMail.offerReminderSubject",
+            "Reminder of reproduction - Your order is not paid", reproduction.getRequestLocale());
+        sendMail(reproduction, subject, "reproduction_payment_reminder.mail.ftl", getReproductionModel(reproduction),
+            reproduction.getRequestLocale());
+    }
+
+    /**
      * Mail payment confirmation message for a reproduction (with invoice PDF attachment) to the customer.
      * <p/>
      * Mail repro which items of an active reproduction have been sent to the printer

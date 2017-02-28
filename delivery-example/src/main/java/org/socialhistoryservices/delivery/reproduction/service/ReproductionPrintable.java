@@ -91,7 +91,7 @@ public class ReproductionPrintable extends RequestPrintable {
     private void drawPayed(DrawInfo drawInfo) {
         HoldingReproduction hr = (HoldingReproduction) holdingRequest;
         Order order = hr.getReproduction().getOrder();
-        String idLabel = getMessage("reproduction.payed", "Payed?");
+        String idLabel = getMessage("reproduction.payed", "Paid?");
 
         if ((order != null) && (hr.getReproduction().getStatus().ordinal() >= Reproduction.Status.ACTIVE.ordinal())) {
             drawKeyValueNewLine(drawInfo, idLabel, getMessage("yes", "Yes") + " (#" + String.valueOf(order.getId()) + ")");
@@ -108,7 +108,7 @@ public class ReproductionPrintable extends RequestPrintable {
      */
     private void drawEmail(DrawInfo drawInfo) {
         String nameLabel = getMessage("request.email", "Email");
-        drawKeyValueNewLine(drawInfo, nameLabel, holdingRequest.getRequest().getEmail(), italicFont, true);
+        drawKeyValueNewLine(drawInfo, nameLabel, holdingRequest.getRequest().getEmail(), italicFont, false);
     }
 
     /**

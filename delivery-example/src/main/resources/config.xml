@@ -39,6 +39,7 @@
           <value>prop_reservationMaxItems</value>
           <value>prop_reservationMaxChildren</value>
           <value>prop_reproductionMaxDaysPayment</value>
+          <value>prop_reproductionMaxDaysReminder</value>
           <value>prop_reproductionAdministrationCosts</value>
           <value>prop_externalInfoMinDaysCache</value>
           <value>prop_printerArchive</value>

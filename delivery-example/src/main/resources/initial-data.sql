@@ -33,6 +33,10 @@ INSERT INTO authorities VALUES (12, 'Create reproductions.', 'ROLE_REPRODUCTION_
 INSERT INTO authorities VALUES (13, 'View reproductions.', 'ROLE_REPRODUCTION_VIEW');
 INSERT INTO authorities VALUES (14, 'Modify reproductions.', 'ROLE_REPRODUCTION_MODIFY');
 INSERT INTO authorities VALUES (15, 'Delete reproductions.', 'ROLE_REPRODUCTION_DELETE');
+INSERT INTO authorities VALUES (16, 'View date exceptions.', 'ROLE_DATE_EXCEPTION_VIEW');
+INSERT INTO authorities VALUES (17, 'Create date exceptions.', 'ROLE_DATE_EXCEPTION_CREATE');
+INSERT INTO authorities VALUES (18, 'Modify date exceptions.', 'ROLE_DATE_EXCEPTION_MODIFY');
+INSERT INTO authorities VALUES (19, 'Delete date exceptions.', 'ROLE_DATE_EXCEPTION_DELETE');
 
 --
 -- Data for Name: groups; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -78,6 +82,11 @@ INSERT INTO group_permissions VALUES (1, 14);
 INSERT INTO group_permissions VALUES (3, 12);
 INSERT INTO group_permissions VALUES (3, 13);
 INSERT INTO group_permissions VALUES (3, 14);
+
+INSERT INTO group_permissions VALUES (3, 16);
+INSERT INTO group_permissions VALUES (3, 17);
+INSERT INTO group_permissions VALUES (3, 18);
+INSERT INTO group_permissions VALUES (3, 19);
 
 --
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
