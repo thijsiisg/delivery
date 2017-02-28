@@ -1010,7 +1010,7 @@ public class ReproductionController extends AbstractRequestController {
         // Check the order ...
         Integer orderId = payWayMessage.getInteger("orderid");
         Order order = reproductions.getOrderById(orderId);
-        if (order.getId() != orderId) {
+        if (order == null) {
             LOGGER.error(String.format("/reproduction/order/accept : Order not found for message %s", payWayMessage));
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
