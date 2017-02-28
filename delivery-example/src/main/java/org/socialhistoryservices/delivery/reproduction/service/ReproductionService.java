@@ -44,6 +44,14 @@ public interface ReproductionService {
     public Reproduction getReproductionById(int id);
 
     /**
+     * Retrieve the Order matching the given id.
+     *
+     * @param id Id of the Order to retrieve.
+     * @return The Order matching the id.
+     */
+    public Order getOrderById(int id);
+
+    /**
      * Retrieve the ReproductionStandardOption matching the given id.
      *
      * @param id Id of the ReproductionStandardOption to retrieve.
