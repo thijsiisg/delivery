@@ -157,6 +157,16 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
+     * Retrieve the Order matching the given id.
+     *
+     * @param id Id of the Order to retrieve.
+     * @return The Order matching the id.
+     */
+    public Order getOrderById(int id) {
+        return orderDAO.getById(id);
+    }
+
+    /**
      * Retrieve the ReproductionStandardOption matching the given id.
      *
      * @param id Id of the ReproductionStandardOption to retrieve.
@@ -869,7 +879,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             message.put("ownertelno", null);
             message.put("com", "IISH reproduction " + r.getId());
             message.put("paymentmethod", PayWayMessage.ORDER_OGONE_PAYMENT);
-            message.put("userid", r.getId()); // We'll use the user id as a link to our reproduction
 
             PayWayMessage orderMessage = payWayService.send("createOrder", message);
 

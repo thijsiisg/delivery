@@ -1007,21 +1007,18 @@ public class ReproductionController extends AbstractRequestController {
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
 
-        // Check the reproduction ...
-        Integer reproductionId = payWayMessage.getInteger("userid");
-        Reproduction reproduction = reproductions.getReproductionById(reproductionId);
-        if (reproduction == null) {
-            LOGGER.error(String.format(
-                    "/reproduction/order/accept : Reproduction not found for message %s", payWayMessage));
+        // Check the order ...
+        Integer orderId = payWayMessage.getInteger("orderid");
+        Order order = reproductions.getOrderById(orderId);
+        if (order.getId() != orderId) {
+            LOGGER.error(String.format("/reproduction/order/accept : Order not found for message %s", payWayMessage));
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
 
-        // ... and the order
-        Integer orderId = payWayMessage.getInteger("orderid");
-        Order order = reproduction.getOrder();
-        if (order.getId() != orderId) {
-            LOGGER.error(String.format(
-                    "/reproduction/order/accept : Reproduction order id does not match order id in message %s",
+        // ... and the reproduction
+        Reproduction reproduction = order.getReproduction();
+        if (reproduction == null) {
+            LOGGER.error(String.format("/reproduction/order/accept : Reproduction not found for order in message %s",
                     payWayMessage));
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
