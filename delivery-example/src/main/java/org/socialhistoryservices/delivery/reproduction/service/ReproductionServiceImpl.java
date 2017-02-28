@@ -825,9 +825,14 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
 
         // Send mail for all found reproductions and update mail sent to true
         for (Reproduction reproduction : listReproductions(query)) {
-            reproductionMailer.mailReminder(reproduction);
-            reproduction.setOfferMailReminderSent(true);
-            saveReproduction(reproduction);
+            try {
+                reproductionMailer.mailReminder(reproduction);
+                reproduction.setOfferMailReminderSent(true);
+                saveReproduction(reproduction);
+            }
+            catch (MailException me) {
+                // Don't do anything... we'll try again tomorrow
+            }
         }
     }
 
