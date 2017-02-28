@@ -183,6 +183,11 @@ public interface ReproductionService {
     public void checkPayedReproductions();
 
     /**
+     * Scheduled task to send a reminder for all reproductions not paid within the time frame after the offer was ready.
+     */
+    public void checkReminderReproductions();
+
+    /**
      * Creates an order for the given reproduction.
      *
      * @param r The reproduction.

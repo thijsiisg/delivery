@@ -89,7 +89,7 @@ public class ReproductionPrintable extends RequestPrintable {
     private void drawPayed(DrawInfo drawInfo) {
         HoldingReproduction hr = (HoldingReproduction) holdingRequest;
         Order order = hr.getReproduction().getOrder();
-        String idLabel = getMessage("reproduction.payed", "Payed?");
+        String idLabel = getMessage("reproduction.payed", "Paid?");
 
         if ((order != null) && (hr.getReproduction().getStatus().ordinal() >= Reproduction.Status.ACTIVE.ordinal())) {
             drawKeyValue(drawInfo, idLabel, getMessage("yes", "Yes") + " (#" + String.valueOf(order.getId()) + ")");

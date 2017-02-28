@@ -38,7 +38,7 @@
   </li>
   <li>
     <a href="${rc.contextPath}/reproduction/materials">
-      <@_ "reproductionMaterials.noRequestsAndTotalAmount" " Number of requests and total amount payed"/>
+      <@_ "reproductionMaterials.noRequestsAndTotalAmount" " Number of requests and total amount paid"/>
     </a>
   </li>
 </ul>
@@ -237,7 +237,7 @@
                   <#if holdingReproduction.isInSor()>
                     <em class="info">(<@_ "reproduction.print.inSor" "in SOR"/>)</em>
                   <#elseif holdingReproduction.hasOrderDetails() && (reproduction.getStatus() != "ACTIVE")>
-                    <em class="info">(<@_ "reproduction.print.notYetPayed" "not yet payed"/>)</em>
+                    <em class="info">(<@_ "reproduction.print.notYetPayed" "not yet paid"/>)</em>
                   </#if>
                 </#if>
               </td>
