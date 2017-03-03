@@ -13,6 +13,11 @@ ALTER TABLE records DROP COLUMN restriction_type;
 ALTER TABLE records DROP COLUMN comments;
 ALTER TABLE records DROP COLUMN contact_id;
 
+ALTER TABLE holdings DROP COLUMN floor;
+ALTER TABLE holdings DROP COLUMN direction;
+ALTER TABLE holdings DROP COLUMN cabinet;
+ALTER TABLE holdings DROP COLUMN shelf;
+
 ALTER TABLE reservations DROP COLUMN queueNo;
 ALTER TABLE reservations DROP COLUMN permission_id;
 

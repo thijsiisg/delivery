@@ -260,11 +260,6 @@ public abstract class RequestPrintable implements Printable {
     protected void drawLocationInfo(DrawInfo drawInfo) {
         Holding h = holdingRequest.getHolding();
         Record r = h.getRecord();
-
-        drawFloor(drawInfo, h.getFloor());
-        drawDirection(drawInfo, h.getDirection());
-        drawCabinet(drawInfo, h.getCabinet());
-        drawShelf(drawInfo, h.getShelf());
     }
 
     /**
@@ -309,59 +304,6 @@ public abstract class RequestPrintable implements Printable {
     private void drawComment(DrawInfo drawInfo, String value) {
         String commentLabel = getMessage("holdingReservations.comment", "Comment");
         drawKeyValueNewLine(drawInfo, commentLabel, value);
-    }
-
-    /**
-     * Draw the shelf of the location.
-     *
-     * @param drawInfo Draw offsets.
-     * @param value    The value to draw.
-     */
-    private void drawShelf(DrawInfo drawInfo, String value) {
-        if (value == null) {
-            return;
-        }
-        String shelfLabel = getMessage("holding.shelf", "Shelf");
-        drawKeyValueNewLine(drawInfo, shelfLabel, value);
-    }
-
-    /**
-     * Draw the direction of the location.
-     *
-     * @param drawInfo Draw offsets.
-     * @param value    The value to draw.
-     */
-    private void drawDirection(DrawInfo drawInfo, String value) {
-        String directionLabel = getMessage("holding.direction", "Direction");
-        drawKeyValueNewLine(drawInfo, directionLabel, value);
-    }
-
-    /**
-     * Draw the cabinet of the location.
-     *
-     * @param drawInfo Draw offsets.
-     * @param value    The value to draw.
-     */
-    private void drawCabinet(DrawInfo drawInfo, String value) {
-        if (value == null) {
-            return;
-        }
-        String cabinetLabel = getMessage("holding.cabinet", "Cabinet");
-        drawKeyValueNewLine(drawInfo, cabinetLabel, value);
-    }
-
-    /**
-     * Draw the floor of the location.
-     *
-     * @param drawInfo Draw offsets.
-     * @param value    The value to draw.
-     */
-    private void drawFloor(DrawInfo drawInfo, Integer value) {
-        if (value == null) {
-            return;
-        }
-        String floorLabel = getMessage("holding.floor", "Floor");
-        drawKeyValueNewLine(drawInfo, floorLabel, String.valueOf(value));
     }
 
     /**

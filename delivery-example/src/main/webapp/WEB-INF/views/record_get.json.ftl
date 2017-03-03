@@ -35,18 +35,6 @@ ${callback}([
     "holdings" : [
       <#list record.holdings as h>
       {
-        <#if h.direction??>
-        "direction" : "${h.direction?js_string}",
-        </#if>
-        <#if h.floor??>
-        "floor" : ${h.floor?c},
-        </#if>
-        <#if h.cabinet??>
-        "cabinet" : "${h.cabinet?js_string}",
-        </#if>
-        <#if h.shelf??>
-        "shelf" : "${h.shelf?js_string}",
-        </#if>
         "signature" : "${h.signature?js_string}",
         "status" : "${h.status}",
         "usageRestriction" : "${h.usageRestriction}"
