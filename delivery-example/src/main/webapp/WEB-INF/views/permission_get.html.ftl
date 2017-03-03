@@ -33,11 +33,20 @@
     <li><span><@_ "permission.email" "E-mail"/></span> ${permission.email?html}</li>
     <li><span><@_ "permission.address" "Address"/></span> ${permission.address?html}</li>
 
-    <li class="spacing"><span><@_ "permission.researchSubject" "Research Subject"/></span>
-        <em>${permission.researchSubject?html}</em></li>
-    <li><span><@_ "permission.researchOrganization" "Research Organization"/></span>
-        <em>${permission.researchOrganization?html}</em></li>
-    <li><span><@_ "permission.explanation" "Explanation/Comments"/></span> <em>${permission.explanation?html}</em></li>
+    <li class="spacing">
+        <span><@_ "permission.researchSubject" "Research Subject"/></span>
+        <em>${permission.researchSubject?html}</em>
+    </li>
+    <li>
+        <span><@_ "permission.researchOrganization" "Research Organization"/></span>
+        <em>${permission.researchOrganization?html}</em>
+    </li>
+    <li>
+        <span><@_ "permission.explanation" "Explanation/Comments"/></span>
+        <em>${permission.explanation?html}</em>
+    </li>
+
+    <li class="spacing"><span><@_ "permission.code" "Code"/></span> ${permission.code?html}</li>
 </ul>
 
 <h3><@_ "permission.recordPermissions" "Permissions per record"/>:</h3>
