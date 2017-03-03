@@ -675,8 +675,7 @@ public class PermissionController extends AbstractRequestController {
      * granted) tuples are stored.
      */
      private void updateRecordPermissions(Permission pm, Map<String,String[]> p) {
-        Set<Record> parents = new HashSet<>();
-        Set<RecordPermission> toRemove = new HashSet<>();
+        Map<Record, RecordPermission> parents = new HashMap<>();
 
         // Update all granted statuses, if found.
         for (RecordPermission rp : pm.getRecordPermissions()) {
@@ -688,10 +687,12 @@ public class PermissionController extends AbstractRequestController {
                 rp.setDateGranted(new Date());
             }
             if (p.containsKey(pKey)) {
-                Record parent = rp.getRecord().getParent();
+                Record record = rp.getRecord();
+                Record parent = record.getParent();
                 if (parent != null) {
-                    parents.add(parent);
+                    parents.put(parent, rp);
                     rp.setRecord(parent);
+                    rp.setOriginalRequestPids(record.getPid());
                 }
             }
             if (p.containsKey(mKey)) {
@@ -703,16 +704,22 @@ public class PermissionController extends AbstractRequestController {
         }
 
         // Now remove all redundant record permissions.
+        Set<RecordPermission> toRemove = new HashSet<>();
         for (RecordPermission rp : pm.getRecordPermissions()) {
-            Record parent = rp.getRecord().getParent();
-            if ((parent != null) && parents.contains(parent)) {
+            Record record = rp.getRecord();
+            Record parent = record.getParent();
+            if ((parent != null) && parents.containsKey(parent)) {
+                RecordPermission parentRp = parents.get(parent);
+                parentRp.setOriginalRequestPids(
+                    parentRp.getOriginalRequestPids() + properties.getProperty("prop_pidSeparator") + record.getPid());
+
                 toRemove.add(rp);
                 permissions.removeRecordPermission(rp);
             }
         }
         pm.getRecordPermissions().removeAll(toRemove);
 
-        // Save all changes (could also save per record permission instead).
+        // Save all changes.
         permissions.savePermission(pm);
     }
 

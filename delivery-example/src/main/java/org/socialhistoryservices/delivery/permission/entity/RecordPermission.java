@@ -19,6 +19,7 @@ package org.socialhistoryservices.delivery.permission.entity;
 import org.socialhistoryservices.delivery.record.entity.Record;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.Date;
 
 /**
@@ -107,6 +108,26 @@ public class RecordPermission {
      */
     public void setDateGranted(Date dateGranted) {
         this.dateGranted = dateGranted;
+    }
+
+    @Size(max=500)
+    @Column(name="org_request_pids")
+    private String originalRequestPids;
+
+    /**
+     * Get the originally requested PIDs, when this has changed to a collection level allow/deny.
+     * @return the originally requested PIDs.
+     */
+    public String getOriginalRequestPids() {
+        return originalRequestPids;
+    }
+
+    /**
+     * Set the originally requested PIDs, when this has changed to a collection level allow/deny.
+     * @param originalRequestPids the originally requested PIDs.
+     */
+    public void setOriginalRequestPids(String originalRequestPids) {
+        this.originalRequestPids = originalRequestPids;
     }
 
     /** The RecordPermission's permission. */

@@ -2,8 +2,10 @@ BEGIN;
 
 /* ADD NEW COLUMNS */
 
-ALTER TABLE external_record_info ADD COLUMN restriction character varying(255) NOT NULL DEFAULT 'OPEN';
 ALTER TABLE recordpermissions ADD COLUMN date_granted date;
+ALTER TABLE recordpermissions ADD COLUMN org_request_pids character varying(500);
+
+ALTER TABLE external_record_info ADD COLUMN restriction character varying(255) NOT NULL DEFAULT 'OPEN';
 
 /* REMOVE OLD COLUMNS */
 
