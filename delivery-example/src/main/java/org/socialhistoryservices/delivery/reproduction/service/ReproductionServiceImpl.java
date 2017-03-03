@@ -819,21 +819,20 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         query.select(reproductionRoot);
 
         // Only reproductions outside the given time frame
-        Expression<Boolean> dateCriteria = builder.lessThan(
+        Predicate dateCriteria = builder.lessThan(
             reproductionRoot.get(Reproduction_.dateHasOrderDetails),
             calendar.getTime()
         );
 
         // Only reproductions that have an offer, but are not yet paid
-        Expression<Boolean> statusCriteria = builder.in(reproductionRoot.get(Reproduction_.status))
+        Predicate statusCriteria = builder.in(reproductionRoot.get(Reproduction_.status))
             .value(Reproduction.Status.HAS_ORDER_DETAILS)
             .value(Reproduction.Status.CONFIRMED);
 
         // Only reproductions that have a reminder mail not sent
-        Expression<Boolean> reminderCriteria = builder.in(reproductionRoot.get(Reproduction_.offerMailReminderSent))
-            .value(false);
+        Predicate reminderCriteria = builder.equal(reproductionRoot.get(Reproduction_.offerMailReminderSent), false);
 
-        query.where(builder.and(dateCriteria, statusCriteria), builder.in(reminderCriteria));
+        query.where(builder.and(dateCriteria, statusCriteria, reminderCriteria));
 
         // Send mail for all found reproductions and update mail sent to true
         for (Reproduction reproduction : listReproductions(query)) {
