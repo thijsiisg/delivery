@@ -17,7 +17,6 @@
 package org.socialhistoryservices.delivery.reservation.controller;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonNode;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
@@ -78,24 +77,20 @@ public class ReservationController extends AbstractRequestController {
     // {{{ Get API
 
     /**
-     * Fetches one specific reservation in JSON format.
+     * Fetches one specific reservation.
      *
      * @param id ID of the reservation to fetch.
-     * @param callback The optional JSONP callback function name.
      * @param model Passed view model.
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.GET)
     @Secured("ROLE_RESERVATION_VIEW")
-    public String getSingle(@PathVariable int id,
-                            @RequestParam(required = false) String callback,
-                            Model model) {
+    public String getSingle(@PathVariable int id, Model model) {
         Reservation r = reservations.getReservationById(id);
         if (r == null) {
            throw new ResourceNotFoundException();
         }
-        model.addAttribute("callback", callback);
         model.addAttribute("reservation", r);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(r.getHoldings()));
         return "reservation_get";
@@ -104,7 +99,6 @@ public class ReservationController extends AbstractRequestController {
     /**
      * Get a list of reservations
      * @param req The HTTP request object.
-     * @param callback The optional JSONP callback function name.
      * @param model Passed view model.
      * @return The name of the view to use.
      */
@@ -112,7 +106,6 @@ public class ReservationController extends AbstractRequestController {
                     method = RequestMethod.GET)
     @Secured("ROLE_RESERVATION_VIEW")
     public String get(HttpServletRequest req,
-                      @RequestParam(required=false) String callback,
                             Model model) {
         Map<String, String[]> p = req.getParameterMap();
 
@@ -379,156 +372,6 @@ public class ReservationController extends AbstractRequestController {
     }
 
     //}}}
-    // {{{ Create/Edit API
-
-    /**
-     * Create/update a reservation (Method PUT).
-     * @param newRes The new reservation.
-     * @param json The json to use as parameters.
-     * @param id The id of the reservation to update.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/{id}",
-                    method = RequestMethod.PUT)
-    @ResponseBody
-    @Secured({"ROLE_RESERVATION_MODIFY", "ROLE_RESERVATION_CREATE"})
-    public String apiPut(@RequestBody Reservation newRes,
-                              @RequestBody String json,
-                              @PathVariable int id) {
-        jsonCreateOrEdit(newRes, reservations.getReservationById(id), json);
-        return "";
-    }
-
-    /**
-     * Create/update a reservation (Method POST, !PUT in path).
-     * @param newRes The new reservation.
-     * @param json The json to use as parameters.
-     * @param id The id of the reservation to update.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/{id}!PUT",
-                    method = RequestMethod.POST)
-    @ResponseBody
-    @Secured({"ROLE_RESERVATION_MODIFY", "ROLE_RESERVATION_CREATE"})
-    public String apiFakePut(@RequestBody Reservation newRes,
-                              @RequestBody String json,
-                              @PathVariable int id) {
-        jsonCreateOrEdit(newRes, reservations.getReservationById(id), json);
-        return "";
-    }
-
-    /**
-     * Create/update a reservation (Method POST, !PUT in path).
-     * @param newRes The new reservation.
-     * @param json The json to use as parameters.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/",
-                    method = RequestMethod.POST)
-    @Secured("ROLE_RESERVATION_CREATE")
-    public String apiPost(@RequestBody Reservation newRes,
-                              @RequestBody String json) {
-        jsonCreateOrEdit(newRes, null, json);
-        return "redirect:/reservation/"+newRes.getId();
-    }
-
-    private void jsonCreateOrEdit(Reservation newRes, Reservation oldRes,
-                          String json) {
-        JsonNode n = parseJSONBody(json);
-        if (oldRes != null) {
-            // Make sure there is a distinction between missing nodes and
-            // nodes that are explicitly set to NULL for optional fields.
-            checkForMissingReservationFields(newRes, oldRes, n);
-        }
-        if (!n.path("items").isMissingNode()) {
-            jsonItemsToHoldings(newRes, n.path("items"));
-        }
-        try {
-            BindingResult result = new BeanPropertyBindingResult(newRes,
-                "reservation");
-            reservations.createOrEdit(newRes, oldRes, result);
-            if (result.hasErrors()) {
-                throw InvalidRequestException.create(result);
-            }
-        } catch (NoHoldingsException e) {
-            throw new InvalidRequestException(e.getMessage());
-        } catch (ClosedException e) {
-            throw new InvalidRequestException(e.getMessage());
-        } catch (InUseException e) {
-            throw new InvalidRequestException(e.getMessage());
-        }
-
-    }
-
-    private void checkForMissingReservationFields(Reservation newRes,
-                                                  Reservation oldRes,
-                                                  JsonNode n) {
-
-        if (n.path("visitorName").isMissingNode()) {
-            newRes.setVisitorName(oldRes.getVisitorName());
-        }
-        if (n.path("visitorEmail").isMissingNode()) {
-            newRes.setVisitorEmail(oldRes.getVisitorEmail());
-        }
-        if (n.path("date").isMissingNode()) {
-            newRes.setDate(oldRes.getDate());
-        }
-        if (n.path("items").isMissingNode()) {
-            newRes.setHoldingReservations(oldRes.getHoldingReservations());
-        }
-        if (n.path("special").isMissingNode()) {
-            newRes.setSpecial(oldRes.getSpecial());
-        }
-        if (n.path("status").isMissingNode()) {
-            newRes.setStatus(oldRes.getStatus());
-        }
-    }
-
-    private void jsonItemsToHoldings(Reservation newRes, JsonNode n) {
-        List<HoldingReservation> hrs = new ArrayList<HoldingReservation>();
-        Iterator<String> it = n.getFieldNames();
-        while (it.hasNext()) {
-            String pid = it.next();
-            Record r = records.getRecordByPid(pid);
-            if (r == null) {
-                throw new InvalidRequestException("Items list contains " +
-                        "invalid PID:" + pid);
-            }
-            if (n.path(pid).size() == 0) {
-                Holding ah = records.getHoldingForRecord(r, true);
-                if (ah == null) {
-                    throw new InvalidRequestException("Items list contains " +
-                            "PID with empty list, but no arbitrary holding is" +
-                            " available.");
-                }
-                HoldingReservation hr = new HoldingReservation();
-                hr.setHolding(ah);
-                hrs.add(hr);
-                continue;
-            }
-            Iterator<JsonNode> it2 = n.path(pid).iterator();
-            while(it2.hasNext()) {
-                String signature = it2.next().getTextValue();
-                boolean has = false;
-                for (Holding h : r.getHoldings()) {
-                    if (h.getSignature().equals(signature)) {
-                        has = true;
-                        HoldingReservation hr = new HoldingReservation();
-                        hr.setHolding(h);
-                        hrs.add(hr);
-                    }
-                }
-                if (!has) {
-                    throw new InvalidRequestException("Item list contains " +
-                            "invalid (pid,signature): (" + pid + "," +
-                            "" + signature + ")" );
-                }
-            }
-        }
-        newRes.setHoldingReservations(hrs);
-    }
-
-    // }}}
     // {{{ Create Form
 
     /**

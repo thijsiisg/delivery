@@ -16,7 +16,6 @@
 
 package org.socialhistoryservices.delivery.record.controller;
 
-import org.codehaus.jackson.JsonNode;
 import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.api.RecordLookupService;
 import org.socialhistoryservices.delivery.record.entity.*;
@@ -133,7 +132,6 @@ public class RecordController extends ErrorHandlingController {
     /**
      * Request information about multiple records.
      * @param encPids The pids separated by a comma, to get information of.
-     * @param callback A callback, if provided, for the JSONP response.
      * @param model The model to add the result to.
      * @return The name of the view to resolve.
      */
@@ -141,10 +139,8 @@ public class RecordController extends ErrorHandlingController {
                     method = RequestMethod.GET)
     public String get(
             @PathVariable String encPids,
-            @RequestParam(required=false) String callback,
             Model model
     ) {
-        model.addAttribute("callback", callback);
         return get(getPidsFromURL(encPids), model);
     }
     // }}}
@@ -190,71 +186,6 @@ public class RecordController extends ErrorHandlingController {
         return "";
     }
     // }}}
-    // {{{ Edit API
-
-
-
-    /**
-     * Create/Update a record (Method PUT).
-     * @param encPid The PID of the record to put (URL encoded).
-     * @param newRecord The record information.
-     * @param json The record information in text format.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/{encPid:.*}",
-                    method = RequestMethod.PUT)
-    @ResponseBody
-    @Secured("ROLE_RECORD_MODIFY")
-    public String apiPut(@PathVariable String encPid,
-                        @RequestBody Record newRecord,
-                        @RequestBody String json) {
-        String pid = urlDecode(encPid);
-        jsonPut(pid, newRecord, json);
-        return "";
-    }
-
-    private void jsonPut(String pid, Record newRecord, String json) {
-        Record oldRecord = records.getRecordByPid(pid);
-        if (oldRecord != null) {
-            // Make sure there is a distinction between missing nodes and
-            // nodes that are explicitly set to NULL for optional fields.
-            JsonNode n = parseJSONBody(json);
-            if (n.path("holdings").isMissingNode()) {
-                newRecord.setHoldings(oldRecord.getHoldings());
-            }
-        }
-
-        try {
-            newRecord.setPid(pid);
-            BindingResult result = new BeanPropertyBindingResult(newRecord,
-                "record");
-            records.createOrEdit(newRecord, oldRecord, result);
-        } catch (NoSuchPidException e) {
-            throw new InvalidRequestException(e.getMessage());
-        } catch (NoSuchParentException e) {
-            throw new InvalidRequestException(e.getMessage());
-        }
-    }
-
-    /**
-     * Create/Update a record (Method POST, !PUT in path).
-     * @param encPid The PID of the record to put (URL encoded).
-     * @param newRecord The record information.
-     * @param json The record information in text format.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/{encPid:.*}!PUT",
-                    method = RequestMethod.POST)
-    @Secured("ROLE_RECORD_MODIFY")
-    @ResponseBody
-    public String apiFakePut(@PathVariable String encPid,
-                        @RequestBody Record newRecord,
-                        @RequestBody String json) {
-        jsonPut(urlDecode(encPid), newRecord, json);
-        return "";
-    }
-    // }}}
-
     // {{{ Model data
 
     /**

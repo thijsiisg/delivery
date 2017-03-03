@@ -16,7 +16,6 @@
 
 package org.socialhistoryservices.delivery.permission.controller;
 
-import org.codehaus.jackson.JsonNode;
 import org.hibernate.validator.constraints.Email;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 
@@ -165,60 +164,6 @@ public class PermissionForm {
     public void setResearchSubject(String researchSubject) {
         this.researchSubject = researchSubject;
     }
-
-    /**
-     * Retrieve data from a model.
-     * @param obj Permission to get data from.
-     * @param df Date formatter
-     */
-    public void fillFrom(Permission obj, SimpleDateFormat df) {
-        // Set up the form to edit
-        setVisitorName(obj.getName());
-        setVisitorEmail(obj.getEmail());
-        setAddress(obj.getAddress());
-        setExplanation(obj.getExplanation());
-        setResearchOrganization(obj.getResearchOrganization());
-        setResearchSubject(obj.getResearchSubject());
-    }
-
-    /**
-     * Retrieve data from a json tree.
-     * @param root The root of the json tree
-     * @param df The date formatter
-     */
-    public void fillFrom(JsonNode root, SimpleDateFormat df) {
-        // Metadata
-        setVisitorName(root.path("visitor_name").getTextValue());
-        setVisitorEmail(root.path("visitor_email").getTextValue());
-        setAddress(root.path("address").getTextValue());
-        setStatus(root.path("status").getTextValue());
-        setExplanation(root.path("explanation").getTextValue());
-        setResearchOrganization(root.path("research_organization").getTextValue());
-        setResearchSubject(root.path("research_subject").getTextValue());
-    }
-
-    /**
-     * Get a date formatted according to df from a node.
-     * @param node The node to get the date from.
-     * @param df The date format to use.
-     * @return Date formatted according to df or null if node was missing.
-     */
-    private String getDateValueFromNode(JsonNode node, SimpleDateFormat df) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        if (!node.isMissingNode()) {
-            // Json-specified dates are always in this format, so
-            // convert it to configured format first
-            try {
-                Date dt = format.parse(node.getTextValue());
-                return df.format(dt);
-            }
-            catch (ParseException ex) {
-                // Date is not used
-            }
-        }
-        return null;
-    }
-
 
     /**
      * Save data into a model.

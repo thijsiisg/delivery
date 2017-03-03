@@ -17,7 +17,6 @@
 package org.socialhistoryservices.delivery.permission.controller;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonNode;
 import org.socialhistoryservices.delivery.api.RecordLookupService;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.entity.Permission_;
@@ -81,9 +80,8 @@ public class PermissionController extends AbstractRequestController {
 
     // {{{ Get API
     /**
-     * Fetches one specific permission in JSON format.
+     * Fetches one specific permission.
      * @param id ID of the permission to fetch.
-     * @param callback The optional JSONP callback function name.
      * @param model Passed view model.
      * @param req The request.
      * @return The name of the view to use.
@@ -91,15 +89,11 @@ public class PermissionController extends AbstractRequestController {
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.GET)
     @Secured("ROLE_PERMISSION_VIEW")
-    public String getSingle(@PathVariable int id,
-                            @RequestParam(required=false) String callback,
-                            Model model, HttpServletRequest req) {
-
+    public String getSingle(@PathVariable int id, Model model, HttpServletRequest req) {
         Permission pm = permissions.getPermissionById(id);
         if (pm == null) {
            throw new ResourceNotFoundException();
         }
-        model.addAttribute("callback", callback);
         model.addAttribute("permission", pm);
         return "permission_get";
     }
@@ -107,16 +101,13 @@ public class PermissionController extends AbstractRequestController {
     /**
      * Get a list of permissions.
      * @param req The HTTP request object.
-     * @param callback The optional JSONP callback function name.
      * @param model Passed view model.
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/",
                     method = RequestMethod.GET)
     @Secured("ROLE_PERMISSION_VIEW")
-    public String get(HttpServletRequest req,
-                      @RequestParam(required=false) String callback,
-                            Model model) {
+    public String get(HttpServletRequest req, Model model) {
 
         Map<String, String[]> p = req.getParameterMap();
         DateFormat apiDf = new SimpleDateFormat("yyyy-MM-dd");
@@ -160,7 +151,6 @@ public class PermissionController extends AbstractRequestController {
         pagedListHolder.setPage(parsePageFilter(p));
 
         // Add result to model
-        model.addAttribute("callback", callback);
         model.addAttribute("pageListHolder", pagedListHolder);
 
         Calendar cal = GregorianCalendar.getInstance();
@@ -425,62 +415,6 @@ public class PermissionController extends AbstractRequestController {
     // {{{ Create API
 
     /**
-     * Create a new permission request.
-     * @param json The json request body to use as parameters.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/",
-                    method = RequestMethod.POST)
-    public String apiCreate(@RequestBody String json) {
-
-        // Parse the Json
-        JsonNode root = parseJSONBody(json);
-
-        // Create the form
-        PermissionForm form = new PermissionForm();
-        form.fillFrom(root, df);
-
-        // Validate the form
-        BindingResult res = new BeanPropertyBindingResult(form, "permission");
-        validator.validate(form, res);
-        if (res.hasErrors()) {
-            throw InvalidRequestException.create(res);
-        }
-
-        // Create the permission
-        Permission obj = new Permission();
-        form.fillInto(obj, df);
-
-        // Add the correct record permissions.
-        JsonNode recordPermissionNode = root.path("items");
-        int recordPermissionNum = recordPermissionNode.size();
-
-        String[] pids = new String[recordPermissionNum];
-        for (int i = 0; i < recordPermissionNum; ++i) {
-            pids[i] = recordPermissionNode.path(i).getTextValue();
-        }
-
-        // Fetch the records.
-        List<Record> recs = getRestrictedRecordsFromPids(pids);
-
-        // Display a message if some items are closed
-        if (recs == null || recs.isEmpty()) {
-            throw new InvalidRequestException("Not all items are restricted " +
-                    "or you did not specify any.");
-        }
-
-        // Create the record permission objects from the records and add them
-        // to the permission.
-        addRecordsToPermission(obj, recs);
-
-        // Guarantee a unique token
-        guaranteeUniqueCode(obj);
-        permissions.addPermission(obj);
-
-        return "redirect:/permission/"+obj.getId();
-    }
-
-    /**
      * Guarantee a unique code to be generated for a new permission.
      * @param obj The permission to generate the code for.
      */
@@ -490,7 +424,6 @@ public class PermissionController extends AbstractRequestController {
         }
         while (permissions.getPermissionByCode(obj.getCode()) != null);
     }
-
 
     /**
      * Edit a permission.
@@ -594,78 +527,6 @@ public class PermissionController extends AbstractRequestController {
             }
 
         }
-    }
-
-    /**
-     * Edit a permission by providing json instead of a form.
-     * @param id The id of the permission to edit.
-     * @param json The json request body to use as parameters.
-     */
-    private void editPermissionJson(int id, String json) {
-        // Parse the Json
-        JsonNode root = parseJSONBody(json);
-
-        // Create the form
-        PermissionForm form = new PermissionForm();
-        form.fillFrom(root, df);
-
-        // Read all (pid, granted [, motivation]) tuples into maps.
-        Map<String, Boolean> g = new HashMap<String, Boolean>();
-        Map<String, String> m = new HashMap<String, String>();
-        Iterator<JsonNode> it = root.path("items").getElements();
-        while (it.hasNext()) {
-            JsonNode n = it.next();
-            JsonNode pid = n.path(0);
-            JsonNode granted = n.path(1);
-            JsonNode motivation = n.path(2);
-            if (pid.isMissingNode() || granted.isMissingNode()) {
-                throw new InvalidRequestException("invalid (pid," +
-                        "granted) tuple list.");
-            }
-            g.put(pid.getTextValue(), granted.getBooleanValue());
-
-            if (!motivation.isMissingNode()) {
-                m.put(pid.getTextValue(), motivation.getTextValue());
-            }
-        }
-
-        editPermission(id, form, g, m);
-    }
-
-    /**
-     * Create/update a permission (Method PUT).
-     * @param json The json to use as parameters.
-     * @param id The id of the permission to update.
-     * @param req The request.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/{id}",
-                    method = RequestMethod.PUT)
-    @ResponseBody
-    @Secured("ROLE_PERMISSION_MODIFY")
-    public String apiEdit(@RequestBody String json,
-                            @PathVariable int id,
-                            HttpServletRequest req) {
-        editPermissionJson(id, json);
-        return "";
-    }
-
-    /**
-     * Create/update a permission (Method POST, !PUT in path).
-     * @param json The json to use as parameters.
-     * @param id The id of the permission to update.
-     * @param req The request.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/{id}!PUT",
-                    method = RequestMethod.POST)
-    @ResponseBody
-    @Secured("ROLE_PERMISSION_MODIFY")
-    public String apiFakeEdit(@RequestBody String json,
-                            @PathVariable int id,
-                            HttpServletRequest req) {
-        editPermissionJson(id, json);
-        return "";
     }
 
     /**

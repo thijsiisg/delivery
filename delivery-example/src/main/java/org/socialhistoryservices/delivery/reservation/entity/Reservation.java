@@ -16,7 +16,6 @@
 
 package org.socialhistoryservices.delivery.reservation.entity;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
@@ -37,7 +36,6 @@ import java.util.*;
  */
 @Entity
 @Table(name="reservations")
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Configurable
 public class Reservation extends Request {
 
