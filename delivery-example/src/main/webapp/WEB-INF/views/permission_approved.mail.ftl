@@ -26,7 +26,7 @@
 <@mail to="${permission.name}">
 <@_ "permissionMail.approvedMessage" "Your permission request has been (partially) approved. You can create a reservation with the link below."/>
 
-${prop_urlSelf}/reservation/createform/<#list permission.recordPermissions as rp><#if rp.granted>${rp.record.pid?url}<#if rp_has_next>,</#if></#if></#list>?code=${permission.code}&locale=${locale}
+${prop_urlSelf}/reservation/createform/<#list permission.recordPermissions as rp><#if rp.granted><#if rp.originalRequestPids??>${rp.originalRequestPids?url}<#else>${rp.record.pid?url}</#if><#if rp_has_next>,</#if></#if></#list>?codes=${permission.code}&locale=${locale}
 
 <@_ "permissionMail.code" "Code"/>: ${permission.code}
 
