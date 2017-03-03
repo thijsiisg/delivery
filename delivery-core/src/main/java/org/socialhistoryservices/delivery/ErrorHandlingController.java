@@ -18,9 +18,6 @@ package org.socialhistoryservices.delivery;
 
 import com.octo.captcha.service.CaptchaService;
 import com.octo.captcha.service.CaptchaServiceException;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -37,7 +34,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
@@ -100,31 +96,6 @@ public class ErrorHandlingController {
     public String handleInvalid(Throwable exception, HttpServletResponse response) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return exception.getMessage();
-    }
-
-    @ExceptionHandler(JsonMappingException.class)
-    @ResponseBody
-    public String handleInvalidJson(Throwable exception,
-                                    HttpServletResponse response) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        return exception.getMessage();
-    }
-
-
-    /**
-     * Parses json from a HTTP request body string.
-     * @param json The JSON string to parse.
-     * @return The JsonNode produced.
-     * @throws InvalidRequestException Thrown when the body was not valid JSON.
-     */
-    protected JsonNode parseJSONBody(String json) throws InvalidRequestException {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.readValue(json, JsonNode.class);
-        }
-        catch (IOException e) {
-            throw new InvalidRequestException("Invalid JSON: "+e.getMessage());
-        }
     }
 
     protected void checkCaptcha(HttpServletRequest req, BindingResult result, Model model) {

@@ -113,28 +113,6 @@ ${totalPages}
         <#return nr2>
     </#if>
 </#function>
-<#macro generatePidToHoldingsJson rs>
-    <#assign pidToHoldings = {}>
-    <#list rs.holdingReservations as hr>
-    <#assign h = hr.holding>
-    <#assign pid = h.record.pid>
-    <#if !pidToHoldings[pid]??>
-        <#assign pidToHoldings = pidToHoldings + {pid : []}>
-    </#if>
-    <#assign pidToHoldings = pidToHoldings + {pid : pidToHoldings[pid] + [h.signature]}>
-    </#list>
-    {
-      <#list pidToHoldings?keys as pid>
-      "${pid}" :
-        [
-          <#list pidToHoldings[pid] as signature>
-          "${signature?js_string}"<#if signature_has_next>,</#if>
-          </#list>
-        ]
-      <#if pid_has_next>,</#if>
-      </#list>
-    }
-</#macro>
 
 <#macro holdingStatus holdingActiveRequests request holding>
   <#assign holdingActiveRequest = holdingActiveRequests[holding.toString()] ! request/>
