@@ -111,10 +111,6 @@
   <table class="holdings">
     <thead><tr>
         <td><@_ "holding.signature" "Signature/Type"/></td>
-        <td><@_ "holding.floor" "Floor"/></td>
-        <td><@_ "holding.direction" "Direction"/></td>
-        <td><@_ "holding.cabinet" "Cabinet"/></td>
-        <td><@_ "holding.shelf" "Shelf"/></td>
         <td><@_ "holding.usageRestriction" "Usage Restriction"/></td>
         <td><@_ "holding.status" "Status"/></td>
         <td></td>
@@ -134,10 +130,6 @@
         <#else>
         <td><@input_nolabel "record.holdings[${idx}].signature"/></td>
         </#if>
-        <td><@input_nolabel "record.holdings[${idx}].floor"/></td>
-        <td><@input_nolabel "record.holdings[${idx}].direction"/></td>
-        <td><@input_nolabel "record.holdings[${idx}].cabinet"/></td>
-        <td><@input_nolabel "record.holdings[${idx}].shelf"/></td>
         <td><@select_nolabel "record.holdings[${idx}].usageRestriction" "holding.usageRestriction" usageRestriction_types/></td>
         <#if h.status == "AVAILABLE">
         <td class="green"><@_ "holding.statusType.AVAILABLE" "Available" /></td>
@@ -156,13 +148,7 @@
     </#list>
       <tfoot>
     <tr id="newHolding"class="hidden">
-
         <td><input type="text" id="holdings.new.signature"/></td>
-        <td><input type="text" id="holdings.new.floor"/></td>
-        <td><input type="text" id="holdings.new.direction"/></td>
-        <td><input type="text" id="holdings.new.cabinet"/></td>
-        <td><input type="text" id="holdings.new.shelf"/></td>
-
         <td><select id="holdings.new.usageRestriction"
                     class="field">
               <#list usageRestriction_types?keys as value>
