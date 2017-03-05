@@ -136,8 +136,9 @@ public interface RecordService {
      * Updates the external info of the given record, if necessary.
      * @param record      The record of which to update the external info.
      * @param hardRefresh Always update the external info.
+     * @return Whether the record was updated.
      */
-    public void updateExternalInfo(Record record, boolean hardRefresh);
+    public boolean updateExternalInfo(Record record, boolean hardRefresh);
 
     /**
      * Edit records.
@@ -154,15 +155,6 @@ public interface RecordService {
     public void createOrEdit(Record newRecord,
                                       Record oldRecord, BindingResult result)
             throws NoSuchPidException, NoSuchParentException;
-
-    /**
-     * Get the first available (not closed) holding for a record.
-     * @param r The record to get a holding of.
-     * @param mustBeAvailable
-     * @return The first free holding found or null if all occupied/no
-     * holdings.
-     */
-    public Holding getHoldingForRecord(Record r, boolean mustBeAvailable);
 
     /**
      * Create a record, using the metadata from the IISH API to populate its

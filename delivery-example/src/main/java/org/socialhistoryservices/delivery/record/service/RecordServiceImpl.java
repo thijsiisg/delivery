@@ -183,8 +183,9 @@ public class RecordServiceImpl implements RecordService {
      * Updates the external info of the given record, if necessary.
      * @param record      The record of which to update the external info.
      * @param hardRefresh Always update the external info.
+     * @return Whether the record was updated.
      */
-    public void updateExternalInfo(Record record, boolean hardRefresh) {
+    public boolean updateExternalInfo(Record record, boolean hardRefresh) {
         try {
             // Do we need to update the external info?
             Integer days = Integer.parseInt(properties.getProperty("prop_externalInfoMinDaysCache"));
@@ -193,7 +194,7 @@ public class RecordServiceImpl implements RecordService {
 
             Date lastUpdated = record.getExternalInfoUpdated();
             if (!hardRefresh && (lastUpdated != null) && lastUpdated.after(calendar.getTime()))
-                return;
+                return false;
 
             // We need to update the external info
             String pid = record.getPid();
@@ -234,9 +235,11 @@ public class RecordServiceImpl implements RecordService {
             }
 
             record.setExternalInfoUpdated(new Date());
+            return true;
         }
         catch (NoSuchPidException nspe) {
             // PID not found, or API down, then just skip the record
+            return false;
         }
     }
 
@@ -304,37 +307,6 @@ public class RecordServiceImpl implements RecordService {
             result.popNestedPath();
             i++;
         }
-    }
-
-    /**
-     * Get the first available (not closed) holding for a record.
-     * @param r The record to get a holding of.
-     * @param mustBeAvailable Whether the holding must be available.
-     * @return The first free holding found or null if all occupied/no holdings.
-     */
-    public Holding getHoldingForRecord(Record r, boolean mustBeAvailable) {
-        CriteriaBuilder cb = holdingDAO.getCriteriaBuilder();
-        CriteriaQuery<Holding> cq = cb.createQuery(Holding.class);
-        Root<Holding> hRoot = cq.from(Holding.class);
-        cq.select(hRoot);
-
-        Join<Holding, Record> rRoot = hRoot.join(
-                    Holding_.record);
-        Expression<Boolean> where = cb.equal(rRoot.get(Record_.id),
-                r.getId());
-
-        // Only get available holdings?
-	    if (mustBeAvailable) {
-		    where = cb.and(where, cb.equal(hRoot.<Holding.Status>get(Holding_.status), Holding.Status.AVAILABLE));
-	    }
-
-        // Only get holdings which may be used without an employee's explicit permission.
-        where = cb.and(where, cb.equal(hRoot.<Holding.UsageRestriction>get(Holding_.usageRestriction),
-		        Holding.UsageRestriction.OPEN));
-
-        cq.where(where);
-
-        return holdingDAO.get(cq);
     }
 
     /**

@@ -26,7 +26,6 @@ import org.socialhistoryservices.delivery.request.controller.AbstractRequestCont
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
-import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.request.util.BulkActionIds;
 import org.socialhistoryservices.delivery.reservation.entity.*;
@@ -432,34 +431,24 @@ public class ReservationController extends AbstractRequestController {
         }
 
         // If the reservation contains restricted items, go to the choice screen
-        List<HoldingReservation> open = new ArrayList<>();
-        List<HoldingReservation> restricted = new ArrayList<>();
-        for (HoldingReservation hr : newRes.getHoldingReservations()) {
-            Record record = hr.getHolding().getRecord();
-            ExternalRecordInfo.Restriction restriction = record.getRestriction();
-
-            if (restriction == ExternalRecordInfo.Restriction.RESTRICTED) {
-                boolean hasPermission = false;
-                for (Permission permission : newRes.getPermissions()) {
-                    if (permission.hasGranted(record)) {
-                        hasPermission = true;
-                        open.add(hr);
-                    }
-                }
-
-                if (!hasPermission)
-                    restricted.add(hr);
-            }
-            else if (restriction == ExternalRecordInfo.Restriction.OPEN) {
-                open.add(hr);
-            }
-        }
-
+        List<HoldingReservation> open = findHoldingsOnRestriction(newRes, codes, false);
+        List<HoldingReservation> restricted = findHoldingsOnRestriction(newRes, codes, true);
         if (!restricted.isEmpty()) {
             model.addAttribute("reservation", newRes);
             model.addAttribute("holdingReservationsOpen", open);
             model.addAttribute("holdingReservationsRestricted", restricted);
             return "reservation_choice";
+        }
+
+        // Removed holdings that are already reserved
+        Set<HoldingReservation> hrReserved = new HashSet<>();
+        for (HoldingReservation hr : newRes.getHoldingReservations()) {
+            if (hr.getHolding().getStatus() != Holding.Status.AVAILABLE)
+                hrReserved.add(hr);
+        }
+        if (!hrReserved.isEmpty()) {
+            newRes.getHoldingReservations().removeAll(hrReserved);
+            model.addAttribute("warning", "availability");
         }
 
         try {
@@ -483,13 +472,10 @@ public class ReservationController extends AbstractRequestController {
                 }
             }
             else {
-                reservations.validateHoldingsAndAvailability(newRes, null);
+                reservations.validateHoldings(newRes, null);
             }
-
         } catch (NoHoldingsException e) {
-            throw new ResourceNotFoundException();
-        } catch (InUseException e) {
-            model.addAttribute("error", "availability");
+            model.addAttribute("error", "nothingAvailable");
             return "reservation_error";
         } catch (ClosedException e) {
             model.addAttribute("error", "restricted");
@@ -500,6 +486,41 @@ public class ReservationController extends AbstractRequestController {
         return "reservation_create";
     }
 
+    /***
+     * Based on the codes given, returns the holdings of the given reservation that are either open or reserved.
+     * @param reservation The reservation with holdings to check.
+     * @param codes The codes giving access to certain restricted records.
+     * @param returnRestricted Whether to return a list of restricted records, or open records.
+     * @return The list with records matched.
+     */
+    private List<HoldingReservation> findHoldingsOnRestriction(Reservation reservation, String[] codes,
+                                                               boolean returnRestricted) {
+        List<HoldingReservation> foundHr = new ArrayList<>();
+        for (HoldingReservation hr : reservation.getHoldingReservations()) {
+            Record record = hr.getHolding().getRecord();
+            ExternalRecordInfo.Restriction restriction = record.getRestriction();
+
+            if (restriction == ExternalRecordInfo.Restriction.RESTRICTED) {
+                boolean hasPermission = false;
+                for (Permission permission : reservation.getPermissions()) {
+                    if (permission.hasGranted(record)) {
+                        hasPermission = true;
+
+                        if (!returnRestricted)
+                            foundHr.add(hr);
+                    }
+                }
+
+                if (returnRestricted && !hasPermission)
+                    foundHr.add(hr);
+            }
+            else if (!returnRestricted && (restriction == ExternalRecordInfo.Restriction.OPEN)) {
+                foundHr.add(hr);
+            }
+        }
+        return foundHr;
+    }
+
     /**
      * Checks the permission if applicable (i.e. holdings selected are tied to one or more restricted records).
      *
@@ -508,7 +529,7 @@ public class ReservationController extends AbstractRequestController {
      * @param reservation The Reservation with holdings to check.
      * @return True iff the given permission (can be null) is allowed to reserve the provided holdings.
      */
-    protected boolean checkPermissions(Model model, Permission perm, Reservation reservation) {
+    private boolean checkPermissions(Model model, Permission perm, Reservation reservation) {
         if (perm == null) {
             model.addAttribute("error", "invalidCode");
             return false;
@@ -568,7 +589,7 @@ public class ReservationController extends AbstractRequestController {
     }
 
     private List<HoldingReservation> uriPathToHoldingReservations(String path) {
-        List<Holding> holdings = uriPathToHoldings(path, true);
+        List<Holding> holdings = uriPathToHoldings(path);
         if (holdings == null)
             return null;
 
@@ -943,11 +964,6 @@ public class ReservationController extends AbstractRequestController {
                 }
                 return "redirect:/reservation/" +newRes.getId();
             }
-        } catch (InUseException e) {
-                String msg =  msgSource.getMessage("reservation.error.availability", null,
-                        "", LocaleContextHolder.getLocale());
-                result.addError(new ObjectError(result
-                        .getObjectName(), null, null, msg));
         } catch (ClosedException e) {
                 String msg =  msgSource.getMessage("reservation.error" +
                         ".restricted", null,

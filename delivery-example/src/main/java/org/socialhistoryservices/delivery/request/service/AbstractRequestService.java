@@ -43,49 +43,10 @@ public abstract class AbstractRequestService implements RequestService {
      * @throws NoHoldingsException Thrown when no holdings are provided.
      */
     public void validateHoldings(Request newReq, Request oldReq) throws NoHoldingsException, ClosedException {
-        try {
-            validateHoldings(newReq, oldReq, false);
-        } catch (InUseException iue) {
-            // Will not be thrown.
-        }
-    }
-
-    /**
-     * Validate provided holding part of request.
-     *
-     * @param newReq     The new request containing holdings.
-     * @param oldReq     The old request if applicable (or null).
-     * @param checkInUse Whether to validate on holdings that are in use currently.
-     * @throws ClosedException     Thrown when a holding is provided which
-     *                             references a record which is restrictionType=CLOSED.
-     * @throws InUseException      Thrown when a new holding provided to be added
-     *                             to the request is already in use by another request.
-     * @throws NoHoldingsException Thrown when no holdings are provided.
-     */
-    public void validateHoldingsAndAvailability(Request newReq, Request oldReq)
-            throws NoHoldingsException, InUseException, ClosedException {
-        validateHoldings(newReq, oldReq, true);
-    }
-
-    /**
-     * Validate provided holding part of request.
-     *
-     * @param newReq     The new request containing holdings.
-     * @param oldReq     The old request if applicable (or null).
-     * @param checkInUse Whether to validate on holdings that are in use currently.
-     * @throws ClosedException     Thrown when a holding is provided which
-     *                             references a record which is restrictionType=CLOSED.
-     * @throws InUseException      Thrown when a new holding provided to be added
-     *                             to the request is already in use by another request.
-     * @throws NoHoldingsException Thrown when no holdings are provided.
-     */
-    private void validateHoldings(Request newReq, Request oldReq, boolean checkInUse)
-            throws NoHoldingsException, InUseException, ClosedException {
         if (newReq.getHoldingRequests() == null || newReq.getHoldingRequests().isEmpty()) {
             throw new NoHoldingsException();
         }
 
-        // Check for in use holdings by other requests.
         // Check for CLOSED.
         // Do not check for usage restriction (This only needs to be checked in the visitor interface,
         // not when employees create a request for example, same for RESTRICTED on record).
@@ -100,10 +61,6 @@ public abstract class AbstractRequestService implements RequestService {
                         has = true;
                     }
                 }
-            }
-
-            if (checkInUse && !has && h.getStatus() != Holding.Status.AVAILABLE) {
-                throw new InUseException();
             }
 
             // Do not check already linked holdings for CLOSED.

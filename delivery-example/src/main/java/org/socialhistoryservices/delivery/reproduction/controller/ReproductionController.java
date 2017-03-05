@@ -603,7 +603,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return A list of created holding reproductions.
      */
     private List<HoldingReproduction> uriPathToHoldingReproductions(String path) {
-        List<Holding> holdings = uriPathToHoldings(path, false);
+        List<Holding> holdings = uriPathToHoldings(path);
         if (holdings == null)
             return null;
 
