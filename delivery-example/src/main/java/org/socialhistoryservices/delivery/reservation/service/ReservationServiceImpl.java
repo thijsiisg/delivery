@@ -381,13 +381,11 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * @param result The binding result object to put the validation errors in.
      * @throws org.socialhistoryservices.delivery.request.service.ClosedException Thrown when a holding is provided which
      * references a record which is restrictionType=CLOSED.
-     * @throws InUseException Thrown when a new holding provided to be added
-     * to the reservation is already in use by another reservation.
      * @throws org.socialhistoryservices.delivery.request.service.NoHoldingsException Thrown when no holdings are provided.
      */
     public void createOrEdit(Reservation newRes, Reservation oldRes,
             BindingResult result) throws
-        InUseException, ClosedException, NoHoldingsException {
+        ClosedException, NoHoldingsException {
 
             // Validate the reservation.
             validateRequest(newRes, result);
@@ -432,7 +430,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
             // Execute this method below the date check, or else the date will
             // not be checked if this method throws an exception; not displaying
             // the error immediately, but only when the holdings are valid instead.
-            validateHoldingsAndAvailability(newRes, oldRes);
+            validateHoldings(newRes, oldRes);
 
             // Add or save the record when no errors are present.
             if (!result.hasErrors()) {

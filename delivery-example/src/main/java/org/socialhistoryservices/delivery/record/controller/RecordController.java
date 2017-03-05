@@ -107,8 +107,7 @@ public class RecordController extends ErrorHandlingController {
                         // below.
                     }
                 }
-                else {
-                    records.updateExternalInfo(rec, false);
+                else if (records.updateExternalInfo(rec, false)) {
                     records.saveRecord(rec);
                 }
 

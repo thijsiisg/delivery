@@ -50,6 +50,10 @@ $(document).ready(function(){
 <@body>
 <h1>${title}</h1>
 
+<#if warning??>
+    <p class="warning"><@_ "reservation.warning."+warning warning /></p>
+</#if>
+
 <section>
     <@form "" "reservation" "create">
         <heading>

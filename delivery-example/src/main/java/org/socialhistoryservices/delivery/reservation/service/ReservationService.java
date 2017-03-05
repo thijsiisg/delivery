@@ -35,7 +35,6 @@ package org.socialhistoryservices.delivery.reservation.service;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
-import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
@@ -181,13 +180,11 @@ public interface ReservationService {
      * @param result The binding result object to put the validation errors in.
      * @throws org.socialhistoryservices.delivery.request.service.ClosedException Thrown when a holding is provided which
      * references a record which is restrictionType=CLOSED.
-     * @throws InUseException Thrown when a new holding provided to be added
-     * to the reservation is already in use by another reservation.
      * @throws org.socialhistoryservices.delivery.request.service.NoHoldingsException Thrown when no holdings are provided.
      */
     public void createOrEdit(Reservation newRes, Reservation oldRes,
                                       BindingResult result) throws
-            InUseException, ClosedException, NoHoldingsException;
+        ClosedException, NoHoldingsException;
 
     /**
      * Validate provided holding part of request.
@@ -195,12 +192,9 @@ public interface ReservationService {
      * @param oldReq The old request if applicable (or null).
      * @throws ClosedException     Thrown when a holding is provided which
      *                             references a record which is restrictionType=CLOSED.
-     * @throws InUseException      Thrown when a new holding provided to be added
-     *                             to the request is already in use by another request.
      * @throws NoHoldingsException Thrown when no holdings are provided.
      */
-    public void validateHoldingsAndAvailability(Request newReq, Request oldReq)
-            throws NoHoldingsException, InUseException, ClosedException;
+    public void validateHoldings(Request newReq, Request oldReq) throws NoHoldingsException, ClosedException;
 
     /**
      * Get the first valid reservation date after or equal to from.

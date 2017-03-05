@@ -79,10 +79,9 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
      * Translates the path of a URI to a list of holdings.
      *
      * @param path            The path containing the holdings.
-     * @param mustBeAvailable If only a PID is given, find specifically an available holding?
      * @return A list of holdings.
      */
-    protected List<Holding> uriPathToHoldings(String path, boolean mustBeAvailable) {
+    protected List<Holding> uriPathToHoldings(String path) {
         List<Holding> holdings = new ArrayList<Holding>();
         String[] tuples = getPidsFromURL(path);
         for (String tuple : tuples) {
@@ -98,30 +97,20 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
                     return null;
                 }
             }
-            else {
-                records.updateExternalInfo(r, false);
+            else if (records.updateExternalInfo(r, false)) {
                 records.saveRecord(r);
             }
 
-            if (elements.length == 1) {
-                Holding h = records.getHoldingForRecord(r, mustBeAvailable);
-                if (h == null) {
-                    return null;
+            for (int i = 1; i < Math.max(2, elements.length); i++) {
+                boolean has = false;
+                for (Holding h : r.getHoldings()) {
+                    if ((elements.length == 1) || h.getSignature().equals(elements[i])) {
+                        holdings.add(h);
+                        has = true;
+                    }
                 }
-                holdings.add(h);
-            }
-            else {
-                for (int i = 1; i < elements.length; i++) {
-                    boolean has = false;
-                    for (Holding h : r.getHoldings()) {
-                        if (h.getSignature().equals(elements[i])) {
-                            holdings.add(h);
-                            has = true;
-                        }
-                    }
-                    if (!has) {
-                        return null;
-                    }
+                if (!has) {
+                    return null;
                 }
             }
         }
