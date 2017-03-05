@@ -132,6 +132,7 @@ public class RecordController extends ErrorHandlingController {
     /**
      * Request information about multiple records.
      * @param encPids The pids separated by a comma, to get information of.
+     * @param callback A callback, if provided, for the JSONP response.
      * @param model The model to add the result to.
      * @return The name of the view to resolve.
      */
@@ -139,8 +140,10 @@ public class RecordController extends ErrorHandlingController {
                     method = RequestMethod.GET)
     public String get(
             @PathVariable String encPids,
+            @RequestParam(required=false) String callback,
             Model model
     ) {
+        model.addAttribute("callback", callback);
         return get(getPidsFromURL(encPids), model);
     }
     // }}}
