@@ -162,7 +162,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      * @param id Id of the Order to retrieve.
      * @return The Order matching the id.
      */
-    public Order getOrderById(int id) {
+    public Order getOrderById(long id) {
         return orderDAO.getById(id);
     }
 
