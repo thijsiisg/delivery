@@ -1,6 +1,5 @@
-package org.socialhistoryservices.delivery.order.dao;
+package org.socialhistoryservices.delivery.reproduction.dao;
 
-import org.socialhistoryservices.delivery.reproduction.dao.OrderDAO;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.springframework.stereotype.Repository;
 

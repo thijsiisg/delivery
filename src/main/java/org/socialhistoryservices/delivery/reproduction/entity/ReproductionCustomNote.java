@@ -3,9 +3,8 @@ package org.socialhistoryservices.delivery.reproduction.entity;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
-
-import javax.persistence.*;
 import javax.validation.constraints.*;
+import javax.persistence.*;
 
 /**
  * ReproductionCustomNote object representing a note for a custom reproduction.

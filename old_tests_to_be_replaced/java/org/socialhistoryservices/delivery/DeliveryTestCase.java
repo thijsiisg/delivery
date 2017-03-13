@@ -88,7 +88,6 @@ public abstract class DeliveryTestCase {
     protected RecordLookupService lookupService;
 
     @Autowired
-    @Qualifier("myCustomProperties")
     protected Properties properties;
 
     /** The user service to use. */

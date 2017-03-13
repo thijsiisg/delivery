@@ -36,7 +36,6 @@ public abstract class TemplatePreparation {
      * The property files.
      */
     @Autowired
-    @Qualifier("myCustomProperties")
     protected Properties properties;
 
     /**

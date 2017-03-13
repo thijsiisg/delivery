@@ -1,6 +1,5 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
-import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;

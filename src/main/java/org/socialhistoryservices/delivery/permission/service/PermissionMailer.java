@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.service;
+package org.socialhistoryservices.delivery.permission.service;
 
 import org.socialhistoryservices.delivery.Mailer;
-import org.socialhistoryservices.permission.entity.Permission;
-import org.socialhistoryservices.permission.entity.RecordPermission;
+import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
+import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;

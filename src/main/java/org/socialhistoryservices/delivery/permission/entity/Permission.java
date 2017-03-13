@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.entity;
+package org.socialhistoryservices.delivery.permission.entity;
 
-import org.socialhistoryservices.record.entity.Record;
-
+import org.socialhistoryservices.delivery.record.entity.Record;
 import org.hibernate.annotations.Cascade;
 import org.springframework.context.i18n.LocaleContextHolder;
-
 import javax.persistence.*;
 import java.util.*;
 
@@ -279,7 +277,7 @@ public class Permission {
     }
 
     /** The Permission's request locale. */
-    @Enumerated(EnumType.STRING)
+//    @Enumerated(EnumType.STRING)
     @Column(name="requestLocale", nullable=false)
     private Locale requestLocale;
 

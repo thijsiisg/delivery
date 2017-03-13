@@ -25,7 +25,6 @@ import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.springframework.beans.factory.annotation.Configurable;
-
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;

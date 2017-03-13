@@ -30,9 +30,9 @@
  *    limitations under the License.
  */
 
-package org.socialhistoryservices.record.dao;
+package org.socialhistoryservices.delivery.record.dao;
 
-import org.socialhistoryservices.record.entity.Contact;
+import org.socialhistoryservices.delivery.record.entity.Contact;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;

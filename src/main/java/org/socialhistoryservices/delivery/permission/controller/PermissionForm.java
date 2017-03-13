@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.controller;
+package org.socialhistoryservices.delivery.permission.controller;
 
 import org.codehaus.jackson.JsonNode;
 import org.hibernate.validator.constraints.Email;
-import org.socialhistoryservices.permission.entity.Permission;
+import org.socialhistoryservices.delivery.permission.entity.Permission;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;

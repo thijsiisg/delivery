@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.entity;
+package org.socialhistoryservices.delivery.permission.entity;
 
-import org.socialhistoryservices.record.entity.Record;
-
+import org.socialhistoryservices.delivery.record.entity.Record;
 import javax.persistence.*;
 
 /**

@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.controller;
+package org.socialhistoryservices.delivery.permission.controller;
 
 import org.codehaus.jackson.JsonNode;
-import org.socialhistoryservices.api.RecordLookupService;
-import org.socialhistoryservices.permission.entity.Permission;
-import org.socialhistoryservices.permission.entity.Permission_;
-import org.socialhistoryservices.permission.entity.RecordPermission;
-import org.socialhistoryservices.permission.entity.RecordPermission_;
-import org.socialhistoryservices.permission.service.PermissionMailer;
-import org.socialhistoryservices.permission.service.PermissionService;
-import org.socialhistoryservices.record.entity.ExternalRecordInfo;
-import org.socialhistoryservices.record.entity.ExternalRecordInfo_;
-import org.socialhistoryservices.record.entity.Record;
-import org.socialhistoryservices.record.entity.Record_;
-import org.socialhistoryservices.record.service.RecordService;
+import org.socialhistoryservices.delivery.api.RecordLookupService;
+import org.socialhistoryservices.delivery.permission.entity.Permission;
+import org.socialhistoryservices.delivery.permission.entity.Permission_;
+import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
+import org.socialhistoryservices.delivery.permission.entity.RecordPermission_;
+import org.socialhistoryservices.delivery.permission.service.PermissionMailer;
+import org.socialhistoryservices.delivery.permission.service.PermissionService;
+import org.socialhistoryservices.delivery.record.entity.*;
+import org.socialhistoryservices.delivery.record.entity.Record;
+import org.socialhistoryservices.delivery.record.service.RecordService;
 import org.socialhistoryservices.delivery.ErrorHandlingController;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
@@ -60,7 +58,7 @@ import java.util.*;
 public class PermissionController extends ErrorHandlingController {
 
     @Autowired
-    protected Validator validator;
+    protected Validator mvcValidator;
 
     @Autowired
     private PermissionService permissions;
@@ -503,7 +501,7 @@ public class PermissionController extends ErrorHandlingController {
 
         // Validate the form
         BindingResult res = new BeanPropertyBindingResult(form, "permission");
-        validator.validate(form, res);
+        mvcValidator.validate(form, res);
         if (res.hasErrors()) {
             throw InvalidRequestException.create(res);
         }
@@ -572,7 +570,7 @@ public class PermissionController extends ErrorHandlingController {
 
         // Validate the form
         BindingResult res = new BeanPropertyBindingResult(form, "permission");
-        validator.validate(form, res);
+        mvcValidator.validate(form, res);
         if (res.hasErrors()) {
             throw InvalidRequestException.create(res);
         }

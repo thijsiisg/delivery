@@ -2,14 +2,11 @@ package org.socialhistoryservices.delivery.reservation.service;
 
 import org.socialhistoryservices.delivery.reservation.entity.ReservationDateException;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 /**

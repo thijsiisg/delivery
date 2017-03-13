@@ -20,7 +20,6 @@ import org.hibernate.annotations.Index;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
-
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 

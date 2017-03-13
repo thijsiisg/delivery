@@ -33,7 +33,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface ValidReservationDate {
 
     /** The message to display when invalidated. */
-    String message() default "{validator.reservationDate}";
+    String message() default "{mvcValidator.reservationDate}";
 
     /** The group this annotation belongs to. */
     Class<?>[] groups() default {};

@@ -22,7 +22,6 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.MessageSource;
@@ -57,7 +56,6 @@ public class ErrorHandlingController {
     private SimpleDateFormat df;
 
     @Autowired
-    @Qualifier("myCustomProperties")
     protected Properties properties;
 
     @Autowired

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.controller;
+package org.socialhistoryservices.delivery.permission.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,7 +35,7 @@ public class PermissionDateStringValidator implements
 
 
     /**
-     * Initializes the validator.
+     * Initializes the mvcValidator.
      * @param annotation The annotation parameters to use.
      */
     public void initialize(ValidPermissionDate annotation) {

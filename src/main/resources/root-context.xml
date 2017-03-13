@@ -29,16 +29,16 @@
   <import resource="config.xml" />
 
   <!-- Template configuration -->
-  <import resource="mail.xml" />
+  <import resource="mail.xml" />            <!-- overslaan? -->
 
   <!-- Database configuration -->
-  <import resource="db.xml" />
+  <import resource="db.xml" />              <!-- overslaan? -->
 
   <!-- Template configuration -->
-  <import resource="templates.xml" />
+  <import resource="templates.xml" />       <!-- overslaan? -->
 
   <!-- Localization configuration -->
-  <import resource="localization.xml" />
+  <import resource="localization.xml" />    <!-- overslaan? -->
 
   <!-- Spring Security configuration -->
   <import resource="security.xml" />

@@ -30,10 +30,10 @@
  *    limitations under the License.
  */
 
-package org.socialhistoryservices.permission.service;
+package org.socialhistoryservices.delivery.permission.service;
 
-import org.socialhistoryservices.permission.entity.Permission;
-import org.socialhistoryservices.record.entity.Record;
+import org.socialhistoryservices.delivery.permission.entity.Permission;
+import org.socialhistoryservices.delivery.record.entity.Record;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;

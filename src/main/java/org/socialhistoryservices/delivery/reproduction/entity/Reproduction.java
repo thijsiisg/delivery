@@ -8,9 +8,8 @@ import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.i18n.LocaleContextHolder;
-
-import javax.persistence.*;
 import javax.validation.constraints.*;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -396,7 +395,7 @@ public class Reproduction extends Request {
         comment = val;
     }
 
-    @Enumerated(EnumType.STRING)
+//    @Enumerated(EnumType.STRING)
     @Column(name = "requestLocale", nullable = false)
     private Locale requestLocale;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.controller;
+package org.socialhistoryservices.delivery.permission.controller;
 
 
 
@@ -35,7 +35,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface ValidPermissionDate {
 
     /** The message to display when invalidated. */
-    String message() default "{validator.permissionDate}";
+    String message() default "{mvcValidator.permissionDate}";
 
     /** The group this annotation belongs to. */
     Class<?>[] groups() default {};

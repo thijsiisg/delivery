@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.record.entity;
+package org.socialhistoryservices.delivery.record.entity;
 
-import javax.persistence.*;
 import javax.validation.constraints.Size;
+import javax.persistence.*;
 
 /**
  * Contact information associated with a Record.

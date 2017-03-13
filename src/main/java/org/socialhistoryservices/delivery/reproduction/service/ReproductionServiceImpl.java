@@ -7,7 +7,6 @@ import org.socialhistoryservices.delivery.reproduction.dao.*;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.util.BigDecimalUtils;
-import org.socialhistoryservices.delivery.reproduction.util.DateUtils;
 import org.socialhistoryservices.delivery.reproduction.util.Pages;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
@@ -15,7 +14,6 @@ import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.*;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -67,7 +65,6 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     private BeanFactory bf;
 
     @Autowired
-    @Qualifier("myCustomProperties")
     private Properties properties;
 
     private Logger log = Logger.getLogger(getClass());
@@ -1087,7 +1084,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         int i = 0;
         for (ReproductionStandardOption standardOption : standardOptions.getOptions()) {
             result.pushNestedPath("options[" + i + "]");
-            validator.validate(standardOption, result);
+            mvcValidator.validate(standardOption, result);
             result.popNestedPath();
             i++;
         }
@@ -1095,7 +1092,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         i = 0;
         for (ReproductionCustomNote customNote : standardOptions.getCustomNotes()) {
             result.pushNestedPath("customNotes[" + i + "]");
-            validator.validate(customNote, result);
+            mvcValidator.validate(customNote, result);
             result.popNestedPath();
             i++;
         }

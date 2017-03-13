@@ -32,7 +32,7 @@ $(document).ready(function(){
         "dateFormat": "yy-mm-dd",
         showOn: "both",
         buttonImageOnly: true,
-        buttonImage: "${rc.contextPath}/resources/css/images/calendar.png",
+        buttonImage: "${rc.contextPath}/css/images/calendar.png",
         buttonText: '',
         <#if permission??>
         "minDate": "${permission.dateFrom?string("yy-MM-dd")}",

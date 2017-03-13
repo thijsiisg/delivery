@@ -24,15 +24,11 @@ import org.socialhistoryservices.delivery.record.dao.HoldingDAO;
 import org.socialhistoryservices.delivery.record.dao.RecordDAO;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Validator;
 
@@ -53,11 +49,10 @@ public class RecordServiceImpl implements RecordService {
     private HoldingDAO holdingDAO;
 
     @Autowired
-    @Qualifier("myCustomProperties")
     private Properties properties;
 
     @Autowired
-    private Validator validator;
+    private Validator mvcValidator;
 
     @Autowired
     private RecordLookupService lookup;
@@ -356,12 +351,12 @@ public class RecordServiceImpl implements RecordService {
      */
     private void validateRecord(Record record, BindingResult result) {
         // Validate the record
-        validator.validate(record, result);
+        mvcValidator.validate(record, result);
 
         // Validate the associated contact if present
         if (record.getContact() != null) {
             result.pushNestedPath("contact");
-            validator.validate(record.getContact(), result);
+            mvcValidator.validate(record.getContact(), result);
             result.popNestedPath();
         }
 
@@ -373,7 +368,7 @@ public class RecordServiceImpl implements RecordService {
             // the database first).
             h.setRecord(record);
             result.pushNestedPath("holdings["+i+"]");
-            validator.validate(h, result);
+            mvcValidator.validate(h, result);
             result.popNestedPath();
             i++;
         }

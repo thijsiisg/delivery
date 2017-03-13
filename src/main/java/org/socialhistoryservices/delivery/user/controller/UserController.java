@@ -61,7 +61,7 @@ public class UserController extends ErrorHandlingController {
                     LocaleContextHolder.getLocale());
             model.addAttribute("error", msg);
         }
-        return "user_login";
+        return "user_login.html";
     }
 
     /**

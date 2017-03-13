@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
  * Intercepts traffic before it is passed to a view, then adding the current
  * user details.
  */
-class SecurityToViewInterceptor extends HandlerInterceptorAdapter {
+public class SecurityToViewInterceptor extends HandlerInterceptorAdapter {
 
     /**
      * Expose the current user to the views.

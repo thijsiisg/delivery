@@ -26,7 +26,6 @@ import org.socialhistoryservices.delivery.reservation.dao.HoldingReservationDAO;
 import org.socialhistoryservices.delivery.reservation.dao.ReservationDAO;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
-import org.socialhistoryservices.delivery.reservation.entity.ReservationDateException;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +72,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
     private BeanFactory bf;
 
     @Autowired
-    @Qualifier("myCustomProperties")
     private Properties properties;
 
     private Logger log = Logger.getLogger(getClass());

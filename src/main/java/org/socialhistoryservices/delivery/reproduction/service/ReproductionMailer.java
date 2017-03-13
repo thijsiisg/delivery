@@ -32,7 +32,6 @@ public class ReproductionMailer extends RequestMailer {
     private SharedObjectRepositoryService sorService;
 
     @Autowired
-    @Qualifier("myCustomProperties")
     private Properties properties;
 
     private static final Locale ENGLISH_LOCALE = StringUtils.parseLocaleString("en");

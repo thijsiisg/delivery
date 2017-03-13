@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.record.dao;
+package org.socialhistoryservices.delivery.record.dao;
 
-import org.socialhistoryservices.record.entity.ExternalRecordInfo;
-import org.socialhistoryservices.record.entity.Record;
-import org.socialhistoryservices.record.entity.Record_;
+import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
+import org.socialhistoryservices.delivery.record.entity.Record;
+import org.socialhistoryservices.delivery.record.entity.Record_;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;

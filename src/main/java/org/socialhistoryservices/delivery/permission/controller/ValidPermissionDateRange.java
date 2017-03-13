@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.controller;
+package org.socialhistoryservices.delivery.permission.controller;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;
@@ -34,7 +34,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 public @interface ValidPermissionDateRange
 {
-    String message() default "{validator.permissionDateRange}";
+    String message() default "{mvcValidator.permissionDateRange}";
 
     Class<?>[] groups() default {};
 

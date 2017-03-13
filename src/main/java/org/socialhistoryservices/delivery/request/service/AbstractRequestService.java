@@ -23,7 +23,7 @@ import java.util.List;
  */
 public abstract class AbstractRequestService implements RequestService {
     @Autowired
-    protected Validator validator;
+    protected Validator mvcValidator;
 
     @Autowired
     protected MessageSource msgSource;
@@ -195,14 +195,14 @@ public abstract class AbstractRequestService implements RequestService {
      */
     protected void validateRequest(Request request, BindingResult result) {
         // Validate the request.
-        validator.validate(request, result);
+        mvcValidator.validate(request, result);
 
         // Validate associated HoldingRequests if present.
         // They also should have a request reference set in order to pass this check.
         int i = 0;
         for (HoldingRequest hr : request.getHoldingRequests()) {
             result.pushNestedPath("holdings" + request.getClass().getName() + "s[" + i + "]");
-            validator.validate(hr, result);
+            mvcValidator.validate(hr, result);
             result.popNestedPath();
 
             if (hr.getHolding().getRecord().getExternalInfo().getMaterialType() ==

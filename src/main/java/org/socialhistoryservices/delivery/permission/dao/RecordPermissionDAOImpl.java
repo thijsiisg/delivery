@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.dao;
+package org.socialhistoryservices.delivery.permission.dao;
 
-import org.socialhistoryservices.permission.entity.RecordPermission;
+import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;

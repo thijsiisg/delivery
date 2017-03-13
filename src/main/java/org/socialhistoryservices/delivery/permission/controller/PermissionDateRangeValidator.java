@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.permission.controller;
+package org.socialhistoryservices.delivery.permission.controller;
 
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class PermissionDateRangeValidator implements
     private String toFieldName;
 
     /**
-     * Initialize validator annotation field values.
+     * Initialize mvcValidator annotation field values.
      * @param constraintAnnotation The annotation to get the field names from.
      */
     public void initialize(ValidPermissionDateRange constraintAnnotation) {
@@ -46,7 +46,7 @@ public class PermissionDateRangeValidator implements
     /**
      * Check whether the chosen date range is valid or not.
      * @param value The value to get the date range from.
-     * @param context The context of the validator.
+     * @param context The context of the mvcValidator.
      * @return True if valid, false otherwise.
      */
     public boolean isValid(Object value, ConstraintValidatorContext context) {

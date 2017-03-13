@@ -29,14 +29,14 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.0.0.BUILD-SNAPSHOT</version>
+        <version>1.5.2.RELEASE</version>
     </parent>
 
   <properties>
       <!--<start-class> HomeController</start-class>-->
     <!--<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
     <!--<jetty.version>6.1.26</jetty.version>-->
-    <spring.version>5.0.0.BUILD-SNAPSHOT</spring.version>
+    <!--<spring.version>5.0.0.BUILD-SNAPSHOT</spring.version>-->
     <!--<spring.security.version>3.1.4.RELEASE</spring.security.version>-->
     <!--<slf4j.version>1.5.10</slf4j.version>-->
     <java.version>1.8</java.version>
@@ -50,29 +50,84 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-expression</artifactId>
-            <version>${spring.version}</version>
+            <version>4.3.7.RELEASE</version>
         </dependency>
     </dependencies>
   </dependencyManagement>
 
     <dependencies>
         <!-- Spring Boot -->
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>2.0.0.BUILD-SNAPSHOT</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-jdbc -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
-            <version>2.0.0.BUILD-SNAPSHOT</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-configuration-processor -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+        </dependency>
+
+
+
+        <!-- Spring security -->
+        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-ldap -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-ldap</artifactId>
+            <version>4.2.2.RELEASE</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-core -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>4.2.2.RELEASE</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-web -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+            <version>4.2.2.RELEASE</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-config -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+            <version>4.2.2.RELEASE</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-test -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <version>4.2.2.RELEASE</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <version>2.0.0.BUILD-SNAPSHOT</version>
+            <version>1.5.2.RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.persistence</groupId>
+                    <artifactId>com.springsource.javax.persistence</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 
@@ -104,32 +159,30 @@
             <!--<version>1.0.0.Final</version>-->
         <!--</dependency>-->
 
-        <!-- Spring security -->
-        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-ldap -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-ldap</artifactId>
-            <version>4.2.1.RELEASE</version>
-        </dependency>
-
         <!-- Spring Dependencies -->
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-context-support -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context-support</artifactId>
-            <version>4.3.6.RELEASE</version>
+            <version>4.3.7.RELEASE</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>4.3.6.RELEASE</version>
+            <version>4.3.7.RELEASE</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-mock -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-mock</artifactId>
             <version>2.0.8</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.ldap/spring-ldap-core -->
+        <dependency>
+            <groupId>org.springframework.ldap</groupId>
+            <artifactId>spring-ldap-core</artifactId>
+            <version>2.3.1.RELEASE</version>
         </dependency>
 
         <!-- Test Dependencies -->
@@ -149,11 +202,10 @@
         </dependency>
 
         <!-- Freemarker Dependency -->
-        <!-- https://mvnrepository.com/artifact/org.freemarker/freemarker -->
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-freemarker -->
         <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.23</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-freemarker</artifactId>
         </dependency>
 
         <!-- Codehaus Dependencies -->
@@ -177,12 +229,20 @@
             <!--<scope>compile</scope>-->
         <!--</dependency>-->
 
+        <!-- Hibernate Dependencies -->
         <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>5.2.8.Final</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.hibernate</groupId>-->
+            <!--<artifactId>hibernate-core</artifactId>-->
+            <!--<version>5.2.8.Final</version>-->
+        <!--</dependency>-->
+        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.hibernate/hibernate-entitymanager &ndash;&gt;-->
+        <!--<dependency>-->
+            <!--<groupId>org.hibernate</groupId>-->
+            <!--<artifactId>hibernate-entitymanager</artifactId>-->
+            <!--<version>5.2.3.Final</version>-->
+        <!--</dependency>-->
+
 
         <!-- https://mvnrepository.com/artifact/commons-collections/commons-collections -->
         <dependency>
@@ -229,14 +289,7 @@
             <version>2.1</version>
         </dependency>
 
-        <!--&lt;!&ndash; https://mvnrepository.com/artifact/com.jhlabs/filters &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>com.jhlabs</groupId>-->
-            <!--<artifactId>filters</artifactId>-->
-            <!--<version>2.0.235</version>-->
-        <!--</dependency>-->
-
-        <!-- https://mvnrepository.com/artifact/com.octo.captcha/jcaptcha-all -->
+        <!--https://mvnrepository.com/artifact/com.octo.captcha/jcaptcha-all-->
         <dependency>
             <groupId>com.octo.captcha</groupId>
             <artifactId>jcaptcha-all</artifactId>
@@ -299,6 +352,16 @@
       </plugins>
     </pluginManagement>
   </build>
+    <!--The Spring Boot way-->
+    <!--<build>-->
+        <!--<plugins>-->
+            <!--<plugin>-->
+                <!--<groupId>org.springframework.boot</groupId>-->
+                <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
+            <!--</plugin>-->
+        <!--</plugins>-->
+    <!--</build>-->
+
 
     <!-- Add Spring repositories -->
     <!-- (you don't need this if you are using a .RELEASE version) -->

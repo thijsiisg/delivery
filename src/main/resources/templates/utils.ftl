@@ -38,7 +38,7 @@
   <#else>
     <#local uri = rc.getRequestUri()/>
   </#if>
-${uri}?<#list requestParams?keys as k><#if requestParams[k] !="">${k}=${requestParams[k]}<#if k_has_next>&amp;</#if></#if></#list>
+<#--${uri}?<#list requestParams?keys as k><#if requestParams[k] !="">${k}=${requestParams[k]}<#if k_has_next>&amp;</#if></#if></#list>-->
 </#macro>
 
 <#macro sortLink column attributes="">

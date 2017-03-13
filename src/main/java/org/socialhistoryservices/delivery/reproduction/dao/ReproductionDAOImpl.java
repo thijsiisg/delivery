@@ -22,7 +22,6 @@ import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproductio
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction_;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction_;
-import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;

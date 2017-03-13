@@ -48,22 +48,22 @@
 <html>
   <head>
     <title>${title} - Delivery</title>
-    <link rel="stylesheet" media="all" href="${rc.contextPath}/resources/css/screen.css"/>
-    <link rel="shortcut icon" type="image/x-icon" href="${rc.contextPath}/resources/logo.ico" />
+    <link rel="stylesheet" media="all" href="${rc.contextPath}/css/screen.css"/>
+    <link rel="shortcut icon" type="image/x-icon" href="${rc.contextPath}/logo.ico" />
     <style>
         header.main {
-            background-image: url("${rc.contextPath}/resources/css/images/iish_logo_${rc.locale}.jpg");
+            background-image: url("${rc.contextPath}/css/images/iish_logo_${rc.locale}.jpg");
             background-repeat: no-repeat;
             background-position: 50px 10px;
         }
     </style>
     <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-    <link type="text/css" href="${rc.contextPath}/resources/css/jquery-ui.min.css" rel="stylesheet" />
-    <script type="text/javascript" src="${rc.contextPath}/resources/js/jquery-1.11.3.min.js"></script>
-    <script type="text/javascript" src="${rc.contextPath}/resources/js/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="${rc.contextPath}/resources/js/delivery.js"></script>
+    <link type="text/css" href="${rc.contextPath}/css/jquery-ui.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="${rc.contextPath}/js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="${rc.contextPath}/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="${rc.contextPath}/js/delivery.js"></script>
     <#-- Locale dependent javascript -->
-    <script type="text/javascript" src="${rc.contextPath}/resources/js/delivery.locale.${rc.locale}.js"></script>
+    <script type="text/javascript" src="${rc.contextPath}/js/delivery.locale.${rc.locale}.js"></script>
     <#nested>
   </head>
   <body>

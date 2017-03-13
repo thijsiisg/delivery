@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package org.socialhistoryservices.home.controller;
+package org.socialhistoryservices.delivery.controller;
 
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
-import org.springframework.stereotype.*;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.http.HttpServletRequest;
 /**
  * Default controller when / is accessed.
  */
-@RestController
+@Controller
 public class HomeController {
 
     /**
@@ -34,9 +35,10 @@ public class HomeController {
      * @param request The HTTP request to use.
      * @return The view to resolve.
      */
-    @RequestMapping(value = "", method = RequestMethod.GET)
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     @Secured("IS_AUTHENTICATED_REMEMBERED")
     public String list(HttpServletRequest request) {
-        return "home";
+        return "home.html";
     }
+
 }

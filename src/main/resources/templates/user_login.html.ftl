@@ -35,19 +35,19 @@
 </#if>
 
 <section>
-  <form name="f" action="/j_spring_security_check" method="POST">
+  <form name="f" action="/user/login" method="POST">
     <fieldset>
-      <label for="j_username" class="field">
+      <label for="username" class="field">
         <@_ "security.username" "Username"/>
       </label>
 
-      <input type="text" class="field" name="j_username" id="j_username"/>
+      <input type="text" class="field" name="username" id="username"/>
 
-      <label for="j_password" class="field">
+      <label for="password" class="field">
         <@_ "security.password" "Password"/>
       </label>
 
-      <input type="password" class="field" name="j_password" id="j_password"/>
+      <input type="password" class="field" name="password" id="password"/>
     </fieldset>
 
     <ul class="buttons">
