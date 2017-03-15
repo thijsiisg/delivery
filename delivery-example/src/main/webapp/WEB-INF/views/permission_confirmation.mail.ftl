@@ -21,6 +21,16 @@
 <@_ "permissionMail.confirmationMessage" "With this mail we confirm your permission request has been successfully received. We will notify you when your request has either been approved or refused."/>
 
 
+* <@_ "permission.name" "Name" />: ${permission.name}
+* <@_ "permission.email" "E-mail" />: ${permission.email}
+* <@_ "permission.address" "Address" />:
+${permission.address}
+* <@_ "permission.researchOrganization" "for" />: ${permission.researchOrganization}
+* <@_ "permission.researchSubject" "Subject" />:
+${permission.researchSubject}
+* <@_ "permission.explanation" "Explanation" />:
+${permission.explanation}
+
 --- <@_ "reservation.records" "Records"/> ---
 <#list permission.recordPermissions as rp>
 * ${rp.record.toString()}
