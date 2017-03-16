@@ -2,7 +2,7 @@
 <@mail reproduction.customerName>
     <@_ "reproductionMail.offerReminderMessage" " With this email we remind you on the payment for your reproduction request. You can complete your order on the following link:" />
 
-${prop_urlSelf}/reproduction/confirm/${reproduction.id?c}/${reproduction.token}?locale=${locale}
+${delivery.urlSelf}/reproduction/confirm/${reproduction.id?c}/${reproduction.token}?locale=${locale}
 
     <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
 

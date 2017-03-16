@@ -156,13 +156,13 @@
       <@_ "pageListHolder.nrResultsPerPage" "Amount of Results per Page"/>
       </label>
       <select id="page_len_filter" name="page_len">
-        <#list 1..(prop_requestMaxPageLen?number/prop_requestPageStepSize?number)?floor as i>
-        <#assign pageSize = (i*prop_requestPageStepSize?number)?floor/>
+        <#list 1..(delivery.requestMaxPageLen?number/delivery.requestPageStepSize?number)?floor as i>
+        <#assign pageSize = (i*delivery.requestPageStepSize?number)?floor/>
         <option value="${pageSize}"
         <#if (RequestParameters["page_len"]?? &&
               RequestParameters["page_len"]?number == pageSize) ||
              (!RequestParameters["page_len"]?? &&
-              prop_requestPageLen?number == pageSize)>
+              delivery.requestPageLen?number == pageSize)>
         selected="selected"</#if>>${pageSize}</option>
         </#list>
       </select>
@@ -218,7 +218,7 @@
     </td>
 	<td>${holding.signature?html}</td>
     <td>${reservation.visitorName?html}</td>
-    <td>${reservation.date?string(prop_dateFormat)}</td>
+    <td>${reservation.date?string(delivery.dateFormat)}</td>
     <#--<td><#if reservation.returnDate??>${reservation.returnDate?string
   (prop_dateFormat)}</#if></td>-->
     <#assign yes>

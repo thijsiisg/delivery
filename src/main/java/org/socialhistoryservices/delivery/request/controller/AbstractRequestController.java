@@ -4,6 +4,7 @@ import org.socialhistoryservices.delivery.ErrorHandlingController;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.socialhistoryservices.delivery.api.NoSuchPidException;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
@@ -84,7 +85,7 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         List<Holding> holdings = new ArrayList<Holding>();
         String[] tuples = getPidsFromURL(path);
         for (String tuple : tuples) {
-            String[] elements = tuple.split(properties.getProperty("prop_holdingSeparator", ":"));
+            String[] elements = tuple.split(deliveryProperties.getHoldingSeperator());
             Record r = records.getRecordByPid(elements[0]);
 
             if (r == null) {
@@ -290,11 +291,11 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
      * can not exceed the maximum length in the config).
      */
     protected int parsePageLenFilter(Map<String, String[]> p) {
-        int pageLen = Integer.parseInt(properties.getProperty("prop_requestPageLen"));
+        int pageLen = deliveryProperties.getRequestPageLen();
         if (p.containsKey("page_len")) {
             try {
                 pageLen = Math.max(0, Math.min(Integer.parseInt(p.get("page_len")[0]),
-                        Integer.parseInt(properties.getProperty("prop_requestMaxPageLen"))));
+                        deliveryProperties.getRequestMaxPageLen()));
             } catch (NumberFormatException ex) {
                 throw new InvalidRequestException("Invalid page length: " + p.get("page_len")[0]);
             }

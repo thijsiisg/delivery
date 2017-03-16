@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.socialhistoryservices.delivery.api.NoSuchPidException;
 import org.socialhistoryservices.delivery.api.RecordLookupService;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.dao.HoldingDAO;
 import org.socialhistoryservices.delivery.record.dao.RecordDAO;
 import org.socialhistoryservices.delivery.record.entity.*;
@@ -49,7 +50,7 @@ public class RecordServiceImpl implements RecordService {
     private HoldingDAO holdingDAO;
 
     @Autowired
-    private Properties properties;
+    private DeliveryProperties deliveryProperties;
 
     @Autowired
     private Validator mvcValidator;
@@ -133,7 +134,7 @@ public class RecordServiceImpl implements RecordService {
             saveRecord(root);
             return root;
         }
-        String itemSeparator = properties.getProperty("prop_itemSeparator", ".");
+        String itemSeparator = deliveryProperties.getItemSeperator();
         while (pid.contains(itemSeparator)) {
             pid = pid.substring(0, pid.lastIndexOf(itemSeparator));
             Record rec = getRecordByPid(pid);
@@ -249,7 +250,7 @@ public class RecordServiceImpl implements RecordService {
     public void updateExternalInfo(Record record, boolean hardRefresh) {
         try {
             // Do we need to update the external info?
-            Integer days = Integer.parseInt(properties.getProperty("prop_externalInfoMinDaysCache"));
+            Integer days = deliveryProperties.getExternalInfoMinDaysCache();
             Calendar calendar = GregorianCalendar.getInstance();
             calendar.add(Calendar.DAY_OF_YEAR, -days);
 
@@ -312,7 +313,7 @@ public class RecordServiceImpl implements RecordService {
             throws NoSuchPidException, NoSuchParentException {
         String pid = newRecord.getPid();
 
-        String itemSeparator = properties.getProperty("prop_itemSeparator", ".");
+        String itemSeparator = deliveryProperties.getItemSeperator();
         if (pid.contains(itemSeparator)) {
             String parentPid = pid.substring(0, pid.lastIndexOf(itemSeparator));
             Record parent = getRecordByPid(parentPid);

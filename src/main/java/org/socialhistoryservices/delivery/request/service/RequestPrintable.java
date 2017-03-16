@@ -4,6 +4,7 @@ import org.krysalis.barcode4j.BarcodeDimension;
 import org.krysalis.barcode4j.impl.code128.Code128Bean;
 import org.krysalis.barcode4j.output.java2d.Java2DCanvasProvider;
 import org.krysalis.barcode4j.tools.UnitConv;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.record.entity.Record;
@@ -36,7 +37,7 @@ public abstract class RequestPrintable implements Printable {
     protected Font italicFont;
 
     protected DateFormat df;
-    protected Properties properties;
+    protected DeliveryProperties deliveryProperties;
     protected final HoldingRequest holdingRequest;
 
     private Locale l;
@@ -106,8 +107,8 @@ public abstract class RequestPrintable implements Printable {
      * @param mSource The message source to fetch localized messages.
      * @param format  The date format to use.
      */
-    public RequestPrintable(HoldingRequest hr, MessageSource mSource, DateFormat format, Properties prop) {
-        properties = prop;
+    public RequestPrintable(HoldingRequest hr, MessageSource mSource, DateFormat format, DeliveryProperties prop) {
+        deliveryProperties = prop;
         // Add holdings to array for easy traversing.
         holdingRequest = hr;
 
@@ -219,8 +220,8 @@ public abstract class RequestPrintable implements Printable {
      */
     protected void drawCreationDate(DrawInfo drawInfo) {
         String dateLabel = getMessage("request.creationDate", "Created at");
-        String dateTimeFormat = properties.getProperty("prop_dateFormat") + " " +
-            properties.getProperty("prop_timeFormat", "HH:mm:ss");
+        String dateTimeFormat = deliveryProperties.getDateFormat() + " " +
+            deliveryProperties.getTimeFormat();
 
         SimpleDateFormat spdf = new SimpleDateFormat(dateTimeFormat);
         drawKeyValue(drawInfo, dateLabel, spdf.format(holdingRequest.getRequest().getCreationDate()));

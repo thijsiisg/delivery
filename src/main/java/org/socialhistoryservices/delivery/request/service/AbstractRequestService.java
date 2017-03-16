@@ -232,7 +232,7 @@ public abstract class AbstractRequestService implements RequestService {
             // Check if the request should be printed or not.
             if (!requestPrintable.getHoldingRequest().isPrinted() || alwaysPrint) {
                 PrinterJob job = PrinterJob.getPrinterJob();
-                job.setJobName("delivery");
+                job.setJobName("y");
                 // Autowiring does not seem to work in POJOs ?
 
                 // Note: Use Book to make sure margins are correct.

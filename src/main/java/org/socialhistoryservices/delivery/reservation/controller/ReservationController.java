@@ -18,6 +18,7 @@ package org.socialhistoryservices.delivery.reservation.controller;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
@@ -97,7 +98,7 @@ public class ReservationController extends AbstractRequestController {
         model.addAttribute("callback", callback);
         model.addAttribute("reservation", r);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(r.getHoldings()));
-        return "reservation_get";
+        return "reservation_get.html";
     }
 
     /**
@@ -152,8 +153,7 @@ public class ReservationController extends AbstractRequestController {
         initOverviewModel(p, model, pagedListHolder);
 
         Calendar cal = GregorianCalendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, Integer.parseInt(properties.getProperty
-                ("prop_reservationMaxDaysInAdvance")));
+        cal.add(Calendar.DAY_OF_MONTH, deliveryProperties.getReservationMaxDaysInAdvance());
         model.addAttribute("maxReserveDate",cal.getTime());
 
         // Fetch holding active request information
@@ -161,7 +161,7 @@ public class ReservationController extends AbstractRequestController {
         Set<Holding> holdings = getHoldings(holdingReservations);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
-        return "reservation_get_list";
+        return "reservation_get_list.html";
     }
 
     /**
@@ -575,13 +575,13 @@ public class ReservationController extends AbstractRequestController {
                                                      BindingResult result,
                                                      String permission,
                                                      Model model, boolean commit) {
-        if (!checkHoldings(model, newRes)) return "reservation_error";
+        if (!checkHoldings(model, newRes)) return "reservation_error.html";
 
 
         Permission perm = permissions.getPermissionByCode(permission);
         if (!checkPermissions(model, perm, newRes)) {
             model.addAttribute("holdingReservations", newRes.getHoldingReservations());
-            return "reservation_choice";
+            return "reservation_choice.html";
         }
 
         if (perm != null ) {
@@ -596,7 +596,7 @@ public class ReservationController extends AbstractRequestController {
             if (newRes.getDate() == null || !perm.isValidOn(newRes.getDate())
                     ) {
                 model.addAttribute("error", "notValidOnDate");
-                return "reservation_error";
+                return "reservation_error.html";
             }
         }
 
@@ -617,7 +617,7 @@ public class ReservationController extends AbstractRequestController {
                     // Automatically print the reservation.
                     autoPrint(newRes);
                     model.addAttribute("reservation", newRes);
-                    return "reservation_success";
+                    return "reservation_success.html";
                 }
             } else {
                 reservations.validateHoldingsAndAvailability(newRes, null);
@@ -627,14 +627,14 @@ public class ReservationController extends AbstractRequestController {
             throw new ResourceNotFoundException();
         } catch (InUseException e) {
             model.addAttribute("error", "availability");
-            return "reservation_error";
+            return "reservation_error.html";
         } catch (ClosedException e) {
             model.addAttribute("error", "restricted");
-            return "reservation_error";
+            return "reservation_error.html";
         }
         model.addAttribute("reservation", newRes);
 
-        return "reservation_create";
+        return "reservation_create.html";
     }
 
     /**
@@ -648,7 +648,7 @@ public class ReservationController extends AbstractRequestController {
         if (!super.checkHoldings(model, request))
             return false;
 
-        int maxItems = Integer.parseInt(properties.getProperty("prop_reservationMaxItems"));
+        int maxItems = deliveryProperties.getReservationMaxItems();
         if (request.getHoldingRequests().size() > maxItems) {
             model.addAttribute("error", "limitItems");
             return false;
@@ -690,7 +690,7 @@ public class ReservationController extends AbstractRequestController {
             if (access.after(create))
                 return;
 
-            if (DateUtils.isBetweenOpeningAndClosingTime(properties, create))
+            if (DateUtils.isBetweenOpeningAndClosingTime(deliveryProperties, create))
                 reservations.printReservation(res);
         } catch (PrinterException e) {
             // Do nothing, let an employee print it later on.
@@ -759,7 +759,7 @@ public class ReservationController extends AbstractRequestController {
                 try {
                     reservations.printItems(hrs, false);
                 } catch (PrinterException e) {
-                    return "reservation_print_failure";
+                    return "reservation_print_failure.html";
                 }
             }
         }
@@ -801,7 +801,7 @@ public class ReservationController extends AbstractRequestController {
             try {
                 reservations.printItems(hrs, true);
             } catch (PrinterException e) {
-                return "reservation_print_failure";
+                return "reservation_print_failure.html";
             }
         }
 
@@ -967,7 +967,7 @@ public class ReservationController extends AbstractRequestController {
             }
         }
         model.addAttribute("reservation", newRes);
-        return "reservation_mass_create";
+        return "reservation_mass_create.html";
     }
 
     /**
@@ -991,7 +991,7 @@ public class ReservationController extends AbstractRequestController {
 
         model.addAttribute("reservation", newRes);
         model.addAttribute("holdingList", holdingList);
-        return "reservation_mass_create";
+        return "reservation_mass_create.html";
     }
 
 
@@ -1058,7 +1058,7 @@ public class ReservationController extends AbstractRequestController {
 
         model.addAttribute("reservation", newRes);
         model.addAttribute("holdingList", holdingList);
-        return "reservation_mass_create";
+        return "reservation_mass_create.html";
     }
     // }}}
 
@@ -1107,6 +1107,6 @@ public class ReservationController extends AbstractRequestController {
 		List<Tuple> tuples = reservations.listTuples(cq);
 		model.addAttribute("tuples", tuples);
 
-		return "reservation_materials";
+		return "reservation_materials.html";
 	}
 }

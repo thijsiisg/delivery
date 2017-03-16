@@ -75,13 +75,13 @@
       <@_ "pageListHolder.nrResultsPerPage" "Amount of Results per Page"/>
       </label>
       <select id="page_len_filter" name="page_len">
-        <#list 1..(prop_permissionMaxPageLen?number/prop_permissionPageStepSize?number)?floor as i>
-        <#assign pageSize = (i*prop_permissionPageStepSize?number)?floor/>
+        <#list 1..(delivery.permissionMaxPageLen?number/delivery.permissionPageStepSize?number)?floor as i>
+        <#assign pageSize = (i*delivery.permissionPageStepSize?number)?floor/>
         <option value="${pageSize}"
         <#if (RequestParameters["page_len"]?? &&
               RequestParameters["page_len"]?number == pageSize) ||
              (!RequestParameters["page_len"]?? &&
-              prop_permissionPageLen?number == pageSize)>
+              delivery.permissionPageLen?number == pageSize)>
         selected="selected"</#if>>${pageSize}</option>
         </#list>
       </select>
@@ -138,8 +138,8 @@
     </td>
     <td>${permission.name?html}</td>
     <td>${permission.researchSubject?html}</td>
-    <td>${permission.dateFrom?string(prop_dateFormat)}</td>
-    <td>${permission.dateTo?string(prop_dateFormat)}</td>
+    <td>${permission.dateFrom?string(delivery.dateFormat)}</td>
+    <td>${permission.dateTo?string(delivery.dateFormat)}</td>
     <td>
       <ul>
         <#list permission.recordPermissions as rp>

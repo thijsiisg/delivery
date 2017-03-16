@@ -46,7 +46,7 @@ public class RequestController extends AbstractRequestController {
     @RequestMapping(value = "/scan", method = RequestMethod.GET)
     @Secured({"ROLE_RESERVATION_MODIFY", "ROLE_REPRODUCTION_MODIFY"})
     public String scanBarcode() {
-        return "request_scan";
+        return "request_scan.html";
     }
 
     /**
@@ -70,7 +70,7 @@ public class RequestController extends AbstractRequestController {
 
         if (h == null) {
             model.addAttribute("error", "invalid");
-            return "request_scan";
+            return "request_scan.html";
         }
 
         // Information about the current state
@@ -111,10 +111,10 @@ public class RequestController extends AbstractRequestController {
                 holdings.addAll(reproduction.getHoldings());
             model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
-            return "request_scan";
+            return "request_scan.html";
         }
 
         model.addAttribute("error", "invalid");
-        return "request_scan";
+        return "request_scan.html";
     }
 }

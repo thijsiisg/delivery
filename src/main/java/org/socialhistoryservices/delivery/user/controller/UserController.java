@@ -75,7 +75,7 @@ public class UserController extends ErrorHandlingController {
     public String list(Model model, HttpServletRequest request) {
         model.addAttribute("users", users.listUsers());
         model.addAttribute("groups", users.listGroups());
-        return "user_management";
+        return "user_management.html";
     }
 
     /**
@@ -84,7 +84,7 @@ public class UserController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/logout-success", method = RequestMethod.GET)
     public String logoutSuccess() {
-        return "user_logout_success";
+        return "user_logout_success.html";
     }
 
     /**

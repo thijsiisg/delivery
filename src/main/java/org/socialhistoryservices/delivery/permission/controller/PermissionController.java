@@ -18,6 +18,7 @@ package org.socialhistoryservices.delivery.permission.controller;
 
 import org.codehaus.jackson.JsonNode;
 import org.socialhistoryservices.delivery.api.RecordLookupService;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.entity.Permission_;
 import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
@@ -166,7 +167,7 @@ public class PermissionController extends ErrorHandlingController {
         cal.add(Calendar.DAY_OF_MONTH, 1);
         model.addAttribute("tomorrow",cal.getTime());
 
-        return "permission_get_list";
+        return "permission_get_list.html";
     }
 
     /**
@@ -194,13 +195,12 @@ public class PermissionController extends ErrorHandlingController {
      * can not exceed the maximum length in the config).
      */
     private int parsePageLenFilter(Map<String, String[]> p) {
-        int pageLen = Integer.parseInt(properties.getProperty("prop_permissionPageLen"));
+        int pageLen = deliveryProperties.getPermissionPageLen();
         if (p.containsKey("page_len")) {
             try {
                 pageLen = Math.max(0,
                                    Math.min(Integer.parseInt(p.get("page_len")
-                                           [0]), Integer.parseInt(properties.getProperty
-                                                         ("prop_permissionMaxPageLen"))));
+                                           [0]), deliveryProperties.getPermissionMaxPageLen()));
             } catch (NumberFormatException ex) {
                 throw new InvalidRequestException("Invalid page length: " +
                         p.get("page_len")[0]);

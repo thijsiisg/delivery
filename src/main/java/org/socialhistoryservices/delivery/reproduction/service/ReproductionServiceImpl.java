@@ -2,6 +2,7 @@ package org.socialhistoryservices.delivery.reproduction.service;
 
 import org.apache.log4j.Logger;
 import org.socialhistoryservices.delivery.api.*;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.reproduction.dao.*;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
@@ -65,7 +66,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     private BeanFactory bf;
 
     @Autowired
-    private Properties properties;
+    private DeliveryProperties deliveryProperties;
 
     private Logger log = Logger.getLogger(getClass());
 
@@ -444,7 +445,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 Reproduction.Status status = hr.getReproduction().getStatus();
                 if (!hr.hasOrderDetails() || (!hr.isInSor() && (status == Reproduction.Status.ACTIVE))) {
                     ReproductionPrintable rp = new ReproductionPrintable(
-                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties);
                     requestPrintables.add(rp);
                     reproductions.add(hr.getReproduction());
                 }
@@ -753,7 +754,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     @Scheduled(cron = "0 0 0 * * MON-FRI")
     public void checkPayedReproductions() {
         // Determine the number of days
-        Integer nrOfDays = Integer.parseInt(properties.getProperty("prop_reproductionMaxDaysPayment", "21"));
+        Integer nrOfDays = deliveryProperties.getReproductionMaxDaysPayment();
 
         // Determine the date that many days ago
         Calendar calendar = GregorianCalendar.getInstance();
@@ -791,7 +792,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     @Scheduled(cron = "0 0 0 * * MON-FRI")
     public void checkReminderReproductions(){
         // Determine the number of days
-        Integer nrOfDays = Integer.parseInt(properties.getProperty("prop_reproductionMaxDaysReminder", "14"));
+        Integer nrOfDays = deliveryProperties.getReproductionMaxDaysReminder();
 
         // Determine the date that many days ago
         Calendar calendar = GregorianCalendar.getInstance();
@@ -854,7 +855,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             PayWayMessage message = new PayWayMessage();
             message.put("amount", amount);
             message.put("currency", "EUR");
-            message.put("language", r.getRequestLocale().toString().equals("en") ? "en_US" : "nl_NL");
+            message.put("language", r.getRequestLocale().toString().equals("en") ? "en" : "nl");
             message.put("cn", r.getCustomerName());
             message.put("email", r.getCustomerEmail());
             message.put("owneraddress", null);
@@ -1012,12 +1013,11 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      */
     private void initReproduction(Reproduction reproduction) {
         // Already obtain the BTW percentage and the discount percentage, may we need it
-        String btwPercentageProp = properties.getProperty("prop_reproductionBtwPercentage", "21");
-        int btwPercentage = Integer.parseInt(btwPercentageProp);
+        int btwPercentage = deliveryProperties.getReproductionBtwPercentage();
         int discountPercentage = reproduction.getDiscountPercentage();
 
         // First set the administration costs
-        BigDecimal adminstrationCosts = new BigDecimal(properties.getProperty("prop_reproductionAdministrationCosts"));
+        BigDecimal adminstrationCosts = new BigDecimal(deliveryProperties.getReproductionAdministrationCosts());
         reproduction.setAdminstrationCosts(adminstrationCosts);
         reproduction.setAdminstrationCostsDiscount(
                 BigDecimalUtils.getPercentageOfAmount(adminstrationCosts, discountPercentage)

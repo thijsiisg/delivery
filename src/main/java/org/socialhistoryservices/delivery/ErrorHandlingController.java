@@ -21,6 +21,7 @@ import com.octo.captcha.service.CaptchaServiceException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
@@ -49,20 +50,17 @@ import java.util.Properties;
  */
 public class ErrorHandlingController {
 
-
-
-
     @Autowired
     private SimpleDateFormat df;
 
     @Autowired
-    protected Properties properties;
-
-    @Autowired
     protected MessageSource msgSource;
 
-	@Autowired
-	protected CaptchaService captchaService;
+    @Autowired
+    protected CaptchaService captchaService;
+
+    @Autowired
+    protected DeliveryProperties deliveryProperties;
 
     /**
      * Split a set of pids given in a url to an array of pids.
@@ -71,7 +69,7 @@ public class ErrorHandlingController {
      */
     protected String[] getPidsFromURL(String pids) {
         try {
-            return URLDecoder.decode(pids, "utf-8").split(properties.getProperty("prop_pidSeparator"));
+            return URLDecoder.decode(pids, "utf-8").split(deliveryProperties.getPidSeperator());
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

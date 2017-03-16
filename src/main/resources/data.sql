@@ -66,6 +66,10 @@ INSERT INTO group_permissions VALUES (2, 12);
 INSERT INTO group_permissions VALUES (2, 13);
 INSERT INTO group_permissions VALUES (2, 14);
 INSERT INTO group_permissions VALUES (2, 15);
+INSERT INTO group_permissions VALUES (2, 16);
+INSERT INTO group_permissions VALUES (2, 17);
+INSERT INTO group_permissions VALUES (2, 18);
+INSERT INTO group_permissions VALUES (2, 19);
 INSERT INTO group_permissions VALUES (1, 4);
 INSERT INTO group_permissions VALUES (1, 5);
 INSERT INTO group_permissions VALUES (3, 7);
@@ -96,6 +100,7 @@ INSERT INTO users VALUES (1, 'swo@iisg.nl');
 INSERT INTO users VALUES (2, 'lwo@iisg.nl');
 INSERT INTO users VALUES (3, 'etu@iisg.nl');
 INSERT INTO users VALUES (4, 'kerim');
+INSERT INTO users VALUES (5, 'igor.vanderbom');
 
 --
 -- Data for Name: user_groups; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -105,3 +110,4 @@ INSERT INTO user_groups VALUES (1, 2);
 INSERT INTO user_groups VALUES (2, 2);
 INSERT INTO user_groups VALUES (3, 2);
 INSERT INTO user_groups VALUES (4, 2);
+INSERT INTO user_groups VALUES (5, 2);

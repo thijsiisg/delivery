@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.reservation.service;
 
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
@@ -29,7 +30,6 @@ import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -40,7 +40,6 @@ import org.springframework.validation.FieldError;
 import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Root;
 import java.awt.print.PrinterException;
 import java.text.DateFormat;
@@ -72,7 +71,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
     private BeanFactory bf;
 
     @Autowired
-    private Properties properties;
+    private DeliveryProperties deliveryProperties;
 
     private Logger log = Logger.getLogger(getClass());
 
@@ -369,7 +368,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
             List<RequestPrintable> requestPrintables = new ArrayList<RequestPrintable>();
             for (HoldingReservation hr : hrs) {
                 ReservationPrintable rp = new ReservationPrintable(
-                        hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties);
+                        hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties);
                 requestPrintables.add(rp);
                 reservations.add(hr.getReservation());
             }
@@ -483,7 +482,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
 
         Calendar t = GregorianCalendar.getInstance();
         try {
-            t.setTime(format.parse(properties.getProperty("prop_requestLatestTime")));
+            t.setTime(format.parse(deliveryProperties.getRequestLatestTime()));
         } catch (ParseException e) {
             throw new RuntimeException("Invalid reservationLatestTime " +
                     "provided in config. Should be of format HH:mm");
@@ -534,8 +533,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
         }
 
         Calendar maxCal = GregorianCalendar.getInstance();
-        int maxDaysInAdvance = Integer.parseInt(properties.getProperty
-                ("prop_reservationMaxDaysInAdvance"));
+        int maxDaysInAdvance = deliveryProperties.getReservationMaxDaysInAdvance();
         maxCal.add(Calendar.DAY_OF_YEAR, maxDaysInAdvance);
         if (fromCal.get(Calendar.YEAR) > maxCal.get(Calendar.YEAR) || (fromCal
                     .get(Calendar.YEAR) == maxCal.get(Calendar.YEAR) && fromCal

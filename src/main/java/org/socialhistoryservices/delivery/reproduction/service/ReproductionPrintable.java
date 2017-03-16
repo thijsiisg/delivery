@@ -1,5 +1,6 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
@@ -22,7 +23,7 @@ public class ReproductionPrintable extends RequestPrintable {
      * @param mSource The message source to fetch localized messages.
      * @param format  The date format to use.
      */
-    public ReproductionPrintable(HoldingReproduction hr, MessageSource mSource, DateFormat format, Properties prop) {
+    public ReproductionPrintable(HoldingReproduction hr, MessageSource mSource, DateFormat format, DeliveryProperties prop) {
         super(hr, mSource, format, prop);
     }
 

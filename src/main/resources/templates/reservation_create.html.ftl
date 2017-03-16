@@ -39,7 +39,7 @@ $(document).ready(function(){
         "maxDate": "${permission.dateTo?string("yy-MM-dd")}",
         <#else>
         "minDate": "0",
-        "maxDate": "+${prop_reservationMaxDaysInAdvance}",
+        "maxDate": "+${delivery.reservationMaxDaysInAdvance}",
         </#if>
         "beforeShowDay": $.datepicker.noWeekends
     });

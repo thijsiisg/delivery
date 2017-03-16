@@ -1,8 +1,8 @@
 package org.socialhistoryservices.delivery.config;
 
 import com.octo.captcha.service.image.DefaultManageableImageCaptchaService;
-import org.socialhistoryservices.delivery.user.dao.GroupDAOImpl;
-import org.socialhistoryservices.delivery.user.dao.UserDAOImpl;
+import org.socialhistoryservices.delivery.user.dao.GroupDAO;
+import org.socialhistoryservices.delivery.user.dao.UserDAO;
 import org.socialhistoryservices.delivery.user.service.AuthoritiesPopulator;
 import org.socialhistoryservices.delivery.user.service.UserServiceImpl;
 import org.socialhistoryservices.utils.CaptchaEngine;
@@ -11,17 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
-import org.springframework.security.ldap.authentication.BindAuthenticator;
-import org.springframework.security.ldap.authentication.LdapAuthenticationProvider;
-import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
-import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
-import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
 
 /**
  * Created by Igor on 3/3/2017.
@@ -31,11 +26,11 @@ import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
 @EnableConfigurationProperties(DeliveryProperties.class)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 
-    private GroupDAOImpl groupDAOBean;
-    private UserDAOImpl userDAOBean;
-    private CaptchaEngine captchaEngine;
+    @Autowired private GroupDAO groupDAO;
+    @Autowired private UserDAO userDAO;
+    @Autowired private CaptchaEngine captchaEngine;
+    @Autowired private Environment env;
 
-    //@Value("${prop_ldapUserSearchFilter}") private String[] userPatterns;
     @Value("${prop_ldapUrl}") private String ldapUrl;
     @Value("${prop_ldapManagerDn}") private String ldapManagerDn;
     @Value("${prop_ldapManagerPassword}") private String ldapManagerPassword;
@@ -47,8 +42,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 
         httpSecurity
             .authorizeRequests()
-                .antMatchers("/login").permitAll()
-//                .antMatchers("/css/**", "/fonts/**", "/js/**").permitAll()
+//                .antMatchers("/login").permitAll()
+                .antMatchers("/css/**", "/fonts/**", "/js/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
             // Disable Cross-Site Request Forgery token
@@ -67,6 +62,23 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
                 .logoutSuccessUrl("/user/logout-success")
                 .invalidateHttpSession(true)
                 .permitAll();
+
+        // If we are running H2 in development mode, then make sure we can always reach the H2 console
+        if (this.env.acceptsProfiles("development") && this.env.acceptsProfiles("h2")) {
+            httpSecurity
+                .authorizeRequests()
+                .antMatchers("/console/**").permitAll()
+                .and()
+                .headers()
+                .frameOptions().disable();
+        }
+
+        // If an auth profile has been chosen, close all other requests: the user needs to be authenticated first
+        if (this.env.acceptsProfiles("ldapAuth", "dbAuth")) {
+            httpSecurity.authorizeRequests()
+                .antMatchers("/").authenticated()
+                .anyRequest().hasRole("USER");
+        }
     }
 
    /* @Bean
@@ -119,9 +131,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
     @Bean
     public UserServiceImpl userDetailsService(){
         UserServiceImpl userService = new UserServiceImpl();
-        userService.setUserDAO(userDAOBean);
-        userService.setGroupDAO(groupDAOBean);
+        userService.setUserDAO(userDAO);
+        userService.setGroupDAO(groupDAO);
         return userService;
+    }
+
+    @Bean
+    public CaptchaEngine captchaEngine(){
+        return new CaptchaEngine();
     }
 
     @Bean
@@ -131,15 +148,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
         return defaultManageableImageCaptchaService;
     }
 
-    @Override
-    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
         DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(this.ldapUrl);
         contextSource.setUserDn(this.ldapManagerDn);
         contextSource.setPassword(this.ldapManagerPassword);
         contextSource.afterPropertiesSet();
 
-        DefaultLdapAuthoritiesPopulator ldapAuthoritiesPopulator =
-            new DefaultLdapAuthoritiesPopulator(contextSource, ldapUserSearchBase);
+        AuthoritiesPopulator ldapAuthoritiesPopulator =
+            new AuthoritiesPopulator(contextSource, ldapUserSearchBase, userDetailsService());
 
         authenticationManagerBuilder
             .ldapAuthentication()

@@ -4,7 +4,6 @@ import org.socialhistoryservices.delivery.Mailer;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.MimeMailMessage;
 import org.springframework.ui.Model;
 
 import javax.activation.DataHandler;
@@ -29,7 +28,7 @@ public abstract class RequestMailer extends Mailer {
      * @throws MailException Thrown when sending mail somehow failed.
      */
     protected void sendMail(String subject, String templateName, Model model, Locale locale) throws MailException {
-        sendMail(properties.getProperty("prop_mailReadingRoom"), subject, templateName, model, locale);
+        sendMail(deliveryProperties.getMailReadingRoom(), subject, templateName, model, locale);
     }
 
     /**
@@ -60,14 +59,14 @@ public abstract class RequestMailer extends Mailer {
     private void sendMail(String to, String subject, String templateName, Model model, Locale locale)
             throws MailException {
         // Do not mail when mail is disabled.
-        if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
+        if (!deliveryProperties.isMailEnabled()) {
             return;
         }
 
         model.addAttribute("locale", locale.toString());
 
         SimpleMailMessage msg = new SimpleMailMessage();
-        msg.setFrom(properties.getProperty("prop_mailSystemAddress"));
+        msg.setFrom(deliveryProperties.getMailSystemAddress());
         msg.setTo(to);
         msg.setReplyTo(getMessage("iisg.email", ""));
 
@@ -111,14 +110,14 @@ public abstract class RequestMailer extends Mailer {
     private void sendMailWithPdf(String to, String subject, String templateName, byte[] pdf, String pdfName,
                                  Model model, Locale locale) throws MailException, MessagingException {
         // Do not mail when mail is disabled.
-        if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
+        if (!deliveryProperties.isMailEnabled()) {
             return;
         }
 
         model.addAttribute("locale", locale.toString());
 
         MimeMessage msg = mailSender.createMimeMessage();
-        msg.setFrom(new InternetAddress(properties.getProperty("prop_mailSystemAddress")));
+        msg.setFrom(new InternetAddress(deliveryProperties.getMailSystemAddress()));
         msg.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
         msg.setReplyTo(InternetAddress.parse(getMessage("iisg.email", "")));
         msg.setSubject(subject);

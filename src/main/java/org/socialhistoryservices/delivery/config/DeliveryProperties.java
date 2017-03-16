@@ -1,13 +1,12 @@
 package org.socialhistoryservices.delivery.config;
 
-import jdk.nashorn.internal.objects.annotations.Getter;
-import jdk.nashorn.internal.objects.annotations.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
  * Created by Igor on 3/13/2017.
  */
+@Component
 @ConfigurationProperties(prefix = "delivery")
 public class DeliveryProperties {
 
@@ -41,18 +40,19 @@ public class DeliveryProperties {
     private String mailUsername = "delivery-web-be0.socialhistory.org@socialhistoryservices.org";
     private String payWayAddress = "https://payway-acc.socialhistoryservices.org/api";
     private String payWayPassPhraseIn = "bla";
-    private String getPayWayPassPhraseOut = "bla";
+    private String PayWayPassPhraseOut = "bla";
     private String payWayProjectName = "delivery";
     private int permissionMaxPageLen = 100;
     private int permissionPageLen = 20;
     private int permissionPageStepSize = 10;
     private String pidSeperator = ",";
     private String reCaptchaPrivateKey = "bla";
-    private String getReCaptchaPublicKey = "bla";
+    private String ReCaptchaPublicKey = "bla";
     private String reCaptchaTheme = "clean";
     private int reproductionAdministrationCosts = 6;
     private int reproductionMaxDaysPayment = 21;
     private int reproductionMaxDaysReminder = 14;
+    private int reproductionBtwPercentage = 21;
     private String requestAutoPrintStartTime = "9:00";
     private String requestLatestTime = "16:00";
     private int requestMaxPageLen = 100;
@@ -65,6 +65,7 @@ public class DeliveryProperties {
     private String timeFormat = "HH:mm:ss";
     private String urlSearch = "search-acc.socialhistory.org";
     private String urlSelf = "http://localhost:8181";
+    private int recordPageLen = 20;
 
     public String getLog4j() {
         return log4j;
@@ -306,12 +307,12 @@ public class DeliveryProperties {
         this.payWayPassPhraseIn = payWayPassPhraseIn;
     }
 
-    public String getGetPayWayPassPhraseOut() {
-        return getPayWayPassPhraseOut;
+    public String getPayWayPassPhraseOut() {
+        return PayWayPassPhraseOut;
     }
 
-    public void setGetPayWayPassPhraseOut(String getPayWayPassPhraseOut) {
-        this.getPayWayPassPhraseOut = getPayWayPassPhraseOut;
+    public void setPayWayPassPhraseOut(String payWayPassPhraseOut) {
+        this.PayWayPassPhraseOut = payWayPassPhraseOut;
     }
 
     public String getPayWayProjectName() {
@@ -362,12 +363,12 @@ public class DeliveryProperties {
         this.reCaptchaPrivateKey = reCaptchaPrivateKey;
     }
 
-    public String getGetReCaptchaPublicKey() {
-        return getReCaptchaPublicKey;
+    public String getReCaptchaPublicKey() {
+        return ReCaptchaPublicKey;
     }
 
-    public void setGetReCaptchaPublicKey(String getReCaptchaPublicKey) {
-        this.getReCaptchaPublicKey = getReCaptchaPublicKey;
+    public void setReCaptchaPublicKey(String reCaptchaPublicKey) {
+        this.ReCaptchaPublicKey = reCaptchaPublicKey;
     }
 
     public String getReCaptchaTheme() {
@@ -400,6 +401,14 @@ public class DeliveryProperties {
 
     public void setReproductionMaxDaysReminder(int reproductionMaxDaysReminder) {
         this.reproductionMaxDaysReminder = reproductionMaxDaysReminder;
+    }
+
+    public int getReproductionBtwPercentage() {
+        return reproductionBtwPercentage;
+    }
+
+    public void setReproductionBtwPercentage(int reproductionBtwPercentage) {
+        this.reproductionBtwPercentage = reproductionBtwPercentage;
     }
 
     public String getRequestAutoPrintStartTime() {
@@ -496,5 +505,13 @@ public class DeliveryProperties {
 
     public void setUrlSelf(String urlSelf) {
         this.urlSelf = urlSelf;
+    }
+
+    public int getRecordPageLen() {
+        return recordPageLen;
+    }
+
+    public void setRecordPageLen(int recordPageLen) {
+        this.recordPageLen = recordPageLen;
     }
 }

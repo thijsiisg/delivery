@@ -22,10 +22,10 @@
 
 
 --- <@_ "permission.dateFrom" "Date From"/> ---
-${permission.dateFrom?string(prop_dateFormat)}
+${permission.dateFrom?string(delivery.dateFormat)}
 
 --- <@_ "permission.dateTo" "Date To"/> ---
-${permission.dateTo?string(prop_dateFormat)}
+${permission.dateTo?string(delivery.dateFormat)}
 
 --- <@_ "reservation.records" "Records"/> ---
 <#list permission.recordPermissions as rp>

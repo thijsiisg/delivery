@@ -16,7 +16,7 @@
 
 -->
 
-<#include "utils.ftl"/>
+<#include "../utils.ftl"/>
 <#if callback??>
 ${callback}(
 </#if>

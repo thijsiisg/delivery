@@ -25,7 +25,7 @@
 </#if>
 
 --- <@_ "reservation.date" "Date"/> ---
-${reservation.date?string(prop_dateFormat)}
+${reservation.date?string(delivery.dateFormat)}
 
 <#--<#if reservation.queueNo??>
 --- <@_ "reservation.queueNo" "Queue Number"/> ---

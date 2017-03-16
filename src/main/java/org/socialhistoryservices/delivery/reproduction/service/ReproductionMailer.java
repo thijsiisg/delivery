@@ -3,13 +3,13 @@ package org.socialhistoryservices.delivery.reproduction.service;
 import org.socialhistoryservices.delivery.TemplatePreparationException;
 import org.socialhistoryservices.delivery.api.SharedObjectRepositoryService;
 import org.socialhistoryservices.delivery.api.SorMetadata;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
 import org.socialhistoryservices.delivery.request.service.RequestMailer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailPreparationException;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class ReproductionMailer extends RequestMailer {
     private SharedObjectRepositoryService sorService;
 
     @Autowired
-    private Properties properties;
+    private DeliveryProperties deliveryProperties;
 
     private static final Locale ENGLISH_LOCALE = StringUtils.parseLocaleString("en");
 
@@ -182,8 +182,8 @@ public class ReproductionMailer extends RequestMailer {
      * @return The SOR download URLs for each holding.
      */
     private Map<String, List<String>> getSorDownloadURLs(List<HoldingReproduction> hrs) {
-        String sorAddress = properties.getProperty("prop_sorAddress");
-        String sorAccessToken = properties.getProperty("prop_sorAccessToken");
+        String sorAddress = deliveryProperties.getSorAddress();
+        String sorAccessToken = deliveryProperties.getSorAccessToken();
         Map<String, List<String>> urlsForHolding = new HashMap<String, List<String>>();
 
         for (HoldingReproduction hr : hrs) {

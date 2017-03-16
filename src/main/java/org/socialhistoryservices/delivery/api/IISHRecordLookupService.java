@@ -18,6 +18,7 @@ package org.socialhistoryservices.delivery.api;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.springframework.util.StringUtils;
@@ -51,15 +52,18 @@ public class IISHRecordLookupService implements RecordLookupService {
     private XPathExpression xpNumberOfRecords;
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
 
-    private Properties properties;
+//    private Properties properties;
+    private DeliveryProperties deliveryProperties;
 
     /**
      * Set the properties info.
      * @param p The properties to set.
      */
-    public void setProperties(Properties p) {
-        properties = p;
-    }
+//    public void setProperties(Properties p) {
+//        properties = p;
+//    }
+
+    public void setDeliveryProperties(DeliveryProperties p) { deliveryProperties = p; }
 
     private class MARCNamespaceContext implements NamespaceContext {
         public String getNamespaceURI(String prefix) {
@@ -210,10 +214,10 @@ public class IISHRecordLookupService implements RecordLookupService {
         }
 
         try {
-            String apiProto = properties.getProperty("prop_apiProto");
-            String apiDomain = properties.getProperty("prop_apiDomain");
-            String apiBase = properties.getProperty("prop_apiBase");
-            int apiPort = Integer.parseInt(properties.getProperty("prop_apiPort"));
+            String apiProto = deliveryProperties.getApiProto();
+            String apiDomain = deliveryProperties.getApiDomain();
+            String apiBase = deliveryProperties.getApiBase();
+            int apiPort = deliveryProperties.getApiPort();
 
             URI uri = new URI(apiProto, null, apiDomain, apiPort, apiBase, search, null);
             URL req = uri.toURL();
@@ -426,7 +430,7 @@ public class IISHRecordLookupService implements RecordLookupService {
      * @throws NoSuchPidException Thrown when the search returns nothing.
      */
     private Node searchByPid(String pid) throws NoSuchPidException {
-        String itemSeparator = properties.getProperty("prop_itemSeparator");
+        String itemSeparator = deliveryProperties.getItemSeperator();
 
         if (pid.contains(itemSeparator)) {
             int idx = pid.lastIndexOf(itemSeparator);

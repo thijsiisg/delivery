@@ -1,5 +1,7 @@
 package org.socialhistoryservices.delivery.reproduction.util;
 
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -19,14 +21,14 @@ public class DateUtils {
      * @param time       The given time.
      * @return Whether the given time is between opening and closing time.
      */
-    public static boolean isBetweenOpeningAndClosingTime(Properties properties, Date time) {
+    public static boolean isBetweenOpeningAndClosingTime(DeliveryProperties properties, Date time) {
         Date open, close;
         SimpleDateFormat format = new SimpleDateFormat("HH:mm");
         format.setLenient(false);
 
         try {
-            open = format.parse(properties.getProperty("prop_requestAutoPrintStartTime"));
-            close = format.parse(properties.getProperty("prop_requestLatestTime"));
+            open = format.parse(properties.getRequestAutoPrintStartTime());
+            close = format.parse(properties.getRequestLatestTime());
         } catch (ParseException e) {
             throw new RuntimeException("Failed parsing necessary open and " +
                     "closing dates for auto printing. Are they in the " +

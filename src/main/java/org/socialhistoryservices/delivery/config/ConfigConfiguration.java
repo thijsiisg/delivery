@@ -1,26 +1,37 @@
 package org.socialhistoryservices.delivery.config;
 
-import org.socialhistoryservices.utils.PropertiesLoader;
+import org.h2.server.web.WebServlet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
-
+import org.springframework.context.annotation.Profile;
 import java.text.SimpleDateFormat;
 
 /**
  * Created by Igor on 3/6/2017.
  */
 @Configuration
+@EnableConfigurationProperties(DeliveryProperties.class)
 public class ConfigConfiguration {
 
-    @Value("${prop_dateFormat}") private String prop_dateFormat;
+    @Autowired
+    private DeliveryProperties deliveryProperties;
 
     @Bean
     public SimpleDateFormat dateFormat(){
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(prop_dateFormat);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(deliveryProperties.getDateFormat());
         simpleDateFormat.setLenient(false);
         return simpleDateFormat;
     }
 
+    @Bean
+    @Profile("h2")
+    public ServletRegistrationBean h2ConsoleServletRegistration() {
+        ServletRegistrationBean registrationBean = new ServletRegistrationBean(new WebServlet());
+        registrationBean.addUrlMappings("/console/*");
+        return registrationBean;
+    }
 }

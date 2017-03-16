@@ -78,9 +78,9 @@
                     <#list reservationDateExceptions as exception>
                         <tr>
                             <td><input type="checkbox" name="checked" id=${exception.id?c} value=${exception.id?c}></td>
-                            <td>${exception.startDate?string(prop_dateFormat)}</td>
+                            <td>${exception.startDate?string(delivery.dateFormat)}</td>
                             <#if exception.endDate??>
-                                <td>${exception.endDate?string(prop_dateFormat)}</td>
+                                <td>${exception.endDate?string(delivery.dateFormat)}</td>
                             <#else><td>${"-"}</td>
                             </#if>
                             <td>${exception.getdescription()?html}</td>

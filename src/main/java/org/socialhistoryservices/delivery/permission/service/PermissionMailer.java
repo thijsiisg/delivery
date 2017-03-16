@@ -17,8 +17,10 @@
 package org.socialhistoryservices.delivery.permission.service;
 
 import org.socialhistoryservices.delivery.Mailer;
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
@@ -32,7 +34,6 @@ import java.util.Locale;
  */
 @Service
 public class PermissionMailer extends Mailer {
-
 
     /**
      * Mails a requester when the permission request has been approved or
@@ -48,7 +49,7 @@ public class PermissionMailer extends Mailer {
                 " notification when Permission status is HANDLED";
 
         // Do not mail when mail is disabled.
-        if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
+        if (!deliveryProperties.isMailEnabled()) {
             return;
         }
 
@@ -56,7 +57,7 @@ public class PermissionMailer extends Mailer {
         model.addAttribute("permission", pm);
 
         SimpleMailMessage msg = new SimpleMailMessage();
-        msg.setFrom(properties.getProperty("prop_mailSystemAddress"));
+        msg.setFrom(deliveryProperties.getMailSystemAddress());
         msg.setTo(pm.getEmail());
         msg.setReplyTo(getMessage("iisg.email", ""));
 
@@ -110,7 +111,7 @@ public class PermissionMailer extends Mailer {
                 " confirmation when Permission status is PENDING";
 
         // Do not mail when mail is disabled.
-        if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
+        if (!deliveryProperties.isMailEnabled()) {
             return;
         }
 
@@ -118,7 +119,7 @@ public class PermissionMailer extends Mailer {
         model.addAttribute("permission", pm);
 
         SimpleMailMessage msg = new SimpleMailMessage();
-        msg.setFrom(properties.getProperty("prop_mailSystemAddress"));
+        msg.setFrom(deliveryProperties.getMailSystemAddress());
         msg.setTo(pm.getEmail());
         msg.setReplyTo(getMessage("iisg.email", ""));
 

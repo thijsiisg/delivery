@@ -5,7 +5,7 @@
 <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
 <@_ "reproductionMail.customerName" "Customer" />: ${reproduction.customerName}
 <@_ "reproductionMail.customerEmail" "E-mail" />: ${reproduction.customerEmail}
-URL: ${prop_urlSelf}/reproduction/${reproduction.id?c}/edit
+URL: ${delivery.urlSelf}/reproduction/${reproduction.id?c}/edit
 
 --- <@_ "reproduction.records" "All items"/> ---
 <#list reproduction.holdingReproductions as hr>
