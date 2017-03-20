@@ -72,13 +72,13 @@ public class PermissionMailer extends Mailer {
             msg.setSubject(getMessage("permissionMail.approvedSubject",
                                  "Delivery: Permission Request Approved",
                                  rl));
-            msg.setText(templateToString("permission_approved.mail.ftl",
+            msg.setText(templateToString("mail/permission_approved.mail.ftl",
                         model, rl));
 
         } else {
             msg.setSubject(getMessage("permissionMail.refusedSubject",
                     "Delivery: Permission Request Refused", rl));
-            msg.setText(templateToString("permission_refused.mail.ftl",
+            msg.setText(templateToString("mail/permission_refused.mail.ftl",
                         model, rl));
         }
         mailSender.send(msg);
@@ -125,7 +125,7 @@ public class PermissionMailer extends Mailer {
 
         msg.setSubject(getMessage("permissionMail.confirmationSubject",
                              "Delivery: Permission Request Confirmation"));
-        msg.setText(templateToString("permission_confirmation.mail.ftl",
+        msg.setText(templateToString("mail/permission_confirmation.mail.ftl",
                     model));
 
         mailSender.send(msg);

@@ -24,7 +24,7 @@ public abstract class TemplatePreparation {
      * The freemarker configuration holder.
      */
     @Autowired
-    private FreeMarkerConfig fConfig;
+    private freemarker.template.Configuration fConfig;
 
     /**
      * The source to get localized messages of.
@@ -94,7 +94,7 @@ public abstract class TemplatePreparation {
 
         try {
             return FreeMarkerTemplateUtils.processTemplateIntoString(
-                    fConfig.getConfiguration().getTemplate(name, locale), model
+                    fConfig.getTemplate(name, locale), model
             );
         } catch (TemplateException ex) {
             throw new TemplatePreparationException(ex);

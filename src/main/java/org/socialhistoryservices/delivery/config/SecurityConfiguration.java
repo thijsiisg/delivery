@@ -14,9 +14,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
+import org.springframework.security.web.firewall.DefaultHttpFirewall;
 
 /**
  * Created by Igor on 3/3/2017.
@@ -36,6 +38,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
     @Value("${prop_ldapManagerPassword}") private String ldapManagerPassword;
     @Value("${prop_ldapUserSearchBase}") private String ldapUserSearchBase;
     @Value("${prop_ldapUserSearchFilter}") private String ldapUserSearchFilter;
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        DefaultHttpFirewall firewall = new DefaultHttpFirewall();
+        firewall.setAllowUrlEncodedSlash(true);
+        web.httpFirewall(firewall);
+    }
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
@@ -80,53 +89,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
                 .anyRequest().hasRole("USER");
         }
     }
-
-   /* @Bean
-    public DefaultSpringSecurityContextSource contextSource(){
-        DefaultSpringSecurityContextSource defaultSpringSecurityContextSource = new DefaultSpringSecurityContextSource(ldapUrl);
-        defaultSpringSecurityContextSource.setUserDn(ldapManagerDn);
-        defaultSpringSecurityContextSource.setPassword(ldapManagerPassword);
-        defaultSpringSecurityContextSource.afterPropertiesSet();
-
-        LdapAuthoritiesPopulator ldapAuthoritiesPopulator =
-            new LdapAuthoritiesPopulator(defaultSpringSecurityContextSource, this.ldapUserSearchBase, this.userRepository);
-
-        authenticationManagerBuilder
-            .ldapAuthentication()
-            .contextSource(contextSource)
-            .userSearchBase(this.ldapSearchBase)
-            .userSearchFilter(this.ldapSearchFilter)
-            .ldapAuthoritiesPopulator(ldapAuthoritiesPopulator);
-
-       *//* return defaultSpringSecurityContextSource;
-
-
-        authenticationManagerBuilder
-            .ldapAuthentication()
-            .contextSource(contextSource)
-            .userSearchBase(this.ldapSearchBase)
-            .userSearchFilter(this.ldapSearchFilter)
-            .ldapAuthoritiesPopulator(ldapAuthoritiesPopulator);*//*
-    }
-*/
-    /*@Bean
-    public FilterBasedLdapUserSearch userSearch(){
-        FilterBasedLdapUserSearch filterBasedLdapUserSearch = new FilterBasedLdapUserSearch(ldapUserSearchBase, ldapUserSearchFilter, contextSource());
-        filterBasedLdapUserSearch.setSearchSubtree(true);
-        return filterBasedLdapUserSearch;
-    }
-
-    @Bean
-    public LdapAuthenticationProvider ldapAuthProvider(){
-        BindAuthenticator bindAuthenticator = new BindAuthenticator(contextSource());
-        bindAuthenticator.setUserDnPatterns(userPatterns);
-        bindAuthenticator.setUserSearch(userSearch());
-
-        AuthoritiesPopulator authoritiesPopulator = new AuthoritiesPopulator(contextSource(), "", userDetailsService());
-        authoritiesPopulator.setGroupRoleAttribute("cn");
-
-        return new LdapAuthenticationProvider(bindAuthenticator, authoritiesPopulator);
-    }*/
 
     @Bean
     public UserServiceImpl userDetailsService(){

@@ -1,6 +1,5 @@
 package org.socialhistoryservices.utils;
 
-import com.jhlabs.image.WaterFilter;
 import com.octo.captcha.component.image.backgroundgenerator.BackgroundGenerator;
 import com.octo.captcha.component.image.backgroundgenerator.UniColorBackgroundGenerator;
 import com.octo.captcha.component.image.color.SingleColorGenerator;
@@ -18,9 +17,8 @@ import com.octo.captcha.component.word.wordgenerator.DictionaryWordGenerator;
 import com.octo.captcha.component.word.wordgenerator.WordGenerator;
 import com.octo.captcha.engine.image.ListImageCaptchaEngine;
 import com.octo.captcha.image.gimpy.GimpyFactory;
-
 import java.awt.*;
-import java.awt.image.ImageFilter;
+import java.awt.image.*;
 
 /**
  * Captcha engine based on the default Gimpy engine.
@@ -29,36 +27,30 @@ import java.awt.image.ImageFilter;
  */
 public class CaptchaEngine extends ListImageCaptchaEngine {
 
-	/**
-	 * The code is mostly based on the DefaultGimpyEngine with some small changes
-	 */
-	@Override
-	protected void buildInitialFactories() {
-		WaterFilter water = new com.jhlabs.image.WaterFilter();
+    /**
+     * The code is mostly based on the DefaultGimpyEngine with some small changes
+     */
+    @Override
+    protected void buildInitialFactories() {
 
-		water.setAmplitude(3d);
-		water.setAntialias(true);
-		water.setPhase(20d);
-		water.setWavelength(70d);
+        ImageDeformation backDef = new ImageDeformationByFilters(new ImageFilter[]{});
+        ImageDeformation textDef = new ImageDeformationByFilters(new ImageFilter[]{});
+        ImageDeformation postDef = new ImageDeformationByFilters(new ImageFilter[]{});
 
-		ImageDeformation backDef = new ImageDeformationByFilters(new ImageFilter[]{});
-		ImageDeformation textDef = new ImageDeformationByFilters(new ImageFilter[]{});
-		ImageDeformation postDef = new ImageDeformationByFilters(new ImageFilter[]{water});
+        WordGenerator dictionaryWords = new DictionaryWordGenerator(new FileDictionary("toddlist"));
+        TextPaster randomPaster = new DecoratedRandomTextPaster(
+            6, 7,
+            new SingleColorGenerator(Color.black),
+            new TextDecorator[]{/*new BaffleTextDecorator(1, Color.white)*/}
+        );
+        BackgroundGenerator back = new UniColorBackgroundGenerator(200, 100, Color.white);
+        FontGenerator shearedFont = new RandomFontGenerator(30, 35);
 
-		WordGenerator dictionaryWords = new DictionaryWordGenerator(new FileDictionary("toddlist"));
-		TextPaster randomPaster = new DecoratedRandomTextPaster(
-				6, 7,
-				new SingleColorGenerator(Color.black),
-				new TextDecorator[]{/*new BaffleTextDecorator(1, Color.white)*/}
-		);
-		BackgroundGenerator back = new UniColorBackgroundGenerator(200, 100, Color.white);
-		FontGenerator shearedFont = new RandomFontGenerator(30, 35);
+        WordToImage word2image = new DeformedComposedWordToImage(
+            shearedFont, back, randomPaster,
+            backDef, textDef, postDef
+        );
 
-		WordToImage word2image = new DeformedComposedWordToImage(
-				shearedFont, back, randomPaster,
-				backDef, textDef, postDef
-		);
-
-		this.addFactory(new GimpyFactory(dictionaryWords, word2image));
-	}
+        this.addFactory(new GimpyFactory(dictionaryWords, word2image));
+    }
 }

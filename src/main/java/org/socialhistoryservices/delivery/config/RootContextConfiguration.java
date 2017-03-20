@@ -10,7 +10,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.util.UrlPathHelper;
 
 /**
  * Created by Igor on 3/6/2017.
@@ -21,6 +23,13 @@ public class RootContextConfiguration extends WebMvcConfigurerAdapter{
 
     @Autowired
     DeliveryProperties deliveryProperties;
+
+    @Override
+    public void configurePathMatch(PathMatchConfigurer configurer) {
+        UrlPathHelper urlPathHelper = new UrlPathHelper();
+        urlPathHelper.setUrlDecode(false);
+        configurer.setUrlPathHelper(urlPathHelper);
+    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry){
