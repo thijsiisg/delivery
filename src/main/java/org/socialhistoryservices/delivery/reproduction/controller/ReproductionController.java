@@ -151,7 +151,7 @@ public class ReproductionController extends AbstractRequestController {
         if (error != null)
             model.addAttribute("error", error);
 
-        return "reproduction_get.html";
+        return "reproduction_get";
     }
 
     /**
@@ -202,7 +202,7 @@ public class ReproductionController extends AbstractRequestController {
         Set<Holding> holdings = getHoldings(holdingReproductions);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
-        return "reproduction_get_list.html";
+        return "reproduction_get_list";
     }
 
     /**
@@ -629,7 +629,7 @@ public class ReproductionController extends AbstractRequestController {
     private String processReproductionCreation(HttpServletRequest req, Reproduction reproduction, BindingResult result,
                                                Model model, boolean commit) {
         if (!checkHoldings(model, reproduction))
-            return "reproduction_error.html";
+            return "reproduction_error";
 
         // Add all the standard reproduction options and custom notes to the model
         Map<String, List<ReproductionStandardOption>> reproductionStandardOptions =
@@ -661,20 +661,20 @@ public class ReproductionController extends AbstractRequestController {
             throw new ResourceNotFoundException();
         } catch (ClosedException e) {
             model.addAttribute("error", "restricted");
-            return "reproduction_error.html";
+            return "reproduction_error";
         } catch (ClosedForReproductionException e) {
             model.addAttribute("error", "closed");
-            return "reproduction_error.html";
+            return "reproduction_error";
         }
 
         // If there are suddenly no holding reproductions left, apparently nothing was available
         if (reproduction.getHoldingReproductions().isEmpty()) {
             model.addAttribute("error", "nothingAvailable");
-            return "reproduction_error.html";
+            return "reproduction_error";
         }
 
         model.addAttribute("reproduction", reproduction);
-        return "reproduction_create.html";
+        return "reproduction_create";
     }
 
     /**
@@ -823,7 +823,7 @@ public class ReproductionController extends AbstractRequestController {
 
             model.addAttribute("reproduction", reproduction);
 
-            return "reproduction_pending.html";
+            return "reproduction_pending";
         }
     }
 
@@ -938,7 +938,7 @@ public class ReproductionController extends AbstractRequestController {
             if (!"accept".equals(accept)) {
                 String msg = msgSource.getMessage("accept.error", null, LocaleContextHolder.getLocale());
                 model.addAttribute("acceptError", msg);
-                return "reproduction_confirm.html";
+                return "reproduction_confirm";
             }
 
             try {
@@ -966,7 +966,7 @@ public class ReproductionController extends AbstractRequestController {
             }
         }
 
-        return "reproduction_confirm.html";
+        return "reproduction_confirm";
     }
 
     /**
@@ -976,7 +976,7 @@ public class ReproductionController extends AbstractRequestController {
      */
     @RequestMapping(value = "/order/confirm", method = RequestMethod.GET)
     public String confirm() {
-        return "reproduction_order_confirm.html";
+        return "reproduction_order_confirm";
     }
 
     /**
@@ -987,7 +987,7 @@ public class ReproductionController extends AbstractRequestController {
     @RequestMapping(value = "/order/accept", method = RequestMethod.GET)
     public String accept() {
         LOGGER.debug(String.format("/reproduction/order/accept : Called order accept."));
-        return "reproduction_order_accept.html";
+        return "reproduction_order_accept";
     }
 
     /**
@@ -1041,7 +1041,7 @@ public class ReproductionController extends AbstractRequestController {
      */
     @RequestMapping(value = "/order/cancel", method = RequestMethod.GET)
     public String cancel() {
-        return "reproduction_order_cancel.html";
+        return "reproduction_order_cancel";
     }
 
     /**
@@ -1051,7 +1051,7 @@ public class ReproductionController extends AbstractRequestController {
      */
     @RequestMapping(value = "/order/decline", method = RequestMethod.GET)
     public String decline() {
-        return "reproduction_order_decline.html";
+        return "reproduction_order_decline";
     }
 
     /**
@@ -1061,7 +1061,7 @@ public class ReproductionController extends AbstractRequestController {
      */
     @RequestMapping(value = "/order/exception", method = RequestMethod.GET)
     public String exception() {
-        return "reproduction_order_exception.html";
+        return "reproduction_order_exception";
     }
 
     /**
@@ -1093,7 +1093,7 @@ public class ReproductionController extends AbstractRequestController {
         // It is not allowed to modify a reproduction after confirmation by the customer
         if (r.getStatus().ordinal() >= Reproduction.Status.CONFIRMED.ordinal()) {
             model.addAttribute("error", "confirmed");
-            return "reproduction_error.html";
+            return "reproduction_error";
         }
 
         model.addAttribute("original", r);
@@ -1101,7 +1101,7 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(r.getHoldings()));
         model.addAttribute("emailResponses", createEmailResponse(r));
 
-        return "reproduction_mass_create.html";
+        return "reproduction_mass_create";
     }
 
     /**
@@ -1125,7 +1125,7 @@ public class ReproductionController extends AbstractRequestController {
         // It is not allowed to modify a reproduction after confirmation by the customer
         if (reproduction.getStatus().ordinal() >= Reproduction.Status.CONFIRMED.ordinal()) {
             model.addAttribute("error", "confirmed");
-            return "reproduction_error.html";
+            return "reproduction_error";
         }
 
         try {
@@ -1163,7 +1163,7 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(reproduction.getHoldings()));
         model.addAttribute("emailResponses", createEmailResponse(reproduction));
 
-        return "reproduction_mass_create.html";
+        return "reproduction_mass_create";
     }
 
     /**
@@ -1193,7 +1193,7 @@ public class ReproductionController extends AbstractRequestController {
 
         model.addAttribute("reproductionStandardOptions", reproductionStandardOptions);
 
-        return "reproduction_mass_create.html";
+        return "reproduction_mass_create";
     }
 
     /**
@@ -1226,7 +1226,7 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("reproductionStandardOptions", reproductionStandardOptions);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
-        return "reproduction_mass_create.html";
+        return "reproduction_mass_create";
     }
 
     /**
@@ -1293,7 +1293,7 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("reproductionStandardOptions", reproductionStandardOptions);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
-        return "reproduction_mass_create.html";
+        return "reproduction_mass_create";
     }
 
     /**
@@ -1334,7 +1334,7 @@ public class ReproductionController extends AbstractRequestController {
         ReproductionStandardOptions standardOptions = new ReproductionStandardOptions(
                 reproductions.getAllReproductionStandardOptions(), reproductions.getAllReproductionCustomNotes());
         model.addAttribute("standardOptions", standardOptions);
-        return "reproduction_standard_options_edit.html";
+        return "reproduction_standard_options_edit";
     }
 
     /**
@@ -1351,7 +1351,7 @@ public class ReproductionController extends AbstractRequestController {
                                       BindingResult result, Model model) {
         reproductions.editStandardOptions(standardOptions, result);
         model.addAttribute("standardOptions", standardOptions);
-        return "reproduction_standard_options_edit.html";
+        return "reproduction_standard_options_edit";
     }
 
     /**
@@ -1374,7 +1374,7 @@ public class ReproductionController extends AbstractRequestController {
         model.addAttribute("tuplesMaterials", countMaterials(from, to));
         model.addAttribute("tuplePayedAmounts", countPayedAmounts(from, to));
 
-        return "reproduction_materials.html";
+        return "reproduction_materials";
     }
 
     /**

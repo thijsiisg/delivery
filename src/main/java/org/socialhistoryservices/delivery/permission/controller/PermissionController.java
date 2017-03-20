@@ -167,7 +167,7 @@ public class PermissionController extends ErrorHandlingController {
         cal.add(Calendar.DAY_OF_MONTH, 1);
         model.addAttribute("tomorrow",cal.getTime());
 
-        return "permission_get_list.html";
+        return "permission_get_list";
     }
 
     /**

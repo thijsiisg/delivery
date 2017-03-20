@@ -36,7 +36,7 @@ public class UrlDecodedUrlPathHelperTest {
 
         // Test special case.
         String appPath = "/";
-        String servletPath = "/index.html";
+        String servletPath = "/index";
         doReturn(servletPath).when(helper).getServletPath(request);
         doReturn(appPath).when(helper).getPathWithinApplication(request);
         assertEquals("Should equal servlet path.", servletPath, helper.getPathWithinServletMapping(request));

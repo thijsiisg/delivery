@@ -38,7 +38,7 @@ public class HomeController {
     @RequestMapping(value = "/", method = RequestMethod.GET)
     @Secured("IS_AUTHENTICATED_REMEMBERED")
     public String list(HttpServletRequest request) {
-        return "home.html";
+        return "home";
     }
 
 }

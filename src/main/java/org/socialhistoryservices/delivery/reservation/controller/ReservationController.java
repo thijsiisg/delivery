@@ -18,7 +18,6 @@ package org.socialhistoryservices.delivery.reservation.controller;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
-import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
@@ -36,6 +35,7 @@ import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
+import org.springframework.boot.autoconfigure.web.ErrorController;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Async;
@@ -76,7 +76,6 @@ public class ReservationController extends AbstractRequestController {
     private Logger log = Logger.getLogger(getClass());
 
     // {{{ Get API
-
     /**
      * Fetches one specific reservation in JSON format.
      *
@@ -98,7 +97,7 @@ public class ReservationController extends AbstractRequestController {
         model.addAttribute("callback", callback);
         model.addAttribute("reservation", r);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(r.getHoldings()));
-        return "reservation_get.html";
+        return "reservation_get";
     }
 
     /**
@@ -161,7 +160,7 @@ public class ReservationController extends AbstractRequestController {
         Set<Holding> holdings = getHoldings(holdingReservations);
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
-        return "reservation_get_list.html";
+        return "reservation_get_list";
     }
 
     /**
@@ -575,13 +574,13 @@ public class ReservationController extends AbstractRequestController {
                                                      BindingResult result,
                                                      String permission,
                                                      Model model, boolean commit) {
-        if (!checkHoldings(model, newRes)) return "reservation_error.html";
+        if (!checkHoldings(model, newRes)) return "reservation_error";
 
 
         Permission perm = permissions.getPermissionByCode(permission);
         if (!checkPermissions(model, perm, newRes)) {
             model.addAttribute("holdingReservations", newRes.getHoldingReservations());
-            return "reservation_choice.html";
+            return "reservation_choice";
         }
 
         if (perm != null ) {
@@ -596,7 +595,7 @@ public class ReservationController extends AbstractRequestController {
             if (newRes.getDate() == null || !perm.isValidOn(newRes.getDate())
                     ) {
                 model.addAttribute("error", "notValidOnDate");
-                return "reservation_error.html";
+                return "reservation_error";
             }
         }
 
@@ -617,7 +616,7 @@ public class ReservationController extends AbstractRequestController {
                     // Automatically print the reservation.
                     autoPrint(newRes);
                     model.addAttribute("reservation", newRes);
-                    return "reservation_success.html";
+                    return "reservation_success";
                 }
             } else {
                 reservations.validateHoldingsAndAvailability(newRes, null);
@@ -627,14 +626,14 @@ public class ReservationController extends AbstractRequestController {
             throw new ResourceNotFoundException();
         } catch (InUseException e) {
             model.addAttribute("error", "availability");
-            return "reservation_error.html";
+            return "reservation_error";
         } catch (ClosedException e) {
             model.addAttribute("error", "restricted");
-            return "reservation_error.html";
+            return "reservation_error";
         }
         model.addAttribute("reservation", newRes);
 
-        return "reservation_create.html";
+        return "reservation_create";
     }
 
     /**
@@ -759,7 +758,7 @@ public class ReservationController extends AbstractRequestController {
                 try {
                     reservations.printItems(hrs, false);
                 } catch (PrinterException e) {
-                    return "reservation_print_failure.html";
+                    return "reservation_print_failure";
                 }
             }
         }
@@ -801,7 +800,7 @@ public class ReservationController extends AbstractRequestController {
             try {
                 reservations.printItems(hrs, true);
             } catch (PrinterException e) {
-                return "reservation_print_failure.html";
+                return "reservation_print_failure";
             }
         }
 
@@ -967,7 +966,7 @@ public class ReservationController extends AbstractRequestController {
             }
         }
         model.addAttribute("reservation", newRes);
-        return "reservation_mass_create.html";
+        return "reservation_mass_create";
     }
 
     /**
@@ -991,7 +990,7 @@ public class ReservationController extends AbstractRequestController {
 
         model.addAttribute("reservation", newRes);
         model.addAttribute("holdingList", holdingList);
-        return "reservation_mass_create.html";
+        return "reservation_mass_create";
     }
 
 
@@ -1058,7 +1057,7 @@ public class ReservationController extends AbstractRequestController {
 
         model.addAttribute("reservation", newRes);
         model.addAttribute("holdingList", holdingList);
-        return "reservation_mass_create.html";
+        return "reservation_mass_create";
     }
     // }}}
 
@@ -1107,6 +1106,6 @@ public class ReservationController extends AbstractRequestController {
 		List<Tuple> tuples = reservations.listTuples(cq);
 		model.addAttribute("tuples", tuples);
 
-		return "reservation_materials.html";
+		return "reservation_materials";
 	}
 }

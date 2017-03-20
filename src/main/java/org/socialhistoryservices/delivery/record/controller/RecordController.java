@@ -295,7 +295,7 @@ public class RecordController extends ErrorHandlingController {
                     method = RequestMethod.GET)
     @Secured("ROLE_RECORD_MODIFY")
     public String showHome() {
-        return "record_home.html";
+        return "record_home";
     }
 
     /**
@@ -321,7 +321,7 @@ public class RecordController extends ErrorHandlingController {
         }
         Map<String, String> results = new HashMap<String, String>();
         model.addAttribute("results", results);
-        return "record_home.html";
+        return "record_home";
     }
 
     /**
@@ -337,12 +337,12 @@ public class RecordController extends ErrorHandlingController {
     public String processHomeSearchApi(Model model,
             @RequestParam String title, @RequestParam(defaultValue = "1", required = false) int resultStart) {
         if (title == null)
-            return "record_home.html";
+            return "record_home";
         title = urlDecode(title);
         RecordLookupService.PageChunk pc = lookup.getRecordsByTitle(title, deliveryProperties.getRecordPageLen(), resultStart);
         model.addAttribute("pageChunk", pc);
         model.addAttribute("recordTitle", title);
-        return "record_home.html";
+        return "record_home";
     }
 
     /**
@@ -360,7 +360,7 @@ public class RecordController extends ErrorHandlingController {
             @RequestParam String title) {
         Map<String, String> results = searchLocalHelper(title);
         model.addAttribute("results", results);
-        return "record_home.html";
+        return "record_home";
     }
     @Deprecated
     private Map<String, String> searchLocalHelper(String title) {
@@ -424,7 +424,7 @@ public class RecordController extends ErrorHandlingController {
             }
         }
         model.addAttribute("record", r);
-        return "record_edit.html";
+        return "record_edit";
     }
 
 
@@ -475,7 +475,7 @@ public class RecordController extends ErrorHandlingController {
 
         model.addAttribute("record", newRecord);
 
-        return "record_edit.html";
+        return "record_edit";
     }
 
     /**

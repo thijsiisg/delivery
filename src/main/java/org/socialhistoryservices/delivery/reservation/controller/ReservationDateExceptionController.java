@@ -80,7 +80,7 @@ public class ReservationDateExceptionController extends AbstractRequestControlle
         model.addAttribute("reservationDateExceptions", getDateExceptions(req));
         ReservationDateException reservationDateException = new ReservationDateException();
         model.addAttribute("reservationDateException", reservationDateException);
-        return "reservation_date_exception.html";
+        return "reservation_date_exception";
     }
 
     /**
@@ -114,7 +114,7 @@ public class ReservationDateExceptionController extends AbstractRequestControlle
             return "redirect:/reservation_date_exception/date_exception";
         else {
             model.addAttribute("reservationDateExceptions", getDateExceptions(req));
-            return "reservation_date_exception.html";
+            return "reservation_date_exception";
         }
     }
 
