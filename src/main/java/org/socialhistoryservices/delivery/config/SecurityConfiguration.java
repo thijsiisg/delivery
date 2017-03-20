@@ -7,7 +7,6 @@ import org.socialhistoryservices.delivery.user.service.AuthoritiesPopulator;
 import org.socialhistoryservices.delivery.user.service.UserServiceImpl;
 import org.socialhistoryservices.utils.CaptchaEngine;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,7 +57,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
             .formLogin()
                 .defaultSuccessUrl("/")
                 .loginPage("/user/login")
-                .failureForwardUrl("/user/login?error=true")
+                .failureUrl("/user/login?error=true")
                 .permitAll()
                 .and()
             .logout()
