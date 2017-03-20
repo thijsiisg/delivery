@@ -32,12 +32,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
     @Autowired private UserDAO userDAO;
     @Autowired private CaptchaEngine captchaEngine;
     @Autowired private Environment env;
-
-    @Value("${prop_ldapUrl}") private String ldapUrl;
-    @Value("${prop_ldapManagerDn}") private String ldapManagerDn;
-    @Value("${prop_ldapManagerPassword}") private String ldapManagerPassword;
-    @Value("${prop_ldapUserSearchBase}") private String ldapUserSearchBase;
-    @Value("${prop_ldapUserSearchFilter}") private String ldapUserSearchFilter;
+    @Autowired private DeliveryProperties deliveryProperties;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -52,7 +47,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
         httpSecurity
             .authorizeRequests()
 //                .antMatchers("/login").permitAll()
-                .antMatchers("/css/**", "/fonts/**", "/js/**").permitAll()
+                .antMatchers("/css/**", "/js/**", "/logo.ico").permitAll()
                 .anyRequest().authenticated()
                 .and()
             // Disable Cross-Site Request Forgery token
@@ -112,19 +107,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(this.ldapUrl);
-        contextSource.setUserDn(this.ldapManagerDn);
-        contextSource.setPassword(this.ldapManagerPassword);
+        DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(deliveryProperties.getLdapUrl());
+        contextSource.setUserDn(deliveryProperties.getLdapManagerDn());
+        contextSource.setPassword(deliveryProperties.getLdapManagerPassword());
         contextSource.afterPropertiesSet();
 
         AuthoritiesPopulator ldapAuthoritiesPopulator =
-            new AuthoritiesPopulator(contextSource, ldapUserSearchBase, userDetailsService());
+            new AuthoritiesPopulator(contextSource, deliveryProperties.getLdapUserSearchBase(), userDetailsService());
 
         authenticationManagerBuilder
             .ldapAuthentication()
             .contextSource(contextSource)
-            .userSearchBase(ldapUserSearchBase)
-            .userSearchFilter(ldapUserSearchFilter)
+            .userSearchBase(deliveryProperties.getLdapUserSearchBase())
+            .userSearchFilter(deliveryProperties.getLdapUserSearchFilter())
             .ldapAuthoritiesPopulator(ldapAuthoritiesPopulator);
     }
 }
