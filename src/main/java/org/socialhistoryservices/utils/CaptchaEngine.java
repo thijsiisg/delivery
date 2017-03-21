@@ -41,7 +41,7 @@ public class CaptchaEngine extends ListImageCaptchaEngine {
         TextPaster randomPaster = new DecoratedRandomTextPaster(
             6, 7,
             new SingleColorGenerator(Color.black),
-            new TextDecorator[]{/*new BaffleTextDecorator(1, Color.white)*/}
+            new TextDecorator[]{}
         );
         BackgroundGenerator back = new UniColorBackgroundGenerator(200, 100, Color.white);
         FontGenerator shearedFont = new RandomFontGenerator(30, 35);

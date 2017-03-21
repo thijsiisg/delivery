@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -137,7 +138,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/{id:[\\d]+}", method = RequestMethod.GET)
-    @Secured("ROLE_REPRODUCTION_VIEW")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_VIEW')")
     public String getSingle(@PathVariable int id, Model model, @RequestParam(required = false) String error) {
         Reproduction r = reproductions.getReproductionById(id);
         if (r == null) {
@@ -162,7 +163,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    @Secured("ROLE_REPRODUCTION_VIEW")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_VIEW')")
     public String get(HttpServletRequest req, Model model) {
         Map<String, String[]> p = req.getParameterMap();
 
@@ -409,7 +410,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "delete")
-    @Secured("ROLE_REPRODUCTION_DELETE")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_DELETE')")
     public String batchProcessDelete(HttpServletRequest req, @RequestParam(required = false) List<String> checked) {
         // Delete all the provided reproductions
         if (checked != null) {
@@ -506,7 +507,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "changeStatus")
-    @Secured("ROLE_REPRODUCTION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_MODIFY')")
     public String batchProcessChangeStatus(HttpServletRequest req, @RequestParam(required = false) List<String> checked,
                                            @RequestParam Reproduction.Status newStatus) {
         String qs = (req.getQueryString() != null) ? "?" + req.getQueryString() : "";
@@ -538,7 +539,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "changeHoldingStatus")
-    @Secured("ROLE_REPRODUCTION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_MODIFY')")
     public String batchProcessChangeHoldingStatus(HttpServletRequest req,
                                                   @RequestParam(required = false) List<String> checked,
                                                   @RequestParam Holding.Status newHoldingStatus) {
@@ -1084,7 +1085,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/{id:[\\d]+}/edit", method = RequestMethod.GET)
-    @Secured("ROLE_REPRODUCTION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_MODIFY')")
     public String showEditForm(@PathVariable int id, Model model) {
         Reproduction r = reproductions.getReproductionById(id);
         if (r == null)
@@ -1115,7 +1116,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/{id:[\\d]+}/edit", method = RequestMethod.POST)
-    @Secured("ROLE_REPRODUCTION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_MODIFY')")
     public String processEditForm(@PathVariable int id, @ModelAttribute("reproduction") Reproduction reproduction,
                                   BindingResult result, boolean mail, Model model) {
         Reproduction originalReproduction = reproductions.getReproductionById(id);
@@ -1175,7 +1176,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/masscreateform", method = RequestMethod.GET)
-    @Secured("ROLE_REPRODUCTION_CREATE")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_CREATE')")
     public String showMassCreateForm(@RequestParam(required = false) Integer fromReproductionId, Model model) {
         Reproduction newReproduction = new Reproduction();
         if (fromReproductionId != null) {
@@ -1206,7 +1207,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/masscreateform", method = RequestMethod.POST, params = "searchSubmit")
-    @Secured("ROLE_REPRODUCTION_CREATE")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_CREATE')")
     public String processSearchMassCreateForm(@ModelAttribute("reproduction") Reproduction newReproduction,
                                               @RequestParam String searchTitle, @RequestParam String searchSignature,
                                               Model model) {
@@ -1242,7 +1243,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/masscreateform", method = RequestMethod.POST)
-    @Secured("ROLE_REPRODUCTION_CREATE")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_CREATE')")
     public String processMassCreateForm(@ModelAttribute("reproduction") Reproduction newReproduction,
                                         BindingResult result, @RequestParam String searchTitle,
                                         @RequestParam(required = false) String searchSignature,
@@ -1329,7 +1330,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/standardoptions", method = RequestMethod.GET)
-    @Secured("ROLE_REPRODUCTION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_MODIFY')")
     public String showStandardOptions(Model model) {
         ReproductionStandardOptions standardOptions = new ReproductionStandardOptions(
                 reproductions.getAllReproductionStandardOptions(), reproductions.getAllReproductionCustomNotes());
@@ -1346,7 +1347,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/standardoptions", method = RequestMethod.POST)
-    @Secured("ROLE_REPRODUCTION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_MODIFY')")
     public String editStandardOptions(@ModelAttribute("standardOptions") ReproductionStandardOptions standardOptions,
                                       BindingResult result, Model model) {
         reproductions.editStandardOptions(standardOptions, result);
@@ -1362,7 +1363,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/materials", method = RequestMethod.GET)
-    @Secured("ROLE_REPRODUCTION_VIEW")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_VIEW')")
     public String reproductionMaterials(HttpServletRequest req, Model model) {
         Map<String, String[]> p = req.getParameterMap();
 
@@ -1385,7 +1386,7 @@ public class ReproductionController extends AbstractRequestController {
      * @return The name of the view to use.
      */
     @RequestMapping(value = "/excel", method = RequestMethod.GET)
-    @Secured("ROLE_REPRODUCTION_VIEW")
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_VIEW')")
     public void reproductionMaterials(HttpServletRequest req, HttpServletResponse res) throws IOException {
         Map<String, String[]> p = req.getParameterMap();
 

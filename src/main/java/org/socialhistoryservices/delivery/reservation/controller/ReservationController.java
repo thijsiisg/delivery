@@ -35,11 +35,11 @@ import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
-import org.springframework.boot.autoconfigure.web.ErrorController;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -86,7 +86,7 @@ public class ReservationController extends AbstractRequestController {
      */
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.GET)
-    @Secured("ROLE_RESERVATION_VIEW")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_VIEW')")
     public String getSingle(@PathVariable int id,
                             @RequestParam(required = false) String callback,
                             Model model) {
@@ -109,7 +109,7 @@ public class ReservationController extends AbstractRequestController {
      */
     @RequestMapping(value = "/",
                     method = RequestMethod.GET)
-    @Secured("ROLE_RESERVATION_VIEW")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_VIEW')")
     public String get(HttpServletRequest req,
                       @RequestParam(required=false) String callback,
                             Model model) {
@@ -389,7 +389,7 @@ public class ReservationController extends AbstractRequestController {
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.PUT)
     @ResponseBody
-    @Secured({"ROLE_RESERVATION_MODIFY", "ROLE_RESERVATION_CREATE"})
+    @PreAuthorize("hasRole('ROLE_RESERVATION_MODIFY') or hasRole('ROLE_RESERVATION_CREATE')")
     public String apiPut(@RequestBody Reservation newRes,
                               @RequestBody String json,
                               @PathVariable int id) {
@@ -407,7 +407,7 @@ public class ReservationController extends AbstractRequestController {
     @RequestMapping(value = "/{id}!PUT",
                     method = RequestMethod.POST)
     @ResponseBody
-    @Secured({"ROLE_RESERVATION_MODIFY", "ROLE_RESERVATION_CREATE"})
+    @PreAuthorize("hasRole('ROLE_RESERVATION_MODIFY') or hasRole('ROLE_RESERVATION_CREATE')")
     public String apiFakePut(@RequestBody Reservation newRes,
                               @RequestBody String json,
                               @PathVariable int id) {
@@ -423,7 +423,7 @@ public class ReservationController extends AbstractRequestController {
      */
     @RequestMapping(value = "/",
                     method = RequestMethod.POST)
-    @Secured("ROLE_RESERVATION_CREATE")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_CREATE')")
     public String apiPost(@RequestBody Reservation newRes,
                               @RequestBody String json) {
         jsonCreateOrEdit(newRes, null, json);
@@ -708,7 +708,7 @@ public class ReservationController extends AbstractRequestController {
     @RequestMapping(value = "/batchprocess",
                     method = RequestMethod.POST,
                     params = "delete")
-    @Secured("ROLE_RESERVATION_DELETE")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_DELETE')")
     public String batchProcessDelete(HttpServletRequest req,
                                      @RequestParam(required=false) List<String>
                                              checked) {
@@ -817,7 +817,7 @@ public class ReservationController extends AbstractRequestController {
     @RequestMapping(value = "/batchprocess",
                     method = RequestMethod.POST,
                     params = "changeStatus")
-    @Secured("ROLE_RESERVATION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_MODIFY')")
     public String batchProcessChangeStatus(HttpServletRequest req,
                                      @RequestParam(required=false) List<String>
                                              checked,
@@ -855,7 +855,7 @@ public class ReservationController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/batchprocess", method = RequestMethod.POST, params = "changeHoldingStatus")
-    @Secured("ROLE_RESERVATION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_MODIFY')")
     public String batchProcessChangeHoldingStatus(HttpServletRequest req,
                                                   @RequestParam(required = false) List<String> checked,
                                                   @RequestParam Holding.Status newHoldingStatus) {
@@ -907,7 +907,7 @@ public class ReservationController extends AbstractRequestController {
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.DELETE)
     @ResponseBody
-    @Secured("ROLE_RESERVATION_DELETE")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_DELETE')")
     public String apiDelete(@PathVariable int id) {
         delete(id);
         return "";
@@ -922,7 +922,7 @@ public class ReservationController extends AbstractRequestController {
     @RequestMapping(value = "/{id}!DELETE",
                     method = RequestMethod.POST)
     @ResponseBody
-    @Secured("ROLE_RESERVATION_DELETE")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_DELETE')")
     public String apiFakeDelete(@PathVariable int id) {
         delete(id);
         return "";
@@ -954,7 +954,7 @@ public class ReservationController extends AbstractRequestController {
      */
     @RequestMapping(value = "/masscreateform",
                     method = RequestMethod.GET)
-    @Secured("ROLE_RESERVATION_CREATE")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_CREATE')")
     public String showMassCreateForm(@RequestParam(required=false)
                              Integer fromReservationId, Model model) {
         Reservation newRes = new Reservation();
@@ -980,7 +980,7 @@ public class ReservationController extends AbstractRequestController {
     @RequestMapping(value = "/masscreateform",
                     method = RequestMethod.POST,
                     params = "searchSubmit")
-    @Secured("ROLE_RESERVATION_CREATE")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_CREATE')")
     public String processSearchMassCreateForm(@ModelAttribute("reservation")
                                                   Reservation newRes,
                                               @RequestParam String searchTitle,
@@ -1008,7 +1008,7 @@ public class ReservationController extends AbstractRequestController {
      */
     @RequestMapping(value = "/masscreateform",
                     method = RequestMethod.POST)
-    @Secured("ROLE_RESERVATION_CREATE")
+    @PreAuthorize("hasRole('ROLE_RESERVATION_CREATE')")
     public String processMassCreateForm(@ModelAttribute("reservation")
                                                   Reservation newRes,
                                               BindingResult result,
@@ -1068,7 +1068,7 @@ public class ReservationController extends AbstractRequestController {
 	 * @return The name of the view to use.
 	 */
 	@RequestMapping(value = "/materials", method = RequestMethod.GET)
-	@Secured("ROLE_RESERVATION_VIEW")
+        @PreAuthorize("hasRole('ROLE_RESERVATION_VIEW')")
 	public String reservationMaterials(HttpServletRequest req, Model model) {
 		Map<String, String[]> p = req.getParameterMap();
 

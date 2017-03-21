@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -71,7 +72,7 @@ public class UserController extends ErrorHandlingController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    @Secured("ROLE_USER_MODIFY")
+    @PreAuthorize("hasRole('ROLE_USER_MODIFY')")
     public String list(Model model, HttpServletRequest request) {
         model.addAttribute("users", users.listUsers());
         model.addAttribute("groups", users.listGroups());
@@ -97,7 +98,7 @@ public class UserController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/", method = RequestMethod.POST,
                     params = "action=chgrp")
-    @Secured("ROLE_USER_MODIFY")
+    @PreAuthorize("hasRole('ROLE_USER_MODIFY')")
     public String chgrp(
             @RequestParam int user,
             @RequestParam(required = false) int[] groups,

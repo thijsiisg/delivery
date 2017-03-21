@@ -10,18 +10,11 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "delivery")
 public class DeliveryProperties {
 
-    private String log4j = "log4j.xml";
     private String apiBase = "/solr/all/srw";
     private String apiDomain = "api.socialhistoryservices.org";
     private int apiPort = 80;
     private String apiProto = "http";
-    private String casUrl = "https://login.iisg.nl/cas";
     private String dateFormat = "yyyy-MM-dd";
-    private String dbDialiect = "org.hibernate.dialect.PostgreSQLDialect";
-    private String dbDriver = "org.postgresql.Driver";
-    private String dbPassword = "delivery";
-    private String dbUrl = "jdbc:postgresql://localhost/delivery";
-    private String dbUsername = "delivery";
     private int externalInfoMinDaysCache = 30;
     private String holdingSeperator = "\\^";
     private String itemSeperator = ".";
@@ -30,14 +23,9 @@ public class DeliveryProperties {
     private String ldapUrl = "ldap://ds0.socialhistoryservices.org/dc=socialhistoryservices,dc=org";
     private String ldapUserSearchBase = "ou=users";
     private String ldapUserSearchFilter = "cn={0}";
-    private boolean loadInitialData;
-    private boolean mailEnabled;
-    private String mailHost = "mailrelay0.socialhistoryservices.org";
-    private String mailPassword = "test";
-    private int mailPort = 25;
+    private boolean mailEnabled = true;
     private String mailReadingRoom = "blabla@iisg.nl";
     private String mailSystemAddress = "n0r3ply@iisg.nl";
-    private String mailUsername = "delivery-web-be0.socialhistory.org@socialhistoryservices.org";
     private String payWayAddress = "https://payway-acc.socialhistoryservices.org/api";
     private String payWayPassPhraseIn = "bla";
     private String PayWayPassPhraseOut = "bla";
@@ -46,9 +34,6 @@ public class DeliveryProperties {
     private int permissionPageLen = 20;
     private int permissionPageStepSize = 10;
     private String pidSeperator = ",";
-    private String reCaptchaPrivateKey = "bla";
-    private String ReCaptchaPublicKey = "bla";
-    private String reCaptchaTheme = "clean";
     private int reproductionAdministrationCosts = 6;
     private int reproductionMaxDaysPayment = 21;
     private int reproductionMaxDaysReminder = 14;
@@ -67,12 +52,12 @@ public class DeliveryProperties {
     private String urlSelf = "http://localhost:8181";
     private int recordPageLen = 20;
 
-    public String getLog4j() {
-        return log4j;
+    public boolean isMailEnabled() {
+        return mailEnabled;
     }
 
-    public void setLog4j(String log4j) {
-        this.log4j = log4j;
+    public void setMailEnabled(boolean mailEnabled) {
+        this.mailEnabled = mailEnabled;
     }
 
     public String getApiBase() {
@@ -107,60 +92,12 @@ public class DeliveryProperties {
         this.apiProto = apiProto;
     }
 
-    public String getCasUrl() {
-        return casUrl;
-    }
-
-    public void setCasUrl(String casUrl) {
-        this.casUrl = casUrl;
-    }
-
     public String getDateFormat() {
         return dateFormat;
     }
 
     public void setDateFormat(String dateFormat) {
         this.dateFormat = dateFormat;
-    }
-
-    public String getDbDialiect() {
-        return dbDialiect;
-    }
-
-    public void setDbDialiect(String dbDialiect) {
-        this.dbDialiect = dbDialiect;
-    }
-
-    public String getDbDriver() {
-        return dbDriver;
-    }
-
-    public void setDbDriver(String dbDriver) {
-        this.dbDriver = dbDriver;
-    }
-
-    public String getDbPassword() {
-        return dbPassword;
-    }
-
-    public void setDbPassword(String dbPassword) {
-        this.dbPassword = dbPassword;
-    }
-
-    public String getDbUrl() {
-        return dbUrl;
-    }
-
-    public void setDbUrl(String dbUrl) {
-        this.dbUrl = dbUrl;
-    }
-
-    public String getDbUsername() {
-        return dbUsername;
-    }
-
-    public void setDbUsername(String dbUsername) {
-        this.dbUsername = dbUsername;
     }
 
     public int getExternalInfoMinDaysCache() {
@@ -227,46 +164,6 @@ public class DeliveryProperties {
         this.ldapUserSearchFilter = ldapUserSearchFilter;
     }
 
-    public boolean isLoadInitialData() {
-        return loadInitialData;
-    }
-
-    public void setLoadInitialData(boolean loadInitialData) {
-        this.loadInitialData = loadInitialData;
-    }
-
-    public boolean isMailEnabled() {
-        return mailEnabled;
-    }
-
-    public void setMailEnabled(boolean mailEnabled) {
-        this.mailEnabled = mailEnabled;
-    }
-
-    public String getMailHost() {
-        return mailHost;
-    }
-
-    public void setMailHost(String mailHost) {
-        this.mailHost = mailHost;
-    }
-
-    public String getMailPassword() {
-        return mailPassword;
-    }
-
-    public void setMailPassword(String mailPassword) {
-        this.mailPassword = mailPassword;
-    }
-
-    public int getMailPort() {
-        return mailPort;
-    }
-
-    public void setMailPort(int mailPort) {
-        this.mailPort = mailPort;
-    }
-
     public String getMailReadingRoom() {
         return mailReadingRoom;
     }
@@ -281,14 +178,6 @@ public class DeliveryProperties {
 
     public void setMailSystemAddress(String mailSystemAddress) {
         this.mailSystemAddress = mailSystemAddress;
-    }
-
-    public String getMailUsername() {
-        return mailUsername;
-    }
-
-    public void setMailUsername(String mailUsername) {
-        this.mailUsername = mailUsername;
     }
 
     public String getPayWayAddress() {
@@ -312,7 +201,7 @@ public class DeliveryProperties {
     }
 
     public void setPayWayPassPhraseOut(String payWayPassPhraseOut) {
-        this.PayWayPassPhraseOut = payWayPassPhraseOut;
+        PayWayPassPhraseOut = payWayPassPhraseOut;
     }
 
     public String getPayWayProjectName() {
@@ -353,30 +242,6 @@ public class DeliveryProperties {
 
     public void setPidSeperator(String pidSeperator) {
         this.pidSeperator = pidSeperator;
-    }
-
-    public String getReCaptchaPrivateKey() {
-        return reCaptchaPrivateKey;
-    }
-
-    public void setReCaptchaPrivateKey(String reCaptchaPrivateKey) {
-        this.reCaptchaPrivateKey = reCaptchaPrivateKey;
-    }
-
-    public String getReCaptchaPublicKey() {
-        return ReCaptchaPublicKey;
-    }
-
-    public void setReCaptchaPublicKey(String reCaptchaPublicKey) {
-        this.ReCaptchaPublicKey = reCaptchaPublicKey;
-    }
-
-    public String getReCaptchaTheme() {
-        return reCaptchaTheme;
-    }
-
-    public void setReCaptchaTheme(String reCaptchaTheme) {
-        this.reCaptchaTheme = reCaptchaTheme;
     }
 
     public int getReproductionAdministrationCosts() {

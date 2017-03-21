@@ -34,6 +34,7 @@ import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -87,7 +88,7 @@ public class PermissionController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.GET)
-    @Secured("ROLE_PERMISSION_VIEW")
+    @PreAuthorize("hasRole('ROLE_PERMISSION_VIEW')")
     public String getSingle(@PathVariable int id,
                             @RequestParam(required=false) String callback,
                             Model model, HttpServletRequest req) {
@@ -110,7 +111,7 @@ public class PermissionController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/",
                     method = RequestMethod.GET)
-    @Secured("ROLE_PERMISSION_VIEW")
+    @PreAuthorize("hasRole('ROLE_PERMISSION_VIEW')")
     public String get(HttpServletRequest req,
                       @RequestParam(required=false) String callback,
                             Model model) {
@@ -712,7 +713,7 @@ public class PermissionController extends ErrorHandlingController {
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.PUT)
     @ResponseBody
-    @Secured("ROLE_PERMISSION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_PERMISSION_MODIFY')")
     public String apiEdit(@RequestBody String json,
                             @PathVariable int id,
                             HttpServletRequest req) {
@@ -730,7 +731,7 @@ public class PermissionController extends ErrorHandlingController {
     @RequestMapping(value = "/{id}!PUT",
                     method = RequestMethod.POST)
     @ResponseBody
-    @Secured("ROLE_PERMISSION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_PERMISSION_MODIFY')")
     public String apiFakeEdit(@RequestBody String json,
                             @PathVariable int id,
                             HttpServletRequest req) {
@@ -775,7 +776,7 @@ public class PermissionController extends ErrorHandlingController {
     @RequestMapping(value = "/process",
                     method = RequestMethod.POST,
                     params = "save")
-    @Secured("ROLE_PERMISSION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_PERMISSION_MODIFY')")
     public String formSave(@RequestParam int id, HttpServletRequest req) {
         Permission pm = permissions.getPermissionById(id);
         if (pm == null) {
@@ -796,7 +797,7 @@ public class PermissionController extends ErrorHandlingController {
     @RequestMapping(value = "/process",
                     method = RequestMethod.POST,
                     params = "saveandfinish")
-    @Secured("ROLE_PERMISSION_MODIFY")
+    @PreAuthorize("hasRole('ROLE_PERMISSION_MODIFY')")
     public String formSaveAndFinish(@RequestParam int id,
                                  HttpServletRequest req) {
         Permission pm = permissions.getPermissionById(id);
@@ -970,7 +971,7 @@ public class PermissionController extends ErrorHandlingController {
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.DELETE)
     @ResponseBody
-    @Secured("ROLE_PERMISSION_DELETE")
+    @PreAuthorize("hasRole('ROLE_PERMISSION_DELETE')")
     public String apiDelete(@PathVariable int id, HttpServletRequest req) {
         remove(id);
         return "";
@@ -985,7 +986,7 @@ public class PermissionController extends ErrorHandlingController {
     @RequestMapping(value = "/process",
                     method = RequestMethod.POST,
                     params = "delete")
-    @Secured("ROLE_PERMISSION_DELETE")
+    @PreAuthorize("hasRole('ROLE_PERMISSION_DELETE')")
     public String formDelete(@RequestParam int id, HttpServletRequest req) {
         remove(id);
         return "redirect:/permission/";
@@ -1000,7 +1001,7 @@ public class PermissionController extends ErrorHandlingController {
     @RequestMapping(value = "/{id}!DELETE",
                     method = RequestMethod.POST)
     @ResponseBody
-    @Secured("ROLE_PERMISSION_DELETE")
+    @PreAuthorize("hasRole('ROLE_PERMISSION_DELETE')")
     public String apiFakeDelete(@PathVariable int id, HttpServletRequest req) {
         remove(id);
         return "";

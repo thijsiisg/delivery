@@ -208,11 +208,11 @@
             <artifactId>jackson-mapper-lgpl</artifactId>
             <version>1.9.13</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.hibernate</groupId>-->
-            <!--<artifactId>hibernate-jpamodelgen</artifactId>-->
-            <!--<optional>true</optional>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-jpamodelgen</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <!--<dependency>-->
             <!--<groupId>org.hibernate.javax.persistence</groupId>-->

@@ -18,6 +18,7 @@ package org.socialhistoryservices.delivery.controller;
 
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.annotation.Secured;
@@ -36,7 +37,7 @@ public class HomeController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    @Secured("IS_AUTHENTICATED_REMEMBERED")
+    @PreAuthorize("isAuthenticated()")
     public String list(HttpServletRequest request) {
         return "home";
     }

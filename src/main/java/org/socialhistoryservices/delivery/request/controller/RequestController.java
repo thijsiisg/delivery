@@ -10,6 +10,7 @@ import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -44,7 +45,7 @@ public class RequestController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/scan", method = RequestMethod.GET)
-    @Secured({"ROLE_RESERVATION_MODIFY", "ROLE_REPRODUCTION_MODIFY"})
+    @PreAuthorize("hasRole('ROLE_RESERVATION_MODIFY') or hasRole('ROLE_REPRODUCTION_MODIFY')")
     public String scanBarcode() {
         return "request_scan";
     }
@@ -57,7 +58,7 @@ public class RequestController extends AbstractRequestController {
      * @return The view to resolve.
      */
     @RequestMapping(value = "/scan", method = RequestMethod.POST)
-    @Secured({"ROLE_RESERVATION_MODIFY", "ROLE_REPRODUCTION_MODIFY"})
+    @PreAuthorize("hasRole('ROLE_RESERVATION_MODIFY') or hasRole('ROLE_REPRODUCTION_MODIFY')")
     public String scanBarcode(@RequestParam(required = false) String id, Model model) {
         // Obtain the scanned holding
         Holding h;

@@ -16,14 +16,14 @@
 
 -->
 
-<#include "base.ftl"/>
-<#include "form.ftl"/>
+<#include "../base.ftl"/>
+<#include "../form.ftl"/>
 
 <@userbase "Error">
 <h1><@_ "delivery.error" "Oops! An error has occurred."/></h1>
-        If this error keeps occurring, please contact the IISG via the following email.
-        <#assign email>
-            <@_ "iisg.email" ""/>
-        </#assign>
-    <p><a href="mailto:${email}">${email}</a></p>
+    <@_ "delivery.badRequest" "A bad request has occurred!" />
+    <#assign email>
+        <@_ "iisg.email" ""/>
+    </#assign>
+<p><a href="mailto:${email}">${email}</a></p>
 </@userbase>

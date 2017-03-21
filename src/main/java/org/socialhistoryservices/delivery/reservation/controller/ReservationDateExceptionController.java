@@ -7,6 +7,7 @@ import org.socialhistoryservices.delivery.reservation.service.ReservationDateExc
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -40,7 +41,7 @@ public class ReservationDateExceptionController extends AbstractRequestControlle
     @RequestMapping(value = "/date_exception",
                     method = RequestMethod.POST,
                     params = "deleteDateException")
-    @Secured("ROLE_DATE_EXCEPTION_DELETE")
+    @PreAuthorize("hasRole('ROLE_DATE_EXCEPTION_DELETE')")
     public String processDateExceptionDeleteForm(@RequestParam(required = false) ArrayList<String> checked,
                                                     Model model,
                                                     @ModelAttribute("reservationDateExceptions")
@@ -75,7 +76,7 @@ public class ReservationDateExceptionController extends AbstractRequestControlle
      */
     @RequestMapping(value = "/date_exception",
         method = RequestMethod.GET)
-    @Secured("ROLE_DATE_EXCEPTION_VIEW")
+    @PreAuthorize("hasRole('ROLE_DATE_EXCEPTION_VIEW')")
     public String showDateExceptionForm(Model model, HttpServletRequest req){
         model.addAttribute("reservationDateExceptions", getDateExceptions(req));
         ReservationDateException reservationDateException = new ReservationDateException();
@@ -93,7 +94,7 @@ public class ReservationDateExceptionController extends AbstractRequestControlle
      */
     @RequestMapping(value = "/date_exception",
         method = RequestMethod.POST)
-    @Secured("ROLE_DATE_EXCEPTION_CREATE")
+    @PreAuthorize("hasRole('ROLE_DATE_EXCEPTION_CREATE')")
     public String processDateExceptionForm(HttpServletRequest req, @ModelAttribute("reservationDateException")
                                             ReservationDateException newResDate,
                                             BindingResult result,

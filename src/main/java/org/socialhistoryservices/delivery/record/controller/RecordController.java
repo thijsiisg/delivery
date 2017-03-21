@@ -27,6 +27,7 @@ import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -115,7 +116,7 @@ public class RecordController extends ErrorHandlingController {
             throw new ResourceNotFoundException();
 
         model.addAttribute("records", recs);
-        return "record_get";
+        return "json/record_get.json";
     }
 
     /**
@@ -158,7 +159,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/{encPids:.*}",
                     method = RequestMethod.DELETE)
     @ResponseBody
-    @Secured("ROLE_RECORD_DELETE")
+    @PreAuthorize("hasRole('ROLE_RECORD_DELETE')")
     public String apiDelete(@PathVariable String encPids) {
         remove(getPidsFromURL(encPids));
         return "";
@@ -172,7 +173,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/{encPids:.*}!DELETE",
                     method = RequestMethod.POST)
     @ResponseBody
-    @Secured("ROLE_RECORD_DELETE")
+    @PreAuthorize("hasRole('ROLE_RECORD_DELETE')")
     public String apiFakeDelete(@PathVariable String encPids) {
         remove(getPidsFromURL(encPids));
         return "";
@@ -192,7 +193,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/{encPid:.*}",
                     method = RequestMethod.PUT)
     @ResponseBody
-    @Secured("ROLE_RECORD_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
     public String apiPut(@PathVariable String encPid,
                         @RequestBody Record newRecord,
                         @RequestBody String json) {
@@ -248,7 +249,7 @@ public class RecordController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/{encPid:.*}!PUT",
                     method = RequestMethod.POST)
-    @Secured("ROLE_RECORD_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
     @ResponseBody
     public String apiFakePut(@PathVariable String encPid,
                         @RequestBody Record newRecord,
@@ -293,7 +294,7 @@ public class RecordController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/",
                     method = RequestMethod.GET)
-    @Secured("ROLE_RECORD_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
     public String showHome() {
         return "record_home";
     }
@@ -307,7 +308,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/",
                     method = RequestMethod.GET,
                     params="searchPid")
-    @Secured("ROLE_RECORD_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
     public String processHomeSearchPid(Model model,
             @RequestParam String pid) {
         if (pid != null) {
@@ -333,7 +334,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/",
                     method = RequestMethod.GET,
                     params="searchApi")
-    @Secured("ROLE_RECORD_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
     public String processHomeSearchApi(Model model,
             @RequestParam String title, @RequestParam(defaultValue = "1", required = false) int resultStart) {
         if (title == null)
@@ -354,7 +355,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/",
                     method = RequestMethod.POST,
                     params="searchLocal")
-    @Secured("ROLE_RECORD_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
     @Deprecated
     public String processHomeSearchLocal(Model model,
             @RequestParam String title) {
@@ -405,7 +406,7 @@ public class RecordController extends ErrorHandlingController {
      */
     @RequestMapping(value = "/editform/{encPid:.*}",
                     method = RequestMethod.GET)
-    @Secured("ROLE_RECORD_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
     public String showEditForm(@PathVariable String encPid, Model model) {
         // Check if the record already exists, lookup to check if valid
         // otherwise.
@@ -440,7 +441,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/editform/{encPid:.*}",
                     method = RequestMethod.POST,
                     params = "action=save")
-    @Secured("ROLE_RECORD_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
     public String processEditForm(@ModelAttribute("record") Record newRecord,
                                   BindingResult result,
                                   @PathVariable String encPid,
@@ -486,7 +487,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/editform/{encPids:.*}",
                     method = RequestMethod.POST,
                     params = "action=delete")
-    @Secured("ROLE_RECORD_DELETE")
+    @PreAuthorize("hasRole('ROLE_RECORD_DELETE')")
     public String formDelete(@PathVariable String encPids) {
         remove(getPidsFromURL(encPids));
         return "redirect:/record/";
@@ -501,7 +502,7 @@ public class RecordController extends ErrorHandlingController {
     @RequestMapping(value = "/editform/{encPids:.*}",
                     method = RequestMethod.POST,
                     params = "action=edititem")
-    @Secured("ROLE_RECORD_MODIFY")
+    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
     public String editChildRedirect(@RequestParam String edit,
                                     @RequestParam String item) {
         edit = urlEncode(edit);
