@@ -389,7 +389,7 @@ public class ReservationController extends AbstractRequestController {
     @RequestMapping(value = "/{id}",
                     method = RequestMethod.PUT)
     @ResponseBody
-    @PreAuthorize("hasRole('ROLE_RESERVATION_MODIFY') or hasRole('ROLE_RESERVATION_CREATE')")
+    @PreAuthorize("hasAnyRole('ROLE_RESERVATION_MODIFY', 'ROLE_RESERVATION_CREATE')")
     public String apiPut(@RequestBody Reservation newRes,
                               @RequestBody String json,
                               @PathVariable int id) {
@@ -407,7 +407,7 @@ public class ReservationController extends AbstractRequestController {
     @RequestMapping(value = "/{id}!PUT",
                     method = RequestMethod.POST)
     @ResponseBody
-    @PreAuthorize("hasRole('ROLE_RESERVATION_MODIFY') or hasRole('ROLE_RESERVATION_CREATE')")
+    @PreAuthorize("hasAnyRole('ROLE_RESERVATION_MODIFY', 'ROLE_RESERVATION_CREATE')")
     public String apiFakePut(@RequestBody Reservation newRes,
                               @RequestBody String json,
                               @PathVariable int id) {
