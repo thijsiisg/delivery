@@ -7,7 +7,6 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-
 import java.text.SimpleDateFormat;
 
 /**
@@ -28,7 +27,7 @@ public class ConfigConfiguration {
     }
 
     @Bean
-    @Profile("h2")
+    @Profile("development")
     public ServletRegistrationBean h2ConsoleServletRegistration() {
         ServletRegistrationBean registrationBean = new ServletRegistrationBean(new WebServlet());
         registrationBean.addUrlMappings("/console/*");

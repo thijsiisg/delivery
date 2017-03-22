@@ -67,7 +67,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
                 .permitAll();
 
         // If we are running H2 in development mode, then make sure we can always reach the H2 console
-        if (this.env.acceptsProfiles("development") && this.env.acceptsProfiles("h2")) {
+        if (this.env.acceptsProfiles("development")) {
             httpSecurity
                 .authorizeRequests()
                 .antMatchers("/console/**").permitAll()

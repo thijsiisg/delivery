@@ -33,16 +33,16 @@
     </parent>
 
   <properties>
-      <!--<start-class> HomeController</start-class>-->
-    <!--<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>-->
-    <!--<jetty.version>6.1.26</jetty.version>-->
-    <!--<spring.version>5.0.0.BUILD-SNAPSHOT</spring.version>-->
-    <!--<spring.security.version>3.1.4.RELEASE</spring.security.version>-->
-    <!--<slf4j.version>1.5.10</slf4j.version>-->
+    <org.springframework.version>4.3.7.RELEASE</org.springframework.version>
+    <javax.mail.version>1.4.7</javax.mail.version>
     <java.version>1.8</java.version>
-    <!--<junit.version>4.8.2</junit.version>-->
-    <!--<powermock.version>1.5</powermock.version>-->
-    <!--<maven.jar.version>2.4</maven.jar.version>-->
+    <org.apache.httpcomponents.version>4.5.3</org.apache.httpcomponents.version>
+    <net.sf.barcode4j.version>2.1</net.sf.barcode4j.version>
+    <org.apache.poi.version>3.15</org.apache.poi.version>
+    <org.apache.xmlgraphics.version>2.1</org.apache.xmlgraphics.version>
+    <com.octo.captcha.version>1.0-RC6</com.octo.captcha.version>
+    <codehaus.jackson.version>1.9.13</codehaus.jackson.version>
+    <powermock.version>1.6.6</powermock.version>
   </properties>
 
   <dependencyManagement>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-expression</artifactId>
-            <version>4.3.7.RELEASE</version>
+            <version>${org.springframework.version}</version>
         </dependency>
     </dependencies>
   </dependencyManagement>
@@ -97,94 +97,25 @@
             <artifactId>h2</artifactId>
         </dependency>
 
-
-
-        <!-- Spring security -->
-        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-ldap -->
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.security</groupId>-->
-            <!--<artifactId>spring-security-ldap</artifactId>-->
-            <!--<version>4.2.2.RELEASE</version>-->
-        <!--</dependency>-->
-        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.springframework.security/spring-security-core &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.security</groupId>-->
-            <!--<artifactId>spring-security-core</artifactId>-->
-            <!--<version>4.2.2.RELEASE</version>-->
-        <!--</dependency>-->
-        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.springframework.security/spring-security-web &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.security</groupId>-->
-            <!--<artifactId>spring-security-web</artifactId>-->
-            <!--<version>4.2.2.RELEASE</version>-->
-        <!--</dependency>-->
-        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.springframework.security/spring-security-config &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.security</groupId>-->
-            <!--<artifactId>spring-security-config</artifactId>-->
-            <!--<version>4.2.2.RELEASE</version>-->
-        <!--</dependency>-->
-        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.springframework.security/spring-security-test &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.security</groupId>-->
-            <!--<artifactId>spring-security-test</artifactId>-->
-            <!--<version>4.2.2.RELEASE</version>-->
-        <!--</dependency>-->
-
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jpa -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<groupId>javax.persistence</groupId>-->
-                    <!--<artifactId>com.springsource.javax.persistence</artifactId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
         </dependency>
-
-
-
-        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.springframework.boot/spring-boot &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.boot</groupId>-->
-            <!--<artifactId>spring-boot</artifactId>-->
-            <!--<version>1.5.1.RELEASE</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.boot</groupId>-->
-            <!--<artifactId>spring-boot</artifactId>-->
-            <!--<version>2.0.0.BUILD-SNAPSHOT</version>-->
-            <!--<scope>import</scope>-->
-            <!--<type>pom</type>-->
-        <!--</dependency>-->
-        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
-        <!--<dependency>-->
-            <!--<groupId>javax.servlet</groupId>-->
-            <!--<artifactId>javax.servlet-api</artifactId>-->
-            <!--<version>3.1.0</version>-->
-        <!--</dependency>-->
-        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.hibernate.javax.persistence/hibernate-jpa-2.1-api &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>org.hibernate.javax.persistence</groupId>-->
-            <!--<artifactId>hibernate-jpa-2.1-api</artifactId>-->
-            <!--<version>1.0.0.Final</version>-->
-        <!--</dependency>-->
 
         <!-- Test Dependencies -->
         <!-- https://mvnrepository.com/artifact/org.powermock/powermock-module-junit4 -->
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-module-junit4</artifactId>
-            <version>1.6.6</version>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.powermock/powermock-api-mockito -->
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito</artifactId>
-            <version>1.6.6</version>
+            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -200,47 +131,19 @@
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-core-lgpl</artifactId>
-            <version>1.9.13</version>
+            <version>${codehaus.jackson.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.codehaus.jackson/jackson-mapper-lgpl -->
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-lgpl</artifactId>
-            <version>1.9.13</version>
+            <version>${codehaus.jackson.version}</version>
         </dependency>
+        <!-- Auto generation of classes -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>org.hibernate.javax.persistence</groupId>-->
-            <!--<artifactId>hibernate-jpa-2.0-api</artifactId>-->
-            <!--<version>1.0.1.Final</version>-->
-            <!--<scope>compile</scope>-->
-        <!--</dependency>-->
-
-        <!-- Hibernate Dependencies -->
-        <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-core -->
-        <!--<dependency>-->
-            <!--<groupId>org.hibernate</groupId>-->
-            <!--<artifactId>hibernate-core</artifactId>-->
-            <!--<version>5.2.8.Final</version>-->
-        <!--</dependency>-->
-        <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.hibernate/hibernate-entitymanager &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>org.hibernate</groupId>-->
-            <!--<artifactId>hibernate-entitymanager</artifactId>-->
-            <!--<version>5.2.3.Final</version>-->
-        <!--</dependency>-->
-
-
-        <!-- https://mvnrepository.com/artifact/commons-collections/commons-collections -->
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>3.0</version>
         </dependency>
 
         <!-- Mail dependencies -->
@@ -248,21 +151,23 @@
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
-            <version>1.4.7</version>
+            <version>${javax.mail.version}</version>
         </dependency>
 
+        <!-- RequestPrintable -->
         <!-- https://mvnrepository.com/artifact/net.sf.barcode4j/barcode4j -->
         <dependency>
             <groupId>net.sf.barcode4j</groupId>
             <artifactId>barcode4j</artifactId>
-            <version>2.1</version>
+            <version>${net.sf.barcode4j.version}</version>
         </dependency>
 
+        <!-- PaywayService -->
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.3</version>
+            <version>${org.apache.httpcomponents.version}</version>
         </dependency>
 
         <!-- Excel dependencies -->
@@ -270,7 +175,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.15</version>
+            <version>${org.apache.poi.version}</version>
         </dependency>
 
         <!-- PDF dependencies -->
@@ -278,161 +183,16 @@
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>fop</artifactId>
-            <version>2.1</version>
+            <version>${org.apache.xmlgraphics.version}</version>
         </dependency>
 
+        <!-- Captcha dependencies -->
         <!--https://mvnrepository.com/artifact/com.octo.captcha/jcaptcha-all-->
         <dependency>
             <groupId>com.octo.captcha</groupId>
             <artifactId>jcaptcha-all</artifactId>
-            <version>1.0-RC6</version>
+            <version>${com.octo.captcha.version}</version>
         </dependency>
-
-
-
-
-
-
-
-
-
-        <!-- Might be needed, but gives me headache
-        &lt;!&ndash; https://mvnrepository.com/artifact/com.octo.captcha/jcaptcha &ndash;&gt;
-        <dependency>
-            <groupId>com.octo.captcha</groupId>
-            <artifactId>jcaptcha</artifactId>
-            <version>1.0-all</version>
-        </dependency>
-
-
-        &lt;!&ndash; https://mvnrepository.com/artifact/org.slf4j/slf4j-api &ndash;&gt;
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.24</version>
-        </dependency>
-        &lt;!&ndash; https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j &ndash;&gt;
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.24</version>
-        </dependency>
-        &lt;!&ndash; https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 &ndash;&gt;
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.24</version>
-        </dependency>-->
-
 
     </dependencies>
-
-  <!--<build>-->
-    <!--<pluginManagement>-->
-      <!--<plugins>-->
-        <!--&lt;!&ndash; Ensures we are compiling at 1.8 level &ndash;&gt;-->
-        <!--<plugin>-->
-          <!--<groupId>org.apache.maven.plugins</groupId>-->
-          <!--<artifactId>maven-compiler-plugin</artifactId>-->
-          <!--<version>3.6.1</version>-->
-          <!--<configuration>-->
-            <!--<source>${java.version}</source>-->
-            <!--<target>${java.version}</target>-->
-            <!--<compilerArgument>-proc:none</compilerArgument>-->
-          <!--</configuration>-->
-        <!--</plugin>-->
-      <!--</plugins>-->
-    <!--</pluginManagement>-->
-  <!--</build>-->
-    <!--The Spring Boot way-->
-    <!--<build>-->
-        <!--<plugins>-->
-            <!--<plugin>-->
-                <!--<groupId>org.springframework.boot</groupId>-->
-                <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
-            <!--</plugin>-->
-        <!--</plugins>-->
-    <!--</build>-->
-
-
-    <!-- Add Spring repositories -->
-    <!-- (you don't need this if you are using a .RELEASE version) -->
-    <!--<repositories>-->
-        <!--<repository>-->
-            <!--<id>spring-snapshots</id>-->
-            <!--<url>http://repo.spring.io/snapshot</url>-->
-            <!--<snapshots><enabled>true</enabled></snapshots>-->
-        <!--</repository>-->
-        <!--<repository>-->
-            <!--<id>spring-milestones</id>-->
-            <!--<url>http://repo.spring.io/milestone</url>-->
-        <!--</repository>-->
-    <!--</repositories>-->
-    <!--<pluginRepositories>-->
-        <!--<pluginRepository>-->
-            <!--<id>spring-snapshots</id>-->
-            <!--<url>http://repo.spring.io/snapshot</url>-->
-        <!--</pluginRepository>-->
-        <!--<pluginRepository>-->
-            <!--<id>spring-milestones</id>-->
-            <!--<url>http://repo.spring.io/milestone</url>-->
-        <!--</pluginRepository>-->
-    <!--</pluginRepositories>-->
-
-  <!--<dependencies>-->
-    <!--&lt;!&ndash; Test Dependencies &ndash;&gt;-->
-    <!--<dependency>-->
-      <!--<groupId>org.powermock</groupId>-->
-      <!--<artifactId>powermock-module-junit4</artifactId>-->
-      <!--<version>${powermock.version}</version>-->
-      <!--<scope>test</scope>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-      <!--<groupId>org.powermock</groupId>-->
-      <!--<artifactId>powermock-api-mockito</artifactId>-->
-      <!--<version>${powermock.version}</version>-->
-      <!--<scope>test</scope>-->
-    <!--</dependency>-->
-    <!--<dependency>-->
-      <!--<groupId>junit</groupId>-->
-      <!--<artifactId>junit</artifactId>-->
-      <!--<version>${junit.version}</version>-->
-      <!--<scope>test</scope>-->
-    <!--</dependency>-->
-        <!--&lt;!&ndash; logging &ndash;&gt;-->
-        <!--<dependency>-->
-          <!--<groupId>org.slf4j</groupId>-->
-          <!--<artifactId>slf4j-api</artifactId>-->
-          <!--<version>${slf4j.version}</version>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-          <!--<groupId>org.slf4j</groupId>-->
-          <!--<artifactId>jcl-over-slf4j</artifactId>-->
-          <!--<version>${slf4j.version}</version>-->
-          <!--<scope>runtime</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-          <!--<groupId>org.slf4j</groupId>-->
-          <!--<artifactId>slf4j-log4j12</artifactId>-->
-          <!--<version>${slf4j.version}</version>-->
-          <!--<scope>runtime</scope>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-          <!--<groupId>log4j</groupId>-->
-          <!--<artifactId>log4j</artifactId>-->
-          <!--<version>1.2.16</version>-->
-          <!--<exclusions>-->
-            <!--<exclusion>-->
-              <!--<groupId>com.sun.jdmk</groupId>-->
-              <!--<artifactId>jmxtools</artifactId>-->
-            <!--</exclusion>-->
-            <!--<exclusion>-->
-              <!--<groupId>com.sun.jmx</groupId>-->
-              <!--<artifactId>jmxri</artifactId>-->
-            <!--</exclusion>-->
-          <!--</exclusions>-->
-          <!--&lt;!&ndash;<scope>runtime</scope>&ndash;&gt;-->
-        <!--</dependency>-->
-      <!--</dependencies>-->
-
-    </project>
+</project>
