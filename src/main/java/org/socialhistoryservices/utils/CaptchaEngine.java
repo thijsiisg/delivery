@@ -17,8 +17,9 @@ import com.octo.captcha.component.word.wordgenerator.DictionaryWordGenerator;
 import com.octo.captcha.component.word.wordgenerator.WordGenerator;
 import com.octo.captcha.engine.image.ListImageCaptchaEngine;
 import com.octo.captcha.image.gimpy.GimpyFactory;
+
 import java.awt.*;
-import java.awt.image.*;
+import java.awt.image.ImageFilter;
 
 /**
  * Captcha engine based on the default Gimpy engine.

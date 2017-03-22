@@ -3,16 +3,15 @@ package org.socialhistoryservices.delivery.config;
 /**
  * Created by Igor on 3/14/2017.
  */
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.freemarker.FreeMarkerAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 /**
  * Overrides the default spring-boot configuration to allow adding shared variables to the freemarker context

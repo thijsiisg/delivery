@@ -5,7 +5,6 @@ import org.springframework.validation.BindingResult;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.Calendar;
 import java.util.List;
 

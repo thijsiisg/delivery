@@ -16,8 +16,8 @@
 
 package org.socialhistoryservices.delivery.record.entity;
 
-import javax.validation.constraints.Size;
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 /**
  * Contact information associated with a Record.

@@ -1,10 +1,12 @@
 package org.socialhistoryservices.delivery.reproduction.entity;
 
+import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
-import javax.validation.constraints.*;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * ReproductionCustomNote object representing a note for a custom reproduction.

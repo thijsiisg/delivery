@@ -17,6 +17,7 @@
 package org.socialhistoryservices.delivery.permission.entity;
 
 import org.socialhistoryservices.delivery.record.entity.Record;
+
 import javax.persistence.*;
 
 /**

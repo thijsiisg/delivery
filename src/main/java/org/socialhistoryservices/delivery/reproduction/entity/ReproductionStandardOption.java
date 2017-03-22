@@ -1,12 +1,16 @@
 package org.socialhistoryservices.delivery.reproduction.entity;
 
 import org.hibernate.validator.constraints.NotBlank;
+import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
-import java.math.BigDecimal;
-import javax.validation.constraints.*;
+
 import javax.persistence.*;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.math.BigDecimal;
 
 /**
  * ReproductionOption object representing a ReproductionStandardOption.

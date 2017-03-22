@@ -8,7 +8,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.servlet.view.freemarker.FreeMarkerConfig;
 
 import java.io.IOException;
 import java.util.HashMap;

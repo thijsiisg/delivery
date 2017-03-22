@@ -16,9 +16,10 @@
 
 package org.socialhistoryservices.delivery.permission.entity;
 
-import org.socialhistoryservices.delivery.record.entity.Record;
 import org.hibernate.annotations.Cascade;
+import org.socialhistoryservices.delivery.record.entity.Record;
 import org.springframework.context.i18n.LocaleContextHolder;
+
 import javax.persistence.*;
 import java.util.*;
 

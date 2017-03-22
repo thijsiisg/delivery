@@ -22,7 +22,6 @@ import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.springframework.context.MessageSource;
 
 import java.text.DateFormat;
-import java.util.Properties;
 
 /**
  * Represents a printable reservation.

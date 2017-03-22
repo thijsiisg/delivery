@@ -9,7 +9,10 @@ import org.springframework.ui.Model;
 import javax.activation.DataHandler;
 import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.internet.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import java.util.Locale;
 

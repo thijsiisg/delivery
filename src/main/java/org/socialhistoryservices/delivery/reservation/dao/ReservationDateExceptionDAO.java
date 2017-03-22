@@ -1,9 +1,9 @@
 package org.socialhistoryservices.delivery.reservation.dao;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import org.socialhistoryservices.delivery.reservation.entity.ReservationDateException;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import java.util.List;
 
 /**

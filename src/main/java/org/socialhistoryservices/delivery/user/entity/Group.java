@@ -17,8 +17,8 @@
 package org.socialhistoryservices.delivery.user.entity;
 
 import javax.persistence.*;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A Group a user can be in.

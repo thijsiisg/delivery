@@ -16,13 +16,12 @@
 
 package org.socialhistoryservices.delivery.reservation.service;
 
+import org.apache.log4j.Logger;
 import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.*;
-import org.socialhistoryservices.delivery.request.service.ClosedException;
-import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.reservation.dao.HoldingReservationDAO;
 import org.socialhistoryservices.delivery.reservation.dao.ReservationDAO;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
@@ -46,8 +45,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import org.apache.log4j.Logger;
 
 /**
  * Represents the service of the reservation package.

@@ -21,7 +21,6 @@ import org.socialhistoryservices.delivery.user.dao.UserDAO;
 import org.socialhistoryservices.delivery.user.entity.Group;
 import org.socialhistoryservices.delivery.user.entity.User;
 import org.socialhistoryservices.delivery.user.entity.User_;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

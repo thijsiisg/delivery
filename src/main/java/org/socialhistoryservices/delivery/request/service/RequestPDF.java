@@ -1,6 +1,9 @@
 package org.socialhistoryservices.delivery.request.service;
 
-import org.apache.fop.apps.*;
+import org.apache.fop.apps.FOPException;
+import org.apache.fop.apps.Fop;
+import org.apache.fop.apps.FopFactory;
+import org.apache.fop.apps.MimeConstants;
 import org.socialhistoryservices.delivery.TemplatePreparation;
 import org.socialhistoryservices.delivery.TemplatePreparationException;
 import org.springframework.ui.Model;
@@ -8,7 +11,10 @@ import org.springframework.ui.Model;
 import javax.xml.transform.*;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.util.Locale;
 

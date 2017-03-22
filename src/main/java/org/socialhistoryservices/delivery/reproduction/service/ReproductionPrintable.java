@@ -9,7 +9,6 @@ import org.socialhistoryservices.delivery.request.service.RequestPrintable;
 import org.springframework.context.MessageSource;
 
 import java.text.DateFormat;
-import java.util.Properties;
 
 /**
  * Represents a printable reproduction.

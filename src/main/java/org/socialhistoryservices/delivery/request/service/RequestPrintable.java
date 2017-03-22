@@ -24,7 +24,6 @@ import java.text.AttributedString;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
-import java.util.Properties;
 
 /**
  * Represents a printable request.

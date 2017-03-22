@@ -3,8 +3,10 @@ package org.socialhistoryservices.delivery.reproduction.dao;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.*;
-import javax.persistence.criteria.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 import java.util.List;
 
 /**

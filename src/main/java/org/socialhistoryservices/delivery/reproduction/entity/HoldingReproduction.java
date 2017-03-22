@@ -5,9 +5,9 @@ import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
 
+import javax.persistence.*;
 import javax.validation.constraints.*;
 import java.math.BigDecimal;
-import javax.persistence.*;
 
 /**
  * Reproduction object representing a reproduction that can be made on a set of records.
