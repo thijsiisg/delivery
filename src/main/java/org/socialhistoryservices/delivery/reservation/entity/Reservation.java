@@ -17,7 +17,6 @@
 package org.socialhistoryservices.delivery.reservation.entity;
 
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
@@ -241,8 +240,7 @@ public class Reservation extends Request {
         this.status = status;
     }
 
-    @OneToMany(mappedBy="reservation", cascade=CascadeType.ALL)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    @OneToMany(mappedBy="reservation", cascade=CascadeType.ALL, orphanRemoval = true)
     private List<HoldingReservation> holdingReservations;
 
 

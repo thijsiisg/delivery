@@ -1,6 +1,5 @@
 package org.socialhistoryservices.delivery.reproduction.entity;
 
-import org.hibernate.annotations.Index;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
@@ -13,7 +12,9 @@ import java.math.BigDecimal;
  * Reproduction object representing a reproduction that can be made on a set of records.
  */
 @Entity
-@Table(name = "holding_reproductions")
+@Table(name = "holding_reproductions", indexes = {@Index(columnList = "completed", name = "holding_reproductions_completed_idx"),
+                                                @Index(columnList = "reproduction_id", name = "holding_reproductions_reproduction_fk"),
+                                                @Index(columnList = "holding_id", name = "holding_reproductions_holding_fk")})
 public class HoldingReproduction extends HoldingRequest {
 
     /**
@@ -255,7 +256,6 @@ public class HoldingReproduction extends HoldingRequest {
      * Is the holding completed for this reproduction?
      */
     @Column(name = "completed", nullable = false)
-    @Index(name = "holding_reproductions_completed_idx")
     private boolean completed = false;
 
     /**
@@ -355,7 +355,6 @@ public class HoldingReproduction extends HoldingRequest {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reproduction_id")
-    @Index(name = "holding_reproductions_reproduction_fk")
     private Reproduction reproduction;
 
     /**
@@ -401,7 +400,6 @@ public class HoldingReproduction extends HoldingRequest {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "holding_id")
-    @Index(name = "holding_reproductions_holding_fk")
     private Holding holding;
 
     /**

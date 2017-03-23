@@ -140,28 +140,28 @@ public class ExternalRecordInfo {
         this.copyright = copyright;
     }
 
-	@NotNull
-	@Enumerated(EnumType.STRING)
-	@Column(name="publication_status", nullable=false)
-	private PublicationStatus publicationStatus;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name="publication_status", nullable=false)
+    private PublicationStatus publicationStatus;
 
-	/**
-	 * Get the publication status.
-	 * @return the publication status.
-	 */
-	public PublicationStatus getPublicationStatus() {
-		return publicationStatus;
-	}
+    /**
+     * Get the publication status.
+     * @return the publication status.
+     */
+    public PublicationStatus getPublicationStatus() {
+            return publicationStatus;
+    }
 
-	/**
-	 * Set the publication status.
-	 * @param publicationStatus the publication status.
-	 */
-	public void setPublicationStatus(PublicationStatus publicationStatus) {
-		this.publicationStatus = publicationStatus;
-	}
+    /**
+     * Set the publication status.
+     * @param publicationStatus the publication status.
+     */
+    public void setPublicationStatus(PublicationStatus publicationStatus) {
+            this.publicationStatus = publicationStatus;
+    }
 
-	@Size(max=125)
+    @Size(max=125)
     @Column(name="author", nullable=true)
     private String author;
 

@@ -16,8 +16,6 @@
 
 package org.socialhistoryservices.delivery.record.entity;
 
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.Index;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
@@ -33,7 +31,7 @@ import java.util.List;
  * Holding information associated with a Record.
  */
 @Entity
-@Table(name="holdings")
+@Table(name = "holdings", indexes = {@Index(columnList = "record_id", name = "holdings_record_fk"),@Index(columnList = "external_info_id", name = "holdings_external_info_fk")})
 public class Holding {
 
 
@@ -184,7 +182,6 @@ public class Holding {
     /** The Holding's record. */
     @NotNull
     @ManyToOne
-    @Index(name="holdings_record_fk")
     @JoinColumn(name="record_id")
     private Record record;
 
@@ -247,9 +244,7 @@ public class Holding {
         this.status = status;
     }
 
-    @Index(name="holdings_external_info_fk")
-    @OneToOne(cascade=CascadeType.ALL)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    @OneToOne(cascade=CascadeType.ALL, orphanRemoval=true)
     @JoinColumn(name="external_info_id")
     private ExternalHoldingInfo externalInfo;
 
@@ -270,8 +265,7 @@ public class Holding {
         this.externalInfo = info;
     }
 
-	@OneToMany(mappedBy="holding", cascade=CascadeType.ALL)
-	@Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+	@OneToMany(mappedBy="holding", cascade=CascadeType.ALL, orphanRemoval=true)
 	private List<HoldingReservation> holdingReservations;
 
 	public void setHoldingReservations(List<HoldingReservation> hrs) {
@@ -282,8 +276,7 @@ public class Holding {
 		return holdingReservations;
 	}
 
-    @OneToMany(mappedBy="holding", cascade=CascadeType.ALL)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    @OneToMany(mappedBy="holding", cascade=CascadeType.ALL, orphanRemoval=true)
     private List<HoldingReproduction> holdingReproductions;
 
     public List<HoldingReproduction> getHoldingReproductions() {

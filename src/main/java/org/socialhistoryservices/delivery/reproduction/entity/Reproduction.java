@@ -1,6 +1,5 @@
 package org.socialhistoryservices.delivery.reproduction.entity;
 
-import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.record.entity.Holding;
@@ -435,8 +434,7 @@ public class Reproduction extends Request {
         return token;
     }
 
-    @OneToMany(mappedBy = "reproduction", cascade = CascadeType.ALL)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    @OneToMany(mappedBy = "reproduction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HoldingReproduction> holdingReproductions;
 
     public List<HoldingReproduction> getHoldingReproductions() {
@@ -474,8 +472,7 @@ public class Reproduction extends Request {
         return holdingReproductions;
     }
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "order_id")
     private Order order;
 

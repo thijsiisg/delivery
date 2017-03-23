@@ -16,7 +16,6 @@
 
 package org.socialhistoryservices.delivery.permission.entity;
 
-import org.hibernate.annotations.Cascade;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -301,8 +300,7 @@ public class Permission {
     /**
      * Permissions per record in this permission request.
      */
-    @OneToMany(mappedBy="permission", cascade=CascadeType.ALL)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    @OneToMany(mappedBy="permission", cascade=CascadeType.ALL, orphanRemoval=true)
     private List<RecordPermission> recordPermissions;
 
     /**

@@ -16,7 +16,6 @@
 
 package org.socialhistoryservices.delivery.reservation.entity;
 
-import org.hibernate.annotations.Index;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
 import org.socialhistoryservices.delivery.request.entity.Request;
@@ -29,7 +28,8 @@ import javax.validation.constraints.Size;
  * records.
  */
 @Entity
-@Table(name="holding_reservations")
+@Table(name = "holding_reservations", indexes = {@Index(columnList = "completed", name = "holding_reservations_completed_idx"),
+                                                @Index(columnList = "holding_id", name = "holding_reservations_holding_fk")})
 public class HoldingReservation extends HoldingRequest {
 
 
@@ -73,7 +73,6 @@ public class HoldingReservation extends HoldingRequest {
 
     /** Is the holding completed for this reservation? */
     @Column(name="completed", nullable=false)
-    @Index(name="holding_reservations_completed_idx")
     private boolean completed = false;
 
     /**
@@ -118,7 +117,7 @@ public class HoldingReservation extends HoldingRequest {
     /** The RecordPermission's permission. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="reservation_id")
-    @Index(name = "holding_reservations_reservation_fk")
+    @org.hibernate.annotations.Index(name = "holding_reservations_reservation_fk")
     private Reservation reservation;
 
     /**
@@ -160,7 +159,6 @@ public class HoldingReservation extends HoldingRequest {
     /** The HoldingReservation's holding. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="holding_id")
-    @Index(name = "holding_reservations_holding_fk")
     private Holding holding;
 
     /**
