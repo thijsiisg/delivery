@@ -28,7 +28,6 @@ import org.springframework.security.web.firewall.DefaultHttpFirewall;
 @EnableConfigurationProperties(DeliveryProperties.class)
 @EnableGlobalMethodSecurity(prePostEnabled = true) // @PreAuthorize
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
-
     @Autowired private GroupDAO groupDAO;
     @Autowired private UserDAO userDAO;
     @Autowired private CaptchaEngine captchaEngine;
@@ -44,10 +43,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-
         httpSecurity
             .authorizeRequests()
-                .antMatchers("/css/**", "/js/**", "/logo.ico").permitAll()
                 .and()
             // Disable Cross-Site Request Forgery token
             .csrf().disable()
@@ -70,17 +67,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
         if (this.env.acceptsProfiles("development")) {
             httpSecurity
                 .authorizeRequests()
-                .antMatchers("/console/**").permitAll()
-                .and()
+                    .antMatchers("/console/**").permitAll()
+                    .and()
                 .headers()
-                .frameOptions().disable();
-        }
-
-        // If an auth profile has been chosen, close all other requests: the user needs to be authenticated first
-        if (this.env.acceptsProfiles("ldapAuth", "dbAuth")) {
-            httpSecurity.authorizeRequests()
-                .antMatchers("/").authenticated()
-                .anyRequest().hasRole("USER");
+                    .frameOptions().disable();
         }
     }
 
@@ -106,19 +96,33 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(deliveryProperties.getLdapUrl());
-        contextSource.setUserDn(deliveryProperties.getLdapManagerDn());
-        contextSource.setPassword(deliveryProperties.getLdapManagerPassword());
-        contextSource.afterPropertiesSet();
+        if (this.env.acceptsProfiles("development")) {
+            authenticationManagerBuilder
+                .inMemoryAuthentication()
+                .withUser("delivery")
+                .password("delivery")
+                .roles("USER_MODIFY", "RECORD_MODIFY",
+                    "RECORD_CONTACT_VIEW", "RESERVATION_VIEW", "RESERVATION_MODIFY", "PERMISSION_VIEW",
+                    "PERMISSION_MODIFY", "PERMISSION_DELETE", "RESERVATION_DELETE", "RECORD_DELETE",
+                    "RESERVATION_CREATE", "REPRODUCTION_CREATE", "REPRODUCTION_VIEW", "REPRODUCTION_MODIFY",
+                    "REPRODUCTION_DELETE"
+                );
+        }
+        else {
+            DefaultSpringSecurityContextSource contextSource = new DefaultSpringSecurityContextSource(deliveryProperties.getLdapUrl());
+            contextSource.setUserDn(deliveryProperties.getLdapManagerDn());
+            contextSource.setPassword(deliveryProperties.getLdapManagerPassword());
+            contextSource.afterPropertiesSet();
 
-        AuthoritiesPopulator ldapAuthoritiesPopulator =
-            new AuthoritiesPopulator(contextSource, deliveryProperties.getLdapUserSearchBase(), userDetailsService());
+            AuthoritiesPopulator ldapAuthoritiesPopulator =
+                new AuthoritiesPopulator(contextSource, deliveryProperties.getLdapUserSearchBase(), userDetailsService());
 
-        authenticationManagerBuilder
-            .ldapAuthentication()
-            .contextSource(contextSource)
-            .userSearchBase(deliveryProperties.getLdapUserSearchBase())
-            .userSearchFilter(deliveryProperties.getLdapUserSearchFilter())
-            .ldapAuthoritiesPopulator(ldapAuthoritiesPopulator);
+            authenticationManagerBuilder
+                .ldapAuthentication()
+                .contextSource(contextSource)
+                .userSearchBase(deliveryProperties.getLdapUserSearchBase())
+                .userSearchFilter(deliveryProperties.getLdapUserSearchFilter())
+                .ldapAuthoritiesPopulator(ldapAuthoritiesPopulator);
+        }
     }
 }
