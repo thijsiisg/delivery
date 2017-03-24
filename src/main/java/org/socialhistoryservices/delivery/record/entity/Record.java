@@ -18,7 +18,6 @@ package org.socialhistoryservices.delivery.record.entity;
 
 import org.apache.commons.collections.functors.InstantiateFactory;
 import org.apache.commons.collections.list.LazyList;
-import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.reproduction.util.Pages;
 
@@ -191,8 +190,7 @@ public class Record {
         return externalInfo.getPhysicalDescription();
     }
 
-    @OneToMany(mappedBy="record", cascade=CascadeType.ALL)
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    @OneToMany(mappedBy="record", cascade=CascadeType.ALL, orphanRemoval=true)
     private List<ArchiveHoldingInfo> archiveHoldingInfo = new ArrayList<>();
 
     /**
@@ -205,7 +203,7 @@ public class Record {
 
     /**
      * Set the archive holding info (preferably from IISHRecordLookupService.getArchiveHoldingInfoByPid).
-     * @param info The info.
+     * @param archiveHoldingInfo The info.
      */
     public void setArchiveHoldingInfo(List<ArchiveHoldingInfo> archiveHoldingInfo) {
         this.archiveHoldingInfo.clear();

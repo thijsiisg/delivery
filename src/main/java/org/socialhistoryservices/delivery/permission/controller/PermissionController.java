@@ -16,11 +16,9 @@
 
 package org.socialhistoryservices.delivery.permission.controller;
 
-import org.codehaus.jackson.JsonNode;
-import org.socialhistoryservices.delivery.ErrorHandlingController;
+import org.apache.log4j.Logger;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
-import org.apache.log4j.Logger;
 import org.socialhistoryservices.delivery.api.RecordLookupService;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
@@ -29,11 +27,8 @@ import org.socialhistoryservices.delivery.permission.service.PermissionSearch;
 import org.socialhistoryservices.delivery.permission.service.PermissionService;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.record.service.RecordService;
-import org.socialhistoryservices.delivery.InvalidRequestException;
-import org.socialhistoryservices.delivery.ResourceNotFoundException;
 import org.socialhistoryservices.delivery.request.controller.AbstractRequestController;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.support.PagedListHolder;
 import org.springframework.mail.MailException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -288,7 +283,7 @@ public class PermissionController extends AbstractRequestController {
             if ((parent != null) && parents.containsKey(parent)) {
                 RecordPermission parentRp = parents.get(parent);
                 parentRp.setOriginalRequestPids(
-                    parentRp.getOriginalRequestPids() + properties.getProperty("prop_pidSeparator") + record.getPid());
+                    parentRp.getOriginalRequestPids() + deliveryProperties.getPidSeperator() + record.getPid());
 
                 toRemove.add(rp);
                 permissions.removeRecordPermission(rp);

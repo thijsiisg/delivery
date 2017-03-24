@@ -255,10 +255,10 @@ public class IISHRecordLookupService implements RecordLookupService {
         search += "&query=" + query;
 
         try {
-            String apiProto = properties.getProperty("prop_apiProto");
-            String apiDomain = properties.getProperty("prop_apiDomain");
-            String apiBase = properties.getProperty("prop_apiBase");
-            int apiPort = Integer.parseInt(properties.getProperty("prop_apiPort"));
+            String apiProto = deliveryProperties.getApiProto();
+            String apiDomain = deliveryProperties.getApiDomain();
+            String apiBase = deliveryProperties.getApiBase();
+            int apiPort = deliveryProperties.getApiPort();
 
             URI uri = new URI(apiProto, null, apiDomain, apiPort, apiBase, search, null);
             URL req = uri.toURL();
@@ -336,7 +336,7 @@ public class IISHRecordLookupService implements RecordLookupService {
     }
 
     private String[] getParentPidAndItem(String pid) {
-        String itemSeparator = properties.getProperty("prop_itemSeparator");
+        String itemSeparator = deliveryProperties.getItemSeperator();
         if (pid.contains(itemSeparator)) {
             int idx = pid.indexOf(itemSeparator);
             String parentPid = pid.substring(0, idx);

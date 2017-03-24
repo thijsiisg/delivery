@@ -29,7 +29,8 @@ import javax.validation.constraints.Size;
  */
 @Entity
 @Table(name = "holding_reservations", indexes = {@Index(columnList = "completed", name = "holding_reservations_completed_idx"),
-                                                @Index(columnList = "holding_id", name = "holding_reservations_holding_fk")})
+                                                @Index(columnList = "holding_id", name = "holding_reservations_holding_fk"),
+                                                @Index(columnList = "reservation_id", name = "holding_reservations_reservation_fk")})
 public class HoldingReservation extends HoldingRequest {
 
 
@@ -117,7 +118,6 @@ public class HoldingReservation extends HoldingRequest {
     /** The RecordPermission's permission. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="reservation_id")
-    @org.hibernate.annotations.Index(name = "holding_reservations_reservation_fk")
     private Reservation reservation;
 
     /**

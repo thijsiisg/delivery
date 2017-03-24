@@ -28,9 +28,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Reservation object representing a reservation that can be made on a set of
@@ -295,7 +293,7 @@ public class Reservation extends Request {
 
     /**
      * Set the Reservation's permissions.
-     * @param permission the Reservation's permissions.
+     * @param permissions the Reservation's permissions.
      */
     public void setPermissions(Set<Permission> permissions) {
         this.permissions = permissions;

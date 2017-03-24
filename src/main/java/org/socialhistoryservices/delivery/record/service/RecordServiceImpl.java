@@ -320,7 +320,7 @@ public class RecordServiceImpl implements RecordService {
      */
     public Record createRecordByPid(String pid) throws NoSuchPidException {
         Record parent = null;
-        String itemSeparator = properties.getProperty("prop_itemSeparator");
+        String itemSeparator = deliveryProperties.getItemSeperator();
         if (pid.contains(itemSeparator)) {
             int idx = pid.indexOf(itemSeparator);
             String parentPid = pid.substring(0, idx);

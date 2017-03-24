@@ -338,7 +338,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
 
     /**
      * Prints holding reservations by using the default printer.
-     * @param hr The holding reservations to print.
+     * @param hrs The holding reservations to print.
      * @param alwaysPrint If set to true, already printed holdings will
      * also be printed.
      * @throws PrinterException Thrown when delivering the print job to the
@@ -356,18 +356,18 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                 if (mt == ExternalRecordInfo.MaterialType.ARCHIVE) {
                     requestPrintablesArchive.add(
                         new ArchiveReservationPrintable(
-                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties));
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties));
                 }
                 else {
                     requestPrintables.add(
                         new ReservationPrintable(
-                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties));
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties));
                 }
                 reservations.add(hr.getReservation());
             }
 
-            printRequest(requestPrintables, properties.getProperty("prop_printerArchive"), alwaysPrint);
-            printRequest(requestPrintablesArchive, properties.getProperty("prop_printerReadingRoom"), alwaysPrint);
+            printRequest(requestPrintables, deliveryProperties.getPrinterArchive(), alwaysPrint);
+            printRequest(requestPrintablesArchive, deliveryProperties.getPrinterReadingRoom(), alwaysPrint);
 
             for (Reservation r : reservations) {
                 saveReservation(r);
@@ -554,7 +554,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
 
     /**
      * Returns the active reservation with which this holding is associated.
-     * @param h The Holding to get the active reservation of.
+     * @param holding The Holding to get the active reservation of.
      * @return The active reservation, or null if no active reservation exists.
      */
     public Reservation getActiveFor(Holding holding) {

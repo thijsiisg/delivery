@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.reservation.service;
 
+import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.entity.ArchiveHoldingInfo;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Record;
@@ -36,7 +37,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
      * @param mSource The message source to fetch localized messages.
      * @param format The date format to use.
      */
-    public ArchiveReservationPrintable(HoldingReservation hr, MessageSource mSource, DateFormat format, Properties prop) {
+    public ArchiveReservationPrintable(HoldingReservation hr, MessageSource mSource, DateFormat format, DeliveryProperties prop) {
         super(hr, mSource, format, prop);
     }
 

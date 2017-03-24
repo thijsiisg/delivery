@@ -45,6 +45,9 @@ public class DeliveryProperties {
     private int requestPageStepSize = 10;
     private int reservationMaxDaysInAdvance = 31;
     private int reservationMaxItems = 3;
+    private int reservationMaxChildren = 10;
+    private String printerArchive = "delivery-archive";
+    private String printerReadingRoom = "delivery-reading-room";
     private String sorAccessToken = "bla";
     private String sorAddress = "http://disseminate.objectrepository.org";
     private String timeFormat = "HH:mm:ss";
@@ -330,6 +333,30 @@ public class DeliveryProperties {
 
     public void setReservationMaxItems(int reservationMaxItems) {
         this.reservationMaxItems = reservationMaxItems;
+    }
+
+    public int getReservationMaxChildren() {
+        return reservationMaxChildren;
+    }
+
+    public void setReservationMaxChildren(int reservationMaxChildren) {
+        this.reservationMaxChildren = reservationMaxChildren;
+    }
+
+    public String getPrinterArchive() {
+        return printerArchive;
+    }
+
+    public void setPrinterArchive(String printerArchive) {
+        this.printerArchive = printerArchive;
+    }
+
+    public String getPrinterReadingRoom() {
+        return printerReadingRoom;
+    }
+
+    public void setPrinterReadingRoom(String printerReadingRoom) {
+        this.printerReadingRoom = printerReadingRoom;
     }
 
     public String getSorAccessToken() {

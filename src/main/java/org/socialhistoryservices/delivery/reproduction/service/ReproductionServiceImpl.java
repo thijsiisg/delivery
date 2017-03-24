@@ -93,7 +93,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     /**
      * Remove a Reproduction from the database.
      *
-     * @param obj Reproduction to remove.
+     * @param reproduction Reproduction to remove.
      */
     public void removeReproduction(Reproduction reproduction) {
         // Set all holdings linked to this reproduction back to AVAILABLE.
@@ -480,7 +480,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 }
             }
 
-            printRequest(requestPrintables, properties.getProperty("prop_printerArchive"), alwaysPrint);
+            printRequest(requestPrintables, deliveryProperties.getPrinterArchive(), alwaysPrint);
 
             for (Reproduction r : reproductions) {
                 saveReproduction(r);
@@ -506,8 +506,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     /**
      * Edit reproductions.
      *
-     * @param newRes     The new reproduction to put in the database.
-     * @param oldRes     The old reproduction in the database (if present).
+     * @param newReproduction     The new reproduction to put in the database.
+     * @param oldReproduction     The old reproduction in the database (if present).
      * @param result     The binding result object to put the validation errors in.
      * @param isCustomer Whether the customer is creating the reproduction.
      * @throws ClosedException                Thrown when a holding is provided which

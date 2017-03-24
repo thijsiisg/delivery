@@ -36,6 +36,7 @@ import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation_
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.socialhistoryservices.delivery.reservation.service.ReservationMailer;
+import org.socialhistoryservices.delivery.reservation.service.ReservationSearch;
 import org.socialhistoryservices.delivery.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
@@ -130,7 +131,7 @@ public class ReservationController extends AbstractRequestController {
         model.addAttribute("holdingActiveRequests", getHoldingActiveRequests(holdings));
 
         Calendar cal = GregorianCalendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, Integer.parseInt(properties.getProperty("prop_reservationMaxDaysInAdvance")));
+        cal.add(Calendar.DAY_OF_MONTH, deliveryProperties.getReservationMaxDaysInAdvance());
         model.addAttribute("maxReserveDate", cal.getTime());
         initOverviewModel(model);
 
@@ -325,8 +326,8 @@ public class ReservationController extends AbstractRequestController {
         if (!super.checkHoldings(model, request))
             return false;
 
-        int maxItems = Integer.parseInt(properties.getProperty("prop_reservationMaxItems"));
-        int maxChildren = Integer.parseInt(properties.getProperty("prop_reservationMaxChildren"));
+        int maxItems = deliveryProperties.getReservationMaxItems();
+        int maxChildren = deliveryProperties.getReservationMaxChildren();
 
         Map<String, Integer> noOfRequests = new HashMap<String, Integer>();
         for (HoldingRequest hr : request.getHoldingRequests()) {

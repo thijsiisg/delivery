@@ -111,7 +111,7 @@ public abstract class RequestPrintable implements Printable {
      * @param mSource The message source to fetch localized messages.
      * @param format  The date format to use.
      */
-    public RequestPrintable(HoldingRequest hr, MessageSource mSource, DateFormat format, Properties prop) {
+    public RequestPrintable(HoldingRequest hr, MessageSource mSource, DateFormat format, DeliveryProperties prop) {
         deliveryProperties = prop;
         holdingRequest = hr;
 
