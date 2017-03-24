@@ -148,20 +148,9 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
     /**
      * Initilizes the model for use with an overview.
      *
-     * @param p               The parameter map.
-     * @param model           The model.
-     * @param pagedListHolder The paged list holder.
+     * @param model The model.
      */
-    protected void initOverviewModel(Map<String, String[]> p, Model model, PagedListHolder<?> pagedListHolder) {
-        // Set the amount of requests per page
-        pagedListHolder.setPageSize(parsePageLenFilter(p));
-
-        // Set the current page, internal starts at 0, external at 1
-        pagedListHolder.setPage(parsePageFilter(p));
-
-        // Add result to model
-        model.addAttribute("pageListHolder", pagedListHolder);
-
+    protected void initOverviewModel(Model model) {
         Calendar cal = GregorianCalendar.getInstance();
         model.addAttribute("today", cal.getTime());
 
@@ -230,12 +219,13 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
     }
 
     /**
-     * Parse the page filter into an integer.
+     * Parse the page filter into a first result integer.
      *
      * @param p The parameter map to search the given filter value in.
-     * @return The current page to show, default 0. (external = 1).
+     * @return The first result to show.
      */
-    protected int parsePageFilter(Map<String, String[]> p) {
+    protected int getFirstResult(Map<String, String[]> p) {
+        int maxResults = getMaxResults(p);
         int page = 0;
         if (p.containsKey("page")) {
             try {
@@ -244,27 +234,27 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
                 throw new InvalidRequestException("Invalid page number: " + p.get("page")[0]);
             }
         }
-        return page;
+        return maxResults * page;
     }
 
     /**
-     * Parse the page length filter.
+     * Parse the page length filter into a max results integer.
      *
      * @param p The parameter map to search the given filter value in.
-     * @return The length of the page (defaults to the length in the config,
+     * @return The length of the page, max results (defaults to the length in the config,
      * can not exceed the maximum length in the config).
      */
-    protected int parsePageLenFilter(Map<String, String[]> p) {
-        int pageLen = Integer.parseInt(properties.getProperty("prop_requestPageLen"));
+    protected int getMaxResults(Map<String, String[]> p) {
+        int maxResults = Integer.parseInt(properties.getProperty("prop_requestPageLen"));
         if (p.containsKey("page_len")) {
             try {
-                pageLen = Math.max(0, Math.min(Integer.parseInt(p.get("page_len")[0]),
+                maxResults = Math.max(0, Math.min(Integer.parseInt(p.get("page_len")[0]),
                         Integer.parseInt(properties.getProperty("prop_requestMaxPageLen"))));
             } catch (NumberFormatException ex) {
                 throw new InvalidRequestException("Invalid page length: " + p.get("page_len")[0]);
             }
         }
-        return pageLen;
+        return maxResults;
     }
 
     /**
