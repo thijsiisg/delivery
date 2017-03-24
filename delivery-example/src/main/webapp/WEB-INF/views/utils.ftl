@@ -56,7 +56,7 @@ ${uri}?<#list requestParams?keys as k><#if requestParams[k] !="">${k}=${requestP
 </#macro>
 
 <#macro pageLinks totalSize noItemsPerPage pageNumber>
-    <#assign noPages = (totalSize?number/noItemsPerPage?number)?ceiling/>
+    <#assign noPages = (totalSize/noItemsPerPage?number)?ceiling/>
     <div class="pageLinks">
         <#if pageNumber?number &gt; 1>
             <a href="<@paramUrl {"page": 1} />" class="pageLinks">&lt;&lt;</a>
