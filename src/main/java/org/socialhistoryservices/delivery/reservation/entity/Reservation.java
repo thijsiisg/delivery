@@ -38,7 +38,6 @@ import java.util.List;
  */
 @Entity
 @Table(name="reservations")
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Configurable
 public class Reservation extends Request {
 
@@ -279,43 +278,27 @@ public class Reservation extends Request {
         return holdingReservations;
     }
 
-	/** The Reservation's permission. */
-    @ManyToOne
-    @JoinColumn(name="permission_id")
-    private Permission permission;
+    /** The Reservation's permissions. */
+    @ManyToMany
+    @JoinTable(name="reservation_permissions",
+        joinColumns=@JoinColumn(name="reservation_id"),
+        inverseJoinColumns=@JoinColumn(name="permission_id"))
+    private Set<Permission> permissions = new HashSet<>();
 
     /**
-     * Get the Reservation's permission.
-     * @return the Reservation's permission.
+     * Get the Reservation's permissions.
+     * @return the Reservation's permissions.
      */
-    public Permission getPermission() {
-        return permission;
+    public Set<Permission> getPermissions() {
+        return permissions;
     }
 
     /**
-     * Set the Reservation's permission.
-     * @param permission the Reservation's permission.
+     * Set the Reservation's permissions.
+     * @param permission the Reservation's permissions.
      */
-    public void setPermission(Permission permission) {
-        this.permission = permission;
-    }
-
-    /** The number of this reservation in the queue. */
-    @Column(name="queueNo")
-    private Integer queueNo;
-    /**
-     * Get the Reservation's queueNo.
-     * @return The queueNo.
-     */
-    public Integer getQueueNo() {
-        return queueNo;
-    }
-    /**
-     * Set the Reservation's queueNo.
-     * @param queueNo The new queueNo.
-     */
-    public void setQueueNo(Integer queueNo) {
-        this.queueNo = queueNo;
+    public void setPermissions(Set<Permission> permissions) {
+        this.permissions = permissions;
     }
 
     /** The Reservation's comment. */

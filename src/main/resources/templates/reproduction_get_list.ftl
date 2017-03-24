@@ -177,7 +177,7 @@
   <@paramUrl {} "/reproduction/batchprocess"/>
 </#assign>
 
-<#if pageListHolder.pageList?size == 0>
+<#if holdingReproductions?size == 0>
   <span class="bignote">
     <@_ "search.notfound" "No results..."/>
   </span>
@@ -198,7 +198,7 @@
       </tr>
       </thead>
       <tbody>
-        <#list pageListHolder.pageList as holdingReproduction>
+        <#list holdingReproductions as holdingReproduction>
           <#assign holding = holdingReproduction.holding>
           <#assign reproduction = holdingReproduction.reproduction>
 
@@ -255,7 +255,7 @@
       <input type="button" value="${st}" class="selectNone"/>
     </div>
 
-    <@pageLinks pageListHolder/>
+    <@pageLinks holdingReproductionsSize RequestParameters["page_len"]!prop_requestPageLen?number RequestParameters["page"]!1 />
 
     <#if _sec.ifAnyGranted("ROLE_REPRODUCTION_MODIFY,ROLE_REPRODUCTION_DELETE")>
       <fieldset class="actions">

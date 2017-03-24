@@ -77,13 +77,6 @@ public interface RecordService {
     public Record getRecordById(int id);
 
     /**
-     * Resolve the most specific matching the given Pid.
-     * @param pid Fully qualified Pid to retrieve.
-     * @return The Record most specifically matching the Pid. Null if none exist.
-     */
-    public Record resolveRecordByPid(String pid);
-
-    /**
      * Retrieve the Record matching the given pid.
      * @param pid Pid of the Record to retrieve.
      * @return The Record matching the pid. Null if none exist.
@@ -140,17 +133,12 @@ public interface RecordService {
     public void removeHolding(Holding obj);
 
     /**
-     * Scheduled task to update all closed records with embargo dates in the
-     * past to open status.
-     */
-    public void checkEmbargoDates();
-
-    /**
      * Updates the external info of the given record, if necessary.
      * @param record      The record of which to update the external info.
      * @param hardRefresh Always update the external info.
+     * @return Whether the record was updated.
      */
-    public void updateExternalInfo(Record record, boolean hardRefresh);
+    public boolean updateExternalInfo(Record record, boolean hardRefresh);
 
     /**
      * Edit records.
@@ -169,15 +157,6 @@ public interface RecordService {
             throws NoSuchPidException, NoSuchParentException;
 
     /**
-     * Get the first available (not closed) holding for a record.
-     * @param r The record to get a holding of.
-     * @param mustBeAvailable
-     * @return The first free holding found or null if all occupied/no
-     * holdings.
-     */
-    public Holding getHoldingForRecord(Record r, boolean mustBeAvailable);
-
-    /**
      * Create a record, using the metadata from the IISH API to populate its
      * fields.
      * @param pid The pid of the record (should exist in the API).
@@ -186,4 +165,11 @@ public interface RecordService {
      * in the API.
      */
     public Record createRecordByPid(String pid) throws NoSuchPidException;
+
+    /**
+     * Get all child records of the given record that are currently reserved.
+     * @param record The parent record.
+     * @return A list of all reserved child records.
+     */
+    public List<Record> getReservedChildRecords(Record record);
 }

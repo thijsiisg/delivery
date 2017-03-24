@@ -58,16 +58,12 @@ public class RecordServiceImpl implements RecordService {
     @Autowired
     private RecordLookupService lookup;
 
-    @Autowired
-    private PlatformTransactionManager platformTransactionManager;
-
     private static final Log LOGGER = LogFactory.getLog(RecordServiceImpl.class);
 
     /**
      * Add a Record to the database.
      * @param obj Record to add.
      */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void addRecord(Record obj) {
         recordDAO.add(obj);
     }
@@ -120,31 +116,6 @@ public class RecordServiceImpl implements RecordService {
         query.where(builder.equal(recRoot.get(Record_.pid), pid));
 
         return getRecord(query);
-    }
-
-    /**
-     * Resolve the most specific matching the given Pid.
-     * @param pid Fully qualified Pid to retrieve.
-     * @return The Record most specifically matching the Pid.
-     */
-    public Record resolveRecordByPid(String pid) {
-        Record root = getRecordByPid(pid);
-        if (root != null) {
-            updateExternalInfo(root, false);
-            saveRecord(root);
-            return root;
-        }
-        String itemSeparator = deliveryProperties.getItemSeperator();
-        while (pid.contains(itemSeparator)) {
-            pid = pid.substring(0, pid.lastIndexOf(itemSeparator));
-            Record rec = getRecordByPid(pid);
-            if (rec != null) {
-                updateExternalInfo(rec, false);
-                saveRecord(rec);
-                return rec;
-            }
-        }
-        return null;
     }
 
     /**
@@ -210,44 +181,12 @@ public class RecordServiceImpl implements RecordService {
     }
 
     /**
-     * Scheduled task to update all closed records with embargo dates in the
-     * past to open status.
-     */
-    @Scheduled(fixedDelay=1000 * 60 * 60)
-    public void checkEmbargoDates() {
-        // Build the query
-        CriteriaBuilder builder = getRecordCriteriaBuilder();
-
-        CriteriaQuery<Record> query = builder.createQuery(Record.class);
-        Root<Record> recRoot = query.from(Record.class);
-        query.select(recRoot);
-
-        Expression<Boolean> crit = builder.notEqual(recRoot.get(Record_.restrictionType),
-                    Record.RestrictionType.OPEN);
-
-        // Get earliest date
-        Calendar cal = GregorianCalendar.getInstance();
-        cal.add(Calendar.YEAR, -1000);
-        Date earliest = cal.getTime();
-        Date now = new Date();
-
-        crit = builder.and(crit, builder.isNotNull(recRoot.get(Record_.embargo)));
-        crit = builder.and(crit, builder.between(recRoot.get(Record_.embargo), earliest, now));
-        query.where(crit);
-
-        // Get list
-        for (Record rec : listRecords(query)) {
-            rec.setRestrictionType(Record.RestrictionType.OPEN);
-            saveRecord(rec);
-        }
-    }
-
-    /**
      * Updates the external info of the given record, if necessary.
      * @param record      The record of which to update the external info.
      * @param hardRefresh Always update the external info.
+     * @return Whether the record was updated.
      */
-    public void updateExternalInfo(Record record, boolean hardRefresh) {
+    public boolean updateExternalInfo(Record record, boolean hardRefresh) {
         try {
             // Do we need to update the external info?
             Integer days = deliveryProperties.getExternalInfoMinDaysCache();
@@ -256,18 +195,24 @@ public class RecordServiceImpl implements RecordService {
 
             Date lastUpdated = record.getExternalInfoUpdated();
             if (!hardRefresh && (lastUpdated != null) && lastUpdated.after(calendar.getTime()))
-                return;
+                return false;
 
             // We need to update the external info
             String pid = record.getPid();
             ExternalRecordInfo eri = lookup.getRecordMetaDataByPid(pid);
+            List<ArchiveHoldingInfo> ahi = lookup.getArchiveHoldingInfoByPid(pid);
             Map<String, ExternalHoldingInfo> ehMap = lookup.getHoldingMetadataByPid(pid);
 
+            // Update external record info
             if (record.getExternalInfo() != null)
                 record.getExternalInfo().mergeWith(eri);
             else
                 record.setExternalInfo(eri);
 
+            // Update archive holding info
+            record.setArchiveHoldingInfo(ahi);
+
+            // Update the holdings, merge exisiting holdings, add new holdings, do not remove old holdings
             for (String signature : ehMap.keySet()) {
                 boolean found = false;
 
@@ -291,9 +236,11 @@ public class RecordServiceImpl implements RecordService {
             }
 
             record.setExternalInfoUpdated(new Date());
+            return true;
         }
         catch (NoSuchPidException nspe) {
             // PID not found, or API down, then just skip the record
+            return false;
         }
     }
 
@@ -315,21 +262,16 @@ public class RecordServiceImpl implements RecordService {
 
         String itemSeparator = deliveryProperties.getItemSeperator();
         if (pid.contains(itemSeparator)) {
-            String parentPid = pid.substring(0, pid.lastIndexOf(itemSeparator));
+            String parentPid = pid.substring(0, pid.indexOf(itemSeparator));
             Record parent = getRecordByPid(parentPid);
             if (parent == null) {
                 throw new NoSuchParentException();
             }
             newRecord.setParent(parent);
-        } else {
-            // Make sure the restriction type cannot be inherit on parents.
-            if (newRecord.getRestrictionType() == Record.RestrictionType.INHERIT) {
-                newRecord.setRestrictionType(Record.RestrictionType.OPEN);
-            }
         }
 
         // Add holding/other API info if present
-	    updateExternalInfo(newRecord, true);
+        updateExternalInfo(newRecord, true);
 
         // Validate the record.
         validateRecord(newRecord, result);
@@ -354,13 +296,6 @@ public class RecordServiceImpl implements RecordService {
         // Validate the record
         mvcValidator.validate(record, result);
 
-        // Validate the associated contact if present
-        if (record.getContact() != null) {
-            result.pushNestedPath("contact");
-            mvcValidator.validate(record.getContact(), result);
-            result.popNestedPath();
-        }
-
         // Validate associated holdings if present
         int i = 0;
         for(Holding h : record.getHoldings()) {
@@ -376,37 +311,6 @@ public class RecordServiceImpl implements RecordService {
     }
 
     /**
-     * Get the first available (not closed) holding for a record.
-     * @param r The record to get a holding of.
-     * @param mustBeAvailable Whether the holding must be available.
-     * @return The first free holding found or null if all occupied/no holdings.
-     */
-    public Holding getHoldingForRecord(Record r, boolean mustBeAvailable) {
-        CriteriaBuilder cb = holdingDAO.getCriteriaBuilder();
-        CriteriaQuery<Holding> cq = cb.createQuery(Holding.class);
-        Root<Holding> hRoot = cq.from(Holding.class);
-        cq.select(hRoot);
-
-        Join<Holding, Record> rRoot = hRoot.join(
-                    Holding_.record);
-        Expression<Boolean> where = cb.equal(rRoot.get(Record_.id),
-                r.getId());
-
-        // Only get available holdings?
-	    if (mustBeAvailable) {
-		    where = cb.and(where, cb.equal(hRoot.<Holding.Status>get(Holding_.status), Holding.Status.AVAILABLE));
-	    }
-
-        // Only get holdings which may be used without an employee's explicit permission.
-        where = cb.and(where, cb.equal(hRoot.<Holding.UsageRestriction>get(Holding_.usageRestriction),
-		        Holding.UsageRestriction.OPEN));
-
-        cq.where(where);
-
-        return holdingDAO.get(cq);
-    }
-
-    /**
      * Create a record, using the metadata from the IISH API to populate its
      * fields.
      * @param pid The pid of the record (should exist in the API).
@@ -415,16 +319,24 @@ public class RecordServiceImpl implements RecordService {
      * in the API.
      */
     public Record createRecordByPid(String pid) throws NoSuchPidException {
-        // 1). Assumed is provided pid is not yet in the system's local
-        // database.
+        Record parent = null;
+        String itemSeparator = properties.getProperty("prop_itemSeparator");
+        if (pid.contains(itemSeparator)) {
+            int idx = pid.indexOf(itemSeparator);
+            String parentPid = pid.substring(0, idx);
+
+            parent = getRecordByPid(parentPid);
+            if (parent == null) {
+                parent = createRecordByPid(parentPid);
+                addRecord(parent);
+            }
+        }
 
         Record r = new Record();
         r.setPid(pid);
         r.setExternalInfo(lookup.getRecordMetaDataByPid(pid));
-        r.setParent(this.resolveRecordByPid(pid)); // Works because of 1).
-        if (r.getParent() != null) {
-            r.setRestrictionType(Record.RestrictionType.INHERIT);
-        }
+        r.setArchiveHoldingInfo(lookup.getArchiveHoldingInfoByPid(pid));
+        r.setParent(parent);
         List<Holding> hList = new ArrayList<Holding>();
         for (Map.Entry<String, ExternalHoldingInfo> e :
             lookup.getHoldingMetadataByPid(pid).entrySet()) {
@@ -436,5 +348,28 @@ public class RecordServiceImpl implements RecordService {
         }
         r.setHoldings(hList);
         return r;
+    }
+
+    /**
+     * Get all child records of the given record that are currently reserved.
+     * @param record The parent record.
+     * @return A list of all reserved child records.
+     */
+    public List<Record> getReservedChildRecords(Record record) {
+        if (record.getParent() != null)
+            return new ArrayList<>();
+
+        CriteriaBuilder builder = getRecordCriteriaBuilder();
+        CriteriaQuery<Record> query = builder.createQuery(Record.class);
+        Root<Record> recRoot = query.from(Record.class);
+        Join<Record, Holding> hRoot = recRoot.join(Record_.holdings);
+
+        Predicate parentEquals = builder.equal(recRoot.get(Record_.parent), record);
+        Predicate notAvailable = builder.notEqual(hRoot.get(Holding_.status), Holding.Status.AVAILABLE);
+
+        query.select(recRoot);
+        query.where(builder.and(parentEquals, notAvailable));
+
+        return listRecords(query);
     }
 }

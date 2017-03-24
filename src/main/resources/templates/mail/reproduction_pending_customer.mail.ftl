@@ -8,7 +8,7 @@
 <#list reproduction.holdingReproductions as hr>
   <#assign h = hr.holding>
   <#assign info = h.record.externalInfo>
-* ${h.record.title} - ${h.signature} <#if info.author??>/ ${info.author} </#if><#if hr.comment??>- ${hr.comment}</#if>
+* ${hr.toString()}
   <#if hr.standardOption??>
 <@_ "reproductionStandardOption.price" "Price"/>: <@holdingPrice hr.price hr.completePrice hr.numberOfPages/>
 <@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: ${hr.deliveryTime} <@_ "days" "days"/>

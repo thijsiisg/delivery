@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.permission.entity;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -23,18 +24,11 @@ import javax.persistence.*;
 import java.util.*;
 
 /**
- * A permission request in order to view a particular  set of restricted
- * records.
+ * A permission request in order to view a particular set of restricted records.
  */
 @Entity
 @Table(name="permissions")
 public class Permission {
-    /** Status of the permission request. */
-    public enum Status {
-        PENDING,
-        HANDLED,
-    };
-
     /** The Permission's id. */
     @Id
     @GeneratedValue
@@ -101,7 +95,7 @@ public class Permission {
      * Generate a completely random code token.
      */
     public void generateCode() {
-        code = UUID.randomUUID().toString();
+        code = RandomStringUtils.randomAlphanumeric(20);
     }
 
     /** The Permission's email. */
@@ -204,78 +198,6 @@ public class Permission {
         this.address = address;
     }
 
-    /** The Permission's dateFrom. */
-    @Temporal(TemporalType.DATE)
-    @Column(name="date_from", nullable=false)
-    private Date dateFrom;
-
-    /**
-     * Get the Permission's dateFrom.
-     * @return the Permission's dateFrom.
-     */
-    public Date getDateFrom() {
-        return dateFrom;
-    }
-
-    /**
-     * Set the Permission's dateFrom.
-     * @param dateFrom the Permission's dateFrom.
-     */
-    public void setDateFrom(Date dateFrom) {
-        this.dateFrom = dateFrom;
-    }
-
-    /** The Permission's dateTo. */
-    @Temporal(TemporalType.DATE)
-    @Column(name="date_to", nullable=false)
-    private Date dateTo;
-
-    /**
-     * Get the Permission's dateTo.
-     * @return the Permission's dateTo.
-     */
-    public Date getDateTo() {
-        return dateTo;
-    }
-
-    /**
-     * Set the Permission's dateTo.
-     * @param dateTo the Permission's dateTo.
-     */
-    public void setDateTo(Date dateTo) {
-        this.dateTo = dateTo;
-    }
-
-    /**
-     * Check whether this permission is valid on the given date.
-     * @param date The date to check.
-     * @return True iff this permission is valid on that date.
-     */
-    public boolean isValidOn(Date date) {
-        return !date.before(getDateFrom()) && !date.after(getDateTo());
-    }
-
-    /** The Permission's status. */
-    @Enumerated(EnumType.STRING)
-    @Column(name="status", nullable=false)
-    private Status status;
-
-    /**
-     * Get the Permission's status.
-     * @return the Permission's status.
-     */
-    public Status getStatus() {
-        return status;
-    }
-
-    /**
-     * Set the Permission's status.
-     * @param status the Permission's status.
-     */
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
     /** The Permission's request locale. */
 //    @Enumerated(EnumType.STRING)
     @Column(name="requestLocale", nullable=false)
@@ -327,8 +249,6 @@ public class Permission {
         recordPermissions.remove(rp);
     }
 
-
-
     /**
      * Check if this permission has a granted clause for
      * the given record.
@@ -336,13 +256,16 @@ public class Permission {
      * @return Whether permission has been granted for this record.
      */
     public boolean hasGranted(Record rec) {
-        if (status != Status.HANDLED) {
-            return false;
-        }
+        Calendar minDateCalender = Calendar.getInstance();
+        minDateCalender.add(Calendar.YEAR, -1);
+
         for (RecordPermission p : recordPermissions) {
-            if (p.getRecord().equals(rec)) {
-                return p.getGranted();
-            }
+            boolean recordMatch = p.getRecord().equals(rec) ||
+                ((rec.getParent() != null) && p.getRecord().equals(rec.getParent()));
+            boolean valid = (p.getDateGranted() != null) && p.getDateGranted().after(minDateCalender.getTime());
+
+            if (recordMatch && p.getGranted() && valid)
+                return true;
         }
         return false;
     }
@@ -352,7 +275,6 @@ public class Permission {
      */
     public Permission() {
         recordPermissions = new ArrayList<RecordPermission>();
-        setStatus(Status.PENDING);
         setRequestLocale(LocaleContextHolder.getLocale());
     }
 

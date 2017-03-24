@@ -33,8 +33,6 @@ import java.util.List;
 @Entity
 @Table(name = "holdings", indexes = {@Index(columnList = "record_id", name = "holdings_record_fk"),@Index(columnList = "external_info_id", name = "holdings_external_info_fk")})
 public class Holding {
-
-
     /** The usage restriction of the holding. */
     public enum UsageRestriction {
         OPEN,
@@ -48,8 +46,6 @@ public class Holding {
         IN_USE,
         RETURNED,
     }
-
-
 
     /** The Holding's id. */
     @Id
@@ -85,98 +81,12 @@ public class Holding {
     public void setSignature(String sig) {
         signature = sig;
 
-	    // Determine the usage restriction by checking the signature for patterns
-	    String checkSignature = signature.trim().toLowerCase();
-	    if (    checkSignature.endsWith(".x") ||
-                checkSignature.endsWith("(missing)") ||
-			    checkSignature.startsWith("no circulation") ||
-			    checkSignature.startsWith("niet ter inzage")) {
-			this.setUsageRestriction(UsageRestriction.CLOSED);
-	    }
-    }
-
-    /** The Holding's floor (nullable). */
-    @Min(0)
-    @Column(name="floor")
-    private Integer floor;
-
-    /**
-     * Get the Holding's floor.
-     * @return the Holding's floor.
-     */
-    public Integer getFloor() {
-        return floor;
-    }
-
-    /**
-     * Set the Holding's floor.
-     * @param floor the Holding's floor.
-     */
-    public void setFloor(Integer floor) {
-        this.floor = floor;
-    }
-
-    /** The Holding's direction. */
-    @Size(max=50)
-    @Column(name="direction")
-    private String direction;
-
-    /**
-     * Get the Holding's direction.
-     * @return the Holding's direction.
-     */
-    public String getDirection() {
-        return direction;
-    }
-
-    /**
-     * Set the Holding's direction.
-     * @param direction the Holding's direction.
-     */
-    public void setDirection(String direction) {
-        this.direction = direction;
-    }
-
-    /** The Holding's cabinet (nullable). */
-    @Size(max=50)
-    @Column(name="cabinet")
-    private String cabinet;
-
-    /**
-     * Get the Holding's cabinet.
-     * @return the Holding's cabinet.
-     */
-    public String getCabinet() {
-        return cabinet;
-    }
-
-    /**
-     * Set the Holding's cabinet.
-     * @param cabinet the Holding's cabinet.
-     */
-    public void setCabinet(String cabinet) {
-        this.cabinet = cabinet;
-    }
-
-    /** The Holding's shelf (nullable). */
-    @Size(max=50)
-    @Column(name="shelf")
-    private String shelf;
-
-    /**
-     * Get the Holding's shelf.
-     * @return the Holding's shelf.
-     */
-    public String getShelf() {
-        return shelf;
-    }
-
-    /**
-     * Set the Holding's shelf.
-     * @param shelf the Holding's shelf.
-     */
-    public void setShelf(String shelf) {
-        this.shelf = shelf;
+        // Determine the usage restriction by checking the signature for patterns
+        String checkSignature = signature.trim().toLowerCase();
+        if (checkSignature.endsWith(".x") || checkSignature.endsWith("(missing)") ||
+            checkSignature.startsWith("no circulation") || checkSignature.startsWith("niet ter inzage")) {
+            this.setUsageRestriction(UsageRestriction.CLOSED);
+        }
     }
 
     /** The Holding's record. */
@@ -268,11 +178,11 @@ public class Holding {
 	@OneToMany(mappedBy="holding", cascade=CascadeType.ALL, orphanRemoval=true)
 	private List<HoldingReservation> holdingReservations;
 
-	public void setHoldingReservations(List<HoldingReservation> hrs) {
-		holdingReservations = hrs;
-	}
+    public void setHoldingReservations(List<HoldingReservation> hrs) {
+            holdingReservations = hrs;
+    }
 
-	public List<HoldingReservation> getHoldingReservations() {
+    public List<HoldingReservation> getHoldingReservations() {
 		return holdingReservations;
 	}
 
@@ -293,12 +203,7 @@ public class Holding {
      * @param other The other holding.
      */
     public void mergeWith(Holding other) {
-        setCabinet(other.getCabinet());
-        setDirection(other.getDirection());
-        setFloor(other.getFloor());
-        setShelf(other.getShelf());
         setUsageRestriction(other.getUsageRestriction());
-
         getExternalInfo().mergeWith(other.getExternalInfo());
     }
 
@@ -308,7 +213,7 @@ public class Holding {
     public Holding() {
         setStatus(Status.AVAILABLE);
         setUsageRestriction(UsageRestriction.OPEN);
-	    setExternalInfo(ExternalHoldingInfo.getEmptyExternalInfo());
+        setExternalInfo(ExternalHoldingInfo.getEmptyExternalInfo());
     }
 
     /**

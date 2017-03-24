@@ -30,52 +30,67 @@
 <@_ "reservation.permissionMsg" "The following items are restricted and require a request for permission to be filed before reserving:"/>
 <ul>
   <#assign pids = ""/>
-  <#assign hasOpen = false>
-  <#list holdingReservations as hr>
+  <#list holdingReservationsRestricted as hr>
     <#assign h = hr.holding>
-    <#assign info = h.record.externalInfo>
-    <#if h.record.realRestrictionType == "RESTRICTED">
     <#assign pids = pids + h.record.pid?url+prop_pidSeparator>
-    <li>${h.record.title?html} <#if info.author??>/ ${info.author}</#if> -
-    ${h.signature?html}</li>
-    <#elseif h.record.realRestrictionType == "OPEN">
-    <#assign hasOpen = true>
-    </#if>
+
+    <li>${h.record.toString()?html}</li>
   </#list>
 </ul>
 
-<form action="${rc.contextPath}/permission/createform/${pids}" method="GET">
+<form action="${rc.contextPath}/permission/createform/${pids?url}" method="GET" target="_blank">
   <input type="submit" value="<@_ "reservation.reqPermission" "Request Permission"/>"/>
 </form>
 
-<#if hasOpen>
-<h1><@_ "reservation.allowed" "Open Items:" /></h1>
-<@_ "reservation.openMsg" "The following items are freely available and can be reserved right now:"/>
-<ul>
-  <#assign pids = {}/>
-  <#list holdingReservations as hr>
-    <#assign h = hr.holding>
-    <#if h.record.realRestrictionType == "OPEN">
-    <#assign info = h.record.externalInfo>
-    <#if pids[h.record.pid]??>
-         <#assign pids = pids + {h.record.pid : (pids[h.record.pid] +  prop_holdingSeparator + h.signature?url) }>
-    <#else>
-        <#assign pids = pids + {h.record.pid :  h.signature?url}>
-    </#if>
-    <li>${h.record.title?html} <#if info.author??>/ ${info.author}</#if> -
-    ${h.signature?html}</li>
-    </#if>
-  </#list>
-</ul>
-<#assign pidParam = "">
-<#list pids?keys as k>
-<#assign pidParam = pidParam + k + prop_holdingSeparator + pids[k] + prop_pidSeparator>
-</#list>
+<#if holdingReservationsOpen?has_content>
+    <h1><@_ "reservation.allowed" "Open Items:" /></h1>
+    <@_ "reservation.openMsg" "The following items are freely available and can be reserved right now:"/>
+    <ul>
+      <#assign pids = {}/>
+      <#list holdingReservationsOpen as hr>
+        <#assign h = hr.holding>
 
-<form action="${rc.contextPath}/reservation/createform/${pidParam}"
-      method="GET">
-  <input type="submit" value="<@_ "reservation.create" "Create Reservation"/>"/>
-</form>
+        <#if pids[h.record.pid]??>
+          <#assign pids = pids + {h.record.pid : (pids[h.record.pid] +  prop_holdingSeparator + h.signature?url) }>
+        <#else>
+          <#assign pids = pids + {h.record.pid :  h.signature?url}>
+        </#if>
 
+        <li>${h.record.toString()?html}</li>
+      </#list>
+    </ul>
+
+    <#assign pidParam = "">
+    <#list pids?keys as k>
+      <#assign pidParam = pidParam + k + prop_holdingSeparator + pids[k] + prop_pidSeparator>
+    </#list>
+
+    <form action="${rc.contextPath}/reservation/createform/${pidParam?url}" method="GET" target="_blank">
+      <input type="submit" value="<@_ "reservation.create" "Create Reservation"/>"/>
+    </form>
 </#if>
+
+<h1><@_ "reservation.codes" "Permission codes" />:</h1>
+
+<#if error?? >
+    <p class="error"><@_ "reservation.error."+error error /></p>
+</#if>
+
+<p><@_ "reservation.codesMsg" "If you have received permission for one or more items, please add the codes you received."/></p>
+<#if reservation.permissions?has_content>
+  <@_ "reservation.codesAdded" "The following codes have been added" />:
+  <ul>
+  <#list reservation.permissions as permission>
+      <li>${permission.code}</li>
+  </#list>
+  </ul>
+</#if>
+<form action="#" method="GET">
+  <#list reservation.permissions as permission>
+    <input type="hidden" name="codes" value="${permission.code}"/>
+  </#list>
+
+  <input type="text" class="code" name="codes"/>
+  <input type="submit" value="<@_ "reservation.addCode" "Validate code"/>"/>
+</form>
 </@userbase>

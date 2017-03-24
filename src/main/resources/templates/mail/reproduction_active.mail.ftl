@@ -13,9 +13,7 @@
 
 
 <#list notInSor as hr>
-    <#assign h = hr.holding>
-    <#assign info = h.record.externalInfo>
-* ${h.record.title} - ${h.signature} <#if info.author??>/ ${info.author} </#if><#if hr.comment??>- ${hr.comment}</#if>
+* ${hr.toString()}
 
 </#list>
 </#if>
@@ -27,9 +25,7 @@
 
 
 <#list inSor as hr>
-    <#assign h = hr.holding>
-    <#assign info = h.record.externalInfo>
-* ${h.record.title} - ${h.signature} <#if info.author??>/ ${info.author} </#if><#if hr.comment??>- ${hr.comment}</#if>
+* ${hr.toString()}
     <#list sorUrls[h.signature] as url>
 ${url}
     </#list>

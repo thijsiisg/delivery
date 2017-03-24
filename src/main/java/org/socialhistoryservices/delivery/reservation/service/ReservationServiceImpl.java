@@ -16,6 +16,7 @@
 
 package org.socialhistoryservices.delivery.reservation.service;
 
+import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.apache.log4j.Logger;
 import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.entity.Holding;
@@ -77,40 +78,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * @param obj Reservation to add.
      */
     public void addReservation(Reservation obj) {
-        // Generate a new queue number if necessary
-        if (obj.getQueueNo() == null) {
-            Date now = new Date();
-            Date today = (Date)obj.getDate().clone();
-            today.setYear(now.getYear());
-            today.setMonth(now.getMonth());
-            today.setDate(now.getDate());
-
-            if (today.equals(obj.getDate())) {
-                // Get the last queue number today
-                CriteriaBuilder builder = getReservationCriteriaBuilder();
-
-                CriteriaQuery<Reservation> query = builder.createQuery(Reservation.class);
-                Root<Reservation> root = query.from(Reservation.class);
-                query.select(root);
-
-                query.where(builder.notEqual(root.get(Reservation_.queueNo), 0));
-                query.orderBy(builder.desc(root.get(Reservation_.creationDate)));
-
-                Reservation result = getReservation(query);
-
-                if (result == null
-                        || result.getDate().getDate() != obj.getDate().getDate()
-                        || result.getDate().getYear() != obj.getDate().getYear()
-                        || result.getDate().getMonth() != obj.getDate().getMonth()
-                   ) {
-                    obj.setQueueNo(1);
-                   }
-                else {
-                    obj.setQueueNo(result.getQueueNo()+1);
-                }
-            }
-        }
-
         // Make sure the holdings get set to the correct status.
         updateStatusAndAssociatedHoldingStatus(obj, obj.getStatus());
 
@@ -201,7 +168,28 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * @return A list of matching HoldingReservations.
      */
     public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q) {
-            return holdingReservationDAO.list(q);
+        return holdingReservationDAO.list(q);
+    }
+
+    /**
+     * List all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @param firstResult The first result to obtain
+     * @param maxResults The max number of results to obtain
+     * @return A list of matching HoldingReservations.
+     */
+    public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q,
+                                                            int firstResult, int maxResults) {
+        return holdingReservationDAO.list(q, firstResult, maxResults);
+    }
+
+    /**
+     * Count all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @return A count of matching HoldingReservations.
+     */
+    public long countHoldingReservations(CriteriaQuery<Long> q) {
+        return holdingReservationDAO.count(q);
     }
 
     /**
@@ -277,8 +265,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
         reservation.setVisitorName(other.getVisitorName());
         reservation.setVisitorEmail(other.getVisitorEmail());
         reservation.setComment(other.getComment());
-        //setPermission(other.getPermission());
-        //setQueueNo(other.getQueueNo());
 
         if (other.getHoldingReservations() == null) {
             for (HoldingReservation hr : reservation.getHoldingReservations()) {
@@ -363,14 +349,25 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
         try {
             Set<Reservation> reservations = new HashSet<Reservation>();
             List<RequestPrintable> requestPrintables = new ArrayList<RequestPrintable>();
+            List<RequestPrintable> requestPrintablesArchive = new ArrayList<RequestPrintable>();
+
             for (HoldingReservation hr : hrs) {
-                ReservationPrintable rp = new ReservationPrintable(
-                        hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties);
-                requestPrintables.add(rp);
+                ExternalRecordInfo.MaterialType mt = hr.getHolding().getRecord().getExternalInfo().getMaterialType();
+                if (mt == ExternalRecordInfo.MaterialType.ARCHIVE) {
+                    requestPrintablesArchive.add(
+                        new ArchiveReservationPrintable(
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties));
+                }
+                else {
+                    requestPrintables.add(
+                        new ReservationPrintable(
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), properties));
+                }
                 reservations.add(hr.getReservation());
             }
 
-            printRequest(requestPrintables, alwaysPrint);
+            printRequest(requestPrintables, properties.getProperty("prop_printerArchive"), alwaysPrint);
+            printRequest(requestPrintablesArchive, properties.getProperty("prop_printerReadingRoom"), alwaysPrint);
 
             for (Reservation r : reservations) {
                 saveReservation(r);
@@ -399,13 +396,11 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * @param result The binding result object to put the validation errors in.
      * @throws org.socialhistoryservices.delivery.request.service.ClosedException Thrown when a holding is provided which
      * references a record which is restrictionType=CLOSED.
-     * @throws InUseException Thrown when a new holding provided to be added
-     * to the reservation is already in use by another reservation.
      * @throws org.socialhistoryservices.delivery.request.service.NoHoldingsException Thrown when no holdings are provided.
      */
     public void createOrEdit(Reservation newRes, Reservation oldRes,
             BindingResult result) throws
-        InUseException, ClosedException, NoHoldingsException {
+        ClosedException, NoHoldingsException {
 
             // Validate the reservation.
             validateRequest(newRes, result);
@@ -450,7 +445,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
             // Execute this method below the date check, or else the date will
             // not be checked if this method throws an exception; not displaying
             // the error immediately, but only when the holdings are valid instead.
-            validateHoldingsAndAvailability(newRes, oldRes);
+            validateHoldings(newRes, oldRes);
 
             // Add or save the record when no errors are present.
             if (!result.hasErrors()) {

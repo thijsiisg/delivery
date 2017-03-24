@@ -178,7 +178,7 @@
 <#assign submitURL>
 <@paramUrl {} "/reservation/batchprocess"/>
 </#assign>
-<#if pageListHolder.pageList?size == 0>
+<#if holdingReservations?size == 0>
 <span class="bignote"><@_ "search.notfound" "No results..."/></span>
 <#else>
 <form action="${submitURL}" method="POST">
@@ -193,15 +193,13 @@
       <@sortLink "visitorName"><@_ "reservation.visitorName" "Name"/></@sortLink>
     </th>
     <th><@sortLink "date"><@_ "reservation.date" "Date"/></@sortLink></th>
-    <#--<th><@sortLink "returnDate"><@_ "reservation.returnDate" "Return
-    Date"/></@sortLink></th>-->
     <th><@sortLink "printed"><@_ "reservation.printed" "Printed"/></@sortLink></th>
     <th><@sortLink "status"><@_ "reservation.extended.status" "Reservation status"/></@sortLink></th>
     <th><@sortLink "holdingStatus"><@_ "holding.extended.status" "Item status"/></@sortLink></th>
   </tr>
   </thead>
   <tbody>
-  <#list pageListHolder.pageList as holdingReservation>
+  <#list holdingReservations as holdingReservation>
 	 <#assign holding = holdingReservation.holding>
      <#assign reservation = holdingReservation.reservation>
   <tr>
@@ -218,9 +216,7 @@
     </td>
 	<td>${holding.signature?html}</td>
     <td>${reservation.visitorName?html}</td>
-    <td>${reservation.date?string(delivery.dateFormat)}</td>
-    <#--<td><#if reservation.returnDate??>${reservation.returnDate?string
-  (prop_dateFormat)}</#if></td>-->
+      <td>${reservation.date?string(delivery.dateFormat)}</td>
     <#assign yes>
     <@_ "yes" "Yes"/>
     </#assign>
@@ -243,7 +239,7 @@
   <input type="button" value="${st}" class="selectNone" />
 </div>
 
-<@pageLinks pageListHolder />
+<@pageLinks holdingReservationsSize RequestParameters["page_len"]!prop_requestPageLen RequestParameters["page"]!1 />
 
 <#if _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY,ROLE_RESERVATION_DELETE")>
 <fieldset class="actions">

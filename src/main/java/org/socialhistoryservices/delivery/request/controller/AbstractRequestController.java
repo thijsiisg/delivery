@@ -1,5 +1,6 @@
 package org.socialhistoryservices.delivery.request.controller;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.socialhistoryservices.delivery.ErrorHandlingController;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
@@ -29,6 +30,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public abstract class AbstractRequestController extends ErrorHandlingController {
     private static final DateFormat API_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
@@ -78,14 +80,13 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
      * Translates the path of a URI to a list of holdings.
      *
      * @param path            The path containing the holdings.
-     * @param mustBeAvailable If only a PID is given, find specifically an available holding?
      * @return A list of holdings.
      */
-    protected List<Holding> uriPathToHoldings(String path, boolean mustBeAvailable) {
+    protected List<Holding> uriPathToHoldings(String path) {
         List<Holding> holdings = new ArrayList<Holding>();
         String[] tuples = getPidsFromURL(path);
         for (String tuple : tuples) {
-            String[] elements = tuple.split(deliveryProperties.getHoldingSeperator());
+            String[] elements = tuple.split(Pattern.quote(deliveryProperties.getHoldingSeperator()));
             Record r = records.getRecordByPid(elements[0]);
 
             if (r == null) {
@@ -97,30 +98,20 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
                     return null;
                 }
             }
-            else {
-                records.updateExternalInfo(r, false);
+            else if (records.updateExternalInfo(r, false)) {
                 records.saveRecord(r);
             }
 
-            if (elements.length == 1) {
-                Holding h = records.getHoldingForRecord(r, mustBeAvailable);
-                if (h == null) {
-                    return null;
+            for (int i = 1; i < Math.max(2, elements.length); i++) {
+                boolean has = false;
+                for (Holding h : r.getHoldings()) {
+                    if ((elements.length == 1) || h.getSignature().equals(elements[i])) {
+                        holdings.add(h);
+                        has = true;
+                    }
                 }
-                holdings.add(h);
-            }
-            else {
-                for (int i = 1; i < elements.length; i++) {
-                    boolean has = false;
-                    for (Holding h : r.getHoldings()) {
-                        if (h.getSignature().equals(elements[i])) {
-                            holdings.add(h);
-                            has = true;
-                        }
-                    }
-                    if (!has) {
-                        return null;
-                    }
+                if (!has) {
+                    return null;
                 }
             }
         }
@@ -156,48 +147,11 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
     }
 
     /**
-     * Checks the permission if applicable (i.e. holdings selected are tied to one or more restricted records).
-     *
-     * @param model   The model to add errors to.
-     * @param perm    The permission, can be null if not applicable.
-     * @param request The Request with holdings to check.
-     * @return True iff the given permission (can be null) is allowed to reserve the provided holdings.
-     */
-    protected boolean checkPermissions(Model model, Permission perm, Request request) {
-        if (perm == null) {
-            perm = new Permission();
-        }
-
-        List<? extends HoldingRequest> holdingRequests = request.getHoldingRequests();
-        for (HoldingRequest holdingRequest : holdingRequests) {
-            Record permRecord = holdingRequest.getHolding().getRecord();
-            if (permRecord.getRealRestrictionType() == Record.RestrictionType.RESTRICTED) {
-                if (!perm.hasGranted(permRecord)) {
-                    model.addAttribute("holding" + request.getClass().getSimpleName() + "s", holdingRequest);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
      * Initilizes the model for use with an overview.
      *
-     * @param p               The parameter map.
-     * @param model           The model.
-     * @param pagedListHolder The paged list holder.
+     * @param model The model.
      */
-    protected void initOverviewModel(Map<String, String[]> p, Model model, PagedListHolder<?> pagedListHolder) {
-        // Set the amount of requests per page
-        pagedListHolder.setPageSize(parsePageLenFilter(p));
-
-        // Set the current page, internal starts at 0, external at 1
-        pagedListHolder.setPage(parsePageFilter(p));
-
-        // Add result to model
-        model.addAttribute("pageListHolder", pagedListHolder);
-
+    protected void initOverviewModel(Model model) {
         Calendar cal = GregorianCalendar.getInstance();
         model.addAttribute("today", cal.getTime());
 
@@ -266,12 +220,13 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
     }
 
     /**
-     * Parse the page filter into an integer.
+     * Parse the page filter into a first result integer.
      *
      * @param p The parameter map to search the given filter value in.
-     * @return The current page to show, default 0. (external = 1).
+     * @return The first result to show.
      */
-    protected int parsePageFilter(Map<String, String[]> p) {
+    protected int getFirstResult(Map<String, String[]> p) {
+        int maxResults = getMaxResults(p);
         int page = 0;
         if (p.containsKey("page")) {
             try {
@@ -280,27 +235,27 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
                 throw new InvalidRequestException("Invalid page number: " + p.get("page")[0]);
             }
         }
-        return page;
+        return maxResults * page;
     }
 
     /**
-     * Parse the page length filter.
+     * Parse the page length filter into a max results integer.
      *
      * @param p The parameter map to search the given filter value in.
-     * @return The length of the page (defaults to the length in the config,
+     * @return The length of the page, max results (defaults to the length in the config,
      * can not exceed the maximum length in the config).
      */
-    protected int parsePageLenFilter(Map<String, String[]> p) {
-        int pageLen = deliveryProperties.getRequestPageLen();
+    protected int getMaxResults(Map<String, String[]> p) {
+        int maxResults = deliveryProperties.getRequestPageLen();
         if (p.containsKey("page_len")) {
             try {
-                pageLen = Math.max(0, Math.min(Integer.parseInt(p.get("page_len")[0]),
+                maxResults = Math.max(0, Math.min(Integer.parseInt(p.get("page_len")[0]),
                         deliveryProperties.getRequestMaxPageLen()));
             } catch (NumberFormatException ex) {
                 throw new InvalidRequestException("Invalid page length: " + p.get("page_len")[0]);
             }
         }
-        return pageLen;
+        return maxResults;
     }
 
     /**

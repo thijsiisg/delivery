@@ -35,7 +35,6 @@ package org.socialhistoryservices.delivery.reservation.service;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.ClosedException;
-import org.socialhistoryservices.delivery.request.service.InUseException;
 import org.socialhistoryservices.delivery.request.service.NoHoldingsException;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
@@ -96,19 +95,36 @@ public interface ReservationService {
      */
     public List<Reservation> listReservations(CriteriaQuery<Reservation> q);
 
-	/**
-	 * List all Tuples matching a built query.
-	 * @param q The criteria query to execute
-	 * @return A list of matching Tuples.
-	 */
-	public List<Tuple> listTuples(CriteriaQuery<Tuple> q);
+    /**
+     * List all Tuples matching a built query.
+     * @param q The criteria query to execute
+     * @return A list of matching Tuples.
+     */
+    public List<Tuple> listTuples(CriteriaQuery<Tuple> q);
 
-	/**
-	 * List all HoldingReservations matching a built query.
-	 * @param q The criteria query to execute
-	 * @return A list of matching HoldingReservations.
-	 */
-	public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q);
+    /**
+     * List all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @return A list of matching HoldingReservations.
+     */
+    public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q);
+
+    /**
+     * List all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @param firstResult The first result to obtain
+     * @param maxResults The max number of results to obtain
+     * @return A list of matching HoldingReservations.
+     */
+    public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q,
+                                                            int firstResult, int maxResults);
+
+    /**
+     * Count all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @return A count of matching HoldingReservations.
+     */
+    public long countHoldingReservations(CriteriaQuery<Long> q);
 
     /**
      * Get a single Reservation matching a built query.
@@ -180,13 +196,11 @@ public interface ReservationService {
      * @param result The binding result object to put the validation errors in.
      * @throws org.socialhistoryservices.delivery.request.service.ClosedException Thrown when a holding is provided which
      * references a record which is restrictionType=CLOSED.
-     * @throws InUseException Thrown when a new holding provided to be added
-     * to the reservation is already in use by another reservation.
      * @throws org.socialhistoryservices.delivery.request.service.NoHoldingsException Thrown when no holdings are provided.
      */
     public void createOrEdit(Reservation newRes, Reservation oldRes,
                                       BindingResult result) throws
-            InUseException, ClosedException, NoHoldingsException;
+        ClosedException, NoHoldingsException;
 
     /**
      * Validate provided holding part of request.
@@ -194,12 +208,9 @@ public interface ReservationService {
      * @param oldReq The old request if applicable (or null).
      * @throws ClosedException     Thrown when a holding is provided which
      *                             references a record which is restrictionType=CLOSED.
-     * @throws InUseException      Thrown when a new holding provided to be added
-     *                             to the request is already in use by another request.
      * @throws NoHoldingsException Thrown when no holdings are provided.
      */
-    public void validateHoldingsAndAvailability(Request newReq, Request oldReq)
-            throws NoHoldingsException, InUseException, ClosedException;
+    public void validateHoldings(Request newReq, Request oldReq) throws NoHoldingsException, ClosedException;
 
     /**
      * Get the first valid reservation date after or equal to from.

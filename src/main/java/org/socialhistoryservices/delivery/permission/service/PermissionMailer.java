@@ -43,9 +43,6 @@ public class PermissionMailer extends Mailer {
      * mail somehow failed.
      */
     public void mailCode(Permission pm) throws MailException {
-        assert pm.getStatus() == Permission.Status.HANDLED : "Can only mail" +
-                " notification when Permission status is HANDLED";
-
         // Do not mail when mail is disabled.
         if (!deliveryProperties.isMailEnabled()) {
             return;
@@ -73,7 +70,8 @@ public class PermissionMailer extends Mailer {
             msg.setText(templateToString("mail/permission_approved.mail.ftl",
                         model, rl));
 
-        } else {
+        }
+        else {
             msg.setSubject(getMessage("permissionMail.refusedSubject",
                     "Delivery: Permission Request Refused", rl));
             msg.setText(templateToString("mail/permission_refused.mail.ftl",
@@ -105,9 +103,6 @@ public class PermissionMailer extends Mailer {
      * mail somehow failed.
      */
     public void mailConfirmation(Permission pm) throws MailException {
-        assert pm.getStatus() == Permission.Status.PENDING : "Can only mail" +
-                " confirmation when Permission status is PENDING";
-
         // Do not mail when mail is disabled.
         if (!deliveryProperties.isMailEnabled()) {
             return;
@@ -129,5 +124,27 @@ public class PermissionMailer extends Mailer {
         mailSender.send(msg);
     }
 
+    /**
+     * Mails the reading room to inform them of a new permission request.
+     * @param pm The permission to use for composing the mail.
+     * @throws org.springframework.mail.MailException Thrown when sending mail somehow failed.
+     */
+    public void mailReadingRoom(Permission pm) throws MailException {
+        // Do not mail when mail is disabled.
+        if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
+            return;
+        }
 
+        Model model = new ExtendedModelMap();
+        model.addAttribute("permission", pm);
+
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(properties.getProperty("prop_mailSystemAddress"));
+        msg.setTo(properties.getProperty("prop_mailReadingRoom"));
+
+        msg.setSubject(getMessage("permissionMail.readingRoomSubject", "New permission request"));
+        msg.setText(templateToString("permission_readingroom.mail.ftl", model));
+
+        mailSender.send(msg);
+    }
 }

@@ -92,9 +92,11 @@ public class RecordController extends ErrorHandlingController {
      */
     private String get(String[] pids, Model model) {
         List<Record> recs = new ArrayList<Record>();
+        Map<String, List<Record>> reservedChilds = new HashMap<>();
+
         for (String pid : pids) {
             synchronized (this) { // Issue #139: Make sure that when A enters, B has to wait, and will detect the insert into the database by B when entering.
-                Record rec = records.resolveRecordByPid(pid);
+                Record rec = records.getRecordByPid(pid);
                 if (rec == null) { // Issue #108
                     // Try creating the record.
                     try {
@@ -105,8 +107,15 @@ public class RecordController extends ErrorHandlingController {
                         // below.
                     }
                 }
+                else if (records.updateExternalInfo(rec, false)) {
+                    records.saveRecord(rec);
+                }
+
                 if (rec != null) {
                     recs.add(rec);
+
+                    List<Record> reserved = records.getReservedChildRecords(rec);
+                    reservedChilds.put(rec.getPid(), reserved);
                 }
             }
         }
@@ -115,6 +124,7 @@ public class RecordController extends ErrorHandlingController {
             throw new ResourceNotFoundException();
 
         model.addAttribute("records", recs);
+        model.addAttribute("reservedChilds", reservedChilds);
         return "json/record_get.json";
     }
 
@@ -178,100 +188,7 @@ public class RecordController extends ErrorHandlingController {
         return "";
     }
     // }}}
-    // {{{ Edit API
-
-
-
-    /**
-     * Create/Update a record (Method PUT).
-     * @param encPid The PID of the record to put (URL encoded).
-     * @param newRecord The record information.
-     * @param json The record information in text format.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/{encPid:.*}",
-                    method = RequestMethod.PUT)
-    @ResponseBody
-    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
-    public String apiPut(@PathVariable String encPid,
-                        @RequestBody Record newRecord,
-                        @RequestBody String json) {
-        String pid = urlDecode(encPid);
-        jsonPut(pid, newRecord, json);
-        return "";
-    }
-
-    private void jsonPut(String pid, Record newRecord, String json) {
-        Record oldRecord = records.getRecordByPid(pid);
-        if (oldRecord != null) {
-            // Make sure there is a distinction between missing nodes and
-            // nodes that are explicitly set to NULL for optional fields.
-            JsonNode n = parseJSONBody(json);
-            if (n.path("restrictionType").isMissingNode()) {
-                newRecord.setRestrictionType(oldRecord.getRestrictionType());
-            }
-            if (n.path("embargo").isMissingNode()) {
-                newRecord.setEmbargo(oldRecord.getEmbargo());
-            }
-            if (n.path("restriction").isMissingNode()) {
-                newRecord.setRestriction(oldRecord.getRestriction());
-            }
-            if (n.path("holdings").isMissingNode()) {
-                newRecord.setHoldings(oldRecord.getHoldings());
-            }
-            if (n.path("contact").isMissingNode()) {
-                newRecord.setContact(oldRecord.getContact());
-            }
-            if (n.path("comments").isMissingNode()) {
-                newRecord.setComments(oldRecord.getComments());
-            }
-        }
-
-        try {
-            newRecord.setPid(pid);
-            BindingResult result = new BeanPropertyBindingResult(newRecord,
-                "record");
-            records.createOrEdit(newRecord, oldRecord, result);
-        } catch (NoSuchPidException e) {
-            throw new InvalidRequestException(e.getMessage());
-        } catch (NoSuchParentException e) {
-            throw new InvalidRequestException(e.getMessage());
-        }
-    }
-
-    /**
-     * Create/Update a record (Method POST, !PUT in path).
-     * @param encPid The PID of the record to put (URL encoded).
-     * @param newRecord The record information.
-     * @param json The record information in text format.
-     * @return The view to resolve.
-     */
-    @RequestMapping(value = "/{encPid:.*}!PUT",
-                    method = RequestMethod.POST)
-    @PreAuthorize("hasRole('ROLE_RECORD_MODIFY')")
-    @ResponseBody
-    public String apiFakePut(@PathVariable String encPid,
-                        @RequestBody Record newRecord,
-                        @RequestBody String json) {
-        jsonPut(urlDecode(encPid), newRecord, json);
-        return "";
-    }
-    // }}}
-
     // {{{ Model data
-    /**
-     * Restriction type enumeration in Map format for use in views.
-     * @return The map with restriction types.
-     */
-    @ModelAttribute("restriction_types")
-    public Map<String,Record.RestrictionType> restrictionTypes() {
-        Map<String,Record.RestrictionType> data = new HashMap<String,Record.RestrictionType>();
-        data.put("OPEN", Record.RestrictionType.OPEN);
-        data.put("RESTRICTED", Record.RestrictionType.RESTRICTED);
-        data.put("CLOSED", Record.RestrictionType.CLOSED);
-        data.put("INHERIT", Record.RestrictionType.INHERIT);
-        return data;
-    }
 
     /**
      * Usage Restriction type enumeration in Map format for use in views.
@@ -457,9 +374,6 @@ public class RecordController extends ErrorHandlingController {
                     }
                 }
             }
-        }
-        if (newRecord.getContact() != null && newRecord.getContact().isEmpty()) {
-            newRecord.setContact(null);
         }
 
         try {

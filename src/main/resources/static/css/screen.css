@@ -196,10 +196,6 @@ ul li em.info {
     font-size: 110%;
 }
 
-fieldset.holdings {
-    clear: both;
-}
-
 table.holdings, table.holdings tr, table.holdings td {
     border: 1px solid #888;
     border-collapse: collapse;
@@ -580,6 +576,10 @@ ul.permissionDetails {
     padding: 0;
 }
 
+ul.permissionDetails li.spacing {
+    margin-top: 10px;
+}
+
 ul.permissionDetails span {
    font-weight: bold;
    width: 13em;
@@ -607,6 +607,10 @@ fieldset.recordPermissionDetails ul span {
 fieldset.recordPermissionDetails select {
     width: 8em;
     margin-bottom: 5px;
+}
+
+fieldset.recordPermissionDetails input[type=checkbox] {
+    vertical-align: middle;
 }
 
 .user_list {
@@ -741,6 +745,10 @@ table.holdings td {
 
 ul li input[type="text"].price, ul li input[type="text"].percentage {
     width: 8em;
+}
+
+input.code {
+    width: 20em;
 }
 
 ul.holdingReservationDetails, ul.holdingReproductionDetails {

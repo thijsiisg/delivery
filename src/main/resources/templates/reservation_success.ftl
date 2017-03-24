@@ -35,8 +35,7 @@
       <#list reservation.holdingReservations as hr>
         <#assign h = hr.holding>
         <#assign info = h.record.externalInfo>
-        <li>${h.record.title?html} <#if info.author??>/ ${info.author}</#if>
-            - ${h.signature?html}<#if hr.comment??> - ${hr.comment}</#if></li>
+        <li>${hr.toString()?html}</li>
       </#list>
     </ul>
 
@@ -53,10 +52,6 @@
   </#if>
 
   <p><@_ "reservation.backToSearch" "Close this tab and return to Search for new requests" /></p>
-
-  <#--<#if reservation.queueNo??>
-    <@_ "reservation.queueNoMsg" "Your queue number is: "/> <span class="queueNo">${reservation.queueNo?c}</span>
-  </#if>-->
 </section>
 
 </@userbase>

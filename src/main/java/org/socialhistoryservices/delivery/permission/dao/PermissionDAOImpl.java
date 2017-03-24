@@ -17,6 +17,7 @@
 package org.socialhistoryservices.delivery.permission.dao;
 
 import org.socialhistoryservices.delivery.permission.entity.Permission;
+import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.springframework.stereotype.Repository;
 
@@ -62,6 +63,17 @@ public class PermissionDAOImpl implements PermissionDAO {
     }
 
     /**
+     * Remove a RecordPermission from the database.
+     * @param obj RecordPermission to remove.
+     */
+    public void remove(RecordPermission obj) {
+        try {
+            obj = entityManager.getReference(RecordPermission.class, obj.getId());
+            entityManager.remove(obj);
+        } catch (EntityNotFoundException ignored) {}
+    }
+
+    /**
      * Save changes to a Permission in the database.
      * @param obj Permission to save.
      */
@@ -87,12 +99,36 @@ public class PermissionDAOImpl implements PermissionDAO {
     }
 
     /**
-     * List all Permissions matching a built query.
+     * List all RecordPermissions matching a built query.
      * @param query The query to match by.
-     * @return A list of matching Permissions.
+     * @return A list of matching RecordPermissions.
      */
-    public List<Permission> list(CriteriaQuery<Permission> query) {
+    public List<RecordPermission> list(CriteriaQuery<RecordPermission> query) {
         return entityManager.createQuery(query).getResultList();
+    }
+
+    /**
+     * List all RecordPermissions matching a built query.
+     * @param query The query to match by.
+     * @param firstResult The first result to obtain
+     * @param maxResults The max number of results to obtain
+     * @return A list of matching RecordPermissions.
+     */
+    public List<RecordPermission> list(CriteriaQuery<RecordPermission> query, int firstResult, int maxResults) {
+        return entityManager
+            .createQuery(query)
+            .setFirstResult(firstResult)
+            .setMaxResults(maxResults)
+            .getResultList();
+    }
+
+    /**
+     * Count all RecordPermissions matching a built query.
+     * @param q The criteria query to execute
+     * @return The number of counted results.
+     */
+    public long count(CriteriaQuery<Long> q) {
+        return entityManager.createQuery(q).getSingleResult();
     }
 
     /**

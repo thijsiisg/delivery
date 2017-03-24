@@ -41,65 +41,35 @@ public class ReservationPrintable extends RequestPrintable {
     /**
      * Draw the reservation information.
      *
-     * @param drawInfo    Draw offsets.
-     * @param halfWidth   width of one half of the page
-     * @param rightMargin margin on the right of the page.
-     * @param i           1 = left side, 2 = right side
-     */
-    @Override
-    protected void draw(DrawInfo drawInfo, int halfWidth, int rightMargin, int i) {
-        super.draw(drawInfo, halfWidth, rightMargin, i);
-        drawName(drawInfo);
-    }
-
-    /**
-     * Draws all reservation info.
      * @param drawInfo Draw offsets.
      */
     @Override
-    protected void drawRequestInfo(DrawInfo drawInfo) {
+    protected void draw(DrawInfo drawInfo) {
+        drawBarcode(drawInfo, holdingRequest.getHolding().getId());
+
         drawName(drawInfo);
         drawDate(drawInfo);
         drawCreationDate(drawInfo);
-        // Disable this for now:
-        // offsetY = drawQueueNo(g2d, pw, offsetX,
-        // offsetY,
-        // valueOffset);
-    }
 
-    /**
-     * Draws all holding info.
-     * @param drawInfo Draw offsets.
-     */
-    @Override
-    protected void drawHoldingInfo(DrawInfo drawInfo) {
+        drawNewLine(drawInfo);
+
         drawRecordInfo(drawInfo);
         drawMaterialInfo(drawInfo);
         drawType(drawInfo, holdingRequest.getHolding().getSignature());
         drawLocationInfo(drawInfo);
-    }
 
-    /**
-     * Draws the queue number.
-     * @param drawInfo Draw offsets.
-     */
-    private void drawQueueNo(DrawInfo drawInfo) {
-        HoldingReservation hr = (HoldingReservation) holdingRequest;
-        if (hr.getReservation().getQueueNo() == null) {
-            return;
-        }
+        drawInfo.setOffsetY(drawInfo.getHeight() - 100);
 
-        String queueLabel = getMessage("reservation.queueNo", "Queue Number");
-        drawKeyValue(drawInfo, queueLabel, String.valueOf(hr.getReservation().getQueueNo()));
+        drawReturnNotice(drawInfo);
     }
 
     /**
      * Draws the date of access.
      * @param drawInfo Draw offsets.
      */
-    private void drawDate(DrawInfo drawInfo) {
+    protected void drawDate(DrawInfo drawInfo) {
         HoldingReservation hr = (HoldingReservation) holdingRequest;
         String dateLabel = getMessage("reservation.date", "Date");
-        drawKeyValue(drawInfo, dateLabel, df.format(hr.getReservation().getDate()));
+        drawKeyValueNewLine(drawInfo, dateLabel, df.format(hr.getReservation().getDate()));
     }
 }
