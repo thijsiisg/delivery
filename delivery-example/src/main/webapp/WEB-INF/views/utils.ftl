@@ -60,14 +60,14 @@ ${uri}?<#list requestParams?keys as k><#if requestParams[k] !="">${k}=${requestP
     <div class="pageLinks">
         <#if pageNumber?number &gt; 1>
             <a href="<@paramUrl {"page": 1} />" class="pageLinks">&lt;&lt;</a>
-            <a href="<@paramUrl {"page": pageNumber?number-1} />" class="pageLinks">&lt;</a>
+            <a href="<@paramUrl {"page": (pageNumber?number-1)?c} />" class="pageLinks">&lt;</a>
         </#if>
 
         <@_ "pageListHolder.page" "Page"/> ${pageNumber?number} / ${noPages}
 
         <#if pageNumber?number &lt; noPages>
-            <a href="<@paramUrl {"page": pageNumber?number+1} />" class="pageLinks">&gt;</a>
-            <a href="<@paramUrl {"page": noPages} />" class="pageLinks">&gt;&gt;</a>
+            <a href="<@paramUrl {"page": (pageNumber?number+1)?c} />" class="pageLinks">&gt;</a>
+            <a href="<@paramUrl {"page": noPages?c} />" class="pageLinks">&gt;&gt;</a>
         </#if>
     </div>
 </#macro>
