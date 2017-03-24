@@ -174,6 +174,26 @@ public class Reproduction extends Request {
     }
 
     /**
+     * Whether the reminder mail for this reproduction has been sent.
+     */
+    @Column(name = "offer_mail_reminder_sent")
+    private boolean offerMailReminderSent;
+
+    /**
+     * Get whether the reminder mail for this reproduction has been sent.
+     * @return Whether the reminder mail for this reproduction has been sent.
+     */
+    public boolean isOfferMailReminderSent() { return offerMailReminderSent; }
+
+    /**
+     * Set whether the reminder mail for this reproduction has been sent.
+     * @param offerMailReminderSent Whether the reminder mail for this reproduction has been sent.
+     */
+    public void setOfferMailReminderSent(boolean offerMailReminderSent) {
+        this.offerMailReminderSent = offerMailReminderSent;
+    }
+
+    /**
      * The Reproduction's date when the order details were known.
      */
     @Temporal(TemporalType.DATE)
