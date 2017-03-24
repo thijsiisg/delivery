@@ -92,6 +92,24 @@ public interface ReproductionService {
     public List<HoldingReproduction> listHoldingReproductions(CriteriaQuery<HoldingReproduction> q);
 
     /**
+     * List all HoldingReproduction matching a built query.
+     *
+     * @param q           The criteria query to execute
+     * @param firstResult The first result to obtain
+     * @param maxResults  The max number of results to obtain
+     * @return A list of matching HoldingReproductions.
+     */
+    public List<HoldingReproduction> listHoldingReproductions(CriteriaQuery<HoldingReproduction> q,
+                                                              int firstResult, int maxResults);
+
+    /**
+     * Count all HoldingReproductions matching a built query.
+     * @param q The criteria query to execute
+     * @return A count of matching HoldingReproductions.
+     */
+    public long countHoldingReproductions(CriteriaQuery<Long> q);
+
+    /**
      * Returns all standard options for reproductions.
      *
      * @return A list with all standard options for reproductions.

@@ -83,11 +83,27 @@ public interface PermissionDAO {
     public CriteriaBuilder getCriteriaBuilder();
 
     /**
-     * List all RecordPermission matching a built query.
+     * List all RecordPermissions matching a built query.
      * @param query The query to match by.
-     * @return A list of matching Permissions.
+     * @return A list of matching RecordPermissions.
      */
     public List<RecordPermission> list(CriteriaQuery<RecordPermission> query);
+
+    /**
+     * List all RecordPermissions matching a built query.
+     * @param query The query to match by.
+     * @param firstResult The first result to obtain
+     * @param maxResults The max number of results to obtain
+     * @return A list of matching RecordPermissions.
+     */
+    public List<RecordPermission> list(CriteriaQuery<RecordPermission> query, int firstResult, int maxResults);
+
+    /**
+     * Count all RecordPermissions matching a built query.
+     * @param query The criteria query to execute
+     * @return The number of counted results.
+     */
+    public long count(CriteriaQuery<Long> query);
 
     /**
      * Get a single Permission matching a built query.

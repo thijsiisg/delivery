@@ -145,7 +145,7 @@
 </#assign>
 
 
-<#if pageListHolder.pageList?size == 0>
+<#if recordPermissions?size == 0>
 <span class="bignote"><@_ "search.notfound" "No results..."/></span>
 <#else>
 <table class="overview">
@@ -163,7 +163,7 @@
   </tr>
   </thead>
   <tbody>
-  <#list pageListHolder.pageList as recordPermission>
+  <#list recordPermissions as recordPermission>
     <#assign record = recordPermission.record>
     <#assign permission = recordPermission.permission>
   <tr>
@@ -192,7 +192,7 @@
   </#list>
   </tbody>
 </table>
-<@pageLinks pageListHolder />
+<@pageLinks recordPermissionsSize RequestParameters["page_len"]!prop_requestPageLen?number RequestParameters["page"]!1 />
 </#if>
 </@base>
 
