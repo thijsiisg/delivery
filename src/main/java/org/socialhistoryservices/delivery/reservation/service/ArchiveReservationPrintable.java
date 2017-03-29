@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2013 International Institute of Social History
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -78,8 +78,10 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
         if (record.getParent() != null)
             record = record.getParent();
 
-        String value = record.getTitle() + " (" + record.getHoldings().get(0).getSignature() + ")";
-        drawValueNewLine(drawInfo, value, boldFont, false);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.value = record.getTitle() + " (" + record.getHoldings().get(0).getSignature() + ")";
+        drawValueInfo.font = boldFont;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -89,9 +91,10 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
      */
     private void drawInventoryNumber(DrawInfo drawInfo) {
         if (holdingRequest.getHolding().getRecord().getParent() != null) {
-            String label = getMessage("record.inventory", "Inventory Nr");
-            String inventoryNumber = holdingRequest.getHolding().getSignature();
-            drawKeyValueNewLine(drawInfo, label, inventoryNumber);
+            DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+            drawValueInfo.key = getMessage("record.inventory", "Inventory Nr");
+            drawValueInfo.value = holdingRequest.getHolding().getSignature();
+            drawKeyValueNewLine(drawValueInfo);
         }
     }
 
@@ -101,8 +104,6 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
      * @param drawInfo Draw restriction notice.
      */
     private void drawRestrictedNotice(DrawInfo drawInfo) {
-        String key = getMessage("record.restriction", "Restriction");
-
         ExternalRecordInfo.Restriction restriction =
             holdingRequest.getHolding().getRecord().getExternalInfo().getRestriction();
         String restrictionValue = getMessage("record.externalInfo.restriction." + restriction, "");
@@ -114,7 +115,10 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
             permissionRequired += ")";
         }
 
-        drawKeyValueNewLine(drawInfo, key, restrictionValue + permissionRequired);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("record.restriction", "Restriction");
+        drawValueInfo.value = restrictionValue + permissionRequired;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -146,28 +150,51 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
             int maxOffsetY = (drawInfo.getHeight() - 100 - (heightOneLine * 2));
             if (afterOffsetY < maxOffsetY) {
                 if (ahi.getShelvingLocation() != null) {
-                    String label = getMessage("archiveHoldingInfo.shelvingLocation", "Location");
-                    drawKeyValue(drawInfo, label, ahi.getShelvingLocation(), smallNormalFont, false, false);
+                    DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+                    drawValueInfo.key = getMessage("archiveHoldingInfo.shelvingLocation", "Location");
+                    drawValueInfo.value = ahi.getShelvingLocation();
+                    drawValueInfo.font = smallBoldFont;
+                    drawValueInfo.boldKey = false;
+                    drawValueInfo.tab = false;
+                    drawKeyValue(drawValueInfo);
                 }
 
                 if (ahi.getMeter() != null) {
-                    String label = getMessage("archiveHoldingInfo.meter", "Meters");
-                    drawKeyValue(drawInfo, label, ahi.getMeter(), smallNormalFont, false, false);
+                    DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+                    drawValueInfo.key = getMessage("archiveHoldingInfo.meter", "Meters");
+                    drawValueInfo.value = ahi.getMeter();
+                    drawValueInfo.font = smallBoldFont;
+                    drawValueInfo.boldKey = false;
+                    drawValueInfo.tab = false;
+                    drawKeyValue(drawValueInfo);
                 }
 
                 if (ahi.getNumbers() != null) {
-                    String label = getMessage("archiveHoldingInfo.numbers", "Amount");
-                    drawKeyValue(drawInfo, label, ahi.getNumbers(), smallNormalFont, false, false);
+                    DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+                    drawValueInfo.key = getMessage("archiveHoldingInfo.numbers", "Amount");
+                    drawValueInfo.value = ahi.getNumbers();
+                    drawValueInfo.font = smallBoldFont;
+                    drawValueInfo.boldKey = false;
+                    drawValueInfo.tab = false;
+                    drawKeyValue(drawValueInfo);
                 }
 
                 if (ahi.getFormat() != null) {
-                    String label = getMessage("archiveHoldingInfo.format", "Format");
-                    drawKeyValue(drawInfo, label, ahi.getFormat(), smallNormalFont, false, false);
+                    DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+                    drawValueInfo.key = getMessage("archiveHoldingInfo.format", "Format");
+                    drawValueInfo.value = ahi.getFormat();
+                    drawValueInfo.font = smallBoldFont;
+                    drawValueInfo.boldKey = false;
+                    drawValueInfo.tab = false;
+                    drawKeyValue(drawValueInfo);
                 }
 
                 if (ahi.getNote() != null) {
                     drawNewLine(drawInfo);
-                    drawValue(drawInfo, ahi.getNote(), smallItalicFont, false);
+                    DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+                    drawValueInfo.value = ahi.getNote();
+                    drawValueInfo.font = smallItalicFont;
+                    drawKeyValue(drawValueInfo);
                 }
 
                 drawNewLine(drawInfo);
@@ -175,8 +202,12 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
             }
             else if (printNoMoreSpaceNotice) {
                 printNoMoreSpaceNotice = false;
-                String label = getMessage("archiveHoldingInfo.more", "");
-                drawValue(drawInfo, label, smallBoldFont, true);
+
+                DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+                drawValueInfo.value = getMessage("archiveHoldingInfo.more", "");
+                drawValueInfo.font = smallBoldFont;
+                drawValueInfo.underline = true;
+                drawKeyValue(drawValueInfo);
                 drawNewLine(drawInfo);
             }
         }

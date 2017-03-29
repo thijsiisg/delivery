@@ -48,12 +48,12 @@ public abstract class RequestPrintable implements Printable {
     private MessageSource msgSource;
 
     protected class DrawInfo {
-        private int offsetX;
-        private int offsetY;
-        private int width;
-        private int height;
-        private float valueOffset;
-        private Graphics2D g2d;
+        public int offsetX;
+        public int offsetY;
+        public int width;
+        public int height;
+        public float valueOffset;
+        public Graphics2D g2d;
 
         public DrawInfo(Graphics2D g2d) {
             this.g2d = g2d;
@@ -101,6 +101,20 @@ public abstract class RequestPrintable implements Printable {
 
         public void setValueOffset(float valueOffset) {
             this.valueOffset = valueOffset;
+        }
+    }
+
+    protected final class DrawValueInfo {
+        public DrawInfo drawInfo;
+        public String key = null;
+        public String value = null;
+        public Font font = normalFont;
+        public boolean boldKey = true;
+        public boolean underline = false;
+        public boolean tab = true;
+
+        public DrawValueInfo(DrawInfo drawInfo) {
+            this.drawInfo = drawInfo;
         }
     }
 
@@ -210,8 +224,12 @@ public abstract class RequestPrintable implements Printable {
      * @param drawInfo Draw offsets.
      */
     protected void drawName(DrawInfo drawInfo) {
-        String nameLabel = getMessage("request.name", "Name");
-        drawKeyValueNewLine(drawInfo, nameLabel, holdingRequest.getRequest().getName(), italicFont, true);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("request.name", "Name");
+        drawValueInfo.value = holdingRequest.getRequest().getName();
+        drawValueInfo.font = italicFont;
+        drawValueInfo.underline = true;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -225,7 +243,11 @@ public abstract class RequestPrintable implements Printable {
             deliveryProperties.getTimeFormat();
 
         SimpleDateFormat spdf = new SimpleDateFormat(dateTimeFormat);
-        drawKeyValueNewLine(drawInfo, dateLabel, spdf.format(holdingRequest.getRequest().getCreationDate()));
+
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("request.creationDate", "Created at");
+        drawValueInfo.value = spdf.format(holdingRequest.getRequest().getCreationDate());
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -269,8 +291,12 @@ public abstract class RequestPrintable implements Printable {
      * @param value    The value to draw.
      */
     protected void drawType(DrawInfo drawInfo, String value) {
-        String typeLabel = getMessage("holding.signature", "Signature");
-        drawKeyValueNewLine(drawInfo, typeLabel, value, italicFont, true);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("holding.signature", "Signature");
+        drawValueInfo.value = value;
+        drawValueInfo.font = italicFont;
+        drawValueInfo.underline = true;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -302,8 +328,10 @@ public abstract class RequestPrintable implements Printable {
      * @param value    The value to draw.
      */
     private void drawComment(DrawInfo drawInfo, String value) {
-        String commentLabel = getMessage("holdingReservations.comment", "Comment");
-        drawKeyValueNewLine(drawInfo, commentLabel, value);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("holdingReservations.comment", "Comment");
+        drawValueInfo.value = value;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -313,7 +341,10 @@ public abstract class RequestPrintable implements Printable {
      * @param value    The value to draw.
      */
     private void drawPid(DrawInfo drawInfo, String value) {
-        drawKeyValueNewLine(drawInfo, "PID", value);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = "PID";
+        drawValueInfo.value = value;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -323,9 +354,10 @@ public abstract class RequestPrintable implements Printable {
      * @param value    The value to draw.
      */
     private void drawMaterialType(DrawInfo drawInfo, ExternalRecordInfo.MaterialType value) {
-        String typeLabel = getMessage("record.externalInfo.materialType", "Material");
-        String val = getMessage("record.externalInfo.materialType." + value, "");
-        drawKeyValueNewLine(drawInfo, typeLabel, val);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("record.externalInfo.materialType", "Material");
+        drawValueInfo.value = getMessage("record.externalInfo.materialType." + value, "");
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -334,8 +366,10 @@ public abstract class RequestPrintable implements Printable {
      * @param drawInfo Draw offsets.
      */
     private void drawTitle(DrawInfo drawInfo, String value) {
-        String titleLabel = getMessage("record.title", "Title");
-        drawKeyValueNewLine(drawInfo, titleLabel, value);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("record.title", "Title");
+        drawValueInfo.value = value;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -345,8 +379,10 @@ public abstract class RequestPrintable implements Printable {
      * @param value    The value to draw.
      */
     private void drawAuthor(DrawInfo drawInfo, String value) {
-        String authorLabel = getMessage("record.externalInfo.author", "Author");
-        drawKeyValueNewLine(drawInfo, authorLabel, value);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("record.externalInfo.author", "Author");
+        drawValueInfo.value = value;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -356,34 +392,9 @@ public abstract class RequestPrintable implements Printable {
      * @param key      The key to use.
      * @param value    The value to use.
      */
-    protected void drawKeyValueNewLine(DrawInfo drawInfo, String key, String value) {
-        drawKeyValue(drawInfo, key, value, true);
-        drawNewLine(drawInfo);
-    }
-
-    /**
-     * Draw a key value pair (and a new line) on the provided graphics object.
-     *
-     * @param drawInfo  Draw offsets.
-     * @param key       The key to use.
-     * @param value     The value to use.
-     * @param font      The font to use.
-     * @param underline Whether to underline the value
-     */
-    protected void drawKeyValueNewLine(DrawInfo drawInfo, String key, String value, Font font, boolean underline) {
-        drawKeyValue(drawInfo, key, value, font, underline, true);
-        drawNewLine(drawInfo);
-    }
-
-    /**
-     * Draw a key value pair (and a new line) on the provided graphics object.
-     *
-     * @param drawInfo Draw offsets.
-     * @param key      The key to use.
-     * @param value    The value to use.
-     */
-    protected void drawKeyValue(DrawInfo drawInfo, String key, String value, boolean tab) {
-        drawKeyValue(drawInfo, key, value, normalFont, false, tab);
+    protected void drawKeyValueNewLine(DrawValueInfo drawValueInfo) {
+        drawKeyValue(drawValueInfo);
+        drawNewLine(drawValueInfo.drawInfo);
     }
 
     /**
@@ -396,77 +407,14 @@ public abstract class RequestPrintable implements Printable {
      * @param underline Whether to underline the value
      * @param tab       Add a tab after the key
      */
-    protected void drawKeyValue(DrawInfo drawInfo, String key, String value, Font font, boolean underline, boolean tab) {
+    protected void drawKeyValue(DrawValueInfo drawValueInfo) {
         // Do not print key-value pairs with missing value.
-        if (value == null || value.isEmpty()) {
+        if (drawValueInfo.value == null || drawValueInfo.value.isEmpty()) {
             return;
         }
 
-        // Draw key
-        if (key != null) {
-            Graphics2D g2d = drawInfo.getG2d();
-            g2d.setFont(boldFont.deriveFont((float) font.getSize()));
-            g2d.drawString(key + ":", drawInfo.getOffsetX() + drawInfo.getValueOffset(), drawInfo.getOffsetY());
-
-            float offset = tab ? KEY_TAB_OFFSET : g2d.getFontMetrics().stringWidth(key + ": ");
-            drawInfo.setValueOffset(drawInfo.getValueOffset() + offset);
-        }
-
-        drawValue(drawInfo, value, font, underline);
-    }
-
-    /**
-     * Draw a value and a new line on the provided graphics object.
-     *
-     * @param drawInfo  Draw offsets.
-     * @param value     The value to use.
-     * @param font      The font to use.
-     * @param underline Whether to underline the value
-     */
-    protected void drawValueNewLine(DrawInfo drawInfo, String value, Font font, boolean underline) {
-        drawValue(drawInfo, value, font, underline);
-        drawNewLine(drawInfo);
-    }
-
-    /**
-     * Draw a value on the provided graphics object.
-     *
-     * @param drawInfo  Draw offsets.
-     * @param value     The value to use.
-     * @param font      The font to use.
-     * @param underline Whether to underline the value
-     */
-    protected void drawValue(DrawInfo drawInfo, String value, Font font, boolean underline) {
-        // Do not print key-value pairs with missing value.
-        if (value == null || value.isEmpty()) {
-            return;
-        }
-        Graphics2D g2d = drawInfo.getG2d();
-        int x = drawInfo.getOffsetX();
-
-        // Draw value (word-wrap enabled)
-        FontMetrics fm = g2d.getFontMetrics();
-        FontRenderContext frc = g2d.getFontRenderContext();
-
-        AttributedString styledText = new AttributedString(value.replace("\n", " "));
-        styledText.addAttribute(TextAttribute.FONT, font);
-        styledText.addAttribute(TextAttribute.UNDERLINE, underline ? 1 : -1);
-
-        AttributedCharacterIterator styledTextIterator = styledText.getIterator();
-        LineBreakMeasurer measurer = new LineBreakMeasurer(styledTextIterator, frc);
-
-        boolean firstLine = true;
-        while (measurer.getPosition() < value.length()) {
-            if (!firstLine)
-                drawNewLine(drawInfo);
-
-            float width = drawInfo.getWidth() - drawInfo.getValueOffset();
-            TextLayout textLayout = measurer.nextLayout(width);
-            textLayout.draw(g2d, x + drawInfo.getValueOffset(), drawInfo.getOffsetY());
-
-            firstLine = false;
-            drawInfo.setValueOffset(drawInfo.getValueOffset() + textLayout.getAdvance() + fm.stringWidth(" "));
-        }
+        drawKey(drawValueInfo);
+        drawValue(drawValueInfo);
     }
 
     /**
@@ -495,7 +443,7 @@ public abstract class RequestPrintable implements Printable {
         styledText.addAttribute(TextAttribute.FONT, font);
 
         Graphics2D g2d = drawInfo.getG2d();
-        LineBreakMeasurer measurer = new LineBreakMeasurer(styledText.getIterator(),  g2d.getFontRenderContext());
+        LineBreakMeasurer measurer = new LineBreakMeasurer(styledText.getIterator(), g2d.getFontRenderContext());
 
         int height = 0;
         float offset = drawInfo.getValueOffset();
@@ -517,5 +465,68 @@ public abstract class RequestPrintable implements Printable {
      */
     protected String getMessage(String code, String def) {
         return msgSource.getMessage(code, null, def, l);
+    }
+
+
+    /**
+     * Draw a key on the provided graphics object.
+     *
+     * @param drawValueInfo Draw value information.
+     */
+    private void drawKey(DrawValueInfo drawValueInfo) {
+        // Draw key
+        if (drawValueInfo.key != null) {
+            DrawInfo drawInfo = drawValueInfo.drawInfo;
+            Graphics2D g2d = drawInfo.getG2d();
+            g2d.setFont(drawValueInfo.boldKey
+                ? boldFont.deriveFont((float) drawValueInfo.font.getSize())
+                : normalFont.deriveFont((float) drawValueInfo.font.getSize()));
+            g2d.drawString(drawValueInfo.key + ":",
+                drawInfo.getOffsetX() + drawInfo.getValueOffset(), drawInfo.getOffsetY());
+
+            float offset = drawValueInfo.tab
+                ? KEY_TAB_OFFSET
+                : g2d.getFontMetrics().stringWidth(drawValueInfo.key + ": ");
+            drawInfo.setValueOffset(drawInfo.getValueOffset() + offset);
+        }
+    }
+
+    /**
+     * Draw a value on the provided graphics object.
+     *
+     * @param drawValueInfo Draw value information.
+     */
+    private void drawValue(DrawValueInfo drawValueInfo) {
+        // Do not print key-value pairs with missing value.
+        if (drawValueInfo.value == null || drawValueInfo.value.isEmpty()) {
+            return;
+        }
+        DrawInfo drawInfo = drawValueInfo.drawInfo;
+        Graphics2D g2d = drawInfo.getG2d();
+        int x = drawInfo.getOffsetX();
+
+        // Draw value (word-wrap enabled)
+        FontMetrics fm = g2d.getFontMetrics();
+        FontRenderContext frc = g2d.getFontRenderContext();
+
+        AttributedString styledText = new AttributedString(drawValueInfo.value.replace("\n", " "));
+        styledText.addAttribute(TextAttribute.FONT, drawValueInfo.font);
+        styledText.addAttribute(TextAttribute.UNDERLINE, drawValueInfo.underline ? 1 : -1);
+
+        AttributedCharacterIterator styledTextIterator = styledText.getIterator();
+        LineBreakMeasurer measurer = new LineBreakMeasurer(styledTextIterator, frc);
+
+        boolean firstLine = true;
+        while (measurer.getPosition() < drawValueInfo.value.length()) {
+            if (!firstLine)
+                drawNewLine(drawInfo);
+
+            float width = drawInfo.getWidth() - drawInfo.getValueOffset();
+            TextLayout textLayout = measurer.nextLayout(width);
+            textLayout.draw(g2d, x + drawInfo.getValueOffset(), drawInfo.getOffsetY());
+
+            firstLine = false;
+            drawInfo.setValueOffset(drawInfo.getValueOffset() + textLayout.getAdvance() + fm.stringWidth(" "));
+        }
     }
 }

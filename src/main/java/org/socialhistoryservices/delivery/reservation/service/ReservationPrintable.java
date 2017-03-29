@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2013 International Institute of Social History
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,9 +30,10 @@ public class ReservationPrintable extends RequestPrintable {
 
     /**
      * Construct the printable.
-     * @param hr The holding reservation to construct from.
+     *
+     * @param hr      The holding reservation to construct from.
      * @param mSource The message source to fetch localized messages.
-     * @param format The date format to use.
+     * @param format  The date format to use.
      */
     public ReservationPrintable(HoldingReservation hr, MessageSource mSource, DateFormat format, DeliveryProperties prop) {
         super(hr, mSource, format, prop);
@@ -65,11 +66,14 @@ public class ReservationPrintable extends RequestPrintable {
 
     /**
      * Draws the date of access.
+     *
      * @param drawInfo Draw offsets.
      */
     protected void drawDate(DrawInfo drawInfo) {
         HoldingReservation hr = (HoldingReservation) holdingRequest;
-        String dateLabel = getMessage("reservation.date", "Date");
-        drawKeyValueNewLine(drawInfo, dateLabel, df.format(hr.getReservation().getDate()));
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("reservation.date", "Date");
+        drawValueInfo.value = df.format(hr.getReservation().getDate());
+        drawKeyValueNewLine(drawValueInfo);
     }
 }
