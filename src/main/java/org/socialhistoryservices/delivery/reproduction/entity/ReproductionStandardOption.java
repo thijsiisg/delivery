@@ -78,12 +78,12 @@ public class ReproductionStandardOption {
 
     @NotBlank
     @Size(max = 50)
-    @Column(name = "optionName_en", nullable = false)
+    @Column(name = "optionname_en", nullable = false)
     private String optionNameEN;
 
     @NotBlank
     @Size(max = 50)
-    @Column(name = "optionName_nl", nullable = false)
+    @Column(name = "optionname_nl", nullable = false)
     private String optionNameNL;
 
     /**
@@ -135,12 +135,12 @@ public class ReproductionStandardOption {
 
     @NotBlank
     @Size(max = 255)
-    @Column(name = "optionDescription_nl", nullable = false)
+    @Column(name = "optiondescription_nl", nullable = false)
     private String optionDescriptionNL;
 
     @NotBlank
     @Size(max = 255)
-    @Column(name = "optionDescription_en", nullable = false)
+    @Column(name = "optiondescription_en", nullable = false)
     private String optionDescriptionEN;
 
     /**
@@ -239,7 +239,7 @@ public class ReproductionStandardOption {
 
     @NotNull
     @Min(0)
-    @Column(name = "deliveryTime", nullable = false)
+    @Column(name = "deliverytime", nullable = false)
     private Integer deliveryTime;
 
     /**
@@ -263,7 +263,7 @@ public class ReproductionStandardOption {
     /* The following are fields that are only entered for certain material types */
 
     @NotNull
-    @Column(name = "isPoster", nullable = false)
+    @Column(name = "isposter", nullable = false)
     private boolean poster = false; // Material type: Visual
 
     /**

@@ -34,7 +34,7 @@ public class ReservationDateException{
     /** The ReservationDateException's startDate */
     @NotNull
     @Temporal(TemporalType.DATE)
-    @Column(name = "exception_startDate", nullable = false)
+    @Column(name = "exception_startdate", nullable = false)
     private Date startDate;
 
     /**
@@ -51,7 +51,7 @@ public class ReservationDateException{
 
     /** The ReservationDateException's endDate */
     @Temporal(TemporalType.DATE)
-    @Column(name = "exception_endDate")
+    @Column(name = "exception_enddate")
     private Date endDate;
 
     /**
@@ -80,7 +80,7 @@ public class ReservationDateException{
 
     /**
      * Set the ReservationDateException's description
-     * @param exception_description the ReservationDateException's description
+     * @param description the ReservationDateException's description
      */
     public void setdescription(String description) { this.description = description; }
 

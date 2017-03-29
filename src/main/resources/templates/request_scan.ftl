@@ -53,7 +53,7 @@
     <li><span><@_ "reservation.id" "Reservation"/></span> ${reservation.id?c}</li>
     <li><span><@_ "reservation.visitorName" "Name"/></span> ${reservation.visitorName?html}</li>
     <li><span><@_ "reservation.visitorEmail" "E-mail"/></span> ${reservation.visitorEmail?html}</li>
-    <li><span><@_ "reservation.date" "Date"/></span> ${reservation.date?string(prop_dateFormat)}</li>
+    <li><span><@_ "reservation.date" "Date"/></span> ${reservation.date?string(delivery.dateFormat)}</li>
     <li>
       <span><@_ "reservation.status" "Status"/></span> <@_ "reservation.statusType.${reservation.status?string}" reservation.status?string/>
     </li>
@@ -92,7 +92,7 @@
   <li><span><@_ "reproduction.customerEmail" "E-mail"/></span> ${reproduction.customerEmail?html}</li>
 
   <li class="spacing">
-    <span><@_ "reproduction.creationDate" "Created on"/></span> ${reproduction.creationDate?string(prop_dateFormat)}
+    <span><@_ "reproduction.creationDate" "Created on"/></span> ${reproduction.creationDate?string(delivery.dateFormat)}
   </li>
   <li>
     <span><@_ "reproduction.status" "Status"/></span> <@_ "reproduction.statusType.${reproduction.status}" reproduction.status?string />

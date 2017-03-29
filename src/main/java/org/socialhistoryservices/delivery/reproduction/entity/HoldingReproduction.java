@@ -85,7 +85,7 @@ public class HoldingReproduction extends HoldingRequest {
 
     @NotNull
     @Min(1)
-    @Column(name = "numberOfPages", nullable = false)
+    @Column(name = "numberofpages", nullable = false)
     private int numberOfPages = 1;
 
     /**
@@ -107,7 +107,7 @@ public class HoldingReproduction extends HoldingRequest {
     }
 
     @Min(0)
-    @Column(name = "deliveryTime")
+    @Column(name = "deliverytime")
     private Integer deliveryTime;
 
     /**
@@ -280,7 +280,7 @@ public class HoldingReproduction extends HoldingRequest {
      * Is there already a reproduction in the SOR?
      */
     @NotNull
-    @Column(name = "inSor", nullable = false)
+    @Column(name = "insor", nullable = false)
     private boolean inSor;
 
     /**
@@ -305,7 +305,7 @@ public class HoldingReproduction extends HoldingRequest {
     /**
      * The kind of custom reproduction the customer requires.
      */
-    @Column(name = "customReproductionCustomer", nullable = true, columnDefinition = "TEXT")
+    @Column(name = "customreproductioncustomer", nullable = true, columnDefinition = "TEXT")
     private String customReproductionCustomer;
 
     /**
@@ -329,7 +329,7 @@ public class HoldingReproduction extends HoldingRequest {
     /**
      * The kind of custom reproduction reply.
      */
-    @Column(name = "customReproductionReply", nullable = true, columnDefinition = "TEXT")
+    @Column(name = "customreproductionreply", nullable = true, columnDefinition = "TEXT")
     private String customReproductionReply;
 
     /**

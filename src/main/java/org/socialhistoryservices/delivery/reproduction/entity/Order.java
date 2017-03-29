@@ -61,7 +61,7 @@ public class Order {
      * The order code
      */
     @Size(max = 50)
-    @Column(name = "orderCode", unique = true)
+    @Column(name = "ordercode", unique = true)
     private String orderCode;
 
     /**
@@ -116,7 +116,7 @@ public class Order {
 
     @Min(0)
     @NotNull
-    @Column(name = "refundedAmount", nullable = false)
+    @Column(name = "refundedamount", nullable = false)
     private long refundedAmount;
 
     /**
@@ -169,7 +169,7 @@ public class Order {
     }
 
     @NotNull
-    @Column(name = "paymentMethod", nullable = false)
+    @Column(name = "paymentmethod", nullable = false)
     private int paymentMethod;
 
     /**
@@ -195,7 +195,7 @@ public class Order {
      */
     @NotNull
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "createdAt", nullable = false)
+    @Column(name = "createdat", nullable = false)
     private Date createdAt;
 
     /**
@@ -221,7 +221,7 @@ public class Order {
      */
     @NotNull
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updatedAt", nullable = false)
+    @Column(name = "updatedat", nullable = false)
     private Date updatedAt;
 
     /**
@@ -245,7 +245,7 @@ public class Order {
     /**
      * The Order's refund date.
      */
-    @Column(name = "refundedAt")
+    @Column(name = "refundedat")
     private Date refundedAt;
 
     /**

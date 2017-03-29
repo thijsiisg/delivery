@@ -63,7 +63,7 @@ public class Reservation extends Request {
     /** The Reservation's name. */
     @NotBlank
     @Size(max=255)
-    @Column(name="visitorName", nullable=false)
+    @Column(name="visitorname", nullable=false)
     private String visitorName;
 
     /**
@@ -96,7 +96,7 @@ public class Reservation extends Request {
     @NotBlank
     @Size(max=255)
     @Email
-    @Column(name="visitorEmail", nullable=false)
+    @Column(name="visitoremail", nullable=false)
     private String visitorEmail;
 
     /**

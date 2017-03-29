@@ -55,7 +55,7 @@ public class Reproduction extends Request {
      */
     @NotBlank
     @Size(max = 255)
-    @Column(name = "customerName", nullable = false)
+    @Column(name = "customername", nullable = false)
     private String customerName;
 
     /**
@@ -92,7 +92,7 @@ public class Reproduction extends Request {
     @NotBlank
     @Size(max = 255)
     @Email
-    @Column(name = "customerEmail", nullable = false)
+    @Column(name = "customeremail", nullable = false)
     private String customerEmail;
 
     /**
@@ -303,7 +303,7 @@ public class Reproduction extends Request {
     @NotNull
     @Min(0)
     @Digits(integer = 5, fraction = 2)
-    @Column(name = "adminstrationCosts", nullable = false)
+    @Column(name = "adminstrationcosts", nullable = false)
     private BigDecimal adminstrationCosts;
 
     /**
@@ -333,7 +333,7 @@ public class Reproduction extends Request {
     /**
      * Set the adminstration costs specified.
      *
-     * @param discount The adminstration costs specified.
+     * @param adminstrationCosts The adminstration costs specified.
      */
     public void setAdminstrationCosts(BigDecimal adminstrationCosts) {
         this.adminstrationCosts = adminstrationCosts.setScale(2);
@@ -342,7 +342,7 @@ public class Reproduction extends Request {
     @NotNull
     @Min(0)
     @Digits(integer = 5, fraction = 2)
-    @Column(name = "adminstrationCostsDiscount", nullable = false)
+    @Column(name = "adminstrationcostsdiscount", nullable = false)
     private BigDecimal adminstrationCostsDiscount;
 
     /**
@@ -384,7 +384,7 @@ public class Reproduction extends Request {
     /**
      * Set the discount percentage specified.
      *
-     * @param discount The discount percentage specified.
+     * @param discountPercentage The discount percentage specified.
      */
     public void setDiscountPercentage(int discountPercentage) {
         this.discountPercentage = discountPercentage;
@@ -416,7 +416,7 @@ public class Reproduction extends Request {
     }
 
 //    @Enumerated(EnumType.STRING)
-    @Column(name = "requestLocale", nullable = false)
+    @Column(name = "requestlocale", nullable = false)
     private Locale requestLocale;
 
     /**
