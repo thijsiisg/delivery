@@ -35,6 +35,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.criteria.*;
+import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -88,9 +89,10 @@ public class RecordController extends ErrorHandlingController {
      * Get information about records.
      * @param pids The persistent identifiers to get the records of.
      * @param model The model to write the result to.
+     * @param response The HTTP response.
      * @return The view name to render the result in.
      */
-    private String get(String[] pids, Model model) {
+    private String get(String[] pids, Model model, HttpServletResponse response) {
         List<Record> recs = new ArrayList<Record>();
         Map<String, List<Record>> reservedChilds = new HashMap<>();
 
@@ -125,6 +127,9 @@ public class RecordController extends ErrorHandlingController {
 
         model.addAttribute("records", recs);
         model.addAttribute("reservedChilds", reservedChilds);
+
+        response.setHeader("Content-Type", "application/javascript");
+
         return "json/record_get.json";
     }
 
@@ -133,6 +138,7 @@ public class RecordController extends ErrorHandlingController {
      * @param encPids The pids separated by a comma, to get information of.
      * @param callback A callback, if provided, for the JSONP response.
      * @param model The model to add the result to.
+     * @param response The HTTP response.
      * @return The name of the view to resolve.
      */
     @RequestMapping(value = "/{encPids:.*}",
@@ -140,10 +146,11 @@ public class RecordController extends ErrorHandlingController {
     public String get(
             @PathVariable String encPids,
             @RequestParam(required=false) String callback,
-            Model model
+            Model model,
+            HttpServletResponse response
     ) {
         model.addAttribute("callback", callback);
-        return get(getPidsFromURL(encPids), model);
+        return get(getPidsFromURL(encPids), model, response);
     }
     // }}}
     // {{{ Delete API
