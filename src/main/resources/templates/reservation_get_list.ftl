@@ -239,7 +239,7 @@
   <input type="button" value="${st}" class="selectNone" />
 </div>
 
-<@pageLinks holdingReservationsSize RequestParameters["page_len"]!prop_requestPageLen RequestParameters["page"]!1 />
+<@pageLinks holdingReservationsSize RequestParameters["page_len"]!delivery.requestPageLen RequestParameters["page"]!1 />
 
 <#if _sec.ifAnyGranted("ROLE_RESERVATION_MODIFY,ROLE_RESERVATION_DELETE")>
 <fieldset class="actions">

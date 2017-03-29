@@ -255,7 +255,7 @@
       <input type="button" value="${st}" class="selectNone"/>
     </div>
 
-    <@pageLinks holdingReproductionsSize RequestParameters["page_len"]!prop_requestPageLen?number RequestParameters["page"]!1 />
+    <@pageLinks holdingReproductionsSize RequestParameters["page_len"]!delivery.requestPageLen?number RequestParameters["page"]!1 />
 
     <#if _sec.ifAnyGranted("ROLE_REPRODUCTION_MODIFY,ROLE_REPRODUCTION_DELETE")>
       <fieldset class="actions">

@@ -105,21 +105,6 @@
             <artifactId>spring-boot-starter-freemarker</artifactId>
         </dependency>
 
-        <!-- Codehaus Dependencies -->
-        <!-- https://mvnrepository.com/artifact/org.codehaus.jackson/jackson-core-lgpl -->
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-lgpl</artifactId>
-            <version>1.9.13</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.codehaus.jackson/jackson-mapper-lgpl -->
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-lgpl</artifactId>
-            <version>1.9.13</version>
-        </dependency>
-
         <!-- Auto generation of classes -->
         <dependency>
             <groupId>org.hibernate</groupId>

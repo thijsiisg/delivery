@@ -183,7 +183,7 @@
     </td>
     <td>
     <#if recordPermission.dateGranted??>
-        ${recordPermission.dateGranted?string(prop_dateFormat)}
+        ${recordPermission.dateGranted?string(delivery.dateFormat)}
     <#else>
         ${granted_null}
     </#if>
@@ -192,7 +192,7 @@
   </#list>
   </tbody>
 </table>
-<@pageLinks recordPermissionsSize RequestParameters["page_len"]!prop_requestPageLen?number RequestParameters["page"]!1 />
+<@pageLinks recordPermissionsSize RequestParameters["page_len"]!delivery.requestPageLen?number RequestParameters["page"]!1 />
 </#if>
 </@base>
 

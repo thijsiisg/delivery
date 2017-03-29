@@ -32,7 +32,7 @@
   <#assign pids = ""/>
   <#list holdingReservationsRestricted as hr>
     <#assign h = hr.holding>
-    <#assign pids = pids + h.record.pid?url+prop_pidSeparator>
+    <#assign pids = pids + h.record.pid?url+delivery.pidSeparator>
 
     <li>${h.record.toString()?html}</li>
   </#list>
@@ -51,7 +51,7 @@
         <#assign h = hr.holding>
 
         <#if pids[h.record.pid]??>
-          <#assign pids = pids + {h.record.pid : (pids[h.record.pid] +  prop_holdingSeparator + h.signature?url) }>
+          <#assign pids = pids + {h.record.pid : (pids[h.record.pid] +  delivery.holdingSeparator + h.signature?url) }>
         <#else>
           <#assign pids = pids + {h.record.pid :  h.signature?url}>
         </#if>
@@ -62,7 +62,7 @@
 
     <#assign pidParam = "">
     <#list pids?keys as k>
-      <#assign pidParam = pidParam + k + prop_holdingSeparator + pids[k] + prop_pidSeparator>
+      <#assign pidParam = pidParam + k + delivery.holdingSeparator + pids[k] + delivery.pidSeparator>
     </#list>
 
     <form action="${rc.contextPath}/reservation/createform/${pidParam?url}" method="GET" target="_blank">

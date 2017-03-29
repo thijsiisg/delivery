@@ -16,7 +16,7 @@ public class DeliveryProperties {
     private String apiProto = "http";
     private String dateFormat = "yyyy-MM-dd";
     private int externalInfoMinDaysCache = 30;
-    private String holdingSeperator = "\\^";
+    private String holdingSeperator = "^";
     private String itemSeperator = ".";
     private String ldapManagerDn = "cn=admin,dc=socialhistoryservices,dc=org";
     private String ldapManagerPassword = "test";

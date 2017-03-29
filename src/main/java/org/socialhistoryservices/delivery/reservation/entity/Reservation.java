@@ -16,7 +16,6 @@
 
 package org.socialhistoryservices.delivery.reservation.entity;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.permission.entity.Permission;

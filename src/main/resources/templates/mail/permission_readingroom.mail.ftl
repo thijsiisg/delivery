@@ -2,7 +2,7 @@
 <@mailRaedingRoom>
 <@_ "permissionMail.readingRoomMessage" "A visitor has sent a request for permission to access a restricted archive."/>
 
-URL: ${prop_urlSelf}/permission/${permission.id?c}
+URL: ${delivery.urlSelf}/permission/${permission.id?c}
 
 * <@_ "permission.name" "Name" />: ${permission.name}
 * <@_ "permission.email" "E-mail" />: ${permission.email}
