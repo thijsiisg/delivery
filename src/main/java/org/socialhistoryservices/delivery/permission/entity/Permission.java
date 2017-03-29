@@ -278,7 +278,7 @@ public class Permission {
 
     /** The Permission's request locale. */
 //    @Enumerated(EnumType.STRING)
-    @Column(name="requestLocale", nullable=false)
+    @Column(name="requestlocale", nullable=false)
     private Locale requestLocale;
 
     /**

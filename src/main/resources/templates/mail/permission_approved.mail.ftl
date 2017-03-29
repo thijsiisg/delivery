@@ -27,9 +27,9 @@
 <@_ "permissionMail.approvedMessage" "Your permission request has been (partially) approved. You can create a reservation with the link below."/>
 
 
-${prop_urlSelf}/reservation/createform/<#list permission.recordPermissions as rp><#if rp.granted>${rp.record.pid?url}<#if rp_has_next>,</#if></#if></#list>?code=${permission.code}&locale=${locale}
+${delivery.urlSelf}/reservation/createform/<#list permission.recordPermissions as rp><#if rp.granted>${rp.record.pid?url}<#if rp_has_next>,</#if></#if></#list>?code=${permission.code}&locale=${locale}
 
-<@_ "permissionMail.codeValidityFrom" "Code is valid from"/> ${permission.dateFrom?string(prop_dateFormat)} <@_ "permissionMail.codeValidityTo" "until"/> ${permission.dateTo?string(prop_dateFormat)}.
+<@_ "permissionMail.codeValidityFrom" "Code is valid from"/> ${permission.dateFrom?string(delivery.dateFormat)} <@_ "permissionMail.codeValidityTo" "until"/> ${permission.dateTo?string(delivery.dateFormat)}.
 
 --- <@_ "permission.recordPermissions" "Permissions per Record"/> ---
 <#list permission.recordPermissions as rp>

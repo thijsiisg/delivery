@@ -19,7 +19,7 @@
   <li><span><@_ "reproduction.customerEmail" "E-mail"/></span> ${reproduction.customerEmail?html}</li>
 
   <li class="spacing">
-    <span><@_ "reproduction.creationDate" "Created on"/></span> ${reproduction.creationDate?string(prop_dateFormat)}
+    <span><@_ "reproduction.creationDate" "Created on"/></span> ${reproduction.creationDate?string(delivery.dateFormat)}
   </li>
   <li>
     <span><@_ "reproduction.status" "Status"/></span> <@_ "reproduction.statusType.${reproduction.status}" reproduction.status?string />

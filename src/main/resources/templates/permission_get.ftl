@@ -34,8 +34,8 @@
     <li><span><@_ "permission.address" "Address"/></span> ${permission.address?html}</li>
     <li><span><@_ "permission.researchSubject" "Research Subject"/></span>${permission.researchSubject?html}</li>
     <li><span><@_ "permission.researchOrganization" "Research Organization"/></span> ${permission.researchOrganization?html}</li>
-    <li><span><@_ "permission.dateFrom" "Date From"/></span> ${permission.dateFrom?string(prop_dateFormat)}</li>
-    <li><span><@_ "permission.dateTo" "Date To"/></span> ${permission.dateTo?string(prop_dateFormat)}</li>
+    <li><span><@_ "permission.dateFrom" "Date From"/></span> ${permission.dateFrom?string(delivery.dateFormat)}</li>
+    <li><span><@_ "permission.dateTo" "Date To"/></span> ${permission.dateTo?string(delivery.dateFormat)}</li>
     <li><span><@_ "permission.explanation" "Explanation/Comments"/></span>${permission.explanation?html}</li>
     <li><span><@_ "permission.status" "Status"/></span> <@_ "permission.statusType.${permission.status?string}" permission.status?string/></li>
   </ul>

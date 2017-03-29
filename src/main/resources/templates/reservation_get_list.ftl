@@ -220,7 +220,7 @@
     <td>${reservation.visitorName?html}</td>
     <td>${reservation.date?string(delivery.dateFormat)}</td>
     <#--<td><#if reservation.returnDate??>${reservation.returnDate?string
-  (prop_dateFormat)}</#if></td>-->
+  (delivery.dateFormat)}</#if></td>-->
     <#assign yes>
     <@_ "yes" "Yes"/>
     </#assign>

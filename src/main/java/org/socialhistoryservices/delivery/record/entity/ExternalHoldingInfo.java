@@ -61,7 +61,7 @@ public class ExternalHoldingInfo {
         this.barcode = barcode;
     }
 
-    @Column(name="serialNumbers", columnDefinition = "TEXT", nullable=true)
+    @Column(name="serialnumbers", columnDefinition = "TEXT", nullable=true)
     private String serialNumbers;
 
     /**
@@ -84,7 +84,7 @@ public class ExternalHoldingInfo {
      * The Holding's shelving location.
      */
     @Size(max = 255)
-    @Column(name = "shelvingLocation")
+    @Column(name = "shelvinglocation")
     private String shelvingLocation;
 
     /**

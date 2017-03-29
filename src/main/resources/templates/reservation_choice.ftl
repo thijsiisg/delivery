@@ -35,7 +35,7 @@
     <#assign h = hr.holding>
     <#assign info = h.record.externalInfo>
     <#if h.record.realRestrictionType == "RESTRICTED">
-    <#assign pids = pids + h.record.pid?url+prop_pidSeparator>
+    <#assign pids = pids + h.record.pid?url+delivery.pidSeparator>
     <li>${h.record.title?html} <#if info.author??>/ ${info.author}</#if> -
     ${h.signature?html}</li>
     <#elseif h.record.realRestrictionType == "OPEN">
@@ -58,7 +58,7 @@
     <#if h.record.realRestrictionType == "OPEN">
     <#assign info = h.record.externalInfo>
     <#if pids[h.record.pid]??>
-         <#assign pids = pids + {h.record.pid : (pids[h.record.pid] +  prop_holdingSeparator + h.signature?url) }>
+         <#assign pids = pids + {h.record.pid : (pids[h.record.pid] +  delivery.holdingSeparator + h.signature?url) }>
     <#else>
         <#assign pids = pids + {h.record.pid :  h.signature?url}>
     </#if>
@@ -69,7 +69,7 @@
 </ul>
 <#assign pidParam = "">
 <#list pids?keys as k>
-<#assign pidParam = pidParam + k + prop_holdingSeparator + pids[k] + prop_pidSeparator>
+<#assign pidParam = pidParam + k + delivery.holdingSeparator + pids[k] + delivery.pidSeparator>
 </#list>
 
 <form action="${rc.contextPath}/reservation/createform/${pidParam}"
