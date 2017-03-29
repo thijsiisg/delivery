@@ -207,6 +207,28 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
     }
 
     /**
+     * List all HoldingReproduction matching a built query.
+     *
+     * @param q           The criteria query to execute
+     * @param firstResult The first result to obtain
+     * @param maxResults  The max number of results to obtain
+     * @return A list of matching HoldingReproductions.
+     */
+    public List<HoldingReproduction> listHoldingReproductions(CriteriaQuery<HoldingReproduction> q,
+                                                              int firstResult, int maxResults) {
+        return holdingReproductionDAO.list(q, firstResult, maxResults);
+    }
+
+    /**
+     * Count all HoldingReproductions matching a built query.
+     * @param q The criteria query to execute
+     * @return A count of matching HoldingReproductions.
+     */
+    public long countHoldingReproductions(CriteriaQuery<Long> q) {
+        return holdingReproductionDAO.count(q);
+    }
+
+    /**
      * Returns all standard options for reproductions.
      *
      * @return A list with all standard options for reproductions.

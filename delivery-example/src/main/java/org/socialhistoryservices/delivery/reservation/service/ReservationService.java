@@ -96,19 +96,36 @@ public interface ReservationService {
      */
     public List<Reservation> listReservations(CriteriaQuery<Reservation> q);
 
-	/**
-	 * List all Tuples matching a built query.
-	 * @param q The criteria query to execute
-	 * @return A list of matching Tuples.
-	 */
-	public List<Tuple> listTuples(CriteriaQuery<Tuple> q);
+    /**
+     * List all Tuples matching a built query.
+     * @param q The criteria query to execute
+     * @return A list of matching Tuples.
+     */
+    public List<Tuple> listTuples(CriteriaQuery<Tuple> q);
 
-	/**
-	 * List all HoldingReservations matching a built query.
-	 * @param q The criteria query to execute
-	 * @return A list of matching HoldingReservations.
-	 */
-	public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q);
+    /**
+     * List all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @return A list of matching HoldingReservations.
+     */
+    public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q);
+
+    /**
+     * List all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @param firstResult The first result to obtain
+     * @param maxResults The max number of results to obtain
+     * @return A list of matching HoldingReservations.
+     */
+    public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q,
+                                                            int firstResult, int maxResults);
+
+    /**
+     * Count all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @return A count of matching HoldingReservations.
+     */
+    public long countHoldingReservations(CriteriaQuery<Long> q);
 
     /**
      * Get a single Reservation matching a built query.

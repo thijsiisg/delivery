@@ -55,23 +55,21 @@ ${uri}?<#list requestParams?keys as k><#if requestParams[k] !="">${k}=${requestP
   </a>
 </#macro>
 
-<#macro pageLinks pageListHolder>
-<div class="pageLinks">
-<#if pageListHolder.page != pageListHolder.firstLinkedPage>
-<a href="<@paramUrl {"page":(pageListHolder.firstLinkedPage+1)?string} />"
-   class="pageLinks">&lt;&lt;</a>
-<a href="<@paramUrl {"page":(pageListHolder.page)?string} />"
-   class="pageLinks">&lt;</a>
-</#if>
-<@_ "pageListHolder.page" "Page"/> ${pageListHolder.page+1} /
-${pageListHolder.lastLinkedPage+1}
-<#if pageListHolder.page != pageListHolder.lastLinkedPage>
-<a href="<@paramUrl {"page":(pageListHolder.page+2)?string} />"
-   class="pageLinks">&gt;</a>
-<a href="<@paramUrl {"page":(pageListHolder.lastLinkedPage+1)?string} />"
-   class="pageLinks">&gt;&gt;</a>
-</#if>
-</div>
+<#macro pageLinks totalSize noItemsPerPage pageNumber>
+    <#assign noPages = (totalSize/noItemsPerPage?number)?ceiling/>
+    <div class="pageLinks">
+        <#if pageNumber?number &gt; 1>
+            <a href="<@paramUrl {"page": 1} />" class="pageLinks">&lt;&lt;</a>
+            <a href="<@paramUrl {"page": (pageNumber?number-1)?c} />" class="pageLinks">&lt;</a>
+        </#if>
+
+        <@_ "pageListHolder.page" "Page"/> ${pageNumber?number} / ${noPages}
+
+        <#if pageNumber?number &lt; noPages>
+            <a href="<@paramUrl {"page": (pageNumber?number+1)?c} />" class="pageLinks">&gt;</a>
+            <a href="<@paramUrl {"page": noPages?c} />" class="pageLinks">&gt;&gt;</a>
+        </#if>
+    </div>
 </#macro>
 
 <#macro pageApiLinks pageChunk>

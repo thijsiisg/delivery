@@ -174,7 +174,28 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      * @return A list of matching HoldingReservations.
      */
     public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q) {
-            return holdingReservationDAO.list(q);
+        return holdingReservationDAO.list(q);
+    }
+
+    /**
+     * List all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @param firstResult The first result to obtain
+     * @param maxResults The max number of results to obtain
+     * @return A list of matching HoldingReservations.
+     */
+    public List<HoldingReservation> listHoldingReservations(CriteriaQuery<HoldingReservation> q,
+                                                            int firstResult, int maxResults) {
+        return holdingReservationDAO.list(q, firstResult, maxResults);
+    }
+
+    /**
+     * Count all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @return A count of matching HoldingReservations.
+     */
+    public long countHoldingReservations(CriteriaQuery<Long> q) {
+        return holdingReservationDAO.count(q);
     }
 
     /**

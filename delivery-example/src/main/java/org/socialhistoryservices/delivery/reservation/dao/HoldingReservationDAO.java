@@ -54,4 +54,20 @@ public interface HoldingReservationDAO {
      * @return A list of matching HoldingReservations.
      */
     public List<HoldingReservation> list(CriteriaQuery<HoldingReservation> q);
+
+    /**
+     * List all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @param firstResult The first result to obtain
+     * @param maxResults The max number of results to obtain
+     * @return A list of matching HoldingReservations.
+     */
+    public List<HoldingReservation> list(CriteriaQuery<HoldingReservation> q, int firstResult, int maxResults);
+
+    /**
+     * Count all HoldingReservations matching a built query.
+     * @param q The criteria query to execute
+     * @return The number of counted results.
+     */
+    public long count(CriteriaQuery<Long> q);
 }
