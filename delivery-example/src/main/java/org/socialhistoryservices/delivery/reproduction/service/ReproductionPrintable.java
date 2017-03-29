@@ -68,8 +68,10 @@ public class ReproductionPrintable extends RequestPrintable {
      * @param drawInfo Draw offsets.
      */
     private void drawRepro(DrawInfo drawInfo) {
-        String printRepro = getMessage("print.repro", "Intended for repro");
-        drawKeyValueNewLine(drawInfo, null, printRepro, boldFont, false);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.value = getMessage("print.repro", "Intended for repro");
+        drawValueInfo.font = boldFont;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -79,8 +81,10 @@ public class ReproductionPrintable extends RequestPrintable {
      */
     private void drawId(DrawInfo drawInfo) {
         HoldingReproduction hr = (HoldingReproduction) holdingRequest;
-        String idLabel = getMessage("reproduction.short.id", "Repr. nr");
-        drawKeyValueNewLine(drawInfo, idLabel, String.valueOf(hr.getReproduction().getId()));
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("reproduction.short.id", "Repr. nr");
+        drawValueInfo.value = String.valueOf(hr.getReproduction().getId());
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -91,14 +95,18 @@ public class ReproductionPrintable extends RequestPrintable {
     private void drawPayed(DrawInfo drawInfo) {
         HoldingReproduction hr = (HoldingReproduction) holdingRequest;
         Order order = hr.getReproduction().getOrder();
-        String idLabel = getMessage("reproduction.payed", "Paid?");
+
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("reproduction.payed", "Paid?");
 
         if ((order != null) && (hr.getReproduction().getStatus().ordinal() >= Reproduction.Status.ACTIVE.ordinal())) {
-            drawKeyValueNewLine(drawInfo, idLabel, getMessage("yes", "Yes") + " (#" + String.valueOf(order.getId()) + ")");
+            drawValueInfo.value = getMessage("yes", "Yes") + " (#" + String.valueOf(order.getId()) + ")";
         }
         else {
-            drawKeyValueNewLine(drawInfo, idLabel, getMessage("no", "No"));
+            drawValueInfo.value = getMessage("no", "No");
         }
+
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -107,8 +115,11 @@ public class ReproductionPrintable extends RequestPrintable {
      * @param drawInfo Draw offsets.
      */
     private void drawEmail(DrawInfo drawInfo) {
-        String nameLabel = getMessage("request.email", "Email");
-        drawKeyValueNewLine(drawInfo, nameLabel, holdingRequest.getRequest().getEmail(), italicFont, false);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("request.email", "Email");
+        drawValueInfo.value = holdingRequest.getRequest().getEmail();
+        drawValueInfo.font = italicFont;
+        drawKeyValueNewLine(drawValueInfo);
     }
 
     /**
@@ -120,13 +131,28 @@ public class ReproductionPrintable extends RequestPrintable {
         HoldingReproduction hr = (HoldingReproduction) holdingRequest;
         if (hr.getStandardOption() != null) {
             ReproductionStandardOption standardOption = hr.getStandardOption();
-            drawValueNewLine(drawInfo, standardOption.getOptionName(), boldFont, false);
-            drawValueNewLine(drawInfo, standardOption.getOptionDescription(), italicFont, false);
+
+            DrawValueInfo drawValueInfoOption = new DrawValueInfo(drawInfo);
+            drawValueInfoOption.value = standardOption.getOptionName();
+            drawValueInfoOption.font = boldFont;
+            drawKeyValueNewLine(drawValueInfoOption);
+
+            DrawValueInfo drawValueInfoDescr = new DrawValueInfo(drawInfo);
+            drawValueInfoDescr.value = standardOption.getOptionDescription();
+            drawValueInfoDescr.font = italicFont;
+            drawKeyValueNewLine(drawValueInfoDescr);
         }
         else {
-            String value = getMessage("reproduction.customReproduction.backend", "Custom reproduction");
-            drawValueNewLine(drawInfo, value, boldFont, false);
-            drawValueNewLine(drawInfo, hr.getCustomReproductionCustomer(), italicFont, false);
+            DrawValueInfo drawValueInfoCustomHeading = new DrawValueInfo(drawInfo);
+            drawValueInfoCustomHeading.value =
+                getMessage("reproduction.customReproduction.backend", "Custom reproduction");
+            drawValueInfoCustomHeading.font = boldFont;
+            drawKeyValueNewLine(drawValueInfoCustomHeading);
+
+            DrawValueInfo drawValueInfoCustom = new DrawValueInfo(drawInfo);
+            drawValueInfoCustom.value = hr.getCustomReproductionCustomer();
+            drawValueInfoCustom.font = italicFont;
+            drawKeyValueNewLine(drawValueInfoCustom);
         }
     }
 
@@ -137,7 +163,11 @@ public class ReproductionPrintable extends RequestPrintable {
      * @param value    The value to draw.
      */
     private void drawHoldingPid(DrawInfo drawInfo, String value) {
-        String typeLabel = getMessage("holding.pid", "Item PID");
-        drawKeyValueNewLine(drawInfo, typeLabel, value, italicFont, true);
+        DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
+        drawValueInfo.key = getMessage("holding.pid", "Item PID");
+        drawValueInfo.value = value;
+        drawValueInfo.font = italicFont;
+        drawValueInfo.underline = true;
+        drawKeyValueNewLine(drawValueInfo);
     }
 }
