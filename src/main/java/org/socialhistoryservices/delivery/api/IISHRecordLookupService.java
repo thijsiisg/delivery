@@ -336,7 +336,7 @@ public class IISHRecordLookupService implements RecordLookupService {
     }
 
     private String[] getParentPidAndItem(String pid) {
-        String itemSeparator = deliveryProperties.getItemSeperator();
+        String itemSeparator = deliveryProperties.getItemSeparator();
         if (pid.contains(itemSeparator)) {
             int idx = pid.indexOf(itemSeparator);
             String parentPid = pid.substring(0, idx);

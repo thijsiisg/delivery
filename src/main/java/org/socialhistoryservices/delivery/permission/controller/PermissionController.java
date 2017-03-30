@@ -283,7 +283,7 @@ public class PermissionController extends AbstractRequestController {
             if ((parent != null) && parents.containsKey(parent)) {
                 RecordPermission parentRp = parents.get(parent);
                 parentRp.setOriginalRequestPids(
-                    parentRp.getOriginalRequestPids() + deliveryProperties.getPidSeperator() + record.getPid());
+                    parentRp.getOriginalRequestPids() + deliveryProperties.getPidSeparator() + record.getPid());
 
                 toRemove.add(rp);
                 permissions.removeRecordPermission(rp);

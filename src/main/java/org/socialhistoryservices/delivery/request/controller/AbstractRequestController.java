@@ -86,7 +86,7 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
         List<Holding> holdings = new ArrayList<Holding>();
         String[] tuples = getPidsFromURL(path);
         for (String tuple : tuples) {
-            String[] elements = tuple.split(Pattern.quote(deliveryProperties.getHoldingSeperator()));
+            String[] elements = tuple.split(Pattern.quote(deliveryProperties.getHoldingSeparator()));
             Record r = records.getRecordByPid(elements[0]);
 
             if (r == null) {
