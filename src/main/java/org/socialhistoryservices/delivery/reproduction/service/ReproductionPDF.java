@@ -23,7 +23,7 @@ public class ReproductionPDF extends RequestPDF {
      * @throws TemplatePreparationException Thrown when it fails to produce a PDF.
      */
     public byte[] getInvoice(Reproduction reproduction, Locale locale) throws TemplatePreparationException {
-        return getPDF("reproduction_invoice.pdf.ftl", getReproductionModel(reproduction), locale);
+        return getPDF("pdf/reproduction_invoice.pdf.ftl", getReproductionModel(reproduction), locale);
     }
 
     /**

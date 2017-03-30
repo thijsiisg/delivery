@@ -64,7 +64,7 @@ public class ErrorHandlingController {
      */
     protected String[] getPidsFromURL(String pids) {
         try {
-            return URLDecoder.decode(pids, "utf-8").split(deliveryProperties.getPidSeperator());
+            return URLDecoder.decode(pids, "utf-8").split(deliveryProperties.getPidSeparator());
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

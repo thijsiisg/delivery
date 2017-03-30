@@ -57,7 +57,6 @@ public class PayWayMessage extends TreeMap<String, Object> {
      * Returns the value for the given property.
      *
      * @param parameter The parameter to obtain the value of.
-     * @param date      Whether the value is a date and has to be parsed.
      * @return The corresponding value.
      */
     public Object get(String parameter) {
@@ -87,7 +86,6 @@ public class PayWayMessage extends TreeMap<String, Object> {
      * Returns the string value for the given property.
      *
      * @param parameter The parameter to obtain the value of.
-     * @param date      Whether the value is a date and has to be parsed.
      * @return The corresponding value.
      */
     public String getString(String parameter) {
@@ -99,7 +97,6 @@ public class PayWayMessage extends TreeMap<String, Object> {
      * Returns the integer value for the given property.
      *
      * @param parameter The parameter to obtain the value of.
-     * @param date      Whether the value is a date and has to be parsed.
      * @return The corresponding value.
      */
     public Integer getInteger(String parameter) {
@@ -111,7 +108,6 @@ public class PayWayMessage extends TreeMap<String, Object> {
      * Returns the long value for the given property.
      *
      * @param parameter The parameter to obtain the value of.
-     * @param date      Whether the value is a date and has to be parsed.
      * @return The corresponding value.
      */
     public Long getLong(String parameter) {
@@ -123,7 +119,6 @@ public class PayWayMessage extends TreeMap<String, Object> {
      * Returns the boolean value for the given property.
      *
      * @param parameter The parameter to obtain the value of.
-     * @param date      Whether the value is a date and has to be parsed.
      * @return The corresponding value.
      */
     public Boolean getBoolean(String parameter) {
@@ -135,7 +130,6 @@ public class PayWayMessage extends TreeMap<String, Object> {
      * Returns the date for the given property.
      *
      * @param parameter The parameter to obtain the value of.
-     * @param date      Whether the value is a date and has to be parsed.
      * @return The corresponding value.
      */
     public Date getDate(String parameter) {

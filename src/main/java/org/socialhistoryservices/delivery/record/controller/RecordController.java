@@ -425,7 +425,7 @@ public class RecordController extends ErrorHandlingController {
                                     @RequestParam String item) {
         edit = urlEncode(edit);
         item = urlEncode(item);
-        String itemSeparator = deliveryProperties.getItemSeperator();
+        String itemSeparator = deliveryProperties.getItemSeparator();
         return "redirect:/record/editform/"+edit+itemSeparator+item;
     }
 
