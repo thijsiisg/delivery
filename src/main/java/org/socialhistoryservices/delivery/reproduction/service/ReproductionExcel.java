@@ -1,13 +1,9 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.springframework.context.MessageSource;
@@ -70,15 +66,15 @@ public class ReproductionExcel {
         // Headers are bold and have a bottom border
         headerStyle = workbook.createCellStyle();
         HSSFFont headerFont = workbook.createFont();
-        headerFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+        headerFont.setBold(true);
         headerStyle.setFont(headerFont);
-        headerStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
-        headerStyle.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+        headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
         // Just a default cell style
         defaultStyle = workbook.createCellStyle();
         defaultStyle.setFont(workbook.createFont());
-        defaultStyle.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        defaultStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
         // Money values should have a money format
         moneyStyle = workbook.createCellStyle();
@@ -87,7 +83,7 @@ public class ReproductionExcel {
         CreationHelper creationHelper = workbook.getCreationHelper();
         short dataFormatIdentifier = creationHelper.createDataFormat().getFormat(moneyFormat);
         moneyStyle.setDataFormat(dataFormatIdentifier);
-        moneyStyle.setVerticalAlignment(CellStyle.VERTICAL_CENTER);
+        moneyStyle.setVerticalAlignment(VerticalAlignment.CENTER);
     }
 
     /**
