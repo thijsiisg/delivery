@@ -430,7 +430,7 @@ public class IISHRecordLookupService implements RecordLookupService {
      * @throws NoSuchPidException Thrown when the search returns nothing.
      */
     private Node searchByPid(String pid) throws NoSuchPidException {
-        String itemSeparator = deliveryProperties.getItemSeperator();
+        String itemSeparator = deliveryProperties.getItemSeparator();
 
         if (pid.contains(itemSeparator)) {
             int idx = pid.lastIndexOf(itemSeparator);

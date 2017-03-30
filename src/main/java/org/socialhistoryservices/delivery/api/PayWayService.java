@@ -5,7 +5,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -129,7 +128,7 @@ public class PayWayService {
             keyValues.add(messageEntry.getKey() + "=" + messageEntry.getValue().toString());
         }
         String toBeHashed = StringUtils.collectionToDelimitedString(keyValues, passPhrase) + passPhrase;
-        String hash = DigestUtils.shaHex(toBeHashed);
+        String hash = DigestUtils.sha1Hex(toBeHashed);
 
         // Sign the transaction
         message.put("shasign", hash);
@@ -185,7 +184,7 @@ public class PayWayService {
      */
     private class PayWayResponseHandler implements ResponseHandler<PayWayMessage> {
         @Override
-        public PayWayMessage handleResponse(HttpResponse httpResponse) throws ClientProtocolException, IOException {
+        public PayWayMessage handleResponse(HttpResponse httpResponse) throws IOException {
             ObjectMapper mapper = new ObjectMapper();
             InputStream inputStream = httpResponse.getEntity().getContent();
             return mapper.readValue(inputStream, PayWayMessage.class);

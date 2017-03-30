@@ -16,8 +16,8 @@ public class DeliveryProperties {
     private String apiProto = "http";
     private String dateFormat = "yyyy-MM-dd";
     private int externalInfoMinDaysCache = 30;
-    private String holdingSeperator = "\\^";
-    private String itemSeperator = ".";
+    private String holdingSeparator = "\\^";
+    private String itemSeparator = ".";
     private String ldapManagerDn = "cn=admin,dc=socialhistoryservices,dc=org";
     private String ldapManagerPassword = "test";
     private String ldapUrl = "ldap://ds0.socialhistoryservices.org/dc=socialhistoryservices,dc=org";
@@ -33,7 +33,7 @@ public class DeliveryProperties {
     private int permissionMaxPageLen = 100;
     private int permissionPageLen = 20;
     private int permissionPageStepSize = 10;
-    private String pidSeperator = ",";
+    private String pidSeparator = ",";
     private int reproductionAdministrationCosts = 6;
     private int reproductionMaxDaysPayment = 21;
     private int reproductionMaxDaysReminder = 14;
@@ -108,20 +108,20 @@ public class DeliveryProperties {
         this.externalInfoMinDaysCache = externalInfoMinDaysCache;
     }
 
-    public String getHoldingSeperator() {
-        return holdingSeperator;
+    public String getHoldingSeparator() {
+        return holdingSeparator;
     }
 
-    public void setHoldingSeperator(String holdingSeperator) {
-        this.holdingSeperator = holdingSeperator;
+    public void setHoldingSeparator(String holdingSeparator) {
+        this.holdingSeparator = holdingSeparator;
     }
 
-    public String getItemSeperator() {
-        return itemSeperator;
+    public String getItemSeparator() {
+        return itemSeparator;
     }
 
-    public void setItemSeperator(String itemSeperator) {
-        this.itemSeperator = itemSeperator;
+    public void setItemSeparator(String itemSeparator) {
+        this.itemSeparator = itemSeparator;
     }
 
     public String getLdapManagerDn() {
@@ -236,12 +236,12 @@ public class DeliveryProperties {
         this.permissionPageStepSize = permissionPageStepSize;
     }
 
-    public String getPidSeperator() {
-        return pidSeperator;
+    public String getPidSeparator() {
+        return pidSeparator;
     }
 
-    public void setPidSeperator(String pidSeperator) {
-        this.pidSeperator = pidSeperator;
+    public void setPidSeparator(String pidSeparator) {
+        this.pidSeparator = pidSeparator;
     }
 
     public int getReproductionAdministrationCosts() {

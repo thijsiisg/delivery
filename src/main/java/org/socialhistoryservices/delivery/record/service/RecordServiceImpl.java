@@ -134,7 +134,7 @@ public class RecordServiceImpl implements RecordService {
             saveRecord(root);
             return root;
         }
-        String itemSeparator = deliveryProperties.getItemSeperator();
+        String itemSeparator = deliveryProperties.getItemSeparator();
         while (pid.contains(itemSeparator)) {
             pid = pid.substring(0, pid.lastIndexOf(itemSeparator));
             Record rec = getRecordByPid(pid);
@@ -313,7 +313,7 @@ public class RecordServiceImpl implements RecordService {
             throws NoSuchPidException, NoSuchParentException {
         String pid = newRecord.getPid();
 
-        String itemSeparator = deliveryProperties.getItemSeperator();
+        String itemSeparator = deliveryProperties.getItemSeparator();
         if (pid.contains(itemSeparator)) {
             String parentPid = pid.substring(0, pid.lastIndexOf(itemSeparator));
             Record parent = getRecordByPid(parentPid);
