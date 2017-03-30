@@ -38,6 +38,7 @@ import java.util.*;
  */
 public class IISHRecordLookupService implements RecordLookupService {
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
+    private static final String SRW_SEARCH_PATH = "ns1:recordData/marc:record/";
 
     private Properties properties;
 
@@ -69,14 +70,14 @@ public class IISHRecordLookupService implements RecordLookupService {
             xpAll = xpath.compile("/srw:searchRetrieveResponse");
             xpOAI = xpath.compile("//oai:record");
             xpSearch = xpath.compile("//srw:record");
-            xpSearch245aTitle = XmlUtils.getXPathForMarc(xpath, "245", 'a');
-            xpSearch245bSubTitle = XmlUtils.getXPathForMarc(xpath, "245", 'b');
-            xpSearch500aTitle = XmlUtils.getXPathForMarc(xpath, "500", 'a');
-            xpSearch600aTitle = XmlUtils.getXPathForMarc(xpath, "600", 'a');
-            xpSearch610aTitle = XmlUtils.getXPathForMarc(xpath, "610", 'a');
-            xpSearch650aTitle = XmlUtils.getXPathForMarc(xpath, "650", 'a');
-            xpSearch651aTitle = XmlUtils.getXPathForMarc(xpath, "651", 'a');
-            xpSearch245kTitle = XmlUtils.getXPathForMarc(xpath, "245", 'k');
+            xpSearch245aTitle = XmlUtils.getXPathForMarc(xpath, "245", 'a', SRW_SEARCH_PATH);
+            xpSearch245bSubTitle = XmlUtils.getXPathForMarc(xpath, "245", 'b', SRW_SEARCH_PATH);
+            xpSearch500aTitle = XmlUtils.getXPathForMarc(xpath, "500", 'a', SRW_SEARCH_PATH);
+            xpSearch600aTitle = XmlUtils.getXPathForMarc(xpath, "600", 'a', SRW_SEARCH_PATH);
+            xpSearch610aTitle = XmlUtils.getXPathForMarc(xpath, "610", 'a', SRW_SEARCH_PATH);
+            xpSearch650aTitle = XmlUtils.getXPathForMarc(xpath, "650", 'a', SRW_SEARCH_PATH);
+            xpSearch651aTitle = XmlUtils.getXPathForMarc(xpath, "651", 'a', SRW_SEARCH_PATH);
+            xpSearch245kTitle = XmlUtils.getXPathForMarc(xpath, "245", 'k', SRW_SEARCH_PATH);
             xpArchive931 = XmlUtils.getXPathForMarcTag(xpath, "931");
             xpArchiveLocation = XmlUtils.getXPathForMarcSubfield(xpath, 'a');
             xpArchiveMeter = XmlUtils.getXPathForMarcSubfield(xpath, 'b');

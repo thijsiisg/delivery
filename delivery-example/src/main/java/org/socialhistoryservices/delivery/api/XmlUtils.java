@@ -7,9 +7,14 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 public class XmlUtils {
-    public static XPathExpression getXPathForMarc(XPath xpath, String tag, char code)
+    public static XPathExpression getXPathForMarc(XPath xpath, String tag, char code) throws XPathExpressionException {
+        return getXPathForMarc(xpath, tag, code, "");
+    }
+
+    public static XPathExpression getXPathForMarc(XPath xpath, String tag, char code, String searchPath)
         throws XPathExpressionException {
-        return xpath.compile("marc:datafield[@tag=" + tag + "]/marc:subfield[@code=\"" + code + "\"]");
+        return xpath.compile(
+            searchPath + "marc:datafield[@tag=" + tag + "]/marc:subfield[@code=\"" + code + "\"]");
     }
 
     public static XPathExpression getXPathForMarcTag(XPath xpath, String tag) throws XPathExpressionException {
