@@ -114,7 +114,7 @@ public class UserController extends ErrorHandlingController {
                 .getPrincipal();
         User currentUser = users.getUserByName(currentUserDetails.getUsername());
 
-        if (userObj.getId() == currentUser.getId()) {
+        if ((currentUser != null) && (userObj.getId() == currentUser.getId())) {
             throw new InvalidRequestException("Cannot modify own user groups.");
         }
 
