@@ -6,7 +6,7 @@
     <groupId>org.socialhistoryservices.delivery</groupId>
     <artifactId>delivery</artifactId>
     <packaging>war</packaging>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.0</version>
     <name>Delivery</name>
 
     <!-- Inherit defaults from Spring Boot -->
@@ -20,12 +20,26 @@
         <java.version>1.8</java.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>atlassian-public</id>
+            <url>https://maven.atlassian.com/repository/public</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <!-- Spring Boot -->
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-tomcat -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security -->
@@ -145,12 +159,11 @@
         </dependency>
 
         <!-- Captcha dependencies -->
-        <!--https://mvnrepository.com/artifact/com.octo.captcha/jcaptcha-->
+        <!-- https://mvnrepository.com/artifact/com.octo.captcha/jcaptcha -->
         <dependency>
             <groupId>com.octo.captcha</groupId>
             <artifactId>jcaptcha</artifactId>
             <version>1.0</version>
         </dependency>
-
     </dependencies>
 </project>
