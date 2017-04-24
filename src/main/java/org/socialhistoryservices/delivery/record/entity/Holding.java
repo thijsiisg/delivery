@@ -84,7 +84,8 @@ public class Holding {
         // Determine the usage restriction by checking the signature for patterns
         String checkSignature = signature.trim().toLowerCase();
         if (checkSignature.endsWith(".x") || checkSignature.endsWith("(missing)") ||
-            checkSignature.startsWith("no circulation") || checkSignature.startsWith("niet ter inzage")) {
+            checkSignature.startsWith("no circulation") || checkSignature.startsWith("niet ter inzage") ||
+            checkSignature.endsWith("(not available)")) {
             this.setUsageRestriction(UsageRestriction.CLOSED);
         }
     }
