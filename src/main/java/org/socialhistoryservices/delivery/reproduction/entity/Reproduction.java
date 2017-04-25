@@ -366,7 +366,7 @@ public class Reproduction extends Request {
 
     @Min(0)
     @Max(100)
-    @Column(name = "adminstrationCostsBtwPercentage")
+    @Column(name = "adminstrationcostsbtwpercentage")
     private Integer adminstrationCostsBtwPercentage;
 
     /**
@@ -388,7 +388,7 @@ public class Reproduction extends Request {
     }
 
     @Digits(integer = 5, fraction = 2)
-    @Column(name = "adminstrationCostsBtwPrice")
+    @Column(name = "adminstrationcostsbtwprice")
     private BigDecimal adminstrationCostsBtwPrice;
 
     /**
