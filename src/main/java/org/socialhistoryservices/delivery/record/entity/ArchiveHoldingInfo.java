@@ -24,7 +24,7 @@ public class ArchiveHoldingInfo {
     }
 
     @Size(max = 255)
-    @Column(name = "shelvingLocation")
+    @Column(name = "shelvinglocation")
     private String shelvingLocation;
 
     public String getShelvingLocation() {
