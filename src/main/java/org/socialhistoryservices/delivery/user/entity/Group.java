@@ -89,7 +89,7 @@ public class Group {
     }
 
     /** The Group's permissions. */
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="group_permissions",
       joinColumns=@JoinColumn(name="group_id"),
       inverseJoinColumns=@JoinColumn(name="permission_id"))

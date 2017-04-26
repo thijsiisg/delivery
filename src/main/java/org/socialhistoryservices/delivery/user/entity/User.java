@@ -73,7 +73,7 @@ public class User implements UserDetails {
     }
 
     /** The group this user is in. */
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="user_groups",
       joinColumns=@JoinColumn(name="user_id"),
       inverseJoinColumns=@JoinColumn(name="group_id"))
