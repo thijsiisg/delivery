@@ -194,7 +194,11 @@
 
           <li class="spacing">
             <span><@_ "reproductionStandardOption.price" "Price"/></span>
-            <@holdingPrice value.price holding.record.determinePriceByPages(value.price) holding.record.pages.numberOfPages/>
+            <#if holding.record.externalInfo.materialType == "BOOK">
+              <@holdingPrice value.price holding.record.determinePriceByPages(value.price) holding.record.pages.numberOfPages/>
+            <#else>
+              <@holdingPriceOther value.price holding.record.determinePriceByCopies(value.price) holding.record.copies.numberOfCopies/>
+            </#if>
           </li>
 
           <li>

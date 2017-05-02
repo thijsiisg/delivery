@@ -120,6 +120,15 @@ ${totalPages}
   </#if>
 </#macro>
 
+<#macro holdingPriceOther price completePrice noCopies=1>
+    &euro; ${completePrice?string("0.00")}
+
+    <#if noCopies gt 1>
+    <em class="info">(<@_ "price.copy" "Price per copy"/>: &euro; ${price?string("0.00")},
+        <@_ "no.copies" "Number of copies"/>: ${noCopies?html})</em>
+    </#if>
+</#macro>
+
 <#macro holdingPrice price completePrice noPages=1>
     &euro; ${completePrice?string("0.00")}
 

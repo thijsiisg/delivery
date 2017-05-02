@@ -19,6 +19,7 @@ package org.socialhistoryservices.delivery.record.entity;
 import org.apache.commons.collections.functors.InstantiateFactory;
 import org.apache.commons.collections.list.LazyList;
 import org.hibernate.validator.constraints.NotBlank;
+import org.socialhistoryservices.delivery.reproduction.util.Copies;
 import org.socialhistoryservices.delivery.reproduction.util.Pages;
 
 import javax.persistence.*;
@@ -48,6 +49,10 @@ public class Record {
     /** Stores information about the number of pages. */
     @Transient
     private Pages pages;
+
+    /** Stores information about the number of copies */
+    @Transient
+    private Copies copies;
 
     /** The Record's id. */
     @Id
@@ -377,6 +382,28 @@ public class Record {
         if (pages == null)
             pages = new Pages(this);
         return pages;
+    }
+
+    /**
+     * Returns the Copies object for this record.
+     * @return The Copies object.
+     */
+    public Copies getCopies(){
+        if(copies == null)
+            copies = new Copies(this);
+        return copies;
+    }
+
+    /**
+     * Helper method to determine the price on the number of copies for this reocrd.
+     * @param price The price per copy.
+     * @return The total price for this record based on the given price per copy.
+     */
+    public BigDecimal determinePriceByCopies(BigDecimal price){
+        Copies copies = getCopies();
+        if(copies.containsNumberOfCopies())
+            price = price.multiply(new BigDecimal(copies.getNumberOfCopies()));
+        return price;
     }
 
     /**
