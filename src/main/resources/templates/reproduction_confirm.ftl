@@ -130,7 +130,7 @@
 
               <li class="spacing">
                 <span><@_ "reproductionStandardOption.price" "Price"/></span>
-                <@holdingPrice hr.price hr.completePrice hr.numberOfPages/>
+                <@holdingPrice hr.price hr.completePrice info.materialType hr.numberOfPages/>
               </li>
 
               <li>

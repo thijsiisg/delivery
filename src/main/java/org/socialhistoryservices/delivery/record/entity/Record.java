@@ -395,26 +395,19 @@ public class Record {
     }
 
     /**
-     * Helper method to determine the price on the number of copies for this reocrd.
-     * @param price The price per copy.
-     * @return The total price for this record based on the given price per copy.
+     * Helper method to determine the price for this reocrd.
+     * @param price The price per page/copy.
+     * @return The total price for this record based on the given price per page/copy.
      */
-    public BigDecimal determinePriceByCopies(BigDecimal price){
-        Copies copies = getCopies();
-        if(copies.containsNumberOfCopies())
-            price = price.multiply(new BigDecimal(copies.getNumberOfCopies()));
-        return price;
-    }
-
-    /**
-     * Helper method to determine the price on the number of pages for this reocrd.
-     * @param price The price per page.
-     * @return The total price for this record based on the given price per page.
-     */
-    public BigDecimal determinePriceByPages(BigDecimal price) {
-        Pages pages = getPages();
-        if (pages.containsNumberOfPages())
-            price = price.multiply(new BigDecimal(pages.getNumberOfPages()));
+    public BigDecimal determinePrice(BigDecimal price){
+        if(this.externalInfo.getMaterialType() == ExternalRecordInfo.MaterialType.BOOK){
+            if(getPages().containsNumberOfPages())
+                price = price.multiply(new BigDecimal(pages.getNumberOfPages()));
+        }
+        else {
+            if (getCopies().containsNumberOfCopies())
+                price = price.multiply(new BigDecimal(copies.getNumberOfCopies()));
+        }
         return price;
     }
 
