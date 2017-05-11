@@ -276,7 +276,7 @@
                                         </fo:table-cell>
                                         <fo:table-cell>
                                             <fo:block>
-                                                &#8364; ${hr.completePrice?string("0.00")}
+                                                &#8364; ${hr.getCompletePriceWithoutTax()?string("0.00")}
                                             </fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell>
@@ -296,13 +296,12 @@
                                         </fo:table-cell>
                                         <fo:table-cell>
                                             <fo:block>
-                                                &#8364; ${reproduction.adminstrationCosts?string("0.00")}
+                                                &#8364; ${reproduction.getAdminstrationCostsWithoutTax()?string("0.00")}
                                             </fo:block>
                                         </fo:table-cell>
                                         <fo:table-cell>
                                             <fo:block>
-                                                <#assign taxPrice = reproduction.adminstrationCosts / ((reproduction.adminstrationCostsBtwPercentage / 100) + 1)/>
-                                                &#8364; ${taxPrice?string("0.00")}
+                                                &#8364; ${reproduction.adminstrationCostsBtwPrice?string("0.00")}
                                             </fo:block>
                                         </fo:table-cell>
                                     </fo:table-row>
