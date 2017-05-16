@@ -6,6 +6,7 @@ import org.socialhistoryservices.delivery.reproduction.entity.Order;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.ReproductionStandardOption;
 import org.socialhistoryservices.delivery.request.service.RequestPrintable;
+import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.springframework.context.MessageSource;
 
 import java.text.DateFormat;
@@ -22,8 +23,8 @@ public class ReproductionPrintable extends RequestPrintable {
      * @param mSource The message source to fetch localized messages.
      * @param format  The date format to use.
      */
-    public ReproductionPrintable(HoldingReproduction hr, MessageSource mSource, DateFormat format, DeliveryProperties prop) {
-        super(hr, mSource, format, prop);
+    public ReproductionPrintable(HoldingReproduction hr, MessageSource mSource, DateFormat format, DeliveryProperties prop, HoldingReproduction holdingReproduction, HoldingReservation holdingReservation) {
+        super(hr, mSource, format, prop, holdingReproduction, holdingReservation);
     }
 
     /**
@@ -33,7 +34,7 @@ public class ReproductionPrintable extends RequestPrintable {
      */
     @Override
     protected void draw(DrawInfo drawInfo) {
-        drawBarcode(drawInfo, holdingRequest.getHolding().getId());
+        drawBarcode(drawInfo, this.holdingReproduction.getId()); // get the id of the request instead of the holding?
 
         drawRepro(drawInfo);
         drawId(drawInfo);

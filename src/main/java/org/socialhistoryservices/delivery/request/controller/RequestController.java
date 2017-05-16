@@ -2,11 +2,15 @@ package org.socialhistoryservices.delivery.request.controller;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
+import org.socialhistoryservices.delivery.reproduction.service.ReproductionSearch;
 import org.socialhistoryservices.delivery.reproduction.service.ReproductionService;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.GeneralRequestService;
+import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
+import org.socialhistoryservices.delivery.reservation.service.ReservationSearch;
 import org.socialhistoryservices.delivery.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +21,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -59,12 +70,23 @@ public class RequestController extends AbstractRequestController {
      */
     @RequestMapping(value = "/scan", method = RequestMethod.POST)
     @PreAuthorize("hasAnyRole('ROLE_RESERVATION_MODIFY', 'ROLE_REPRODUCTION_MODIFY')")
-    public String scanBarcode(@RequestParam(required = false) String id, Model model) {
+    public String scanBarcode(@RequestParam(required = false) String id, Model model, HttpServletRequest req) {
         // Obtain the scanned holding
         Holding h;
         try {
             int ID = Integer.parseInt(id);
-            h = records.getHoldingById(ID);
+            // Obtain the scanned HoldingReservation/HoldingReproduction
+            HoldingReservation holdingReservation = getCorrespondingHoldingReservation(ID, req);
+            HoldingReproduction holdingReproduction = getCorrespondingHoldingReproduction(ID, req);
+            // Check if either the HoldingReproduction or HoldingReservation is null. If so, variable h is null
+            // If not, variable h is set to either one that is not null.
+            if(holdingReproduction != null && !holdingReproduction.isCompleted()){
+                h = holdingReproduction.getHolding();
+            }else if(holdingReservation != null && !holdingReservation.isCompleted()){
+                h = holdingReservation.getHolding();
+            }else{
+                h = null;
+            }
         } catch (NumberFormatException ex) {
             h = null;
         }
@@ -117,5 +139,53 @@ public class RequestController extends AbstractRequestController {
 
         model.addAttribute("error", "invalid");
         return "request_scan";
+    }
+
+    /**
+     * Get the corresponding HoldingReproduction to the given ID from the barcode that has been scanned, if ID belongs to a reproduction, otherwise null.
+     * @param ID The ID of the barcode being scanned
+     * @param req The request parameters
+     * @return the corresponding HoldingReproduction to the given ID, if ID belongs to a reproduction, otherwise null.
+     */
+    private HoldingReproduction getCorrespondingHoldingReproduction(int ID, HttpServletRequest req){
+        HoldingReproduction holdingReproduction = null;
+        // Creating the parameter map used to get a list of holdingreproductions
+        Map<String, String[]> p = req.getParameterMap();
+        // Getting a list of all the HoldingReproductions
+        CriteriaBuilder cb = reproductions.getHoldingReproductionCriteriaBuilder();
+        ReproductionSearch search = new ReproductionSearch(cb, p);
+        CriteriaQuery<HoldingReproduction> cq = search.list();
+        List<HoldingReproduction> holdingReproductionList = reproductions.listHoldingReproductions(cq);
+        // Check whether a HoldingReproduction's id is the same as the given id, setting the HoldingReproduction variable
+        for (HoldingReproduction hr : holdingReproductionList) {
+            if(hr.getId() == ID){
+                holdingReproduction = hr;
+            }
+        }
+        return holdingReproduction;
+    }
+
+    /**
+     * Get the corresponding HoldingReservation to the given ID from the barcode that has been scanned, if ID belongs to a reservation, otherwise null.
+     * @param ID The ID of the barcode being scanned
+     * @param req The request parameters
+     * @return the corresponding HoldingReservation to the given ID, if ID belongs to a reservation, otherwise null.
+     */
+    private HoldingReservation getCorrespondingHoldingReservation(int ID, HttpServletRequest req){
+        HoldingReservation holdingReservation = null;
+        // Creating the parameter map used to get a list of holdingreservations
+        Map<String, String[]> p = req.getParameterMap();
+        // Getting a list of all the HoldingReservations
+        CriteriaBuilder cb = reservations.getHoldingReservationCriteriaBuilder();
+        ReservationSearch search = new ReservationSearch(cb, p);
+        CriteriaQuery<HoldingReservation> cq = search.list();
+        List<HoldingReservation> holdingReservationList = reservations.listHoldingReservations(cq);
+        // Check whether a HoldingReservation's id is the same as the given id, setting the HoldingReservation variable
+        for (HoldingReservation hr : holdingReservationList) {
+            if(hr.getId() == ID){
+                holdingReservation = hr;
+            }
+        }
+        return holdingReservation;
     }
 }

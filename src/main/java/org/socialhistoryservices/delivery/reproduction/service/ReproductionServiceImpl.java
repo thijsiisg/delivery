@@ -486,7 +486,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 Reproduction.Status status = hr.getReproduction().getStatus();
                 if (!hr.hasOrderDetails() || (!hr.isInSor() && (status == Reproduction.Status.ACTIVE))) {
                     ReproductionPrintable rp = new ReproductionPrintable(
-                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties);
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties, hr, null);
                     requestPrintables.add(rp);
                     reproductions.add(hr.getReproduction());
                 }
