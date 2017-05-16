@@ -17,7 +17,6 @@
 package org.socialhistoryservices.delivery.reservation.service;
 
 import org.socialhistoryservices.delivery.config.DeliveryProperties;
-import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.request.service.RequestPrintable;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.springframework.context.MessageSource;
@@ -36,8 +35,8 @@ public class ReservationPrintable extends RequestPrintable {
      * @param mSource The message source to fetch localized messages.
      * @param format  The date format to use.
      */
-    public ReservationPrintable(HoldingReservation hr, MessageSource mSource, DateFormat format, DeliveryProperties prop, HoldingReproduction holdingReproduction, HoldingReservation holdingReservation) {
-        super(hr, mSource, format, prop, holdingReproduction, holdingReservation);
+    public ReservationPrintable(HoldingReservation hr, MessageSource mSource, DateFormat format, DeliveryProperties prop) {
+        super(hr, mSource, format, prop);
     }
 
     /**
@@ -47,7 +46,7 @@ public class ReservationPrintable extends RequestPrintable {
      */
     @Override
     protected void draw(DrawInfo drawInfo) {
-        drawBarcode(drawInfo, this.holdingReservation.getId());
+        drawBarcode(drawInfo, this.holdingRequest.getId());
 
         drawName(drawInfo);
         drawDate(drawInfo);

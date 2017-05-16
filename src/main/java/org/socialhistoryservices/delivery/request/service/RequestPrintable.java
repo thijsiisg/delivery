@@ -8,9 +8,7 @@ import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.record.entity.Record;
-import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
-import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.springframework.context.MessageSource;
 
 import java.awt.*;
@@ -45,8 +43,6 @@ public abstract class RequestPrintable implements Printable {
     protected DateFormat df;
     protected DeliveryProperties deliveryProperties;
     protected final HoldingRequest holdingRequest;
-    protected HoldingReproduction holdingReproduction;
-    protected HoldingReservation holdingReservation;
 
     private Locale l;
     private MessageSource msgSource;
@@ -129,7 +125,7 @@ public abstract class RequestPrintable implements Printable {
      * @param mSource The message source to fetch localized messages.
      * @param format  The date format to use.
      */
-    public RequestPrintable(HoldingRequest hr, MessageSource mSource, DateFormat format, DeliveryProperties prop, HoldingReproduction holdingReproduction, HoldingReservation holdingReservation) {
+    public RequestPrintable(HoldingRequest hr, MessageSource mSource, DateFormat format, DeliveryProperties prop) {
         deliveryProperties = prop;
         holdingRequest = hr;
 
@@ -144,9 +140,6 @@ public abstract class RequestPrintable implements Printable {
         smallNormalFont = normalFont.deriveFont(8f);
         smallBoldFont = smallNormalFont.deriveFont(Font.BOLD);
         smallItalicFont = smallNormalFont.deriveFont(Font.ITALIC);
-
-        this.holdingReproduction = holdingReproduction;
-        this.holdingReservation = holdingReservation;
     }
 
     /**

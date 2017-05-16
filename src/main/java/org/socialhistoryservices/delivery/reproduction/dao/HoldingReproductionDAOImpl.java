@@ -1,5 +1,6 @@
 package org.socialhistoryservices.delivery.reproduction.dao;
 
+import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.springframework.stereotype.Repository;
 
@@ -68,5 +69,14 @@ public class HoldingReproductionDAOImpl implements HoldingReproductionDAO {
      */
     public long count(CriteriaQuery<Long> q) {
         return entityManager.createQuery(q).getSingleResult();
+    }
+
+    /**
+     * Retrieve the HoldingReproduction matching the given ID.
+     * @param id ID of the HoldingReproduction to retrieve.
+     * @return The HoldingReproduction matching the ID.
+     */
+    public HoldingReproduction getById(int id){
+        return entityManager.find(HoldingReproduction.class, id);
     }
 }

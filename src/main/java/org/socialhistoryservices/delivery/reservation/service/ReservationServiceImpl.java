@@ -356,12 +356,12 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
                 if (mt == ExternalRecordInfo.MaterialType.ARCHIVE) {
                     requestPrintablesArchive.add(
                         new ArchiveReservationPrintable(
-                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties, null, hr));
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties));
                 }
                 else {
                     requestPrintables.add(
                         new ReservationPrintable(
-                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties, null, hr));
+                            hr, msgSource, (DateFormat) bf.getBean("dateFormat"), deliveryProperties));
                 }
                 reservations.add(hr.getReservation());
             }

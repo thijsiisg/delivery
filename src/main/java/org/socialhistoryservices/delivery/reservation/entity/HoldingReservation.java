@@ -44,6 +44,7 @@ public class HoldingReservation extends HoldingRequest {
      * Get the Reservation's id.
      * @return the Reservation's id.
      */
+    @Override
     public int getId() {
         return id;
     }
