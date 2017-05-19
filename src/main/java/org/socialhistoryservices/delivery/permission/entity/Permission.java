@@ -159,7 +159,7 @@ public class Permission {
     }
 
     /** The Permission's explanation. */
-    @Column(name="explanation", columnDefinition="TEXT", nullable=false)
+    @Column(name="explanation", columnDefinition="TEXT", nullable=true)
     private String explanation;
 
     /**
@@ -179,7 +179,7 @@ public class Permission {
     }
 
     /** The Permission's address. */
-    @Column(name="address", nullable=false)
+    @Column(name="address", nullable=true)
     private String address;
 
     /**

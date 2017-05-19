@@ -44,11 +44,12 @@
 </#macro>
 
 
-<#macro input path prefix pathPrefix = "" class="">
+<#macro input path prefix required=true pathPrefix = "" class="">
   <@spring.bind pathPrefix + path/>
     <label for="${spring.status.expression}" class="field">
       <#assign msgName = prefix + path/>
       <@spring.messageText msgName spring.status.expression/>
+        <font color="red">*</font>
     </label>
 
     <@spring.formInput pathPrefix + path "class='field ${class}'" />
@@ -79,11 +80,12 @@
     </#if>
 </#macro>
 
-<#macro date path prefix class="">
+<#macro date path prefix required=true class="">
   <@spring.bind path/>
     <label for="${spring.status.expression}" class="field">
       <#assign msgName = prefix + path/>
       <@spring.messageText msgName spring.status.expression/>
+        <font color="red">*</font>
     </label>
 
     <@spring.formInput path "class='field date ${class}'" />
@@ -115,11 +117,12 @@
     </#if>
 </#macro>
 
-<#macro textarea path prefix class="">
+<#macro textarea path prefix required=true class="">
   <@spring.bind path/>
 <label for="${spring.status.expression}" class="field">
   <#assign msgName = prefix + path/>
       <@spring.messageText msgName spring.status.expression/>
+    <font color="red">*</font>
 </label>
 
   <@spring.formTextarea path "class='${class} field'"/>

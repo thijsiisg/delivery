@@ -90,7 +90,6 @@ public class PermissionForm {
     }
 
     /** The address of the permission's applicant. */
-    @NotNull
     @Size(min=1, max=255)
     private String address;
     /**
@@ -109,7 +108,6 @@ public class PermissionForm {
     }
 
     /** The explanation of the permission's applicant. */
-    @NotNull
     @Size(min=1)
     private String explanation;
     /**

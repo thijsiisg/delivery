@@ -127,6 +127,7 @@
 
         <label for="captcha_response_field" class="field">
           <@_ "captcha.explanation" "Type the following word to prevent spam" />
+            <font color="red">*</font>
         </label>
 
         <div id="captcha_widget_div" class="field">
