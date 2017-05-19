@@ -22,7 +22,7 @@
 <#assign title>
 <@_ "reservation.success" "Reservation placed successfully."/>
 </#assign>
-<@userbase title>
+<@userbase title true>
 <section>
   <heading>
     <h1>${title}</h1>

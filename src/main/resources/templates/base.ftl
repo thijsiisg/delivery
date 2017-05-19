@@ -28,9 +28,9 @@
   </@body>
 </#macro>
 
-<#macro userbase title>
+<#macro userbase title disableLanguage=false>
   <@preamble title/>
-  <@userHeading/>
+  <@userHeading disableLanguage/>
   <@body>
     <#nested>
   </@body>
@@ -70,16 +70,18 @@
 </#macro>
 
 
-<#macro userHeading>
+<#macro userHeading disableLanguage=false>
     <header class="main">
       <h1>Delivery</h1>
-        <div class="languageSelect">
-        <span><@_ "language" "Language"/></span>
-        <ul>
-          <li><a href="<@paramUrl {"locale" : "nl"} />">NL</a></li>
-          <li><a href="<@paramUrl {"locale" : "en"} />">EN</a></li>
-        </ul>
-      </div>
+        <#if !disableLanguage>
+            <div class="languageSelect">
+            <span><@_ "language" "Language"/></span>
+            <ul>
+              <li><a href="<@paramUrl {"locale" : "nl"} />">NL</a></li>
+              <li><a href="<@paramUrl {"locale" : "en"} />">EN</a></li>
+            </ul>
+          </div>
+        </#if>
     </header>
     <nav class="main">
     </nav>
