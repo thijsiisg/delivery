@@ -46,8 +46,8 @@ $(document).ready(function(){
       <li><@input "reservation.visitorName" ""/></li>
       <li><@input "reservation.visitorEmail" ""/></li>
       <li><@date "reservation.date" ""/></li>
-      <li><@date "reservation.returnDate" ""/></li>
-      <li><@input "reservation.comment" ""/></li>
+      <li><@date "reservation.returnDate" "" false/></li>
+      <li><@input "reservation.comment" "" false/></li>
     </ul>
 <ul id="holdingReservations" class="holdingReservationDetails">
     <li id="newHoldingReservation" class="hidden">

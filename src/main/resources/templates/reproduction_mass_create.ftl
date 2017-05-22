@@ -20,7 +20,7 @@
   <ul class="form">
     <li><@input "reproduction.customerName" ""/></li>
     <li><@input "reproduction.customerEmail" ""/></li>
-    <li><@input "reproduction.comment" ""/></li>
+    <li><@input "reproduction.comment" "" false/></li>
   </ul>
 
   <ul id="holdingReproductions" class="holdingReproductionDetails actions">
@@ -152,7 +152,7 @@
   </ul>
 
   <ul class="form">
-    <li><@input "reproduction.discountPercentage" "" false "" "percentage"/></li>
+    <li><@input "reproduction.discountPercentage" "" true "" "percentage"/></li>
 
     <li>
       <label for="mail" class="field"><@_ "reproductionMassCreate.mail" "Mail"/></label>
