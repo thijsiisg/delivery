@@ -49,7 +49,7 @@
     <label for="${spring.status.expression}" class="field">
       <#assign msgName = prefix + path/>
       <@spring.messageText msgName spring.status.expression/>
-        <font color="red">*</font>
+      <#if required><span class="red">*</span></#if>
     </label>
 
     <@spring.formInput pathPrefix + path "class='field ${class}'" />
@@ -85,7 +85,7 @@
     <label for="${spring.status.expression}" class="field">
       <#assign msgName = prefix + path/>
       <@spring.messageText msgName spring.status.expression/>
-        <font color="red">*</font>
+      <#if required><span class="red">*</span></#if>
     </label>
 
     <@spring.formInput path "class='field date ${class}'" />
@@ -99,31 +99,13 @@
     </#if>
 </#macro>
 
-<#macro textarea path prefix class="">
-  <@spring.bind path/>
-    <label for="${spring.status.expression}" class="field">
-      <#assign msgName = prefix + path/>
-      <@spring.messageText msgName spring.status.expression/>
-    </label>
-
-    <@spring.formTextarea path "class='${class} field'"/>
-
-    <#if spring.status.errorMessages?size != 0>
-    <ul class="errors">
-      <li>
-        <@spring.showErrors "</li><li>"/>
-      </li>
-    </ul>
-    </#if>
-</#macro>
-
 <#macro textarea path prefix required=true class="">
   <@spring.bind path/>
-<label for="${spring.status.expression}" class="field">
+  <label for="${spring.status.expression}" class="field">
   <#assign msgName = prefix + path/>
-      <@spring.messageText msgName spring.status.expression/>
-    <font color="red">*</font>
-</label>
+    <@spring.messageText msgName spring.status.expression/>
+    <#if required><span class="red">*</span></#if>
+  </label>
 
   <@spring.formTextarea path "class='${class} field'"/>
 

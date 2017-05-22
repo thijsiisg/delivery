@@ -152,7 +152,7 @@
   </ul>
 
   <ul class="form">
-    <li><@input "reproduction.discountPercentage" "" "" "percentage"/></li>
+    <li><@input "reproduction.discountPercentage" "" false "" "percentage"/></li>
 
     <li>
       <label for="mail" class="field"><@_ "reproductionMassCreate.mail" "Mail"/></label>
