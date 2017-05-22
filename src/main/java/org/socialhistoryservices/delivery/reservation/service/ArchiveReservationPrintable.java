@@ -24,7 +24,7 @@ import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.springframework.context.MessageSource;
 
 import java.text.DateFormat;
-import java.util.Properties;
+import java.util.List;
 
 /**
  * Represents a printable archive reservation.
@@ -66,6 +66,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
         drawInfo.setOffsetY(drawInfo.getHeight() - 100);
 
         drawReturnNotice(drawInfo);
+        drawName(drawInfo);
     }
 
     /**
@@ -132,8 +133,10 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
             record = record.getParent();
 
         boolean printNoMoreSpaceNotice = true;
-        for (ArchiveHoldingInfo ahi : record.getArchiveHoldingInfo()) {
-            int heightOneLine = determineHeight(drawInfo, "-", smallNormalFont);
+        List<ArchiveHoldingInfo> archiveHoldingInfo = record.getArchiveHoldingInfo();
+        boolean smallFont = archiveHoldingInfo.size() > 10;
+        for (ArchiveHoldingInfo ahi : archiveHoldingInfo) {
+            int heightOneLine = determineHeight(drawInfo, "-", (smallFont) ? smallNormalFont : normalFont);
 
             // Empty string: assumption that the first line will never exceed more than one line
             int heightFirstLine = 0;
@@ -143,7 +146,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
 
             int heightLineNote = 0;
             if (ahi.getNote() != null)
-                heightLineNote = determineHeight(drawInfo, ahi.getNote(), smallNormalFont);
+                heightLineNote = determineHeight(drawInfo, ahi.getNote(), (smallFont) ? smallNormalFont : normalFont);
 
             // Only if there is still space, draw holding info
             int afterOffsetY = (drawInfo.getOffsetY() + heightFirstLine + heightLineNote);
@@ -153,7 +156,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
                     DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
                     drawValueInfo.key = getMessage("archiveHoldingInfo.shelvingLocation", "Location");
                     drawValueInfo.value = ahi.getShelvingLocation();
-                    drawValueInfo.font = smallBoldFont;
+                    drawValueInfo.font = (smallFont) ? smallBoldFont : boldFont;
                     drawValueInfo.boldKey = false;
                     drawValueInfo.tab = false;
                     drawKeyValue(drawValueInfo);
@@ -163,7 +166,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
                     DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
                     drawValueInfo.key = getMessage("archiveHoldingInfo.meter", "Meters");
                     drawValueInfo.value = ahi.getMeter();
-                    drawValueInfo.font = smallBoldFont;
+                    drawValueInfo.font = (smallFont) ? smallBoldFont : boldFont;
                     drawValueInfo.boldKey = false;
                     drawValueInfo.tab = false;
                     drawKeyValue(drawValueInfo);
@@ -173,7 +176,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
                     DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
                     drawValueInfo.key = getMessage("archiveHoldingInfo.numbers", "Amount");
                     drawValueInfo.value = ahi.getNumbers();
-                    drawValueInfo.font = smallBoldFont;
+                    drawValueInfo.font = (smallFont) ? smallBoldFont : boldFont;
                     drawValueInfo.boldKey = false;
                     drawValueInfo.tab = false;
                     drawKeyValue(drawValueInfo);
@@ -183,7 +186,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
                     DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
                     drawValueInfo.key = getMessage("archiveHoldingInfo.format", "Format");
                     drawValueInfo.value = ahi.getFormat();
-                    drawValueInfo.font = smallBoldFont;
+                    drawValueInfo.font = (smallFont) ? smallBoldFont : boldFont;
                     drawValueInfo.boldKey = false;
                     drawValueInfo.tab = false;
                     drawKeyValue(drawValueInfo);
@@ -193,7 +196,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
                     drawNewLine(drawInfo);
                     DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
                     drawValueInfo.value = ahi.getNote();
-                    drawValueInfo.font = smallItalicFont;
+                    drawValueInfo.font = (smallFont) ? smallItalicFont : italicFont;
                     drawKeyValue(drawValueInfo);
                 }
 
@@ -205,7 +208,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
 
                 DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
                 drawValueInfo.value = getMessage("archiveHoldingInfo.more", "");
-                drawValueInfo.font = smallBoldFont;
+                drawValueInfo.font = (smallFont) ? smallBoldFont : boldFont;;
                 drawValueInfo.underline = true;
                 drawKeyValue(drawValueInfo);
                 drawNewLine(drawInfo);

@@ -27,6 +27,11 @@ ALTER TABLE permissions DROP COLUMN status;
 ALTER TABLE permissions DROP COLUMN date_from;
 ALTER TABLE permissions DROP COLUMN date_to;
 
+/* UPDATE OLD COLUMNS */
+
+ALTER TABLE permissions ALTER COLUMN explanation DROP NOT NULL;
+ALTER TABLE permissions ALTER COLUMN address DROP NOT NULL;
+
 /* DROP OLD TABLES */
 
 DROP TABLE contacts;

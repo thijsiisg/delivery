@@ -62,6 +62,7 @@ public class ReservationPrintable extends RequestPrintable {
         drawInfo.setOffsetY(drawInfo.getHeight() - 100);
 
         drawReturnNotice(drawInfo);
+        drawName(drawInfo);
     }
 
     /**
