@@ -23,13 +23,13 @@
 
 * <@_ "permission.name" "Name" />: ${permission.name}
 * <@_ "permission.email" "E-mail" />: ${permission.email}
-* <@_ "permission.address" "Address" />:
-${permission.address}
+<#if permission.address??>* <@_ "permission.address" "Address" />:
+${permission.address}</#if>
 * <@_ "permission.researchOrganization" "for" />: ${permission.researchOrganization}
 * <@_ "permission.researchSubject" "Subject" />:
 ${permission.researchSubject}
-* <@_ "permission.explanation" "Explanation" />:
-${permission.explanation}
+<#if permission.explanation??>* <@_ "permission.explanation" "Explanation" />:
+${permission.explanation}</#if>
 
 --- <@_ "reservation.records" "Records"/> ---
 <#list permission.recordPermissions as rp>

@@ -31,20 +31,30 @@
 <ul class="permissionDetails">
     <li><span><@_ "permission.name" "Name"/></span> ${permission.name?html}</li>
     <li><span><@_ "permission.email" "E-mail"/></span> ${permission.email?html}</li>
-    <li><span><@_ "permission.address" "Address"/></span> ${permission.address?html}</li>
+
+    <#if permission.address??>
+        <li>
+            <span><@_ "permission.address" "Address"/></span>
+            ${permission.address?html}
+        </li>
+    </#if>
 
     <li class="spacing">
         <span><@_ "permission.researchSubject" "Research Subject"/></span>
         <em>${permission.researchSubject?html}</em>
     </li>
+
     <li>
         <span><@_ "permission.researchOrganization" "Research Organization"/></span>
         <em>${permission.researchOrganization?html}</em>
     </li>
-    <li>
-        <span><@_ "permission.explanation" "Explanation/Comments"/></span>
-        <em>${permission.explanation?html}</em>
-    </li>
+
+    <#if permission.explanation??>
+        <li>
+            <span><@_ "permission.explanation" "Explanation/Comments"/></span>
+            <em>${permission.explanation?html}</em>
+        </li>
+    </#if>
 
     <li class="spacing"><span><@_ "permission.code" "Code"/></span> ${permission.code?html}</li>
 </ul>
