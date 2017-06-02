@@ -85,32 +85,17 @@ public class PermissionSearch extends RequestSearch<RecordPermission> {
             if (sort.equals("visitor_name")) {
                 e = pmRoot.get(Permission_.name);
             }
-            else if (sort.equals("visitor_email")) {
-                e = pmRoot.get(Permission_.email);
-            }
             else if (sort.equals("date_granted")) {
                 e = rpRoot.get(RecordPermission_.dateGranted);
             }
-            else if (sort.equals("address")) {
-                e = pmRoot.get(Permission_.address);
-            }
-            else if (sort.equals("research_organization")) {
-                e = pmRoot.get(Permission_.researchOrganization);
-            }
-            else if (sort.equals("research_subject")) {
-                e = pmRoot.get(Permission_.researchSubject);
-            }
-            else if (sort.equals("explanation")) {
-                e = pmRoot.get(Permission_.explanation);
-            }
             else if (sort.equals("permission")) {
-                e = rpRoot.get(RecordPermission_.permission);
+                e = rpRoot.get(RecordPermission_.granted);
             }
         }
-        if (containsSortDir && p.get("sort_dir")[0].toLowerCase().equals("desc")) {
-            return cb.desc(e);
+        if (containsSortDir && p.get("sort_dir")[0].toLowerCase().equals("asc")) {
+            return cb.asc(e);
         }
-        return cb.asc(e);
+        return cb.desc(e);
     }
 
     /**

@@ -46,7 +46,6 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
         where = addNameFilter(p, cb, resRoot, where);
         where = addEmailFilter(p, cb, resRoot, where);
         where = addStatusFilter(p, cb, resRoot, where);
-        where = addSpecialFilter(p, cb, resRoot, where);
         where = addPrintedFilter(p, cb, hrRoot, where);
         where = addSearchFilter(p, cb, hrRoot, resRoot, where);
 
@@ -84,17 +83,11 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
             if (sort.equals("visitorName")) {
                 e = resRoot.get(Reservation_.visitorName);
             }
-            else if (sort.equals("visitorEmail")) {
-                e = resRoot.get(Reservation_.visitorEmail);
-            }
             else if (sort.equals("status")) {
                 e = resRoot.get(Reservation_.status);
             }
             else if (sort.equals("printed")) {
                 e = hrRoot.get(HoldingReservation_.printed);
-            }
-            else if (sort.equals("special")) {
-                e = resRoot.get(Reservation_.special);
             }
             else if (sort.equals("signature")) {
                 e = hRoot.get(Holding_.signature);
@@ -140,25 +133,6 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
                     "%" + search + "%")
             );
             where = where != null ? cb.and(where, exSearch) : exSearch;
-        }
-        return where;
-    }
-
-    /**
-     * Add the special filter to the where clause, if present.
-     *
-     * @param p       The parameter list to search the given filter value in.
-     * @param cb      The criteria builder.
-     * @param resRoot The reservation root.
-     * @param where   The already present where clause or null if none present.
-     * @return The (updated) where clause, or null if the filter did not exist.
-     */
-    private Expression<Boolean> addSpecialFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation, Reservation> resRoot, Expression<Boolean> where) {
-        if (p.containsKey("special")) {
-            Expression<Boolean> exSpecial = cb.equal(
-                resRoot.<Boolean>get(Reservation_.special),
-                Boolean.parseBoolean(p.get("special")[0]));
-            where = where != null ? cb.and(where, exSpecial) : exSpecial;
         }
         return where;
     }

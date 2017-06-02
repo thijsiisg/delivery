@@ -245,7 +245,6 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
     public void merge(Reservation reservation, Reservation other) {
         reservation.setDate(other.getDate());
         reservation.setReturnDate(other.getReturnDate());
-        reservation.setSpecial(other.getSpecial());
         reservation.setVisitorName(other.getVisitorName());
         reservation.setVisitorEmail(other.getVisitorEmail());
         reservation.setComment(other.getComment());

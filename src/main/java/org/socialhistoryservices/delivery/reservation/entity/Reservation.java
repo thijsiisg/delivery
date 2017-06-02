@@ -178,26 +178,6 @@ public class Reservation extends Request {
         this.creationDate = creationDate;
     }
 
-    /** The Reservation's special. */
-    @Column(name="special", nullable=false)
-    private boolean special;
-
-    /**
-     * Get the Reservation's special.
-     * @return the Reservation's special.
-     */
-    public boolean getSpecial() {
-        return special;
-    }
-
-    /**
-     * Set the Reservation's special.
-     * @param special the Reservation's special.
-     */
-    public void setSpecial(boolean special) {
-        this.special = special;
-    }
-
     /** The Reservation's status. */
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -317,7 +297,6 @@ public class Reservation extends Request {
      * Set default data for reservations.
      */
     public Reservation() {
-        setSpecial(false);
         setStatus(Status.PENDING);
         setCreationDate(new Date());
         holdingReservations = new ArrayList<HoldingReservation>();
