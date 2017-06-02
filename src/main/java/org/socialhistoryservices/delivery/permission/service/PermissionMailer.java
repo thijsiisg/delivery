@@ -127,7 +127,7 @@ public class PermissionMailer extends Mailer {
         msg.setTo(deliveryProperties.getMailReadingRoom());
 
         msg.setSubject(getMessage("permissionMail.readingRoomSubject", "New permission request"));
-        msg.setText(templateToString("permission_readingroom.mail.ftl", model));
+        msg.setText(templateToString("mail/permission_readingroom.mail.ftl", model));
 
         mailSender.send(msg);
     }

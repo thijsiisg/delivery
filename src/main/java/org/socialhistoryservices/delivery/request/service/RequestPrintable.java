@@ -522,7 +522,7 @@ public abstract class RequestPrintable implements Printable {
                 drawNewLine(drawInfo);
 
             float width = drawInfo.getWidth() - drawInfo.getValueOffset();
-            TextLayout textLayout = measurer.nextLayout(width);
+            TextLayout textLayout = measurer.nextLayout((width > 0) ? width : 0);
             textLayout.draw(g2d, x + drawInfo.getValueOffset(), drawInfo.getOffsetY());
 
             firstLine = false;

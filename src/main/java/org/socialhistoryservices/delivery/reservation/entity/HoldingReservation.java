@@ -100,7 +100,7 @@ public class HoldingReservation extends HoldingRequest {
     }
 
     /** The RecordPermission's permission. */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name="reservation_id")
     private Reservation reservation;
 
@@ -141,7 +141,7 @@ public class HoldingReservation extends HoldingRequest {
     }
 
     /** The HoldingReservation's holding. */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name="holding_id")
     private Holding holding;
 
