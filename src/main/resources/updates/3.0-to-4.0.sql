@@ -84,22 +84,11 @@ CREATE INDEX records_record_fk ON records (parent_id);
 
 /* CREATE NEW INDEXES */
 
-CREATE INDEX reservations_visitorname_idx ON reservations (visitorname);
-CREATE INDEX reservations_visitoremail_idx ON reservations (visitoremail);
 CREATE INDEX reservations_status_idx ON reservations (status);
 CREATE INDEX reservations_creation_date_idx ON reservations (creation_date);
 
-CREATE INDEX reproductions_customername_idx ON reproductions (customername);
-CREATE INDEX reproductions_customeremail_idx ON reproductions (customeremail);
 CREATE INDEX reproductions_status_idx ON reproductions (status);
 CREATE INDEX reproductions_creation_date_idx ON reproductions (creation_date);
-
-CREATE INDEX permissions_name_idx ON permissions (name);
-CREATE INDEX permissions_email_idx ON permissions (email);
-CREATE INDEX permissions_explanation_idx ON permissions (explanation);
-CREATE INDEX permissions_research_organization_idx ON permissions (research_organization);
-CREATE INDEX permissions_research_subject_idx ON permissions (research_subject);
-CREATE INDEX permissions_address_idx ON permissions (address);
 
 CREATE INDEX holding_reservations_printed_idx ON holding_reservations (printed);
 
@@ -110,8 +99,6 @@ CREATE INDEX recordpermissions_granted_idx ON recordpermissions (granted);
 
 CREATE INDEX holdings_signature_idx ON holdings (signature);
 CREATE INDEX holdings_status_idx ON holdings (status);
-
-CREATE INDEX external_record_info_title_idx ON external_record_info (title);
 
 /* RESET THE EXTERNAL INFO OF ARCHIVES */
 
