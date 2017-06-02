@@ -52,7 +52,7 @@ public class DeliveryProperties {
     private String sorAddress = "http://disseminate.objectrepository.org";
     private String timeFormat = "HH:mm:ss";
     private String urlSearch = "search-acc.socialhistory.org";
-    private String urlSelf = "http://localhost:8181";
+    private String urlSelf = "http://localhost:8080";
     private int recordPageLen = 20;
 
     public boolean isMailEnabled() {

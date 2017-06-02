@@ -31,12 +31,6 @@ public abstract class TemplatePreparation {
     @Autowired
     private MessageSource msgSource;
 
-    /**
-     * The property files.
-     */
-    @Autowired
-    protected Properties properties;
-
     @Autowired
     protected DeliveryProperties deliveryProperties;
 
@@ -86,10 +80,6 @@ public abstract class TemplatePreparation {
      */
     protected String templateToString(String name, Model model, Locale locale) throws TemplatePreparationException {
         model.addAttribute("msgResolver", new EasyMessage(locale));
-
-        Map map = new HashMap();
-        CollectionUtils.mergePropertiesIntoMap(properties, map);
-        model.addAllAttributes(map);
 
         try {
             return FreeMarkerTemplateUtils.processTemplateIntoString(

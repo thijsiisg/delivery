@@ -115,7 +115,7 @@ public class PermissionMailer extends Mailer {
      */
     public void mailReadingRoom(Permission pm) throws MailException {
         // Do not mail when mail is disabled.
-        if (!Boolean.parseBoolean(properties.getProperty("prop_mailEnabled"))) {
+        if (!deliveryProperties.isMailEnabled()) {
             return;
         }
 
@@ -123,8 +123,8 @@ public class PermissionMailer extends Mailer {
         model.addAttribute("permission", pm);
 
         SimpleMailMessage msg = new SimpleMailMessage();
-        msg.setFrom(properties.getProperty("prop_mailSystemAddress"));
-        msg.setTo(properties.getProperty("prop_mailReadingRoom"));
+        msg.setFrom(deliveryProperties.getMailSystemAddress());
+        msg.setTo(deliveryProperties.getMailReadingRoom());
 
         msg.setSubject(getMessage("permissionMail.readingRoomSubject", "New permission request"));
         msg.setText(templateToString("permission_readingroom.mail.ftl", model));
