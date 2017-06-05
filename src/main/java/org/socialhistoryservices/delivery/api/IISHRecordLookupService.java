@@ -25,7 +25,6 @@ public class IISHRecordLookupService implements RecordLookupService {
     private static final Log logger = LogFactory.getLog(IISHRecordLookupService.class);
     private static final String SRW_SEARCH_PATH = "ns1:recordData/marc:record/";
 
-//    private Properties properties;
     private DeliveryProperties deliveryProperties;
 
     private XPathExpression xpSearch, xpAll, xpOAI, xpSearch245aTitle, xpSearch500aTitle, xpSearch600aTitle,
@@ -40,10 +39,6 @@ public class IISHRecordLookupService implements RecordLookupService {
      *
      * @param p The properties to set.
      */
-//    public void setProperties(Properties p) {
-//        properties = p;
-//    }
-
     public void setDeliveryProperties(DeliveryProperties p) { deliveryProperties = p; }
 
     /**

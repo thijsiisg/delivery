@@ -1,6 +1,5 @@
 package org.socialhistoryservices.delivery.api;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.socialhistoryservices.delivery.record.entity.ExternalHoldingInfo;
@@ -9,7 +8,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.namespace.QName;
 import javax.xml.xpath.*;
 import java.util.*;
 
@@ -17,8 +15,8 @@ public class EADRecordExtractor implements IISHRecordExtractor {
     private static final Log logger = LogFactory.getLog(EADRecordExtractor.class);
 
     private XPath xpath;
-    private XPathExpression xpTitle, xpAuthor, xpPhysicalDescription, xpUnitId, xpDidUnitId,
-        xpAccessAndUse, xpAccessRestrict, xpP, xpParent;
+    private XPathExpression xpTitle, xpAuthor, xpPhysicalDescription, xpUnitId,
+            xpAccessAndUse, xpAccessRestrict, xpP, xpParent;
 
     public EADRecordExtractor() {
         XPathFactory factory = XPathFactory.newInstance();
@@ -31,7 +29,6 @@ public class EADRecordExtractor implements IISHRecordExtractor {
             xpPhysicalDescription = xpath.compile(
                 "normalize-space(.//ead:physdesc[@label='Physical Description']/ead:extent)");
             xpUnitId = xpath.compile(".//ead:unitid");
-            xpDidUnitId = xpath.compile("./ead:did/ead:unitid");
             xpAccessAndUse = xpath.compile(".//ead:descgrp[@type='access_and_use']");
             xpAccessRestrict = xpath.compile(".//ead:accessrestrict");
             xpP = xpath.compile("normalize-space(./ead:p[1])");
