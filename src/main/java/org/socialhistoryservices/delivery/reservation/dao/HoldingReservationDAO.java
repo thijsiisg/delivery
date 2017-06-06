@@ -38,4 +38,11 @@ public interface HoldingReservationDAO {
      * @return The number of counted results.
      */
     public long count(CriteriaQuery<Long> q);
+
+    /**
+     * Retrieve the HoldingReservation matching the given ID.
+     * @param id ID of the HoldingReservation to retrieve.
+     * @return The HoldingReservation matching the ID.
+     */
+    public HoldingReservation getById(int id);
 }

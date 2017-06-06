@@ -65,4 +65,13 @@ public class HoldingReservationDAOImpl implements HoldingReservationDAO {
     public long count(CriteriaQuery<Long> q) {
         return entityManager.createQuery(q).getSingleResult();
     }
+
+    /**
+     * Retrieve the HoldingReservation matching the given ID.
+     * @param id ID of the HoldingReservation to retrieve.
+     * @return The HoldingReservation matching the ID.
+     */
+    public HoldingReservation getById(int id){
+        return entityManager.find(HoldingReservation.class, id);
+    }
 }

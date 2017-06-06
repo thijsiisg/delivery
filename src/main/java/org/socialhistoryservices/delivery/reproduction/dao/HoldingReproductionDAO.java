@@ -41,4 +41,11 @@ public interface HoldingReproductionDAO {
      * @return The number of counted results.
      */
     public long count(CriteriaQuery<Long> q);
+
+    /**
+     * Retrieve the HoldingReproduction matching the given ID.
+     * @param id ID of the HoldingReproduction to retrieve.
+     * @return The HoldingReproduction matching the ID.
+     */
+    public HoldingReproduction getById(int id);
 }

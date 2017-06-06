@@ -33,7 +33,8 @@ public class ReproductionPrintable extends RequestPrintable {
      */
     @Override
     protected void draw(DrawInfo drawInfo) {
-        drawBarcode(drawInfo, holdingRequest.getHolding().getId());
+
+        drawBarcode(drawInfo, this.holdingRequest.getId()); // get the id of the request instead of the holding?
 
         drawRepro(drawInfo);
         drawId(drawInfo);

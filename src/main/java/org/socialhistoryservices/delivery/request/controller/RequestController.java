@@ -2,11 +2,17 @@ package org.socialhistoryservices.delivery.request.controller;
 
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.record.service.RecordService;
+import org.socialhistoryservices.delivery.reproduction.dao.HoldingReproductionDAO;
+import org.socialhistoryservices.delivery.reproduction.entity.HoldingReproduction;
 import org.socialhistoryservices.delivery.reproduction.entity.Reproduction;
+import org.socialhistoryservices.delivery.reproduction.service.ReproductionSearch;
 import org.socialhistoryservices.delivery.reproduction.service.ReproductionService;
 import org.socialhistoryservices.delivery.request.entity.Request;
 import org.socialhistoryservices.delivery.request.service.GeneralRequestService;
+import org.socialhistoryservices.delivery.reservation.dao.HoldingReservationDAO;
+import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
+import org.socialhistoryservices.delivery.reservation.service.ReservationSearch;
 import org.socialhistoryservices.delivery.reservation.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +23,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Root;
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,7 +50,10 @@ public class RequestController extends AbstractRequestController {
     private GeneralRequestService requests;
 
     @Autowired
-    private RecordService records;
+    private HoldingReservationDAO holdingReservationDAO;
+
+    @Autowired
+    private HoldingReproductionDAO holdingReproductionDAO;
 
     /**
      * Get the barcode scan page.
@@ -59,12 +75,23 @@ public class RequestController extends AbstractRequestController {
      */
     @RequestMapping(value = "/scan", method = RequestMethod.POST)
     @PreAuthorize("hasAnyRole('ROLE_RESERVATION_MODIFY', 'ROLE_REPRODUCTION_MODIFY')")
-    public String scanBarcode(@RequestParam(required = false) String id, Model model) {
+    public String scanBarcode(@RequestParam(required = false) String id, Model model, HttpServletRequest req) {
         // Obtain the scanned holding
         Holding h;
         try {
             int ID = Integer.parseInt(id);
-            h = records.getHoldingById(ID);
+            // Obtain the scanned HoldingReservation/HoldingReproduction
+            HoldingReservation holdingReservation = holdingReservationDAO.getById(ID);
+            HoldingReproduction holdingReproduction = holdingReproductionDAO.getById(ID);
+            // Check if either the HoldingReproduction or HoldingReservation is null. If so, variable h is null
+            // If not, variable h is set to either one that is not null.
+            if(holdingReproduction != null && !holdingReproduction.isCompleted()){
+                h = holdingReproduction.getHolding();
+            }else if(holdingReservation != null && !holdingReservation.isCompleted()){
+                h = holdingReservation.getHolding();
+            }else{
+                h = null;
+            }
         } catch (NumberFormatException ex) {
             h = null;
         }

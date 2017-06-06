@@ -7,6 +7,13 @@ import org.socialhistoryservices.delivery.record.entity.Record;
 public abstract class HoldingRequest {
 
     /**
+     * Get the HoldingRequest's id.
+     *
+     * @return the HoldingRequest's id.
+     */
+    public abstract int getId();
+
+    /**
      * Get the HoldingRequest's holding.
      *
      * @return the HoldingRequest's holding.

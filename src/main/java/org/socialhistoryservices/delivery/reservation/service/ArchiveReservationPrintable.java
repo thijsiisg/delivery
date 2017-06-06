@@ -6,7 +6,6 @@ import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.springframework.context.MessageSource;
-
 import java.text.DateFormat;
 import java.util.List;
 
@@ -32,7 +31,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
      */
     @Override
     protected void draw(DrawInfo drawInfo) {
-        drawBarcode(drawInfo, holdingRequest.getHolding().getId());
+        drawBarcode(drawInfo, this.holdingRequest.getId());
 
         drawName(drawInfo);
         drawDate(drawInfo);

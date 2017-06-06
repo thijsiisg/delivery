@@ -30,7 +30,7 @@ public class ReservationPrintable extends RequestPrintable {
      */
     @Override
     protected void draw(DrawInfo drawInfo) {
-        drawBarcode(drawInfo, holdingRequest.getHolding().getId());
+        drawBarcode(drawInfo, this.holdingRequest.getId());
 
         drawName(drawInfo);
         drawDate(drawInfo);
