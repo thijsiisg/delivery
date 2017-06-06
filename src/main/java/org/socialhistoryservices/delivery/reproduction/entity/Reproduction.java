@@ -412,6 +412,18 @@ public class Reproduction extends Request {
     }
 
     /**
+     * Get the administration costs price without the BTW.
+     * @return the administration costs price without the BTW.
+     */
+    public BigDecimal getAdminstrationCostsWithoutTax(){
+        double percentage = (double)this.adminstrationCostsBtwPercentage/100 + 1;
+        BigDecimal percentageDecimal = new BigDecimal(percentage);
+        BigDecimal costsWithoutTax = this.adminstrationCosts.subtract(adminstrationCostsDiscount);
+        costsWithoutTax = costsWithoutTax.divide(percentageDecimal, 2, BigDecimal.ROUND_HALF_UP);
+        return costsWithoutTax;
+    }
+
+    /**
      * The discount specified for this reproduction.
      */
     @NotNull

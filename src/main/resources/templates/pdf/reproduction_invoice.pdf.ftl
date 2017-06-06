@@ -1,21 +1,72 @@
 <#include "pdf.ftl">
 <@pdf "reproductionMail.invoice", "Invoice">
+<!-- Header of page -->
 <fo:block font-weight="bold">
   <fo:block margin-bottom="2mm">
-      <@_ "reproductionMail.customerName" "Customer" />: ${reproduction.name?xml}
+    ${reproduction.name?xml}
   </fo:block>
 
-  <fo:block margin-bottom="2mm">
-      <@_ "reproductionMail.reproductionId" "Reproduction number" />: ${reproduction.id?c}
-  </fo:block>
-
-  <#if reproduction.order??>
-    <fo:block margin-bottom="2mm">
-        <@_ "reproductionMail.orderId" "Order number" />: ${reproduction.orderId?c}
+    <fo:block margin-bottom="2mm" font-weight="bold" text-align="center" font-size="3em">
+        <@_ "reproductionMail.invoice" "Invoice" />
     </fo:block>
-  </#if>
+
+  <fo:block margin-bottom="2mm" font-weight="normal">
+      <fo:table table-layout="fixed" width="80%" display-align="center">
+          <fo:table-column column-width="15%"/>
+          <fo:table-column/>
+
+          <fo:table-body>
+              <fo:table-row>
+                  <fo:table-cell>
+                      <fo:block text-align="left">
+                          <@_ "reproductionInvoice.invoiceNumber" "Invoice nr." />:
+                      </fo:block>
+                  </fo:table-cell>
+                  <fo:table-cell>
+                      <fo:block text-align="left">
+                          <#if !reproduction.orderId??>
+                              No order ID
+                          <#else>
+                              ${reproduction.orderId?c}
+                          </#if>
+                      </fo:block>
+                  </fo:table-cell>
+              </fo:table-row>
+              <fo:table-row>
+                  <fo:table-cell>
+                      <fo:block text-align="left">
+                          <@_ "reproductionInvoice.invoiceDate" "Invoice date" />:
+                      </fo:block>
+                  </fo:table-cell>
+                  <fo:table-cell>
+                      <fo:block text-align="left">
+                          <#if !reproduction.datePaymentAccepted??>
+                              01-01-1700
+                          <#else>
+                              ${reproduction.datePaymentAccepted?c}
+                          </#if>
+                      </fo:block>
+                  </fo:table-cell>
+              </fo:table-row>
+              <fo:table-row>
+                  <fo:table-cell>
+                      <fo:block text-align="left">
+                          <@_ "reproductionInvoice.reference" "Your reference" />:
+                      </fo:block>
+                  </fo:table-cell>
+                  <fo:table-cell>
+                      <fo:block text-align="left">
+                          ${reproduction.id?c}
+                      </fo:block>
+                  </fo:table-cell>
+              </fo:table-row>
+          </fo:table-body>
+      </fo:table>
+  </fo:block>
+
 </fo:block>
 
+<!-- summary of items -->
 <fo:block margin-top="1cm">
   <fo:table table-layout="fixed" width="100%" display-align="center">
     <fo:table-column/>
@@ -179,4 +230,168 @@
     </fo:table-body>
   </fo:table>
 </fo:block>
+
+<!-- Overview of prices -->
+<fo:block margin-top="10mm" width="100%">
+    <fo:table table-layout="fixed" width="100%" display-align="center">
+        <fo:table-column column-width="40%"/>
+        <fo:table-column column-width="60%"/>
+
+        <fo:table-body>
+            <!-- Total VAT -->
+            <fo:table-row>
+                <fo:table-cell>
+                    <fo:block-container width="100%">
+                        <fo:table width="100%" table-layout="fixed" display-align="left">
+                            <!-- Taxes columns -->
+                            <fo:table-column column-width="35%"/>
+                            <fo:table-column column-width="35%"/>
+                            <fo:table-column column-width="30%"/>
+
+                            <fo:table-header font-weight="bold" border-top="0.5pt solid black">
+                                <fo:table-cell>
+                                    <fo:block>
+                                        <@_ "reproductionInvoice.tax" "VAT"/>
+                                    </fo:block>
+                                </fo:table-cell>
+                                <fo:table-cell>
+                                    <fo:block>
+                                        <@_ "reproductionInvoice.base" "Base"/>
+                                    </fo:block>
+                                </fo:table-cell>
+                                <fo:table-cell>
+                                    <fo:block>
+                                        <@_ "reproductionInvoice.taxAmount" "VAT amount"/>
+                                    </fo:block>
+                                </fo:table-cell>
+                            </fo:table-header>
+
+                            <fo:table-body>
+                                <#list reproduction.holdingReproductions as hr>
+                                    <fo:table-row>
+                                        <fo:table-cell>
+                                            <fo:block>
+                                                &#8364; ${hr.btwPercentage}&#37;
+                                            </fo:block>
+                                        </fo:table-cell>
+                                        <fo:table-cell>
+                                            <fo:block>
+                                                &#8364; ${hr.getCompletePriceWithoutTax()?string("0.00")}
+                                            </fo:block>
+                                        </fo:table-cell>
+                                        <fo:table-cell>
+                                            <fo:block>
+                                                &#8364; ${hr.btwPrice?string("0.00")}
+                                            </fo:block>
+                                        </fo:table-cell>
+                                    </fo:table-row>
+                                </#list>
+
+                                <#if reproduction.getAdminstrationCosts() gt 0>
+                                    <fo:table-row>
+                                        <fo:table-cell>
+                                            <fo:block>
+                                                &#8364; ${reproduction.adminstrationCostsBtwPercentage}&#37;
+                                            </fo:block>
+                                        </fo:table-cell>
+                                        <fo:table-cell>
+                                            <fo:block>
+                                                &#8364; ${reproduction.getAdminstrationCostsWithoutTax()?string("0.00")}
+                                            </fo:block>
+                                        </fo:table-cell>
+                                        <fo:table-cell>
+                                            <fo:block>
+                                                &#8364; ${reproduction.adminstrationCostsBtwPrice?string("0.00")}
+                                            </fo:block>
+                                        </fo:table-cell>
+                                    </fo:table-row>
+                                </#if>
+                            </fo:table-body>
+                        </fo:table>
+                    </fo:block-container>
+                </fo:table-cell>
+
+            <!-- Total costs -->
+                <fo:table-cell>
+                    <fo:block-container width="100%">
+                        <fo:table width="100%" table-layout="fixed" display-align="right">
+                            <!-- Pricing columns -->
+                            <fo:table-column column-width="60%"/>
+                            <fo:table-column column-width="20%"/>
+                            <fo:table-column column-width="20%"/>
+
+                            <fo:table-body>
+                                <fo:table-row>
+                                    <fo:table-cell>
+                                        <fo:block>
+                                        </fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell>
+                                        <fo:block>
+                                            <@_ "reproductionInvoice.totalExVAT" "Total ex. VAT" />:
+                                        </fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell text-align="right">
+                                        <fo:block>
+                                            &#8364; ${reproduction.getTotalPriceExclBTW()?string("0.00")}
+                                        </fo:block>
+                                    </fo:table-cell>
+                                </fo:table-row>
+                                <fo:table-row>
+                                    <fo:table-cell>
+                                        <fo:block>
+                                        </fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell>
+                                        <fo:block>
+                                            <@_ "reproductionInvoice.totalVAT" "Total VAT" />:
+                                        </fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell text-align="right">
+                                        <fo:block>
+                                            &#8364; ${reproduction.getTotalBTWPrice()?string("0.00")}
+                                        </fo:block>
+                                    </fo:table-cell>
+                                </fo:table-row>
+                                <fo:table-row>
+                                    <fo:table-cell>
+                                        <fo:block>
+                                        </fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell border-bottom="0.5px solid black">
+                                        <fo:block>
+                                            <@_ "reproduction.confirm.discount" "Discount" />:
+                                        </fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell border-bottom="0.5px solid black">
+                                        <fo:block text-align="right">
+                                            &#8364; -${reproduction.totalDiscount?string("0.00")}
+                                        </fo:block>
+                                    </fo:table-cell>
+                                </fo:table-row>
+                                <fo:table-row>
+                                    <fo:table-cell>
+                                        <fo:block>
+                                        </fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell>
+                                        <fo:block>
+                                            <@_ "reproductionInvoice.totalIncVAT" "Total VAT Inc." />:
+                                        </fo:block>
+                                    </fo:table-cell>
+                                    <fo:table-cell text-align="right">
+                                        <fo:block>
+                                            &#8364; ${reproduction.totalPriceWithDiscount?string("0.00")}
+                                        </fo:block>
+                                    </fo:table-cell>
+                                </fo:table-row>
+                            </fo:table-body>
+                        </fo:table>
+                    </fo:block-container>
+                </fo:table-cell>
+            </fo:table-row>
+        </fo:table-body>
+    </fo:table>
+</fo:block>
+
 </@pdf>

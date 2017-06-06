@@ -74,6 +74,17 @@ public class HoldingReproduction extends HoldingRequest {
     }
 
     /**
+     * Get the complete price without the BTW and discount
+     * @return the complete price without the BTW and discount
+     */
+    public BigDecimal getCompletePriceWithoutTax(){
+        double percentage = (double)this.btwPercentage/100 + 1;
+        BigDecimal percentageDecimal = new BigDecimal(percentage);
+        BigDecimal priceWithoutTax = this.getCompletePriceWithDiscount().divide(percentageDecimal, 2, BigDecimal.ROUND_HALF_UP);
+        return priceWithoutTax;
+    }
+
+    /**
      * Set the price.
      *
      * @param price the price.
