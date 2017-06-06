@@ -242,7 +242,7 @@
             <fo:table-row>
                 <fo:table-cell>
                     <fo:block-container width="100%">
-                        <fo:table width="100%" table-layout="fixed" display-align="left">
+                        <fo:table width="100%" table-layout="fixed">
                             <!-- Taxes columns -->
                             <fo:table-column column-width="35%"/>
                             <fo:table-column column-width="35%"/>
@@ -314,7 +314,7 @@
             <!-- Total costs -->
                 <fo:table-cell>
                     <fo:block-container width="100%">
-                        <fo:table width="100%" table-layout="fixed" display-align="right">
+                        <fo:table width="100%" table-layout="fixed">
                             <!-- Pricing columns -->
                             <fo:table-column column-width="60%"/>
                             <fo:table-column column-width="20%"/>

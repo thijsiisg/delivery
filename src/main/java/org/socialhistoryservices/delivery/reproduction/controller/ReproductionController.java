@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.socialhistoryservices.delivery.InvalidRequestException;
 import org.socialhistoryservices.delivery.ResourceNotFoundException;
+import org.socialhistoryservices.delivery.TemplatePreparationException;
 import org.socialhistoryservices.delivery.api.PayWayMessage;
 import org.socialhistoryservices.delivery.api.PayWayService;
 import org.socialhistoryservices.delivery.record.entity.*;
@@ -22,7 +23,9 @@ import org.socialhistoryservices.delivery.reservation.service.ReservationSearch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.support.PagedListHolder;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
 import org.springframework.scheduling.annotation.Async;
@@ -62,6 +65,9 @@ public class ReproductionController extends AbstractRequestController {
 
     @Autowired
     private PayWayService payWayService;
+
+    @Autowired
+    private ReproductionPDF reproductionPDF;
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
@@ -154,6 +160,34 @@ public class ReproductionController extends AbstractRequestController {
             model.addAttribute("error", error);
 
         return "reproduction_get";
+    }
+
+    /**
+     * Generate the invoice of a reproduction.
+     *
+     * @param id ID of the reproduction to fetch.
+     */
+    @RequestMapping(value = "/{id:[\\d]+}/invoice", method = RequestMethod.GET)
+    @PreAuthorize("hasRole('ROLE_REPRODUCTION_VIEW')")
+    public ResponseEntity<byte[]> getInvoice(@PathVariable int id) {
+        try {
+            Reproduction reproduction = reproductions.getReproductionById(id);
+            if (reproduction == null)
+                throw new ResourceNotFoundException();
+
+            byte[] pdf = reproductionPDF.getInvoice(reproduction, reproduction.getRequestLocale());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "invoice-" + id + ".pdf");
+            headers.setContentLength(pdf.length);
+            headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+            return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
+        }
+        catch (TemplatePreparationException tpe) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
