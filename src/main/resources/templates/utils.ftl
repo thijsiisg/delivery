@@ -103,11 +103,16 @@ ${totalPages}
   </#if>
 </#macro>
 
-<#macro holdingPrice price completePrice noPages=1>
+<#macro holdingPrice price completePrice materialType noPages=1>
     &euro; ${completePrice?string("0.00")}
 
     <#if noPages gt 1>
-        <em class="info">(<@_ "price.page" "Price per page"/>: &euro; ${price?string("0.00")},
+        <#if materialType == "BOOK">
+            <em class="info">(<@_ "price.page" "Price per page"/>: &euro; ${price?string("0.00")},
             <@_ "no.pages" "Number of pages"/>: ${noPages?html})</em>
+        <#else>
+            <em class="info">(<@_ "price.copy" "Price per copy"/>: &euro; ${price?string("0.00")},
+            <@_ "no.copies" "Number of copies"/>: ${noPages?html})</em>
+        </#if>
     </#if>
 </#macro>

@@ -195,7 +195,7 @@
 
           <li class="spacing">
             <span><@_ "reproductionStandardOption.price" "Price"/></span>
-            <@holdingPrice value.price holding.record.determinePriceByPages(value.price) holding.record.pages.numberOfPages/>
+            <@holdingPrice value.price holding.record.determinePrice(value.price) holding.record.externalInfo.materialType holding.record.pages.numberOfPages/>
           </li>
 
           <li>

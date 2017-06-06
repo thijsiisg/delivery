@@ -8,6 +8,7 @@ import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.reproduction.dao.*;
 import org.socialhistoryservices.delivery.reproduction.entity.*;
 import org.socialhistoryservices.delivery.reproduction.util.BigDecimalUtils;
+import org.socialhistoryservices.delivery.reproduction.util.Copies;
 import org.socialhistoryservices.delivery.reproduction.util.Pages;
 import org.socialhistoryservices.delivery.reproduction.util.ReproductionStandardOptions;
 import org.socialhistoryservices.delivery.request.entity.HoldingRequest;
@@ -1084,10 +1085,13 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
             if ((standardOption != null) && !hr.hasOrderDetails()) {
                 hr.setPrice(standardOption.getPrice());
 
-                // Determine the number of pages, if possible
+                // Determine the number of pages or copies, if possible
                 Pages pages = hr.getHolding().getRecord().getPages();
+                Copies copies = hr.getHolding().getRecord().getCopies();
                 if (pages.containsNumberOfPages())
                     hr.setNumberOfPages(pages.getNumberOfPages());
+                else if (copies.containsNumberOfCopies())
+                    hr.setNumberOfPages(copies.getNumberOfCopies());
                 else
                     hr.setNumberOfPages(1);
 

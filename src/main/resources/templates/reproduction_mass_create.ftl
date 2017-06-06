@@ -78,10 +78,9 @@
                            value="${value.id?c}"<#if hr.standardOption?? && hr.standardOption.id == value.id> checked="checked"</#if>/>
                     ${value.optionName?html}
                   </label>
-
-                  <span>
-                    (&euro; ${record.determinePriceByPages(value.price)?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
-                  </span>
+                    <span>
+                      (&euro; ${record.determinePrice(value.price)?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
+                    </span>
                 </#list>
 
                 <#if (hr.id lt 0) || (hr.holding.status == "AVAILABLE")>
@@ -214,10 +213,9 @@
                       <input type="radio" class="standardOption" value="${value.id?c}"/>
                       ${value.optionName?html}
                     </label>
-
-                    <span>
-                      (&euro; ${h.record.determinePriceByPages(value.price)?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
-                    </span>
+                      <span>
+                        (&euro; ${h.record.determinePrice(value.price)?string("0.00")} - ${value.deliveryTime?html} <@_ "days" "days"/>)
+                      </span>
                   </#list>
 
                   <#if h.status == "AVAILABLE">

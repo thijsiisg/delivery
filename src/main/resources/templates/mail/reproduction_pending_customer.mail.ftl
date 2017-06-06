@@ -10,7 +10,7 @@
   <#assign info = h.record.externalInfo>
 * ${hr.toString()}
   <#if hr.standardOption??>
-<@_ "reproductionStandardOption.price" "Price"/>: <@holdingPrice hr.price hr.completePrice hr.numberOfPages/>
+<@_ "reproductionStandardOption.price" "Price"/>: <@holdingPrice hr.price hr.completePrice info.materialType hr.numberOfPages/>
 <@_ "reproductionStandardOption.deliveryTime" "Estimated delivery time"/>: ${hr.deliveryTime} <@_ "days" "days"/>
 <#if locale == 'nl'>${hr.standardOption.optionDescriptionNL}<#else>${hr.standardOption.optionDescriptionEN}</#if>
   <#else>

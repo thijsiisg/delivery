@@ -3,6 +3,7 @@ package org.socialhistoryservices.delivery.record.entity;
 import org.apache.commons.collections.functors.InstantiateFactory;
 import org.apache.commons.collections.list.LazyList;
 import org.hibernate.validator.constraints.NotBlank;
+import org.socialhistoryservices.delivery.reproduction.util.Copies;
 import org.socialhistoryservices.delivery.reproduction.util.Pages;
 
 import javax.persistence.*;
@@ -32,6 +33,10 @@ public class Record {
     /** Stores information about the number of pages. */
     @Transient
     private Pages pages;
+
+    /** Stores information about the number of copies */
+    @Transient
+    private Copies copies;
 
     /** The Record's id. */
     @Id
@@ -364,14 +369,29 @@ public class Record {
     }
 
     /**
-     * Helper method to determine the price on the number of pages for this reocrd.
-     * @param price The price per page.
-     * @return The total price for this record based on the given price per page.
+     * Returns the Copies object for this record.
+     * @return The Copies object.
      */
-    public BigDecimal determinePriceByPages(BigDecimal price) {
-        Pages pages = getPages();
-        if (pages.containsNumberOfPages())
-            price = price.multiply(new BigDecimal(pages.getNumberOfPages()));
+    public Copies getCopies(){
+        if(copies == null)
+            copies = new Copies(this);
+        return copies;
+    }
+
+    /**
+     * Helper method to determine the price for this reocrd.
+     * @param price The price per page/copy.
+     * @return The total price for this record based on the given price per page/copy.
+     */
+    public BigDecimal determinePrice(BigDecimal price){
+        if(this.externalInfo.getMaterialType() == ExternalRecordInfo.MaterialType.BOOK){
+            if(getPages().containsNumberOfPages())
+                price = price.multiply(new BigDecimal(pages.getNumberOfPages()));
+        }
+        else {
+            if (getCopies().containsNumberOfCopies())
+                price = price.multiply(new BigDecimal(copies.getNumberOfCopies()));
+        }
         return price;
     }
 
