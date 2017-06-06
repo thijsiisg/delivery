@@ -46,9 +46,19 @@
     </li>
   </#if>
 
+    <br/>
+    <li>
+        <a href="${rc.contextPath}/reproduction/${reproduction.id?c}/invoice">
+            <@_ "reproductionSingle.invoice"/>
+        </a>
+    </li>
+
   <#if  _sec.ifAllGranted("ROLE_REPRODUCTION_CREATE")>
-    <li><br/><a href="${rc.contextPath}/reproduction/masscreateform?fromReproductionId=${reproduction.id?c}">
-      <@_ "reproductionSingle.newReproduction"/></a></li>
+    <li>
+        <a href="${rc.contextPath}/reproduction/masscreateform?fromReproductionId=${reproduction.id?c}">
+            <@_ "reproductionSingle.newReproduction"/>
+        </a>
+    </li>
   </#if>
 
   <#list reproduction.holdingReproductions as hr>
