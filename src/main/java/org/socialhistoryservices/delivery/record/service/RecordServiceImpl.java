@@ -179,7 +179,7 @@ public class RecordServiceImpl implements RecordService {
 
             Date lastUpdated = record.getExternalInfoUpdated();
             if (!hardRefresh && (lastUpdated != null) && lastUpdated.after(calendar.getTime()))
-                return false;
+                return (record.getParent() != null) && updateExternalInfo(record.getParent(), hardRefresh);
 
             // We need to update the external info
             String pid = record.getPid();
@@ -313,6 +313,9 @@ public class RecordServiceImpl implements RecordService {
             if (parent == null) {
                 parent = createRecordByPid(parentPid);
                 addRecord(parent);
+            }
+            else if (updateExternalInfo(parent, false)) {
+                saveRecord(parent);
             }
         }
 
