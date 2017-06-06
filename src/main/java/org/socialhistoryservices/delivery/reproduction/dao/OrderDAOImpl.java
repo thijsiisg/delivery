@@ -62,7 +62,7 @@ public class OrderDAOImpl implements OrderDAO {
 	 * @param id Id of the Order to retrieve.
 	 * @return The Order matching the Id.
 	 */
-	public Order getById(int id) {
+	public Order getById(long id) {
 		return entityManager.find(Order.class, id);
 	}
 

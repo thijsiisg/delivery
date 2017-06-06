@@ -784,40 +784,17 @@ public class ReproductionController extends AbstractRequestController {
      */
     @RequestMapping(value = "/order/accept", method = RequestMethod.GET, params = "POST")
     public ResponseEntity<String> accept(@RequestParam Map<String, String> requestParams) {
-        PayWayMessage payWayMessage = new PayWayMessage(requestParams);
-
         LOGGER.debug(String.format(
-                "/reproduction/order/accept : Called POST order accept with message %s", payWayMessage));
+            "/reproduction/order/accept : Called POST order accept with message %s", requestParams));
 
-        // Make sure the message is valid
-        if (!payWayService.isValid(payWayMessage)) {
-            LOGGER.error(String.format(
-                    "/reproduction/order/accept : Invalid signature for message %s", payWayMessage));
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+        Reproduction reproduction = getPayWayPost(requestParams);
+        if (reproduction != null) {
+            changeStatusAfterPayment(reproduction);
+            reproductions.saveReproduction(reproduction);
+            return new ResponseEntity<String>(HttpStatus.OK);
         }
 
-        // Check the order ...
-        Integer orderId = payWayMessage.getInteger("orderid");
-        Order order = reproductions.getOrderById(orderId);
-        if (order == null) {
-            LOGGER.error(String.format("/reproduction/order/accept : Order not found for message %s", payWayMessage));
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }
-
-        // ... and the reproduction
-        Reproduction reproduction = order.getReproduction();
-        if (reproduction == null) {
-            LOGGER.error(String.format("/reproduction/order/accept : Reproduction not found for order in message %s",
-                    payWayMessage));
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }
-
-        // Everything is fine, change status and send email to customer
-        reproductions.refreshOrder(order);
-        changeStatusAfterPayment(reproduction);
-
-        reproductions.saveReproduction(reproduction);
-        return new ResponseEntity<String>(HttpStatus.OK);
+        return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -831,6 +808,20 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     /**
+     * A one time PayWay response for canceled.
+     */
+    @RequestMapping(value = "/order/cancel", method = RequestMethod.GET, params = "POST")
+    public ResponseEntity<String> cancel(@RequestParam Map<String, String> requestParams) {
+        LOGGER.debug(String.format(
+            "/reproduction/order/cancel : Called POST order cancel with message %s", requestParams));
+
+        Reproduction reproduction = getPayWayPost(requestParams);
+        if (reproduction != null)
+            return new ResponseEntity<String>(HttpStatus.OK);
+        return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+    }
+
+    /**
      * PayWay response, payment was declined.
      *
      * @return The view to resolve.
@@ -841,6 +832,20 @@ public class ReproductionController extends AbstractRequestController {
     }
 
     /**
+     * A one time PayWay response for declined.
+     */
+    @RequestMapping(value = "/order/decline", method = RequestMethod.GET, params = "POST")
+    public ResponseEntity<String> decline(@RequestParam Map<String, String> requestParams) {
+        LOGGER.debug(String.format(
+            "/reproduction/order/cancel : Called POST order decline with message %s", requestParams));
+
+        Reproduction reproduction = getPayWayPost(requestParams);
+        if (reproduction != null)
+            return new ResponseEntity<String>(HttpStatus.OK);
+        return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+    }
+
+    /**
      * PayWay response, exception occurred during payment.
      *
      * @return The view to resolve.
@@ -848,6 +853,58 @@ public class ReproductionController extends AbstractRequestController {
     @RequestMapping(value = "/order/exception", method = RequestMethod.GET)
     public String exception() {
         return "reproduction_order_exception";
+    }
+
+    /**
+     * A one time PayWay response for exception.
+     */
+    @RequestMapping(value = "/order/exception", method = RequestMethod.GET, params = "POST")
+    public ResponseEntity<String> exception(@RequestParam Map<String, String> requestParams) {
+        LOGGER.debug(String.format(
+            "/reproduction/order/exception : Called POST order exception with message %s", requestParams));
+
+        Reproduction reproduction = getPayWayPost(requestParams);
+        if (reproduction != null)
+            return new ResponseEntity<String>(HttpStatus.OK);
+        return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Get PayWay post message, validate and refresh order.
+     *
+     * @param requestParams The PayWay message parameters.
+     * @return The reproduction if valid, otherwise null is returned.
+     */
+    private Reproduction getPayWayPost(Map<String, String> requestParams) {
+        PayWayMessage payWayMessage = new PayWayMessage(requestParams);
+
+        // Make sure the message is valid
+        if (!payWayService.isValid(payWayMessage)) {
+            LOGGER.error(String.format(
+                "/reproduction/order : Invalid signature for message %s", payWayMessage));
+            return null;
+        }
+
+        // Check the order ...
+        Long orderId = payWayMessage.getLong("orderid");
+        Order order = reproductions.getOrderById(orderId);
+        if (order == null) {
+            LOGGER.error(String.format("/reproduction/order : Order not found for message %s", payWayMessage));
+            return null;
+        }
+
+        // ... and the reproduction
+        Reproduction reproduction = order.getReproduction();
+        if (reproduction == null) {
+            LOGGER.error(String.format("/reproduction/order : Reproduction not found for order in message %s",
+                payWayMessage));
+            return null;
+        }
+
+        // Everything is fine, refresh the order
+        reproductions.refreshOrder(order);
+
+        return reproduction;
     }
 
     /**

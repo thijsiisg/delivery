@@ -37,7 +37,7 @@ public interface OrderDAO {
 	 * @param id Id of the Order to retrieve.
 	 * @return The Order matching the Id.
 	 */
-	public Order getById(int id);
+	public Order getById(long id);
 
 	/**
 	 * Get a criteria builder for querying Orders.
