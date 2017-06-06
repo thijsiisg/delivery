@@ -1,5 +1,6 @@
 package org.socialhistoryservices.delivery.request.controller;
 
+import org.socialhistoryservices.delivery.record.dao.HoldingDAO;
 import org.socialhistoryservices.delivery.record.entity.Holding;
 import org.socialhistoryservices.delivery.record.service.RecordService;
 import org.socialhistoryservices.delivery.reproduction.dao.HoldingReproductionDAO;
@@ -55,6 +56,9 @@ public class RequestController extends AbstractRequestController {
     @Autowired
     private HoldingReproductionDAO holdingReproductionDAO;
 
+    @Autowired
+    private HoldingDAO holdingDAO;
+
     /**
      * Get the barcode scan page.
      *
@@ -83,12 +87,15 @@ public class RequestController extends AbstractRequestController {
             // Obtain the scanned HoldingReservation/HoldingReproduction
             HoldingReservation holdingReservation = holdingReservationDAO.getById(ID);
             HoldingReproduction holdingReproduction = holdingReproductionDAO.getById(ID);
+            Holding h2 = holdingDAO.getById(ID);
             // Check if either the HoldingReproduction or HoldingReservation is null. If so, variable h is null
             // If not, variable h is set to either one that is not null.
             if(holdingReproduction != null && !holdingReproduction.isCompleted()){
                 h = holdingReproduction.getHolding();
             }else if(holdingReservation != null && !holdingReservation.isCompleted()){
                 h = holdingReservation.getHolding();
+            }else if(h2 != null){
+                h = h2;
             }else{
                 h = null;
             }
