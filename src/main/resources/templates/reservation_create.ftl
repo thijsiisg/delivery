@@ -52,7 +52,6 @@ $(document).ready(function(){
                         <#if !skip?seq_contains(r.pid)>
                             <#if !r.parent??>
                                 <input name="holdingReservations[${idx}].holding" type="hidden" value="${h.id?c}"/>
-                                <#assign idx = idx + 1>
                             </#if>
 
                             <h3>${info.title?html}</h3>
@@ -107,6 +106,10 @@ $(document).ready(function(){
                                     </li>
                                 </#if>
                             </ul>
+
+                            <#if !r.parent??>
+                                <#assign idx = idx + 1>
+                            </#if>
                         </#if>
                     </#list>
                 </fieldset>
