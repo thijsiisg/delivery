@@ -1,10 +1,12 @@
 package org.socialhistoryservices.delivery.permission.entity;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.hibernate.validator.constraints.NotBlank;
 import org.socialhistoryservices.delivery.record.entity.Record;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.*;
 
 /**
@@ -36,6 +38,8 @@ public class Permission {
     }
 
     /** The Permission's name. */
+    @NotBlank
+    @Size(max = 255)
     @Column(name="name", nullable=false)
     private String name;
 
@@ -56,6 +60,8 @@ public class Permission {
     }
 
     /** The Permission's code. */
+    @NotBlank
+    @Size(max = 255)
     @Column(name="code")
     private String code;
 
@@ -83,6 +89,8 @@ public class Permission {
     }
 
     /** The Permission's email. */
+    @NotBlank
+    @Size(max = 255)
     @Column(name="email", nullable=false)
     private String email;
 
@@ -103,7 +111,8 @@ public class Permission {
     }
 
     /** The Permission's researchSubject. */
-    @Column(name="research_subject", nullable=false)
+    @NotBlank
+    @Column(name="research_subject", columnDefinition="TEXT", nullable=false)
     private String researchSubject;
 
     /**
@@ -123,7 +132,8 @@ public class Permission {
     }
 
     /** The Permission's researchOrganization. */
-    @Column(name="research_organization", nullable=false)
+    @NotBlank
+    @Column(name="research_organization", columnDefinition="TEXT", nullable=false)
     private String researchOrganization;
 
     /**
@@ -163,6 +173,7 @@ public class Permission {
     }
 
     /** The Permission's address. */
+    @Size(max = 255)
     @Column(name="address", nullable=true)
     private String address;
 
@@ -183,7 +194,6 @@ public class Permission {
     }
 
     /** The Permission's request locale. */
-//    @Enumerated(EnumType.STRING)
     @Column(name="requestlocale", nullable=false)
     private Locale requestLocale;
 
