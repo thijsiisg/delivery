@@ -43,7 +43,7 @@
                           <#if !reproduction.datePaymentAccepted??>
                               01-01-1700
                           <#else>
-                              ${reproduction.datePaymentAccepted?c}
+                              ${reproduction.datePaymentAccepted?string("dd-MM-yyyy")}
                           </#if>
                       </fo:block>
                   </fo:table-cell>
