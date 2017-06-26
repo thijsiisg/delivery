@@ -26,7 +26,7 @@
 
 <#list inSor as hr>
 * ${hr.toString()}
-    <#list sorUrls[h.signature] as url>
+    <#list sorUrls[hr.holding.signature] as url>
 ${url}
     </#list>
 </#list>
