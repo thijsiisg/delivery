@@ -795,6 +795,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      */
     @Scheduled(cron = "0 0 0 * * MON-FRI")
     public void checkPayedReproductions() {
+        log.info("Start run: cancel old unpayed reproductions");
+
         // Determine the number of days
         Integer nrOfDays = deliveryProperties.getReproductionMaxDaysPayment();
 
@@ -825,7 +827,10 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
         for (Reproduction reproduction : listReproductions(query)) {
             updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.CANCELLED);
             saveReproduction(reproduction);
+            log.info("Cancelled unpayed reproduction with id " + reproduction.getId());
         }
+
+        log.info("Finish run: cancel old unpayed reproductions");
     }
 
     /**
@@ -833,6 +838,8 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
      */
     @Scheduled(cron = "0 0 0 * * MON-FRI")
     public void checkReminderReproductions(){
+        log.info("Start run: mail reminder old unpayed reproductions");
+
         // Determine the number of days
         Integer nrOfDays = deliveryProperties.getReproductionMaxDaysReminder();
 
@@ -868,11 +875,15 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 reproductionMailer.mailReminder(reproduction);
                 reproduction.setOfferMailReminderSent(true);
                 saveReproduction(reproduction);
+                log.info("Mailed reminder unpayed reproduction with id " + reproduction.getId());
             }
             catch (MailException me) {
                 // Don't do anything... we'll try again tomorrow
+                log.warn("Failed to mail reminder unpayed reproduction with id " + reproduction.getId(), me);
             }
         }
+
+        log.info("Finish run: mail reminder old unpayed reproductions");
     }
 
     /**
