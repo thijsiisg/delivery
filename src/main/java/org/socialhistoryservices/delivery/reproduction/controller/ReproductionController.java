@@ -947,7 +947,6 @@ public class ReproductionController extends AbstractRequestController {
      * @param reproduction The reproduction.
      */
     private void changeStatusAfterPayment(Reproduction reproduction) {
-        reproduction.setDatePaymentAccepted(new Date());
         reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.ACTIVE);
         if (reproduction.isCompletelyInSor())
             reproductions.updateStatusAndAssociatedHoldingStatus(reproduction, Reproduction.Status.COMPLETED);

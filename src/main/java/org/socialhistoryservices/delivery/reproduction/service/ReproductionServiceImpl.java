@@ -386,6 +386,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 reproduction.setDateHasOrderDetails(new Date());
                 break;
             case ACTIVE:
+                reproduction.setDatePaymentAccepted(new Date());
                 mailPayedAndActive(reproduction);
                 autoPrintReproduction(reproduction);
                 break;
