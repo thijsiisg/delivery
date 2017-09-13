@@ -1,5 +1,6 @@
-package org.socialhistoryservices.delivery;
+package org.socialhistoryservices.delivery.util;
 
+import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import org.socialhistoryservices.delivery.config.DeliveryProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ public abstract class TemplatePreparation {
      * The freemarker configuration holder.
      */
     @Autowired
-    private freemarker.template.Configuration fConfig;
+    private Configuration fConfig;
 
     /**
      * The source to get localized messages of.
@@ -81,7 +82,8 @@ public abstract class TemplatePreparation {
             return FreeMarkerTemplateUtils.processTemplateIntoString(
                     fConfig.getTemplate(name, locale), model
             );
-        } catch (TemplateException | IOException ex) {
+        }
+        catch (TemplateException | IOException ex) {
             throw new TemplatePreparationException(ex);
         }
     }

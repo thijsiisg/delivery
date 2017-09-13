@@ -1,6 +1,6 @@
 package org.socialhistoryservices.delivery.config;
 
-import org.socialhistoryservices.delivery.RequestContextToViewInterceptor;
+import org.socialhistoryservices.delivery.util.RequestContextToViewInterceptor;
 import org.socialhistoryservices.delivery.api.IISHRecordLookupService;
 import org.socialhistoryservices.delivery.api.PayWayService;
 import org.socialhistoryservices.delivery.api.SharedObjectRepositoryService;

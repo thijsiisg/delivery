@@ -2,9 +2,9 @@ package org.socialhistoryservices.delivery.reproduction.controller;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.socialhistoryservices.delivery.InvalidRequestException;
-import org.socialhistoryservices.delivery.ResourceNotFoundException;
-import org.socialhistoryservices.delivery.TemplatePreparationException;
+import org.socialhistoryservices.delivery.util.InvalidRequestException;
+import org.socialhistoryservices.delivery.util.ResourceNotFoundException;
+import org.socialhistoryservices.delivery.util.TemplatePreparationException;
 import org.socialhistoryservices.delivery.api.PayWayMessage;
 import org.socialhistoryservices.delivery.api.PayWayService;
 import org.socialhistoryservices.delivery.record.entity.*;

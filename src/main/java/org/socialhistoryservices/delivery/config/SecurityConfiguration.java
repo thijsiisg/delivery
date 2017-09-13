@@ -5,7 +5,7 @@ import org.socialhistoryservices.delivery.user.dao.GroupDAO;
 import org.socialhistoryservices.delivery.user.dao.UserDAO;
 import org.socialhistoryservices.delivery.user.service.AuthoritiesPopulator;
 import org.socialhistoryservices.delivery.user.service.UserServiceImpl;
-import org.socialhistoryservices.delivery.CaptchaEngine;
+import org.socialhistoryservices.delivery.util.CaptchaEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

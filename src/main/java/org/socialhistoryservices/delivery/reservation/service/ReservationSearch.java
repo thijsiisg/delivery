@@ -1,6 +1,6 @@
 package org.socialhistoryservices.delivery.reservation.service;
 
-import org.socialhistoryservices.delivery.InvalidRequestException;
+import org.socialhistoryservices.delivery.util.InvalidRequestException;
 import org.socialhistoryservices.delivery.record.entity.*;
 import org.socialhistoryservices.delivery.request.service.RequestSearch;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;

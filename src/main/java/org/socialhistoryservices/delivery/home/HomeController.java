@@ -1,4 +1,4 @@
-package org.socialhistoryservices.delivery.controller;
+package org.socialhistoryservices.delivery.home;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;

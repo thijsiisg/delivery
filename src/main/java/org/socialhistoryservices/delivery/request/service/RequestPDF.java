@@ -4,8 +4,8 @@ import org.apache.fop.apps.FOPException;
 import org.apache.fop.apps.Fop;
 import org.apache.fop.apps.FopFactory;
 import org.apache.fop.apps.MimeConstants;
-import org.socialhistoryservices.delivery.TemplatePreparation;
-import org.socialhistoryservices.delivery.TemplatePreparationException;
+import org.socialhistoryservices.delivery.util.TemplatePreparation;
+import org.socialhistoryservices.delivery.util.TemplatePreparationException;
 import org.springframework.ui.Model;
 
 import javax.xml.transform.*;

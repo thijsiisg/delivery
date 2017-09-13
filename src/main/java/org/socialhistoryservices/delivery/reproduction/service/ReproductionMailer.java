@@ -1,6 +1,6 @@
 package org.socialhistoryservices.delivery.reproduction.service;
 
-import org.socialhistoryservices.delivery.TemplatePreparationException;
+import org.socialhistoryservices.delivery.util.TemplatePreparationException;
 import org.socialhistoryservices.delivery.api.SharedObjectRepositoryService;
 import org.socialhistoryservices.delivery.api.SorMetadata;
 import org.socialhistoryservices.delivery.config.DeliveryProperties;
