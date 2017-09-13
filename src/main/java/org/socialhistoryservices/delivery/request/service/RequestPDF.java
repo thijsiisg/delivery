@@ -27,7 +27,7 @@ public abstract class RequestPDF extends TemplatePreparation {
      */
     private static final FopFactory FOP_FACTORY;
 
-    /**
+    /*
      * Initialize the FOP factory with a path to the folder with resources,
      * so these resources can be used when building PDFs.
      */
@@ -73,13 +73,10 @@ public abstract class RequestPDF extends TemplatePreparation {
             Source source = new StreamSource(new StringReader(view));
 
             transformer.transform(source, result);
-        } catch (FOPException e) {
+        } catch (FOPException | TransformerException e) {
             throw new TemplatePreparationException(e);
-        } catch (TransformerConfigurationException e) {
-            throw new TemplatePreparationException(e);
-        } catch (TransformerException e) {
-            throw new TemplatePreparationException(e);
-        } finally {
+        }
+        finally {
             try {
                 bufOut.flush();
                 bufOut.close();

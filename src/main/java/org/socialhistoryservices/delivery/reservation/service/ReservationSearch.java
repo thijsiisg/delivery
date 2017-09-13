@@ -30,7 +30,7 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
     /**
      * Build the query.
      *
-     * @param rpRoot  The root entity.
+     * @param hrRoot  The root entity.
      * @param cq      The query to build upon.
      * @param isCount Whether the query is a count or not.
      */
@@ -80,20 +80,22 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
         Expression e = resRoot.get(Reservation_.date);
         if (containsSort) {
             String sort = p.get("sort")[0];
-            if (sort.equals("visitorName")) {
-                e = resRoot.get(Reservation_.visitorName);
-            }
-            else if (sort.equals("status")) {
-                e = resRoot.get(Reservation_.status);
-            }
-            else if (sort.equals("printed")) {
-                e = hrRoot.get(HoldingReservation_.printed);
-            }
-            else if (sort.equals("signature")) {
-                e = hRoot.get(Holding_.signature);
-            }
-            else if (sort.equals("holdingStatus")) {
-                e = hRoot.get(Holding_.status);
+            switch (sort) {
+                case "visitorName":
+                    e = resRoot.get(Reservation_.visitorName);
+                    break;
+                case "status":
+                    e = resRoot.get(Reservation_.status);
+                    break;
+                case "printed":
+                    e = hrRoot.get(HoldingReservation_.printed);
+                    break;
+                case "signature":
+                    e = hRoot.get(Holding_.signature);
+                    break;
+                case "holdingStatus":
+                    e = hRoot.get(Holding_.status);
+                    break;
             }
         }
         if (containsSortDir &&
@@ -123,13 +125,13 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
             Expression<Boolean> exSearch = cb.or(
                 cb.like(cb.lower(eRoot.get(ExternalRecordInfo_.title)),
                     "%" + search + "%"),
-                cb.like(cb.lower(resRoot.<String>get(Reservation_
+                cb.like(cb.lower(resRoot.get(Reservation_
                         .visitorName)),
                     "%" + search + "%"),
-                cb.like(cb.lower(resRoot.<String>get(Reservation_
+                cb.like(cb.lower(resRoot.get(Reservation_
                         .visitorEmail)),
                     "%" + search + "%"),
-                cb.like(cb.lower(hRoot.<String>get(Holding_.signature)),
+                cb.like(cb.lower(hRoot.get(Holding_.signature)),
                     "%" + search + "%")
             );
             where = where != null ? cb.and(where, exSearch) : exSearch;
@@ -154,7 +156,7 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
                 return where;
             }
             Expression<Boolean> exPrinted = cb.equal(
-                hrRoot.<Boolean>get(HoldingReservation_.printed),
+                hrRoot.get(HoldingReservation_.printed),
                 Boolean.parseBoolean(p.get("printed")[0]));
             where = where != null ? cb.and(where, exPrinted) : exPrinted;
         }
@@ -178,7 +180,7 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
             if (!status.equals("")) {
                 try {
                     Expression<Boolean> exStatus = cb.equal(
-                        resRoot.<Reservation.Status>get(Reservation_.status),
+                        resRoot.get(Reservation_.status),
                         Reservation.Status.valueOf(status));
                     where = where != null ? cb.and(where, exStatus) : exStatus;
                 }
@@ -203,7 +205,7 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
     private Expression<Boolean> addEmailFilter(Map<String, String[]> p, CriteriaBuilder cb, Join<HoldingReservation, Reservation> resRoot, Expression<Boolean> where) {
         if (p.containsKey("visitorEmail")) {
             Expression<Boolean> exEmail = cb.like(
-                resRoot.<String>get(Reservation_.visitorEmail),
+                resRoot.get(Reservation_.visitorEmail),
                 "%" + p.get("visitorEmail")[0].trim() + "%");
             where = where != null ? cb.and(where, exEmail) : exEmail;
         }
@@ -224,7 +226,7 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
                                               Join<HoldingReservation, Reservation> resRoot,
                                               Expression<Boolean> where) {
         if (p.containsKey("visitorName")) {
-            Expression<Boolean> exName = cb.like(resRoot.<String>get
+            Expression<Boolean> exName = cb.like(resRoot.get
                     (Reservation_
                         .visitorName),
                 "%" + p.get("visitorName")[0].trim() + "%");
@@ -248,18 +250,18 @@ public class ReservationSearch extends RequestSearch<HoldingReservation> {
                                               Expression<Boolean> where) {
         Date date = getDateFilter(p);
         if (date != null) {
-            Expression<Boolean> exDate = cb.equal(resRoot.<Date>get(Reservation_.date), date);
+            Expression<Boolean> exDate = cb.equal(resRoot.get(Reservation_.date), date);
             where = where != null ? cb.and(where, exDate) : exDate;
         }
         else {
             Date fromDate = getFromDateFilter(p);
             Date toDate = getToDateFilter(p);
             if (fromDate != null) {
-                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(resRoot.<Date>get(Reservation_.date), fromDate);
+                Expression<Boolean> exDate = cb.greaterThanOrEqualTo(resRoot.get(Reservation_.date), fromDate);
                 where = where != null ? cb.and(where, exDate) : exDate;
             }
             if (toDate != null) {
-                Expression<Boolean> exDate = cb.lessThanOrEqualTo(resRoot.<Date>get(Reservation_.date), toDate);
+                Expression<Boolean> exDate = cb.lessThanOrEqualTo(resRoot.get(Reservation_.date), toDate);
                 where = where != null ? cb.and(where, exDate) : exDate;
             }
         }

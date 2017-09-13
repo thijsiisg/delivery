@@ -11,7 +11,6 @@ import org.socialhistoryservices.delivery.reservation.dao.HoldingReservationDAO;
 import org.socialhistoryservices.delivery.reservation.dao.ReservationDAO;
 import org.socialhistoryservices.delivery.reservation.entity.HoldingReservation;
 import org.socialhistoryservices.delivery.reservation.entity.Reservation;
-import org.socialhistoryservices.delivery.reservation.entity.Reservation_;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -24,7 +23,6 @@ import org.springframework.validation.FieldError;
 import javax.persistence.Tuple;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.awt.print.PrinterException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -253,7 +251,7 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
             for (HoldingReservation hr : reservation.getHoldingReservations()) {
                 requests.updateHoldingStatus(hr.getHolding(), Holding.Status.AVAILABLE);
             }
-            reservation.setHoldingReservations(new ArrayList<HoldingReservation>());
+            reservation.setHoldingReservations(new ArrayList<>());
         }
         else {
             // Delete holdings that were not provided.
@@ -330,9 +328,9 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
      */
     public void printItems(List<HoldingReservation> hrs, boolean alwaysPrint) throws PrinterException {
         try {
-            Set<Reservation> reservations = new HashSet<Reservation>();
-            List<RequestPrintable> requestPrintables = new ArrayList<RequestPrintable>();
-            List<RequestPrintable> requestPrintablesArchive = new ArrayList<RequestPrintable>();
+            Set<Reservation> reservations = new HashSet<>();
+            List<RequestPrintable> requestPrintables = new ArrayList<>();
+            List<RequestPrintable> requestPrintablesArchive = new ArrayList<>();
 
             for (HoldingReservation hr : hrs) {
                 ExternalRecordInfo.MaterialType mt = hr.getHolding().getRecord().getExternalInfo().getMaterialType();
@@ -486,9 +484,9 @@ public class ReservationServiceImpl extends AbstractRequestService implements Re
 
         // Check if date is an exception date
         List<Calendar> exceptionDates = dateExceptionService.getExceptionDates();
-        for(int i = 0; i < exceptionDates.size(); i++){
-            if(fromCal.equals(exceptionDates.get(i))){
-                fromCal.add(Calendar.DAY_OF_YEAR,1);
+        for (Calendar exceptionDate : exceptionDates) {
+            if (fromCal.equals(exceptionDate)) {
+                fromCal.add(Calendar.DAY_OF_YEAR, 1);
                 // Check for weekends
                 if (fromCal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY) {
                     fromCal.add(Calendar.DAY_OF_YEAR, 2);
