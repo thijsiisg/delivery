@@ -138,7 +138,7 @@
                       </fo:table-cell>
                       <fo:table-cell>
                           <fo:block>
-                              <@_ "reproductionInvoice.bankInfo" "DEUTHSCHE BANK 41.13.90.805" />
+                              <@_ "reproductionInvoice.bankInfo" "DEUTSCHE BANK 41.13.90.805" />
                           </fo:block>
                       </fo:table-cell>
                       <fo:table-cell>

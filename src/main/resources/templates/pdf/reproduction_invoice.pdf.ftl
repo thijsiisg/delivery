@@ -40,9 +40,7 @@
                   </fo:table-cell>
                   <fo:table-cell>
                       <fo:block text-align="left">
-                          <#if !reproduction.datePaymentAccepted??>
-                              01-01-1700
-                          <#else>
+                          <#if reproduction.datePaymentAccepted??>
                               ${reproduction.datePaymentAccepted?string("dd-MM-yyyy")}
                           </#if>
                       </fo:block>
