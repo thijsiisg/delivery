@@ -243,7 +243,7 @@
                 <li class="hidden on-custom">
                   <label class="group">
                     <strong class="label"><@_ "reproductionStandardOption.price" "Price"/></strong>
-                    <input type="text" class="price" value="${0?string("0.00")}"/>
+                    <input type="text" class="price" value="${0}"/>
                     EUR
                   </label>
                 </li>
