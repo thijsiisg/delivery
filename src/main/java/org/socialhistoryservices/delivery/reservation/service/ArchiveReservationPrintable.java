@@ -32,9 +32,11 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
     @Override
     protected void draw(DrawInfo drawInfo) {
         drawBarcode(drawInfo, this.holdingRequest.getId());
+        drawReturnNotice(drawInfo);
 
         drawName(drawInfo);
         drawDate(drawInfo);
+        drawCreationDate(drawInfo);
 
         drawNewLine(drawInfo);
 
@@ -45,11 +47,16 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
         drawNewLine(drawInfo);
 
         drawHoldingInfo(drawInfo);
+    }
 
-        drawInfo.setOffsetY(drawInfo.getHeight() - 100);
-
-        drawReturnNotice(drawInfo);
-        drawName(drawInfo);
+    /**
+     * The intended recipient of this print.
+     *
+     * @return The recipient.
+     */
+    @Override
+    protected String getRecipient() {
+        return holdingRequest.getRequest().getName();
     }
 
     /**
@@ -132,8 +139,8 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
                 heightLineNote = determineHeight(drawInfo, ahi.getNote(), (smallFont) ? smallNormalFont : normalFont);
 
             // Only if there is still space, draw holding info
-            int afterOffsetY = (drawInfo.getOffsetY() + heightFirstLine + heightLineNote);
-            int maxOffsetY = (drawInfo.getHeight() - 100 - (heightOneLine * 2));
+            int afterOffsetY = (drawInfo.offsetY + heightFirstLine + heightLineNote);
+            int maxOffsetY = (drawInfo.height - 100 - (heightOneLine * 2));
             if (afterOffsetY < maxOffsetY) {
                 if (ahi.getShelvingLocation() != null) {
                     DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
@@ -184,7 +191,7 @@ public class ArchiveReservationPrintable extends ReservationPrintable {
                 }
 
                 drawNewLine(drawInfo);
-                drawInfo.setOffsetY(drawInfo.getOffsetY() + 2);
+                drawInfo.offsetY = drawInfo.offsetY + 2;
             }
             else if (printNoMoreSpaceNotice) {
                 printNoMoreSpaceNotice = false;
