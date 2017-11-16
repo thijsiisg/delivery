@@ -135,7 +135,7 @@ public abstract class RequestPrintable implements Printable {
         for (int i = 1; i <= 2; i++) {
             drawInfo.width = halfWidth - rightMargin;
             drawInfo.offsetX = halfWidth * (i - 1) + 10;
-            drawInfo.offsetY = 10;
+            drawInfo.offsetY = 15;
             draw(drawInfo);
         }
 
@@ -175,7 +175,7 @@ public abstract class RequestPrintable implements Printable {
         // Align to the bottom right of the page
         barcode.doQuietZone(true);
         barcode.setQuietZone(drawInfo.width + drawInfo.offsetX - dim.getWidth() - 10);
-        barcode.setVerticalQuietZone(drawInfo.height + drawInfo.offsetY - dim.getHeight() - 35);
+        barcode.setVerticalQuietZone(drawInfo.height + drawInfo.offsetY - dim.getHeight() - 45);
 
         // Generate the barcode
         Java2DCanvasProvider canvas = new Java2DCanvasProvider(drawInfo.g2d, 0);
@@ -270,7 +270,7 @@ public abstract class RequestPrintable implements Printable {
      */
     protected void drawReturnNotice(DrawInfo drawInfo) {
         int orgOffsetY = drawInfo.offsetY;
-        drawInfo.offsetY = drawInfo.height - 80;
+        drawInfo.offsetY = drawInfo.height - 85;
 
         DrawValueInfo drawValueInfo = new DrawValueInfo(drawInfo);
         drawValueInfo.value = getMessage("print.returnForm", "Please return form along with item.");
