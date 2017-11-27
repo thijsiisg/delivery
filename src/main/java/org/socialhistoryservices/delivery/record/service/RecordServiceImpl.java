@@ -222,14 +222,18 @@ public class RecordServiceImpl implements RecordService {
                                 h.getExternalInfo().mergeWith(ehi);
                             else
                                 h.setExternalInfo(ehi);
+
+                            found = true;
                         }
-                        else {
-                            Holding holding = new Holding();
-                            holding.setSignature(signature);
-                            holding.setExternalInfo(ehi);
-                            record.addHolding(holding);
-                            holding.setRecord(record);
-                        }
+                    }
+
+                    // If still not found, create a new holding
+                    if (!found) {
+                        Holding holding = new Holding();
+                        holding.setSignature(signature);
+                        holding.setExternalInfo(ehi);
+                        record.addHolding(holding);
+                        holding.setRecord(record);
                     }
                 }
             }
