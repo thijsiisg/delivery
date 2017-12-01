@@ -28,6 +28,11 @@
     </a>
   </li>
   <li>
+    <a href="${rc.contextPath}/reservation/?date=${today?string("yyyy-MM-dd")}&status=pending&printed=false&page_len=100">
+    <@_ "reservationList.filterNotPrinted" "Show today's not printed reservations"/>
+    </a>
+  </li>
+  <li>
     <a href="${rc.contextPath}/reservation/">
     <@_ "reservationList.filterEverything" "Show All Reservations"/>
     </a>

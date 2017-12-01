@@ -372,6 +372,7 @@ public class ReservationController extends AbstractRequestController {
             if (DateUtils.isBetweenOpeningAndClosingTime(deliveryProperties, create))
                 reservations.printReservation(res);
         } catch (PrinterException e) {
+            log.warn("Printing reservation failed", e);
             // Do nothing, let an employee print it later on.
         }
     }
@@ -727,6 +728,7 @@ public class ReservationController extends AbstractRequestController {
         } catch (PrinterException e) {
             // Do nothing if printing fails.
             // You will see the printed flag being false in the overview.
+            log.warn("Printing reservation failed", e);
         }
 
 
