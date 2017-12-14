@@ -33,8 +33,8 @@ public class ReproductionPrintable extends RequestPrintable {
      */
     @Override
     protected void draw(DrawInfo drawInfo) {
-
-        drawBarcode(drawInfo, this.holdingRequest.getId()); // get the id of the request instead of the holding?
+        drawBarcode(drawInfo, this.holdingRequest.getId());
+        drawReturnNotice(drawInfo);
 
         drawRepro(drawInfo);
         drawId(drawInfo);
@@ -57,10 +57,16 @@ public class ReproductionPrintable extends RequestPrintable {
         drawNewLine(drawInfo);
 
         drawReproductionInformation(drawInfo);
+    }
 
-        drawInfo.setOffsetY(drawInfo.getHeight() - 100);
-
-        drawReturnNotice(drawInfo);
+    /**
+     * The intended recipient of this print.
+     *
+     * @return The recipient.
+     */
+    @Override
+    protected String getRecipient() {
+        return getMessage("print.repro", "Intended for repro");
     }
 
     /**

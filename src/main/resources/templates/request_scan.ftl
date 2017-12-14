@@ -106,10 +106,22 @@
   </#if>
 
   <#if reproduction.order??>
-    <li>
+    <li class="spacing">
       <span><@_ "reproduction.order" "Order id (PayWay)"/></span>
-    ${reproduction.order.id?html} <i>(<@_ "order.payed.${reproduction.order.payed}" "" />)</i>
+    ${reproduction.order.id?c} <i>(<@_ "order.payed.${reproduction.order.payed}" "" />)</i>
     </li>
+
+    <li>
+      <span><@_ "reproduction.total" "Total amount"/></span>
+      &euro; ${reproduction.order.amountAsBigDecimal?string("0.00")}
+    </li>
+
+    <#if reproduction.order.payed == 2 || reproduction.order.payed == 3>
+      <li>
+        <span><@_ "reproduction.refunded" "Total refunded amount"/></span>
+        &euro; ${reproduction.order.refundedAmountAsBigDecimal?string("0.00")}
+      </li>
+    </#if>
   </#if>
 
   <#if reproduction.discountPercentage gt 0>

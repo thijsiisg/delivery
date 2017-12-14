@@ -3,6 +3,7 @@ package org.socialhistoryservices.delivery.reproduction.util;
 import org.socialhistoryservices.delivery.record.entity.ExternalRecordInfo;
 import org.socialhistoryservices.delivery.record.entity.Record;
 
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,9 +13,11 @@ import java.util.regex.Pattern;
 public class Pages {
     private static final int NO_NUMBER_OF_PAGES = 0;
 
-    private static final Pattern PATTERN_CONTAINS_PAGES = Pattern.compile("([0-9]+ p\\.)|([0-9]+ pages)");
+    private static final String[] PAGES_CODES = new String[]{"p", "pages", "bl", "L", "l", "S", "s", "Seiten"};
+
+    private static final Pattern PATTERN_CONTAINS_PAGES = Pattern.compile(createPagesPattern(PAGES_CODES));
     private static final Pattern PATTERN_BETWEEN_BRACKETS = Pattern.compile("\\(([^)]+)\\)");
-    private static final Pattern PATTERN_LEFT_AND_PAGES = Pattern.compile("(.*?)(([0-9]+) p\\.|([0-9]+) pages)");
+    private static final Pattern PATTERN_LEFT_AND_PAGES = Pattern.compile("(.*?)(?:" + createPagesPattern(PAGES_CODES) + ")");
     private static final Pattern PATTERN_SEPERATORS = Pattern.compile("[\\p{Punct}\\s]+");
     private static final Pattern PATTERN_NUMBERS = Pattern.compile("[0-9]+");
 
@@ -88,12 +91,13 @@ public class Pages {
         Matcher leftAndPagesMatcher = PATTERN_LEFT_AND_PAGES.matcher(physicalDescription);
         while (leftAndPagesMatcher.find()) {
             left = leftAndPagesMatcher.group(1);
-            pages = (leftAndPagesMatcher.group(3) == null)
-                    ? leftAndPagesMatcher.group(4)
-                    : leftAndPagesMatcher.group(3);
+            for (int i = 2; i <= leftAndPagesMatcher.groupCount(); i++) {
+                if (leftAndPagesMatcher.group(i) != null)
+                    pages = leftAndPagesMatcher.group(i);
+            }
         }
 
-        // Attempt to divide whatever is on the left into seperate parts and get the last one
+        // Attempt to divide whatever is on the left into separate parts and get the last one
         String[] leftParts = PATTERN_SEPERATORS.split(left);
         String lastLeftPart = leftParts[leftParts.length - 1];
 
@@ -104,5 +108,18 @@ public class Pages {
 
         // Otherwise we have found the number of pages
         return Integer.parseInt(pages);
+    }
+
+    /**
+     * Create pattern for all page codes.
+     *
+     * @param codes The page codes.
+     * @return The pattern.
+     */
+    private static String createPagesPattern(String... codes) {
+        StringJoiner joiner = new StringJoiner("|");
+        for (String code : codes)
+            joiner.add("(?:([0-9]+) " + code + "(?:[^A-Za-z]|$))");
+        return joiner.toString();
     }
 }

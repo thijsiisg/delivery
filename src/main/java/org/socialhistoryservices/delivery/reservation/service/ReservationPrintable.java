@@ -31,6 +31,7 @@ public class ReservationPrintable extends RequestPrintable {
     @Override
     protected void draw(DrawInfo drawInfo) {
         drawBarcode(drawInfo, this.holdingRequest.getId());
+        drawReturnNotice(drawInfo);
 
         drawName(drawInfo);
         drawDate(drawInfo);
@@ -42,11 +43,16 @@ public class ReservationPrintable extends RequestPrintable {
         drawMaterialInfo(drawInfo);
         drawType(drawInfo, holdingRequest.getHolding().getSignature());
         drawLocationInfo(drawInfo);
+    }
 
-        drawInfo.setOffsetY(drawInfo.getHeight() - 100);
-
-        drawReturnNotice(drawInfo);
-        drawName(drawInfo);
+    /**
+     * The intended recipient of this print.
+     *
+     * @return The recipient.
+     */
+    @Override
+    protected String getRecipient() {
+        return holdingRequest.getRequest().getName();
     }
 
     /**

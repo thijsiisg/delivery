@@ -426,6 +426,7 @@ public class ReproductionServiceImpl extends AbstractRequestService implements R
                 printReproduction(reproduction);
         } catch (PrinterException e) {
             // Do nothing, let an employee print it later on
+            log.warn("Printing reproduction failed", e);
         }
     }
 

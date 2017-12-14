@@ -604,10 +604,10 @@ public class ReproductionController extends AbstractRequestController {
     @Async
     private void autoPrintReproduction(final Reproduction reproduction) {
         try {
-            // TODO (Disabled for now) if (DateUtils.isBetweenOpeningAndClosingTime(properties, new Date()))
-                reproductions.printReproduction(reproduction);
+            reproductions.printReproduction(reproduction);
         } catch (PrinterException e) {
             // Do nothing, let an employee print it later on
+            LOGGER.warn("Printing reproduction failed", e);
         }
     }
 

@@ -196,23 +196,42 @@ public class RecordServiceImpl implements RecordService {
             // Update the holdings, merge exisiting holdings, add new holdings, do not remove old holdings
             for (String signature : ehMap.keySet()) {
                 boolean found = false;
+                ExternalHoldingInfo ehi = ehMap.get(signature);
 
                 for (Holding h : record.getHoldings()) {
                     if (signature.equals(h.getSignature())) {
                         if (h.getExternalInfo() != null)
-                            h.getExternalInfo().mergeWith(ehMap.get(signature));
+                            h.getExternalInfo().mergeWith(ehi);
                         else
-                            h.setExternalInfo(ehMap.get(signature));
+                            h.setExternalInfo(ehi);
 
                         found = true;
                     }
                 }
 
+                // Not found, but check again: maybe the signature changed, but the barcode is still the same
                 if (!found) {
-                    Holding holding = new Holding();
-                    holding.setSignature(signature);
-                    record.addHolding(holding);
-                    holding.setRecord(record);
+                    for (Holding h : record.getHoldings()) {
+                        // Found a holding with a different signature, but with the same barcode, start a merge
+                        if (ehi.getBarcode().equals(h.getExternalInfo().getBarcode())) {
+                            h.setSignature(signature);
+                            if (h.getExternalInfo() != null)
+                                h.getExternalInfo().mergeWith(ehi);
+                            else
+                                h.setExternalInfo(ehi);
+
+                            found = true;
+                        }
+                    }
+
+                    // If still not found, create a new holding
+                    if (!found) {
+                        Holding holding = new Holding();
+                        holding.setSignature(signature);
+                        holding.setExternalInfo(ehi);
+                        record.addHolding(holding);
+                        holding.setRecord(record);
+                    }
                 }
             }
 
