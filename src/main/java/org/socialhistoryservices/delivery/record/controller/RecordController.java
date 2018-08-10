@@ -84,21 +84,6 @@ public class RecordController extends ErrorHandlingController {
         for (String pid : pids) {
             synchronized (this) { // Issue #139: Make sure that when A enters, B has to wait, and will detect the insert into the database by B when entering.
                 Record rec = records.getRecordByPid(pid);
-                if (rec == null) { // Issue #108
-                    // Try creating the record.
-                    try {
-                        rec = records.createRecordByPid(pid);
-                        records.addRecord(rec);
-                    }
-                    catch (NoSuchPidException e) {
-                        // Pass, catch if no of the requested PIDs are available
-                        // below.
-                    }
-                }
-                else if (records.updateExternalInfo(rec, false)) {
-                    records.saveRecord(rec);
-                }
-
                 if (rec != null) {
                     recs.add(rec);
 
@@ -267,19 +252,8 @@ public class RecordController extends ErrorHandlingController {
         String pid = urlDecode(encPid);
         Record r = records.getRecordByPid(pid);
         if (r == null) {
-            try {
-                r = records.createRecordByPid(pid);
-                model.addAttribute("isNewRecord", true);
-            }
-            catch (NoSuchPidException e) {
-                // This should not happen with normal usage through record-home.
-                throw new InvalidRequestException("No such PID. Are you sure the " +
-                        "record you want to add is available in the SRW API?");
-            }
-        }
-        else {
-            // Add holding/other API info if present
-            records.updateExternalInfo(r, true);
+            throw new InvalidRequestException("No such PID. Are you sure the " +
+                    "record you want to add is available in the SRW API?");
         }
         model.addAttribute("record", r);
         return "record_edit";

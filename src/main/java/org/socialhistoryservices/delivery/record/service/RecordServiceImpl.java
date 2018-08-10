@@ -99,7 +99,22 @@ public class RecordServiceImpl implements RecordService {
 
         query.where(builder.equal(recRoot.get(Record_.pid), pid));
 
-        return getRecord(query);
+        Record r = getRecord(query);
+
+        if (r == null) {
+            try {
+                r = createRecordByPid(pid);
+                addRecord(r);
+            }
+            catch (NoSuchPidException e) {
+                return null;
+            }
+        }
+        else if (updateExternalInfo(r, false)) {
+            saveRecord(r);
+        }
+
+        return r;
     }
 
     /**

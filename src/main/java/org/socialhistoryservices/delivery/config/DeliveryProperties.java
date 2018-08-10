@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "delivery")
 public class DeliveryProperties {
-
     private String apiBase = "/solr/all/srw";
     private String apiDomain = "api.socialhistoryservices.org";
     private int apiPort = 80;
@@ -51,6 +50,8 @@ public class DeliveryProperties {
     private String urlSearch = "search-acc.socialhistory.org";
     private String urlSelf = "http://localhost:8080";
     private int recordPageLen = 20;
+    private String iiifAddress = "http://localhost:3333";
+    private String iiifAccessToken = "bla";
 
     public boolean isMailEnabled() {
         return mailEnabled;
@@ -402,5 +403,21 @@ public class DeliveryProperties {
 
     public void setRecordPageLen(int recordPageLen) {
         this.recordPageLen = recordPageLen;
+    }
+
+    public String getIiifAddress() {
+        return iiifAddress;
+    }
+
+    public void setIiifAddress(String iiifAddress) {
+        this.iiifAddress = iiifAddress;
+    }
+
+    public String getIiifAccessToken() {
+        return iiifAccessToken;
+    }
+
+    public void setIiifAccessToken(String iiifAccessToken) {
+        this.iiifAccessToken = iiifAccessToken;
     }
 }

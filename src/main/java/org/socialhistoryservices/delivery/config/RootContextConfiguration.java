@@ -1,5 +1,6 @@
 package org.socialhistoryservices.delivery.config;
 
+import org.socialhistoryservices.delivery.api.IIIFService;
 import org.socialhistoryservices.delivery.util.RequestContextToViewInterceptor;
 import org.socialhistoryservices.delivery.api.IISHRecordLookupService;
 import org.socialhistoryservices.delivery.api.PayWayService;
@@ -16,10 +17,8 @@ import org.springframework.web.util.UrlPathHelper;
 
 @Configuration
 @EnableConfigurationProperties(DeliveryProperties.class)
-public class RootContextConfiguration extends WebMvcConfigurerAdapter{
-
-    @Autowired
-    DeliveryProperties deliveryProperties;
+public class RootContextConfiguration extends WebMvcConfigurerAdapter {
+    @Autowired private DeliveryProperties deliveryProperties;
 
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
@@ -29,38 +28,43 @@ public class RootContextConfiguration extends WebMvcConfigurerAdapter{
     }
 
     @Override
-    public void addInterceptors(InterceptorRegistry registry){
+    public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(secIntercept());
         registry.addInterceptor(reqIntercept());
     }
 
     @Bean
-    public IISHRecordLookupService myLookupService(){
+    public IISHRecordLookupService myLookupService() {
         IISHRecordLookupService iishRecordLookupService = new IISHRecordLookupService();
         iishRecordLookupService.setDeliveryProperties(deliveryProperties);
         return iishRecordLookupService;
     }
 
     @Bean
-    public PayWayService payWayService(){
+    public PayWayService payWayService() {
         return new PayWayService(deliveryProperties.getPayWayAddress(),
-             deliveryProperties.getPayWayPassPhraseIn(),
-            deliveryProperties.getPayWayPassPhraseOut(),
-            deliveryProperties.getPayWayProjectName());
+                deliveryProperties.getPayWayPassPhraseIn(),
+                deliveryProperties.getPayWayPassPhraseOut(),
+                deliveryProperties.getPayWayProjectName());
     }
 
     @Bean
-    public SharedObjectRepositoryService sharedObjectRepositoryService(){
+    public SharedObjectRepositoryService sharedObjectRepositoryService() {
         return new SharedObjectRepositoryService(deliveryProperties.getSorAddress());
     }
 
     @Bean
-    public SecurityToViewInterceptor secIntercept(){
+    public IIIFService iiifService() {
+        return new IIIFService(deliveryProperties.getIiifAddress(), deliveryProperties.getIiifAccessToken());
+    }
+
+    @Bean
+    public SecurityToViewInterceptor secIntercept() {
         return new SecurityToViewInterceptor();
     }
 
     @Bean
-    public RequestContextToViewInterceptor reqIntercept(){
+    public RequestContextToViewInterceptor reqIntercept() {
         return new RequestContextToViewInterceptor();
     }
 }

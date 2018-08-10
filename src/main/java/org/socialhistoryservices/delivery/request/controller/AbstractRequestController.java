@@ -106,20 +106,6 @@ public abstract class AbstractRequestController extends ErrorHandlingController 
             String[] elements = tuple.split(Pattern.quote(deliveryProperties.getHoldingSeparator()));
             Record r = records.getRecordByPid(elements[0]);
 
-            if (r == null) {
-                // Try creating the record.
-                try {
-                    r = records.createRecordByPid(elements[0]);
-                    records.addRecord(r);
-                }
-                catch (NoSuchPidException e) {
-                    return null;
-                }
-            }
-            else if (records.updateExternalInfo(r, false)) {
-                records.saveRecord(r);
-            }
-
             for (int i = 1; i < Math.max(2, elements.length); i++) {
                 boolean has = false;
                 for (Holding h : r.getHoldings()) {

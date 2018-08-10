@@ -1,6 +1,7 @@
 package org.socialhistoryservices.delivery.permission.controller;
 
 import org.apache.log4j.Logger;
+import org.socialhistoryservices.delivery.api.IIIFServiceException;
 import org.socialhistoryservices.delivery.util.InvalidRequestException;
 import org.socialhistoryservices.delivery.util.ResourceNotFoundException;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
@@ -171,48 +172,64 @@ public class PermissionController extends AbstractRequestController {
     /**
      * Save a permission with the save button in the /permission/[id] form.
      *
-     * @param id  The id of the permission to save.
+     * @param id The id of the permission to save.
+     * @param model The model.
      * @param req The request.
      * @return The view to resolve.
      */
     @RequestMapping(value = "/process", method = RequestMethod.POST, params = "save")
     @PreAuthorize("hasRole('ROLE_PERMISSION_MODIFY')")
-    public String formSave(@RequestParam int id, HttpServletRequest req) {
+    public String formSave(@RequestParam int id, Model model, HttpServletRequest req) {
         Permission pm = permissions.getPermissionById(id);
         if (pm == null) {
             throw new InvalidRequestException("No such permission");
         }
         updateRecordPermissions(pm, req.getParameterMap());
-        return "redirect:/permission/";
+
+        try {
+            permissions.sendPermissionToIIIF(pm);
+        }
+        catch (IIIFServiceException e) {
+            model.addAttribute("error", "iiif");
+        }
+
+        model.addAttribute("permission", pm);
+        return "permission_get";
     }
 
     /**
      * Save a permission and send a message to the requester.
      *
-     * @param id  The id of the permission to save.
+     * @param id The id of the permission to save.
+     * @param model The model.
      * @param req The request.
      * @return The view to resolve.
      */
     @RequestMapping(value = "/process", method = RequestMethod.POST, params = "saveandemail")
     @PreAuthorize("hasRole('ROLE_PERMISSION_MODIFY')")
-    public String formSaveAndFinish(@RequestParam int id,
-                                    HttpServletRequest req) {
+    public String formSaveAndFinish(@RequestParam int id, Model model, HttpServletRequest req) {
         Permission pm = permissions.getPermissionById(id);
         if (pm == null) {
             throw new InvalidRequestException("No such permission.");
         }
         updateRecordPermissions(pm, req.getParameterMap());
 
-        // Notify the requester.
         try {
             pmMailer.mailCode(pm);
         }
         catch (MailException e) {
-            log.error("Failed to send email", e);
-            throw e;
+            model.addAttribute("error", "mail");
         }
 
-        return "redirect:/permission/";
+        try {
+            permissions.sendPermissionToIIIF(pm);
+        }
+        catch (IIIFServiceException e) {
+            model.addAttribute("error", "iiif");
+        }
+
+        model.addAttribute("permission", pm);
+        return "permission_get";
     }
 
     /**

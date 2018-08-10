@@ -1,5 +1,6 @@
 package org.socialhistoryservices.delivery.permission.service;
 
+import org.socialhistoryservices.delivery.api.IIIFServiceException;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.entity.RecordPermission;
 import org.socialhistoryservices.delivery.record.entity.Record;
@@ -105,4 +106,11 @@ public interface PermissionService {
      * @return Whether any permission requests have been made including this record.
      */
     boolean hasPermissions(Record record);
+
+    /**
+     * Send permission code to the IIIF service, if granted and digital.
+     * @param permission The permission.
+     * @throws IIIFServiceException On failure to register the code.
+     */
+    void sendPermissionToIIIF(Permission permission) throws IIIFServiceException;
 }

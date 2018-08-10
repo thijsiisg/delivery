@@ -2,7 +2,7 @@
 <#include "form.ftl"/>
 <#-- Build the title -->
 <#assign title>
-<#if isNewRecord??><@_ "newrecord.title" "New Record"/><#else><@_ "editrecord.title" "Edit Record"/></#if>
+<@_ "editrecord.title" "Edit Record"/>
 </#assign>
 
 <#macro fakeInput path value>
@@ -23,7 +23,6 @@
         </a>
         <ul class="parent_tree">
           <@tree rec/>
-              <#if !isNewRecord??>
               <#assign item = record>
               <#if record.parent??><#assign item = record.parent></#if>
 
@@ -39,7 +38,6 @@
                      value="" />
               <@submit "edititem"/>
             </@form_plain>
-           </#if>
           </li>
               </ul>
       </li>

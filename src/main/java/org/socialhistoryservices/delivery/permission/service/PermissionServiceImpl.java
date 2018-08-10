@@ -1,5 +1,7 @@
 package org.socialhistoryservices.delivery.permission.service;
 
+import org.socialhistoryservices.delivery.api.IIIFService;
+import org.socialhistoryservices.delivery.api.IIIFServiceException;
 import org.socialhistoryservices.delivery.permission.dao.PermissionDAO;
 import org.socialhistoryservices.delivery.permission.entity.Permission;
 import org.socialhistoryservices.delivery.permission.entity.Permission_;
@@ -20,9 +22,11 @@ import java.util.List;
 @Service
 @Transactional
 public class PermissionServiceImpl implements PermissionService {
-
     @Autowired
     private PermissionDAO permissionDAO;
+
+    @Autowired
+    private IIIFService iiifService;
 
     /**
      * Add a Permission to the database.
@@ -148,5 +152,17 @@ public class PermissionServiceImpl implements PermissionService {
      */
     public boolean hasPermissions(Record record) {
         return permissionDAO.hasPermissions(record);
+    }
+
+    /**
+     * Send permission code to the IIIF service, if granted and digital.
+     * @param permission The permission.
+     * @throws IIIFServiceException On failure to register the code.
+     */
+    public void sendPermissionToIIIF(Permission permission) throws IIIFServiceException {
+        for (RecordPermission rp : permission.getRecordPermissions()) {
+            if (rp.getGranted() && rp.getRecord().getHoldings().get(0).getSignature().startsWith("dig"))
+                iiifService.registerToken(permission.getCode(), rp.getRecord());
+        }
     }
 }

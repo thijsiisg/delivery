@@ -10,6 +10,10 @@
 <@base "${title}">
 <h1>${title}</h1>
 
+<#if error??>
+  <div class="errors"><@_ "permission.error."+error error /></div>
+</#if>
+
 <ul class="permissionDetails">
     <li><span><@_ "permission.name" "Name"/></span> ${permission.name?html}</li>
     <li><span><@_ "permission.email" "E-mail"/></span> ${permission.email?html}</li>
